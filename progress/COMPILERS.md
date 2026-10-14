@@ -72,5 +72,10 @@ against retail `server.dll` and the single-player demo's plaintext of
   (`exception`, `logic_error`, `length_error`, `out_of_range`,
   `type_info`): VC .NET 2003's own standard library, no STLport.
 - The default code generation (`/GB`, blended): `/G6` gives the same, `/G7` loses.
-- The renderer (`D3DRender`) keeps nolf2src's `/GX` for now: 133 of the
-  exe's EH frames are in its range, to be measured as the exe's were.
+- The libraries too: compiled each way, `d3d_renderworld.cpp` places 988
+  of retail's functions without `/GX` and 608 with it, `d3d_draw.cpp` 53
+  against 42, the UI's and RezMgr's files likewise: D3DRender, Lib_UI,
+  Lib_ILTSound and Lib_RezMgr are `/O2 /Ob2` without `/GX` (nolf2src's
+  had it). The renderer's 133 EH frames are the standard library's own
+  `try` blocks. Lib_StdLith and Lib_Lith (the game's too) and ltmem
+  (SndDrv.dll's too) keep their flags for now.
