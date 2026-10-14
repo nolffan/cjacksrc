@@ -1,11 +1,19 @@
 // ltmem.cpp: the LithTech memory interface (Engine/sdk/inc/ltmem.h) in its
-// plain form, without the engine's own heap: allocation and release go
-// straight to the C runtime. The sound driver links it as a library after
-// msacm32.lib (retail 0x1000a0c0..0x1000a21b, below the MSACM32 import
-// thunks): the initializers of the math constants ltbasedefs.h brings in,
-// the global initializer object's registration, and LTMemAlloc and
-// LTMemFree. Compiled without __declspec(dllimport) on the runtime (the
-// calls go through import thunks), as a static library project is.
+// plain form, without the engine's own heap (the 2006 Jupiter tree's
+// libs/ltmem/ltmem.cpp without USELTMEM): allocation and release go
+// straight to the C runtime.
+//
+// Contract J.A.C.K.'s sound driver links it before msacm32.lib, ahead of the
+// MSACM32 import thunks (retail 0x100085f0..0x10008632). Compiled /Ox, which
+// unlike /O2 does not make each function a COMDAT, its code is one section
+// the link keeps whole: LTMemAlloc, LTMemFree and LTMemReAlloc (each a jump
+// to the runtime's through its import, /MD), then the initializer object's
+// constructor (`mov eax,ecx; ret`) and destructor (`ret`), as Visual C++
+// .NET 2003 orders them, 16 bytes apart. LTMemInit and LTMemTerm are not
+// there: without USELTMEM this file has neither them nor the calls. (The
+// 2006 file defines the initializer first; here it follows the functions,
+// which puts its constructor and destructor after them as retail has
+// them.)
 
 #include <stdlib.h>
 #include "ltmem.h"
@@ -14,8 +22,32 @@
 // reads it)
 bool g_bLTMemInitialized = false;
 
-// Initializes the memory system before anything else runs, and terminates
-// it after everything else.
+///////////////////////////////////////////////////////////////////////////////////////////
+// LTMem functions
+///////////////////////////////////////////////////////////////////////////////////////////
+
+// LTMem Allocation function
+void* LTMemAlloc(uint32 nSize)
+{
+	return malloc(nSize);
+}
+
+// LTMem Free function
+void LTMemFree(void* pMem)
+{
+	free(pMem);
+}
+
+// LTMem ReAllocation function
+void* LTMemReAlloc(void* pOldMem, uint32 nNewSize)
+{
+	return realloc(pOldMem, nNewSize);
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////////////
+// Initializer class for ltmem
+///////////////////////////////////////////////////////////////////////////////////////////
 class CLTMemInitialize
 {
 public:
@@ -25,31 +57,14 @@ public:
 
 CLTMemInitialize::CLTMemInitialize()
 {
+#ifdef USELTMEM
 	LTMemInit();
+#endif
 }
 
 CLTMemInitialize::~CLTMemInitialize()
 {
+#ifdef USELTMEM
 	LTMemTerm();
-}
-
-// Nothing to set up or tear down without the engine's heap: the global
-// object's constructor compiles to nothing, its destructor to a bare `ret`
-// (0x1000a1f0) that the initializer registers with atexit (0x1000a1e0).
-void LTMemInit()
-{
-}
-
-void LTMemTerm()
-{
-}
-
-void* LTMemAlloc(uint32 nSize)
-{
-	return malloc(nSize);
-}
-
-void LTMemFree(void* pMem)
-{
-	free(pMem);
+#endif
 }

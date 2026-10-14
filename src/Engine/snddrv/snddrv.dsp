@@ -62,7 +62,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib /nologo /subsystem:windows /dll /machine:I386
-# ADD LINK32 kernel32.lib user32.lib ole32.lib winmm.lib msacm32.lib dxguid.lib /nologo /subsystem:windows /dll /machine:I386 /out:"..\built\Final\snddrv\SndDrv.dll"
+# ADD LINK32 ltmem.lib kernel32.lib user32.lib ole32.lib winmm.lib msacm32.lib dxguid.lib /nologo /subsystem:windows /dll /machine:I386 /out:"..\built\Final\snddrv\SndDrv.dll" /libpath:"..\built\Final\ltmem"
 !ENDIF 
 
 # Begin Target
