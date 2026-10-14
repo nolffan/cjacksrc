@@ -304,7 +304,7 @@ void CScreenPlayerTeam::UpdateTeam()
 		pCI = pCI->pNext;
 	}
 
-	for (nTeam = 0; nTeam < 2; nTeam++)
+	for (uint8 nTeam = 0; nTeam < 2; nTeam++)
 	{
 		CTeam* pTeam = CTeamMgr::Instance().GetTeam(nTeam);
 		if (!pTeam) continue;

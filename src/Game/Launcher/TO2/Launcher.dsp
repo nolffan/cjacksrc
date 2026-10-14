@@ -43,12 +43,12 @@ RSC=rc.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 6
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "..\..\Built\Release\Launcher"
-# PROP Intermediate_Dir "..\..\Built\Release\Launcher"
+# PROP Output_Dir "..\..\built\Release\Launcher"
+# PROP Intermediate_Dir "..\..\built\Release\Launcher"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /MD /W3 /GX /O2 /I ".\\" /I "..\\" /I "..\..\..\libs\STLPORT-4.0\STLPORT" /I "..\..\..\Engine\sdk\inc" /I "..\..\..\libs\regmgr32" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /FR /Yu"stdafx.h" /FD /c
+# ADD CPP /nologo /MD /W3 /GX /O2 /I ".\\" /I "..\\" /I "..\..\..\Engine\sdk\inc" /I "..\..\..\libs\regmgr32" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /FR /Yu"stdafx.h" /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
@@ -58,13 +58,13 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /machine:I386
-# ADD LINK32 /nologo /subsystem:windows /incremental:yes /machine:I386 /out:"..\..\Built\Release\Launcher/NOLF2.exe"
+# ADD LINK32 /nologo /subsystem:windows /incremental:yes /machine:I386 /out:"..\..\built\Release\Launcher/ContractJack.exe"
 # Begin Custom Build
-TargetPath=\Work\TO2\Source\Game\Built\Release\Launcher\NOLF2.exe
-InputPath=\Work\TO2\Source\Game\Built\Release\Launcher\NOLF2.exe
+TargetPath=\Work\TO2\Source\Game\built\Release\Launcher\ContractJack.exe
+InputPath=\Work\TO2\Source\Game\built\Release\Launcher\ContractJack.exe
 SOURCE="$(InputPath)"
 
-"$(GAME_MAIN_DIR)\NOLF2.exe" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+"$(GAME_MAIN_DIR)\ContractJack.exe" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
 	Rem IncrediBuild_OutputFile $(TargetPath) 
 	echo copy $(TargetPath) $(GAME_MAIN_DIR) 
 	copy $(TargetPath) $(GAME_MAIN_DIR) 
@@ -80,12 +80,12 @@ SOURCE="$(InputPath)"
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 6
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "..\..\Built\Debug\Launcher"
-# PROP Intermediate_Dir "..\..\Built\Debug\Launcher"
+# PROP Output_Dir "..\..\built\Debug\Launcher"
+# PROP Intermediate_Dir "..\..\built\Debug\Launcher"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /Yu"stdafx.h" /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I ".\\" /I "..\\" /I "..\..\..\libs\STLPORT-4.0\STLPORT" /I "..\..\..\Engine\sdk\inc" /I "..\..\..\libs\regmgr32" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /FR /Yu"stdafx.h" /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I ".\\" /I "..\\" /I "..\..\..\Engine\sdk\inc" /I "..\..\..\libs\regmgr32" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /FR /Yu"stdafx.h" /FD /GZ /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
@@ -95,13 +95,13 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 /nologo /subsystem:windows /debug /machine:I386 /nodefaultlib:"nafxcw.lib" /nodefaultlib:"libcmt.lib" /out:"..\..\Built\Debug\Launcher/NOLF2.exe" /pdbtype:sept
+# ADD LINK32 /nologo /subsystem:windows /debug /machine:I386 /nodefaultlib:"nafxcw.lib" /nodefaultlib:"libcmt.lib" /out:"..\..\built\Debug\Launcher/ContractJack.exe" /pdbtype:sept
 # Begin Custom Build
-TargetPath=\Work\TO2\Source\Game\Built\Debug\Launcher\NOLF2.exe
-InputPath=\Work\TO2\Source\Game\Built\Debug\Launcher\NOLF2.exe
+TargetPath=\Work\TO2\Source\Game\built\Debug\Launcher\ContractJack.exe
+InputPath=\Work\TO2\Source\Game\built\Debug\Launcher\ContractJack.exe
 SOURCE="$(InputPath)"
 
-"$(GAME_MAIN_DIR)\NOLF2.exe" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+"$(GAME_MAIN_DIR)\ContractJack.exe" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
 	Rem IncrediBuild_OutputFile $(TargetPath) 
 	echo copy $(TargetPath) $(GAME_MAIN_DIR) 
 	copy $(TargetPath) $(GAME_MAIN_DIR) 
@@ -118,12 +118,12 @@ SOURCE="$(InputPath)"
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 6
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "..\..\Built\Final\Launcher"
-# PROP Intermediate_Dir "..\..\Built\Final\Launcher"
+# PROP Output_Dir "..\..\built\Final\Launcher"
+# PROP Intermediate_Dir "..\..\built\Final\Launcher"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /MD /W3 /GX /O2 /I ".\\" /I "..\\" /I "..\..\..\libs\STLPORT-4.0\STLPORT" /I "..\..\..\Engine\sdk\inc" /I "..\..\..\libs\regmgr32" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /FR /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /MD /W3 /GX /O2 /I ".\\" /I "..\\" /I "..\..\..\libs\STLPORT-4.0\STLPORT" /I "..\..\..\Engine\sdk\inc" /I "..\..\..\libs\regmgr32" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /D "_FINAL" /FR /Yu"stdafx.h" /FD /c
+# ADD BASE CPP /nologo /MD /W3 /GX /O2 /I ".\\" /I "..\\" /I "..\..\..\Engine\sdk\inc" /I "..\..\..\libs\regmgr32" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /FR /Yu"stdafx.h" /FD /c
+# ADD CPP /nologo /MD /W3 /GX /O2 /I ".\\" /I "..\\" /I "..\..\..\Engine\sdk\inc" /I "..\..\..\libs\regmgr32" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /D "_FINAL" /FR /Yu"stdafx.h" /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "NDEBUG" /d "_AFXDLL"
@@ -132,14 +132,14 @@ BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD BASE LINK32 d3d8.lib /nologo /subsystem:windows /incremental:yes /machine:I386 /out:"..\..\Built\Release\Launcher/NOLF2.exe"
-# ADD LINK32 /nologo /subsystem:windows /incremental:yes /machine:I386 /out:"..\..\Built\Final\Launcher/NOLF2.exe"
+# ADD BASE LINK32 d3d8.lib /nologo /subsystem:windows /incremental:yes /machine:I386 /out:"..\..\built\Release\Launcher/ContractJack.exe"
+# ADD LINK32 /nologo /subsystem:windows /incremental:yes /machine:I386 /out:"..\..\built\Final\Launcher/ContractJack.exe"
 # Begin Custom Build
-TargetPath=\Work\TO2\Source\Game\Built\Final\Launcher\NOLF2.exe
-InputPath=\Work\TO2\Source\Game\Built\Final\Launcher\NOLF2.exe
+TargetPath=\Work\TO2\Source\Game\built\Final\Launcher\ContractJack.exe
+InputPath=\Work\TO2\Source\Game\built\Final\Launcher\ContractJack.exe
 SOURCE="$(InputPath)"
 
-"$(GAME_MAIN_DIR)\NOLF2.exe" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+"$(GAME_MAIN_DIR)\ContractJack.exe" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
 	Rem IncrediBuild_OutputFile $(TargetPath) 
 	echo copy $(TargetPath) $(GAME_MAIN_DIR) 
 	copy $(TargetPath) $(GAME_MAIN_DIR) 
@@ -156,12 +156,12 @@ SOURCE="$(InputPath)"
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 6
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "..\..\Built\FinalDE\Launcher"
-# PROP Intermediate_Dir "..\..\Built\FinalDE\Launcher"
+# PROP Output_Dir "..\..\built\FinalDE\Launcher"
+# PROP Intermediate_Dir "..\..\built\FinalDE\Launcher"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /MD /W3 /GX /O2 /I ".\\" /I "..\\" /I "..\..\..\libs\STLPORT-4.0\STLPORT" /I "..\..\..\Engine\sdk\inc" /I "..\..\..\libs\regmgr32" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /D "_FINAL" /FR /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /MD /W3 /GX /O2 /I ".\\" /I "..\\" /I "..\..\..\libs\STLPORT-4.0\STLPORT" /I "..\..\..\Engine\sdk\inc" /I "..\..\..\libs\regmgr32" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /D "_FINAL" /FR /Yu"stdafx.h" /FD /c
+# ADD BASE CPP /nologo /MD /W3 /GX /O2 /I ".\\" /I "..\\" /I "..\..\..\Engine\sdk\inc" /I "..\..\..\libs\regmgr32" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /D "_FINAL" /FR /Yu"stdafx.h" /FD /c
+# ADD CPP /nologo /MD /W3 /GX /O2 /I ".\\" /I "..\\" /I "..\..\..\Engine\sdk\inc" /I "..\..\..\libs\regmgr32" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /D "_FINAL" /FR /Yu"stdafx.h" /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /i "res\lang\en\\" /d "NDEBUG" /d "_AFXDLL"
@@ -170,14 +170,14 @@ BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD BASE LINK32 /nologo /subsystem:windows /incremental:yes /machine:I386 /out:"..\..\Built\Final\Launcher/NOLF2.exe"
-# ADD LINK32 /nologo /subsystem:windows /incremental:yes /machine:I386 /out:"..\..\Built\FinalDE\Launcher/NOLF2.exe"
+# ADD BASE LINK32 /nologo /subsystem:windows /incremental:yes /machine:I386 /out:"..\..\built\Final\Launcher/ContractJack.exe"
+# ADD LINK32 /nologo /subsystem:windows /incremental:yes /machine:I386 /out:"..\..\built\FinalDE\Launcher/ContractJack.exe"
 # Begin Custom Build
-TargetPath=\Work\TO2\Source\Game\Built\FinalDE\Launcher\NOLF2.exe
-InputPath=\Work\TO2\Source\Game\Built\FinalDE\Launcher\NOLF2.exe
+TargetPath=\Work\TO2\Source\Game\built\FinalDE\Launcher\ContractJack.exe
+InputPath=\Work\TO2\Source\Game\built\FinalDE\Launcher\ContractJack.exe
 SOURCE="$(InputPath)"
 
-"$(GAME_MAIN_DIR)\NOLF2.exe" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+"$(GAME_MAIN_DIR)\ContractJack.exe" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
 	Rem IncrediBuild_OutputFile $(TargetPath) 
 	echo copy $(TargetPath) $(GAME_MAIN_DIR) 
 	copy $(TargetPath) $(GAME_MAIN_DIR) 
@@ -194,12 +194,12 @@ SOURCE="$(InputPath)"
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 6
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "..\..\Built\FinalES\Launcher"
-# PROP Intermediate_Dir "..\..\Built\FinalES\Launcher"
+# PROP Output_Dir "..\..\built\FinalES\Launcher"
+# PROP Intermediate_Dir "..\..\built\FinalES\Launcher"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /MD /W3 /GX /O2 /I ".\\" /I "..\\" /I "..\..\..\libs\STLPORT-4.0\STLPORT" /I "..\..\..\Engine\sdk\inc" /I "..\..\..\libs\regmgr32" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /D "_FINAL" /FR /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /MD /W3 /GX /O2 /I ".\\" /I "..\\" /I "..\..\..\libs\STLPORT-4.0\STLPORT" /I "..\..\..\Engine\sdk\inc" /I "..\..\..\libs\regmgr32" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /D "_FINAL" /FR /Yu"stdafx.h" /FD /c
+# ADD BASE CPP /nologo /MD /W3 /GX /O2 /I ".\\" /I "..\\" /I "..\..\..\Engine\sdk\inc" /I "..\..\..\libs\regmgr32" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /D "_FINAL" /FR /Yu"stdafx.h" /FD /c
+# ADD CPP /nologo /MD /W3 /GX /O2 /I ".\\" /I "..\\" /I "..\..\..\Engine\sdk\inc" /I "..\..\..\libs\regmgr32" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /D "_FINAL" /FR /Yu"stdafx.h" /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /i "res\lang\en\\" /d "NDEBUG" /d "_AFXDLL"
@@ -208,14 +208,14 @@ BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD BASE LINK32 /nologo /subsystem:windows /incremental:yes /machine:I386 /out:"..\..\Built\Final\Launcher/NOLF2.exe"
-# ADD LINK32 /nologo /subsystem:windows /incremental:yes /machine:I386 /out:"..\..\Built\FinalES\Launcher/NOLF2.exe"
+# ADD BASE LINK32 /nologo /subsystem:windows /incremental:yes /machine:I386 /out:"..\..\built\Final\Launcher/ContractJack.exe"
+# ADD LINK32 /nologo /subsystem:windows /incremental:yes /machine:I386 /out:"..\..\built\FinalES\Launcher/ContractJack.exe"
 # Begin Custom Build
-TargetPath=\Work\TO2\Source\Game\Built\FinalES\Launcher\NOLF2.exe
-InputPath=\Work\TO2\Source\Game\Built\FinalES\Launcher\NOLF2.exe
+TargetPath=\Work\TO2\Source\Game\built\FinalES\Launcher\ContractJack.exe
+InputPath=\Work\TO2\Source\Game\built\FinalES\Launcher\ContractJack.exe
 SOURCE="$(InputPath)"
 
-"$(GAME_MAIN_DIR)\NOLF2.exe" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+"$(GAME_MAIN_DIR)\ContractJack.exe" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
 	Rem IncrediBuild_OutputFile $(TargetPath) 
 	echo copy $(TargetPath) $(GAME_MAIN_DIR) 
 	copy $(TargetPath) $(GAME_MAIN_DIR) 
@@ -232,12 +232,12 @@ SOURCE="$(InputPath)"
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 6
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "..\..\Built\FinalIT\Launcher"
-# PROP Intermediate_Dir "..\..\Built\FinalIT\Launcher"
+# PROP Output_Dir "..\..\built\FinalIT\Launcher"
+# PROP Intermediate_Dir "..\..\built\FinalIT\Launcher"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /MD /W3 /GX /O2 /I ".\\" /I "..\\" /I "..\..\..\libs\STLPORT-4.0\STLPORT" /I "..\..\..\Engine\sdk\inc" /I "..\..\..\libs\regmgr32" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /D "_FINAL" /FR /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /MD /W3 /GX /O2 /I ".\\" /I "..\\" /I "..\..\..\libs\STLPORT-4.0\STLPORT" /I "..\..\..\Engine\sdk\inc" /I "..\..\..\libs\regmgr32" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /D "_FINAL" /FR /Yu"stdafx.h" /FD /c
+# ADD BASE CPP /nologo /MD /W3 /GX /O2 /I ".\\" /I "..\\" /I "..\..\..\Engine\sdk\inc" /I "..\..\..\libs\regmgr32" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /D "_FINAL" /FR /Yu"stdafx.h" /FD /c
+# ADD CPP /nologo /MD /W3 /GX /O2 /I ".\\" /I "..\\" /I "..\..\..\Engine\sdk\inc" /I "..\..\..\libs\regmgr32" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /D "_FINAL" /FR /Yu"stdafx.h" /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /i "res\lang\en\\" /d "NDEBUG" /d "_AFXDLL"
@@ -246,14 +246,14 @@ BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD BASE LINK32 /nologo /subsystem:windows /incremental:yes /machine:I386 /out:"..\..\Built\Final\Launcher/NOLF2.exe"
-# ADD LINK32 /nologo /subsystem:windows /incremental:yes /machine:I386 /out:"..\..\Built\FinalIT\Launcher/NOLF2.exe"
+# ADD BASE LINK32 /nologo /subsystem:windows /incremental:yes /machine:I386 /out:"..\..\built\Final\Launcher/ContractJack.exe"
+# ADD LINK32 /nologo /subsystem:windows /incremental:yes /machine:I386 /out:"..\..\built\FinalIT\Launcher/ContractJack.exe"
 # Begin Custom Build
-TargetPath=\Work\TO2\Source\Game\Built\FinalIT\Launcher\NOLF2.exe
-InputPath=\Work\TO2\Source\Game\Built\FinalIT\Launcher\NOLF2.exe
+TargetPath=\Work\TO2\Source\Game\built\FinalIT\Launcher\ContractJack.exe
+InputPath=\Work\TO2\Source\Game\built\FinalIT\Launcher\ContractJack.exe
 SOURCE="$(InputPath)"
 
-"$(GAME_MAIN_DIR)\NOLF2.exe" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+"$(GAME_MAIN_DIR)\ContractJack.exe" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
 	Rem IncrediBuild_OutputFile $(TargetPath) 
 	echo copy $(TargetPath) $(GAME_MAIN_DIR) 
 	copy $(TargetPath) $(GAME_MAIN_DIR) 
@@ -270,12 +270,12 @@ SOURCE="$(InputPath)"
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 6
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "..\..\Built\FinalFR\Launcher"
-# PROP Intermediate_Dir "..\..\Built\FinalFR\Launcher"
+# PROP Output_Dir "..\..\built\FinalFR\Launcher"
+# PROP Intermediate_Dir "..\..\built\FinalFR\Launcher"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /MD /W3 /GX /O2 /I ".\\" /I "..\\" /I "..\..\..\libs\STLPORT-4.0\STLPORT" /I "..\..\..\Engine\sdk\inc" /I "..\..\..\libs\regmgr32" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /D "_FINAL" /FR /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /MD /W3 /GX /O2 /I ".\\" /I "..\\" /I "..\..\..\libs\STLPORT-4.0\STLPORT" /I "..\..\..\Engine\sdk\inc" /I "..\..\..\libs\regmgr32" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /D "_FINAL" /FR /Yu"stdafx.h" /FD /c
+# ADD BASE CPP /nologo /MD /W3 /GX /O2 /I ".\\" /I "..\\" /I "..\..\..\Engine\sdk\inc" /I "..\..\..\libs\regmgr32" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /D "_FINAL" /FR /Yu"stdafx.h" /FD /c
+# ADD CPP /nologo /MD /W3 /GX /O2 /I ".\\" /I "..\\" /I "..\..\..\Engine\sdk\inc" /I "..\..\..\libs\regmgr32" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /D "_FINAL" /FR /Yu"stdafx.h" /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /i "res\lang\en\\" /d "NDEBUG" /d "_AFXDLL"
@@ -284,14 +284,14 @@ BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD BASE LINK32 /nologo /subsystem:windows /incremental:yes /machine:I386 /out:"..\..\Built\Final\Launcher/NOLF2.exe"
-# ADD LINK32 /nologo /subsystem:windows /incremental:yes /machine:I386 /out:"..\..\Built\FinalFR\Launcher/NOLF2.exe"
+# ADD BASE LINK32 /nologo /subsystem:windows /incremental:yes /machine:I386 /out:"..\..\built\Final\Launcher/ContractJack.exe"
+# ADD LINK32 /nologo /subsystem:windows /incremental:yes /machine:I386 /out:"..\..\built\FinalFR\Launcher/ContractJack.exe"
 # Begin Custom Build
-TargetPath=\Work\TO2\Source\Game\Built\FinalFR\Launcher\NOLF2.exe
-InputPath=\Work\TO2\Source\Game\Built\FinalFR\Launcher\NOLF2.exe
+TargetPath=\Work\TO2\Source\Game\built\FinalFR\Launcher\ContractJack.exe
+InputPath=\Work\TO2\Source\Game\built\FinalFR\Launcher\ContractJack.exe
 SOURCE="$(InputPath)"
 
-"$(GAME_MAIN_DIR)\NOLF2.exe" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+"$(GAME_MAIN_DIR)\ContractJack.exe" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
 	Rem IncrediBuild_OutputFile $(TargetPath) 
 	echo copy $(TargetPath) $(GAME_MAIN_DIR) 
 	copy $(TargetPath) $(GAME_MAIN_DIR) 

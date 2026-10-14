@@ -53,4 +53,4 @@ class CTO2GameClientShell : public CGameClientShell
 		CTO2ClientWeaponAllocator	m_ClientWeaponAllocator;
 };
 
-#endif  // __TO2_GAME_CLIENT_SHELL_H__
+#endif  // __TRON_GAME_CLIENT_SHELL_H__

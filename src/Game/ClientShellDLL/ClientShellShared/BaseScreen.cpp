@@ -40,8 +40,10 @@ namespace
 	LTIntPt offscreen(-64,-64);
 
 #ifdef _DEMO
+#ifdef _TRON_E3_DEMO
 	CUIPolyString* pDemoBuildVersion = LTNULL;
 	LTIntPt DemoBuildPos;
+#endif
 #endif
 
 
@@ -184,6 +186,7 @@ LTBOOL CBaseScreen::Init(int nScreenID)
 		g_pLTClient->RegisterConsoleProgram("EditFX", EditFXFn);
 		
 #ifdef _DEMO
+#ifdef _TRON_E3_DEMO
 		DemoBuildPos = g_pLayoutMgr->GetScreenCustomPoint(SCREEN_ID_MAIN,"VersionPos");
 		float bX = (float)DemoBuildPos.x * g_pInterfaceResMgr->GetXRatio();
 		float bY = (float)DemoBuildPos.y * g_pInterfaceResMgr->GetYRatio();
@@ -198,6 +201,7 @@ LTBOOL CBaseScreen::Init(int nScreenID)
 
 		bX -= pDemoBuildVersion->GetWidth();
 		pDemoBuildVersion->SetPosition(bX,bY);
+#endif
 #endif
 
 //	    g_pLTClient->RegisterConsoleProgram("CalcFXData", CalcFXDataFn);
@@ -320,11 +324,13 @@ void CBaseScreen::Term()
 	}
 
 #ifdef _DEMO
+#ifdef _TRON_E3_DEMO
 	if (pDemoBuildVersion)
 	{
 		g_pFontManager->DestroyPolyString(pDemoBuildVersion);
         pDemoBuildVersion=LTNULL;
 	}
+#endif
 #endif
 
 	ChainFXList::iterator iter = m_Chains.begin();
@@ -422,8 +428,10 @@ LTBOOL CBaseScreen::Render(HSURFACE hDestSurf)
 	}
 
 #ifdef _DEMO
+#ifdef _TRON_E3_DEMO
 	if (pDemoBuildVersion)
 		pDemoBuildVersion->Render();
+#endif
 #endif
 
 
@@ -2104,6 +2112,7 @@ void CBaseScreen::ScreenDimsChanged()
 	}
 
 #ifdef _DEMO
+#ifdef _TRON_E3_DEMO
 	if (pDemoBuildVersion)
 	{
 		float bX = (float)DemoBuildPos.x * g_pInterfaceResMgr->GetXRatio();
@@ -2115,6 +2124,7 @@ void CBaseScreen::ScreenDimsChanged()
 		pDemoBuildVersion->SetPosition(bX,bY);
 
 	}
+#endif
 #endif
 
 }

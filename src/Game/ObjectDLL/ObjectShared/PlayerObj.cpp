@@ -7209,7 +7209,8 @@ void CPlayerObj::TransferWeapons(Body *pBody, bool bRemove )
 		int nMaxWeapons = nLastWeaponCommandId - nFirstWeaponCommandId + 1;
 
 		//step through each potential player weapon...
-		for (int i = 0, nCommandId = nFirstWeaponCommandId;
+		int i, nCommandId;
+		for (i = 0, nCommandId = nFirstWeaponCommandId;
 			  i < nMaxWeapons;
 			  ++i, ++nCommandId )
 		{
@@ -8327,7 +8328,8 @@ bool CPlayerObj::AcquireLevelDefaultWeapons( int nMissionId, int nLevelId )
 	}
 END HACK - for DM testing */
 
-	for( int i = 0; i < pMission->nNumDefaultWeapons; ++i )
+	int i;
+	for( i = 0; i < pMission->nNumDefaultWeapons; ++i )
 	{
 		int nWeaponId = pMission->aDefaultWeapons[i];
 	
@@ -8474,7 +8476,7 @@ bool CPlayerObj::AcquireLevelDefaultMods( int nMissionId, int nLevelId )
 
 	// Add the level specific defaults...
 
-	for( i = 0; i < pLevel->nNumDefaultMods; ++i )
+	for(int i = 0; i < pLevel->nNumDefaultMods; ++i )
 	{
 		int nModId = pLevel->aDefaultMods[i];
 		
@@ -8538,7 +8540,8 @@ bool CPlayerObj::AcquireLevelDefaultAmmo( int nMissionId, int nLevelId )
 	// Add the mission specific defaults...
 
 	const AMMO *pAmmo = LTNULL;
-	for( int i = 0; i < pMission->nNumDefaultAmmo; ++i )
+	int i;
+	for( i = 0; i < pMission->nNumDefaultAmmo; ++i )
 	{
 		int nAmmoId = pMission->aDefaultAmmo[i];
 

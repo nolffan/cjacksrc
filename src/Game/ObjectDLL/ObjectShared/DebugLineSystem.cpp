@@ -2,7 +2,7 @@
 //
 // MODULE  : DebugLineSystem.cpp
 //
-// PURPOSE : 
+// PURPOSE :
 //
 // CREATED : 3/29/00
 //
@@ -16,6 +16,9 @@
 #include "DebugLine.h"
 #include "MsgIds.h"
 #include "LTObjRef.h"
+#if _MSC_VER >= 1300
+#	include "ObjectTemplateMgr.h"
+#endif // VC7
 
 #pragma warning( disable : 4786 )
 #include <hash_map>
@@ -37,7 +40,7 @@ namespace /* unnamed */
 {
 	const float s_fUpdateDelay = 0.1f;
 
-	// There are 12 bytes of overhead (see DebugLineSystem::Update), 
+	// There are 12 bytes of overhead (see DebugLineSystem::Update),
 	// plus 28 bytes per line.  The -100 is to allow some room just in case!
 	const int   s_MaxLinesPerMessage = (MAX_PACKET_LEN - 12 - 100) / 28;
 
@@ -120,7 +123,11 @@ namespace LineSystem
 			  pLineSystem(0) {}
 	};
 
-	typedef std::hash_map<std::string,SystemEntry> SystemMap;
+#if _MSC_VER >= 1300
+	typedef std::hash_map< std::string, SystemEntry, ObjectTemplateMgrHashCompare > SystemMap;
+#else
+	typedef std::hash_map< std::string, SystemEntry > SystemMap;
+#endif // VC7
 
 	SystemMap g_systems;
 
@@ -153,7 +160,7 @@ DebugLineSystem * DebugLineSystem::Spawn(const char * name, int max_lines /* = 3
 
 	return (DebugLineSystem*)g_pLTServer->CreateObjectProps(hClass, &theStruct, szProp);
 }
-	
+
 
 // ----------------------------------------------------------------------- //
 //
@@ -188,7 +195,7 @@ void DebugLineSystem::AddLine(const DebugLine & new_line)
 
 	// Trim the system if the number of lines is more than
 	// the max_size.
-	if( !lines.empty() && lines.size() >= m_nMaxLines ) 
+	if( !lines.empty() && lines.size() >= m_nMaxLines )
 	{
 		// Adjust the centering.
 		m_vVertexSum -= lines.front().vSource;
@@ -231,7 +238,7 @@ void DebugLineSystem::AddLine(const DebugLine & new_line)
 #endif
 
 	// Reset nextLineToSend.  This must be done even if the iterator
-	// will point to the same spot.  An iterator into a deque or vector may 
+	// will point to the same spot.  An iterator into a deque or vector may
 	// become invalid after an insert.
 	nextLineToSend = lines.begin() + send_offset;
 }
@@ -333,7 +340,7 @@ void DebugLineSystem::InitialUpdate()
 //
 // ----------------------------------------------------------------------- //
 void DebugLineSystem::Clear()
-{ 
+{
 	lines.clear();
 	nextLineToSend = lines.end();
 	m_vVertexSum = LTVector(0,0,0);
@@ -379,7 +386,7 @@ void DebugLineSystem::Update()
 		// Record the maximum number of lines.
 		cMsg.Writeuint32( m_nMaxLines );
 
-		// Tell whether we want to clear old lines or not, 
+		// Tell whether we want to clear old lines or not,
 		cMsg.Writeuint8( m_bClearOldLines );
 
 		// Record each entry.
@@ -396,7 +403,7 @@ void DebugLineSystem::Update()
 		}
 
 #ifdef LINESYSTEM_DEBUG
-		g_pLTServer->CPrint("Sent %d lines. %d lines left to send.", 
+		g_pLTServer->CPrint("Sent %d lines. %d lines left to send.",
 			num_lines_sent, lines.end() - nextLineToSend );
 #endif
 
@@ -405,7 +412,7 @@ void DebugLineSystem::Update()
 		// Send the message!
 		g_pLTServer->SendToClient(cMsg.Read(), LTNULL, MESSAGE_GUARANTEED);
 
-		
+
 		// If we have cleared out our lines and have no more to send,
 		// why should we exist?
 		if( m_bClearOldLines && lines.empty() )
@@ -429,7 +436,7 @@ void DebugLineSystem::Update()
 }
 
 
-void DebugLineSystem::AddBox( const LTVector & vBoxPos, const LTVector & vBoxDims, 
+void DebugLineSystem::AddBox( const LTVector & vBoxPos, const LTVector & vBoxDims,
 							   const DebugLine::Color & vColor /* = Color::White */,
 							   uint8 nAlpha /* = 255 */ )
 {
@@ -537,6 +544,6 @@ namespace LineSystem
 		}
 	}
 
-				
+
 }
 

@@ -61,7 +61,7 @@ namespace
 {
 	bool		g_bCinChangedNumModelShadows = false;
 	int			g_nCinSaveNumModelShadows = 0;
-	const		g_kMaxNumberOfCinShadows = 10;
+	const int	g_kMaxNumberOfCinShadows = 10;
 	uint8		s_nLastCamType = CT_FULLSCREEN;
 	float       s_fDeadTimer    = 0.0f;
 	float       s_fDeathDelay   = 0.0f;
@@ -4865,8 +4865,7 @@ void CPlayerMgr::UpdateSoundFilters(uint8 nSoundFilterId)
 {
 #ifndef USE_EAX20_HARDWARE_FILTERS
 	return;
-#endif // USE_EAX20_HARDWARE_FILTERS
-
+#else
 	if (g_vtUseSoundFilters.GetFloat())
 	{
 		if ( m_nSoundFilterId != nSoundFilterId )
@@ -4931,7 +4930,7 @@ void CPlayerMgr::UpdateSoundFilters(uint8 nSoundFilterId)
 		
 		}
 	}
-
+#endif // USE_EAX20_HARDWARE_FILTERS
 }
 
 
@@ -5091,7 +5090,7 @@ void CPlayerMgr::UpdateDynamicOccluders(HLOCALOBJ* pContainerArray, uint32 nNumC
 
 	// Disable the necessary occluder volumes...
 
-	for (i=0; i < nNumDisabledOccluderFX; i++)
+	for (uint32 i=0; i < nNumDisabledOccluderFX; i++)
 	{
 		if (disabledOccluderFX[i])
 		{
@@ -5101,7 +5100,7 @@ void CPlayerMgr::UpdateDynamicOccluders(HLOCALOBJ* pContainerArray, uint32 nNumC
 
 	// Enable the necessary occluder volumes...
 
-	for (i=0; i < nNumEnabledOccluderFX; i++)
+	for (uint32 i=0; i < nNumEnabledOccluderFX; i++)
 	{
 		if (enabledOccluderFX[i])
 		{

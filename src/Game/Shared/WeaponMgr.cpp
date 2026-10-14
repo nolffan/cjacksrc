@@ -1583,8 +1583,8 @@ void WEAPON::InitMembers( CButeMgr &buteMgr, char *aTagName )
 	GetStringIfExist( buteMgr, aTagName, WMGR_WEAPON_POWERUPFX, &szPowerupFX, WMGR_MAX_NAME_LENGTH );
 	GetStringIfExist( buteMgr, aTagName, WMGR_WEAPON_RESPAWNWAITFX, &szRespawnWaitFX, WMGR_MAX_NAME_LENGTH );
 	
-
-	for( int i = 0; i < WMGR_MAX_RELOAD_SNDS; ++i )
+	int i;
+	for( i = 0; i < WMGR_MAX_RELOAD_SNDS; ++i )
 	{
 		sprintf(s_aAttName, "%s%d", WMGR_WEAPON_RELOADSND, i + 1);
 		GetStringIfExist( buteMgr, aTagName, s_aAttName, &szReloadSounds[i], WMGR_MAX_FILE_PATH );
@@ -1812,7 +1812,7 @@ void WEAPON::InitMembers( CButeMgr &buteMgr, char *aTagName )
 	fFireRecoilDecay    = (LTFLOAT)buteMgr.GetDouble(aTagName, WMGR_WEAPON_FIRERECOILDECAY, fFireRecoilDecay );
 
 	// Build our pv attach fx array (these reference FX from FXEd)...
-	for ( i = 0; i < WMGR_MAX_PVCLIENTFX_ATTACHMENTS; ++i )
+	for (int i = 0; i < WMGR_MAX_PVCLIENTFX_ATTACHMENTS; ++i )
 	{
 		sprintf( s_aAttName, "%s%d", WMGR_WEAPON_PVATTACHCLIENTFXNAME, i );
 		GetStringIfExist( buteMgr, aTagName, s_aAttName, &szPVAttachClientFX[i], WMGR_MAX_NAME_LENGTH );
@@ -2009,7 +2009,7 @@ WEAPONANIS::WEAPONANIS()
 		szIdleAnis[i] = LTNULL;
 	}
 	
-	for( i = 0; i < WMGR_MAX_WEAPONANI_FIRE; i++ )
+	for(int i = 0; i < WMGR_MAX_WEAPONANI_FIRE; i++ )
 	{
 		szFireAnis[i] = LTNULL;
 	}
@@ -2042,7 +2042,7 @@ WEAPONANIS::~WEAPONANIS()
 		debug_deletea( szIdleAnis[i] );
 	}
 
-	for( i = 0; i < WMGR_MAX_WEAPONANI_FIRE; i++ )
+	for(int i = 0; i < WMGR_MAX_WEAPONANI_FIRE; i++ )
 	{
 		debug_deletea( szFireAnis[i] );
 	}
@@ -2077,7 +2077,7 @@ void WEAPONANIS::InitMembers( CButeMgr &buteMgr, char *aTagName )
 	}
 
 	nNumFireAnis = 0;
-	for( i = 0; i < WMGR_MAX_WEAPONANI_FIRE; ++i )
+	for(int i = 0; i < WMGR_MAX_WEAPONANI_FIRE; ++i )
 	{
 		sprintf(s_aAttName, "%s%d", WMGR_WEAPONANI_FIRE, i + 1);
 		GetStringIfExist( buteMgr, aTagName, s_aAttName, &szFireAnis[i], WMGR_MAX_NAME_LENGTH );

@@ -28,6 +28,9 @@ namespace
 		MC_ABORT,
 		MC_QUIT,
 		MC_EXIT,
+#ifdef _TRON_E3_DEMO
+		MC_RESUME,
+#endif
 	};
 
 	void QuitCallBack(LTBOOL bReturn, void *pData)
@@ -178,6 +181,13 @@ uint32 CMenuSystem::OnCommand(uint32 nCommand, uint32 nParam1, uint32 nParam2)
             g_pLTClient->Shutdown();
 			break;
 		}
+#ifdef _TRON_E3_DEMO
+	case MC_RESUME:
+		{
+			g_pInterfaceMgr->ChangeState(GS_PLAYING);
+			break;
+		}
+#endif
 	default:
 		return CBaseMenu::OnCommand(nCommand,nParam1,nParam2);
 	}

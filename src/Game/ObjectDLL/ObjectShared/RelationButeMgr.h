@@ -1,22 +1,22 @@
 //----------------------------------------------------------------------------
-//              
+//
 //	MODULE:		RelationButeMgr.h
-//              
+//
 //	PURPOSE:	CRelationButeMgr declaration
-//              
+//
 //	CREATED:	28.11.2001
 //
 //	(c) 2001 Monolith Productions, Inc.  All Rights Reserved
 //
 //
 //	COMMENTS:	Reads templates for relation system.  This allows systems
-//				which are not AI to use this (previously was attached to 
+//				which are not AI to use this (previously was attached to
 //				AIButeMgr)
-//              
+//
 //	Hacks:		1) The ObjectRelationMgr_Template is constructed from the same
 //					data that the RelationSet is constructed from.  The
 //					ObjectRelationMgr_Template should be constructed in its own
-//					
+//
 //
 //
 //----------------------------------------------------------------------------
@@ -33,6 +33,7 @@
 #include <string>
 #include <map>
 #include <list>
+#include <ostream>
 
 #include "GameButeMgr.h"
 #include "CharacterAlignment.h"
@@ -64,10 +65,10 @@ struct CCollective_Template;
 
 struct RelationUser_Template
 {
-	RelationUser_Template() 
+	RelationUser_Template()
 	{
 		m_nTemplateID = -1;
-		m_szKey[0] = NULL; 
+		m_szKey[0] = NULL;
 	}
 
 	int			m_nTemplateID;	// Template ID for lookups without a string compare.
@@ -78,24 +79,24 @@ struct RelationUser_Template
 
 struct DataUser_Template
 {
-	DataUser_Template() 
+	DataUser_Template()
 	{
 		m_nTemplateID = -1;
-		m_szKey[0] = NULL; 
+		m_szKey[0] = NULL;
 	}
 
 	int			m_nTemplateID;	// Template ID for lookups without a string compare.
-	RelationData m_RelationData;				// Who am I anyway... 
-	char		m_szKey[RELATION_VALUE_LENGTH];	// Name of the Template, used for lookups	
+	RelationData m_RelationData;				// Who am I anyway...
+	char		m_szKey[RELATION_VALUE_LENGTH];	// Name of the Template, used for lookups
 };
 
 struct Collective_Template
 {
-	Collective_Template() 
+	Collective_Template()
 	{
 		m_nTemplateID = -1;
-		m_szKey[0] = NULL; 
-		m_szRelationSet[0] = NULL; 
+		m_szKey[0] = NULL;
+		m_szRelationSet[0] = NULL;
 	}
 
 	int		m_nTemplateID;	// Template ID for lookups without a string compare.
@@ -106,10 +107,10 @@ struct Collective_Template
 
 struct ObjectRelationMgr_Template
 {
-	ObjectRelationMgr_Template() 
+	ObjectRelationMgr_Template()
 	{
 		m_nTemplateID = -1;
-		m_szKey[0] = NULL; 
+		m_szKey[0] = NULL;
 		m_szCollectiveName[0] = NULL;
 		m_szRelationSet[0] = NULL;
 		m_szDataSet[0] = NULL;
@@ -126,13 +127,13 @@ struct ObjectRelationMgr_Template
 
 
 //----------------------------------------------------------------------------
-//              
+//
 //	CLASS:		CRelationTools
-//              
+//
 //	PURPOSE:	Helper class to allow sharing of the Relation line parsing
 //				functionality.  Example: butemgr and message passing both
 //				need the ability to parse strings.
-//              
+//
 //----------------------------------------------------------------------------
 class CRelationTools
 {
@@ -153,7 +154,7 @@ public:
 protected:
 
 private:
-	typedef std::map<int, std::string> _mapTraitToName; 
+	typedef std::map<int, std::string> _mapTraitToName;
 	static _mapTraitToName sm_mapRelationTraitToName;
 
 	typedef std::map<int, std::string> _mapAlignmentToName;
@@ -163,11 +164,11 @@ private:
 };
 
 //----------------------------------------------------------------------------
-//              
+//
 //	CLASS:		CRelationButeMgr
-//              
-//	PURPOSE:	ButeMgr to 
-//              
+//
+//	PURPOSE:	ButeMgr to
+//
 //----------------------------------------------------------------------------
 class CRelationButeMgr : public CGameButeMgr
 {
@@ -193,7 +194,7 @@ public:
 	typedef std::vector<DataUser_Template*> _listRelationDataTemplates;
 	typedef std::vector<Collective_Template*> _listCollectiveTemplates;
 	typedef std::vector<ObjectRelationMgr_Template*> _listObjectRelationMgrTemplates;
-	
+
 	// Data Access
 
 	bool			IsInitialized() const { return m_bInitialized; }
@@ -209,7 +210,7 @@ protected:
 
 private:
 	// Private members
-	// Copy Constructor and Asignment Operator private to prevent 
+	// Copy Constructor and Asignment Operator private to prevent
 	// automatic generation and inappropriate, unintentional use
 	CRelationButeMgr(const CRelationButeMgr& rhs) {}
 	CRelationButeMgr& operator=(const CRelationButeMgr& rhs ) {}
@@ -253,21 +254,21 @@ namespace CommReqs
 	typedef std::list< RelationMomento* > _listMomentos;
 
 //-------------------------------------------------------------------------
-//              
+//
 //	CLASS:		IMomentoUser
-//              
+//
 //	PURPOSE:	Defines an interface for the momento to do the callbacks.
-//              
+//
 //-------------------------------------------------------------------------
 class IMomentoUser
 {
 public:
-	
+
 	// Called when a relation is added.  The User is responsible for doing
 	// the RelationDescription addition.
 	virtual void RemoveRelationCallback(const RelationDescription& RD) = 0;
 
-	// Called when a relation is removed.  The User is responsible for 
+	// Called when a relation is removed.  The User is responsible for
 	// doing the removal of the RelationDescription itself.
 	virtual void AddRelationCallback(const RelationDescription& RD) = 0;
 
@@ -276,12 +277,12 @@ public:
 
 
 //-------------------------------------------------------------------------
-//              
+//
 //	CLASS:		RelationMomento
-//              
+//
 //	PURPOSE:	Helper class to manage the addition and removal of Relation
 //				mementos which time out.
-//              
+//
 //-------------------------------------------------------------------------
 struct DeleteMomentoWithCallback;
 struct Momento_RelationData_Equality;
@@ -289,7 +290,7 @@ class RelationMomento
 {
 	friend DeleteMomentoWithCallback;
 	friend Momento_RelationData_Equality;
-	friend ostream& operator << (ostream &os, const RelationMomento& Momento);
+	friend std::ostream& operator << (std::ostream &os, const RelationMomento& Momento);
 
 public:
 	// Ctors/Dtors/Save/Loadetc
@@ -299,7 +300,7 @@ public:
 	~RelationMomento() {}
 	int Save(ILTMessage_Write *pMsg);
 	int Load(ILTMessage_Read *pMsg);
-	
+
 	void AddMomento( _listMomentos& listAddTo );
 	void ResetExpiration( float flTime ) { m_flExpiration = flTime; }
 	const RelationDescription& GetDescription( void ) const	{ return m_RD; }
@@ -311,13 +312,13 @@ public:
 
 protected:
 	// Modifying methods:
-	
+
 	void DoAddRelationCallback(void);
 	void DoRemoveRelationCallback(void);
 	bool IsExpired(float flCurrentTime) const;
 
 private:
-	// Copy Constructor and Asignment Operator private to prevent 
+	// Copy Constructor and Asignment Operator private to prevent
 	// automatic generation and inappropriate, unintentional use
 	RelationMomento(const RelationMomento& rhs) {}
 	RelationMomento& operator=(const RelationMomento& rhs ) {}
@@ -331,20 +332,20 @@ private:
 	RelationDescription	m_RD;			// Description of the actual Relation
 };
 
-ostream& operator << (ostream &os, const RelationMomento& Momento);
+std::ostream& operator << (std::ostream &os, const RelationMomento& Momento);
 
 //----------------------------------------------------------------------------
-//              
+//
 //	CLASS:		CRelationUser
-//              
+//
 //	PURPOSE:	Per instance class to manage a characters Relation
 //				information.
-//              
+//
 //----------------------------------------------------------------------------
 class CRelationUser
 {
 public:
-	friend ostream& operator << (ostream& os, const CRelationUser& User);
+	friend std::ostream& operator << (std::ostream& os, const CRelationUser& User);
 
 	friend struct SyncObjectRelationMgr;
 	friend RelationMomento;
@@ -359,7 +360,7 @@ public:
 	void ResetRelationTime(CObjectRelationMgr* pORM);
 
 	// Initialization
-	
+
 	void InitRelations(const char* const szKey);
 
 	// Updating
@@ -383,7 +384,7 @@ public:
 
 protected:
 
-	// Copy Constructor and Asignment Operator private to prevent 
+	// Copy Constructor and Asignment Operator private to prevent
 	// automatic generation and inappropriate, unintentional use
 	CRelationUser(const CRelationUser& rhs) {}
 	CRelationUser& operator=(const CRelationUser& rhs ) {}
@@ -395,7 +396,7 @@ private:
 	void RemoveAllRelationMomentos(void);
 
 	// Data:
-	
+
 	//Save
 	RelationSet			m_RelationSet;	// What do I think about others?
 	_listMomentos		m_Momentos;		// List of Dynamic Relationships
@@ -405,21 +406,21 @@ private:
 	IMomentoUser*		m_pMomentoCallbackReceiver;
 };
 
-ostream& operator << (ostream& os, const CRelationUser& User);
+std::ostream& operator << (std::ostream& os, const CRelationUser& User);
 
 
 //----------------------------------------------------------------------------
-//              
+//
 //	CLASS:		CDataUser
-//              
+//
 //	PURPOSE:	Per instance class to manage a characters Relation
 //				information.
-//              
+//
 //----------------------------------------------------------------------------
 class CDataUser
 {
 public:
-	// Ctors/Dtors/etc	
+	// Ctors/Dtors/etc
 	CDataUser(){}
 	~CDataUser() {}
 	CDataUser& operator=( const DataUser_Template& RU_Template );
@@ -436,14 +437,14 @@ protected:
 	// Initialization
 
 private:
-	// Copy Constructor and Asignment Operator private to prevent 
+	// Copy Constructor and Asignment Operator private to prevent
 	// automatic generation and inappropriate, unintentional use
 	CDataUser(const CDataUser& rhs) {}
 	CDataUser& operator=(const CDataUser& rhs ) {}
 
 	// Data:
 	// Save:
-	RelationData		m_RelationData;			// Who am I anyway... 
+	RelationData		m_RelationData;			// Who am I anyway...
 };
 
 

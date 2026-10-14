@@ -48,7 +48,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 1
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /YX /FD /c
-# ADD CPP /nologo /MT /W3 /GX /O2 /I ".\\" /I "..\STLPORT-4.0\STLPORT" /I "..\shared" /I "..\shared\lang\en" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /YX /FD /c
+# ADD CPP /nologo /MT /W3 /GX /O2 /I ".\\" /I "..\shared" /I "..\shared\lang\en" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /YX /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
@@ -84,7 +84,7 @@ SOURCE="$(InputPath)"
 # PROP Ignore_Export_Lib 1
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /YX /FD /c
-# ADD CPP /nologo /MTd /W3 /Gm /GX /Zi /Od /I "..\STLPORT-4.0\STLPORT" /I "..\shared" /I "..\shared\lang\en" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /YX /FD /c
+# ADD CPP /nologo /MTd /W3 /Gm /GX /Zi /Od /I "..\shared" /I "..\shared\lang\en" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /YX /FD /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
@@ -120,8 +120,8 @@ SOURCE="$(InputPath)"
 # PROP Intermediate_Dir "..\..\built\Final\ClientRes\TO2"
 # PROP Ignore_Export_Lib 1
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /MT /W3 /GX /O2 /I "..\STLPORT-4.0\STLPORT" /I "..\shared" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_FINAL" /YX /FD /c
-# ADD CPP /nologo /MT /W3 /GX /O2 /I "..\STLPORT-4.0\STLPORT" /I "..\shared" /I "..\shared\lang\en" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_FINAL" /YX /FD /c
+# ADD BASE CPP /nologo /MT /W3 /GX /O2 /I "..\shared" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_FINAL" /YX /FD /c
+# ADD CPP /nologo /MT /W3 /GX /O2 /I "..\shared" /I "..\shared\lang\en" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_FINAL" /YX /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 # ADD BASE RSC /l 0x409 /i "..\shared" /d "NDEBUG"
@@ -157,8 +157,8 @@ SOURCE="$(InputPath)"
 # PROP Intermediate_Dir "..\..\built\FinalDE\ClientRes\TO2"
 # PROP Ignore_Export_Lib 1
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /MT /W3 /GX /O2 /I "..\STLPORT-4.0\STLPORT" /I "..\shared" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_FINAL" /YX /FD /c
-# ADD CPP /nologo /MT /W3 /GX /O2 /I "..\STLPORT-4.0\STLPORT" /I "..\shared" /I "..\shared\lang\de" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_FINAL" /YX /FD /c
+# ADD BASE CPP /nologo /MT /W3 /GX /O2 /I "..\shared" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_FINAL" /YX /FD /c
+# ADD CPP /nologo /MT /W3 /GX /O2 /I "..\shared" /I "..\shared\lang\de" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_FINAL" /YX /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 # ADD BASE RSC /l 0x409 /i "..\shared" /d "NDEBUG"
@@ -194,8 +194,8 @@ SOURCE="$(InputPath)"
 # PROP Intermediate_Dir "..\..\built\FinalES\ClientRes\TO2"
 # PROP Ignore_Export_Lib 1
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /MT /W3 /GX /O2 /I "..\STLPORT-4.0\STLPORT" /I "..\shared" /I "..\shared\lang\es" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_FINAL" /YX /FD /c
-# ADD CPP /nologo /MT /W3 /GX /O2 /I "..\STLPORT-4.0\STLPORT" /I "..\shared" /I "..\shared\lang\es" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_FINAL" /YX /FD /c
+# ADD BASE CPP /nologo /MT /W3 /GX /O2 /I "..\shared" /I "..\shared\lang\es" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_FINAL" /YX /FD /c
+# ADD CPP /nologo /MT /W3 /GX /O2 /I "..\shared" /I "..\shared\lang\es" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_FINAL" /YX /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 # ADD BASE RSC /l 0x409 /i ".\\" /i "lang\es" /i "..\shared" /i "..\shared\lang\es" /d "NDEBUG"
@@ -231,8 +231,8 @@ SOURCE="$(InputPath)"
 # PROP Intermediate_Dir "..\..\built\FinalIT\ClientRes\TO2"
 # PROP Ignore_Export_Lib 1
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /MT /W3 /GX /O2 /I "..\STLPORT-4.0\STLPORT" /I "..\shared" /I "..\shared\lang\it" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_FINAL" /YX /FD /c
-# ADD CPP /nologo /MT /W3 /GX /O2 /I "..\STLPORT-4.0\STLPORT" /I "..\shared" /I "..\shared\lang\it" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_FINAL" /YX /FD /c
+# ADD BASE CPP /nologo /MT /W3 /GX /O2 /I "..\shared" /I "..\shared\lang\it" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_FINAL" /YX /FD /c
+# ADD CPP /nologo /MT /W3 /GX /O2 /I "..\shared" /I "..\shared\lang\it" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_FINAL" /YX /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 # ADD BASE RSC /l 0x409 /i ".\\" /i "lang\it" /i "..\shared" /i "..\shared\lang\it" /d "NDEBUG"
@@ -268,8 +268,8 @@ SOURCE="$(InputPath)"
 # PROP Intermediate_Dir "..\..\built\FinalFR\ClientRes\TO2"
 # PROP Ignore_Export_Lib 1
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /MT /W3 /GX /O2 /I "..\STLPORT-4.0\STLPORT" /I "..\shared" /I "..\shared\lang\fr" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_FINAL" /YX /FD /c
-# ADD CPP /nologo /MT /W3 /GX /O2 /I "..\STLPORT-4.0\STLPORT" /I "..\shared" /I "..\shared\lang\fr" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_FINAL" /YX /FD /c
+# ADD BASE CPP /nologo /MT /W3 /GX /O2 /I "..\shared" /I "..\shared\lang\fr" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_FINAL" /YX /FD /c
+# ADD CPP /nologo /MT /W3 /GX /O2 /I "..\shared" /I "..\shared\lang\fr" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_FINAL" /YX /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 # ADD BASE RSC /l 0x409 /i ".\\" /i "lang\fr" /i "..\shared" /i "..\shared\lang\fr" /d "NDEBUG"

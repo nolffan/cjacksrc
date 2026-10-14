@@ -26,7 +26,9 @@ enum  EnumAISenseType;
 
 class CAIGoalAbstractStimulated : public CAIGoalAbstract, public ILTObjRefReceiver, public IRelationChangeObserver
 {
-	typedef CAIGoalAbstract super;
+	protected:
+
+		typedef CAIGoalAbstract super;
 
 	public:
 

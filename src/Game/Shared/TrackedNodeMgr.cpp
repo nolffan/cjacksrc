@@ -2,6 +2,8 @@
 #include "TrackedNode.h"
 #include "TrackedNodeMgr.h"
 
+#include <algorithm>
+
 
 //the function we will use for handling the callbacks
 extern void TrackedNodeControlFn(const NodeControlData& Data, void*);
@@ -105,7 +107,7 @@ HTRACKEDNODE CTrackedNodeMgr::CreateTrackingNode( HOBJECT hModel, const char* ps
 	//alright, just add it to our list and success
 	m_cNodes.push_back(pNewNode);
 
-	return (HTRACKEDNODE)pNewNode;	
+	return (HTRACKEDNODE)pNewNode;
 }
 
 // DestroyTrackingNode

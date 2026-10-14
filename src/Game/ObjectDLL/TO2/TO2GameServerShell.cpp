@@ -103,7 +103,9 @@ LTRESULT CTO2GameServerShell::OnServerInitialized()
 		return nResult;
 	}
 
-	IServerDirectory *pServerDir = Factory_Create_IServerDirectory_Titan( false, *g_pLTServer, NULL );
+	// CJACK: Contract J.A.C.K. has no WON server directory: its servers
+	// report to GameSpy (GameSpy.dll's IGameSpyServer), still to be written.
+	IServerDirectory *pServerDir = NULL;
 	if( !pServerDir )
 	{	
 		ASSERT( !"ServerDir is NULL!" );

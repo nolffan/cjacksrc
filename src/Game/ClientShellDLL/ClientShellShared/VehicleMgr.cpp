@@ -3368,7 +3368,7 @@ void CVehicleMgr::CalculateVehicleCameraDisplacment( LTVector& vDisplacement )
 				m_fLureBobParameter += g_pLTClient->GetFrameTime( ) * g_vtBicycleBobRate.GetFloat( );
 				
 				// Keep in range of 0 to 1.0.
-				m_fLureBobParameter = ( float )fmod( m_fLureBobParameter, 1.0 );
+				m_fLureBobParameter = fmod( m_fLureBobParameter, 1.0f );
 
 				// Get the camera so we can add some roll.
 				HOBJECT hCamera = g_pPlayerMgr->GetCamera( );

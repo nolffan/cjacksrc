@@ -2014,7 +2014,8 @@ void CCommandMgr::DevPrint(char *msg, ...)
 
 void CCommandMgr::Save(ILTMessage_Write *pMsg)
 {
-	for (int i=0; i < CMDMGR_MAX_PENDING_COMMANDS; i++)
+	int i;
+	for (i=0; i < CMDMGR_MAX_PENDING_COMMANDS; i++)
 	{
 		m_PendingCmds[i].Save(pMsg);
 	}
@@ -2060,7 +2061,8 @@ void CCommandMgr::Save(ILTMessage_Write *pMsg)
 
 void CCommandMgr::Load(ILTMessage_Read *pMsg)
 {
-	for (int i=0; i < CMDMGR_MAX_PENDING_COMMANDS; i++)
+	int i;
+	for (i=0; i < CMDMGR_MAX_PENDING_COMMANDS; i++)
 	{
 		m_PendingCmds[i].Load(pMsg);
 	}
@@ -2111,7 +2113,7 @@ void CCommandMgr::SaveGlobalVars( ILTMessage_Write *pMsg, LTBOOL bNameOnly )
 
 	// Save the globals...
 
-	for( i = 0; i < m_nNumVars; ++i )
+	for(int i = 0; i < m_nNumVars; ++i )
 	{
 		if( m_aVars[i].m_bGlobal )
 			m_aVars[i].Save( pMsg, bNameOnly );

@@ -73,7 +73,7 @@ LTBOOL CHUDMessageQueue::Init()
 		}
 	}
 
-	for (i = 0; i < m_nMaxHistoryMsgs; i++)
+	for (int i = 0; i < m_nMaxHistoryMsgs; i++)
 	{
 		CHUDMessage *pMsg = debug_new(CHUDMessage);
 		if (pMsg->Create(fmt))

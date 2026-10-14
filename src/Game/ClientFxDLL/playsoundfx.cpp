@@ -242,6 +242,29 @@ bool CPlaySoundFX::Update(float tmCur)
 
 //------------------------------------------------------------------
 //
+//   FUNCTION : SuspendedUpdate()
+//
+//   PURPOSE  : Updates class CPlaySoundFX
+//
+//------------------------------------------------------------------
+bool CPlaySoundFX::SuspendedUpdate( float tmFrameTime )
+{
+	if(!CBaseFX::SuspendedUpdate(tmFrameTime))
+		return false;
+
+	// remove the handle and the sound ( is should be restarted when Update is called again )
+	if (m_hSound)
+	{
+		m_pLTClient->SoundMgr()->KillSound(m_hSound);
+		m_hSound = NULL;
+		m_bFirstUpdate = true;
+	}
+
+	return true;
+}
+
+//------------------------------------------------------------------
+//
 //   FUNCTION : PlaySound()
 //
 //   PURPOSE  : Play the sound

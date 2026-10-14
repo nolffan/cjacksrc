@@ -18,6 +18,7 @@
 #include <vector>
 #include <string>
 
+#undef MAX_PROFILE_LEN
 const int MAX_PROFILE_LEN = 16;
 
 class CScreenProfile : public CBaseScreen

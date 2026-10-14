@@ -2453,7 +2453,8 @@ void KeyFramer::Load(ILTMessage_Read *pMsg, uint32 dwLoadFlags)
 	LOAD_INT(nDestKeyIndex);
 
 	KEYNODE* pCurKey = m_pKeys;
-	for (int i=0; i < m_nNumKeys && pCurKey; i++)
+	int i;
+	for (i=0; i < m_nNumKeys && pCurKey; i++)
 	{
 		if (nCurKeyIndex == i)
 		{
@@ -2508,7 +2509,7 @@ void KeyFramer::Load(ILTMessage_Read *pMsg, uint32 dwLoadFlags)
 			HOBJECT* hObjectArray = debug_newa(HOBJECT, nNumInList);
 
 			HOBJECT hObj = LTNULL;
-			for (int i=0; i < nNumInList; i++)
+			for (i=0; i < nNumInList; i++)
 			{
 				LOAD_HOBJECT(hObj);
 				if (hObj)

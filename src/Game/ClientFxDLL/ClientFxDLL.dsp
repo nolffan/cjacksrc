@@ -39,12 +39,12 @@ RSC=rc.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "..\built\Release\ClientFxDll"
-# PROP Intermediate_Dir "..\built\Release\ClientFxDll"
+# PROP Output_Dir "..\built\Release\ClientFxDLL"
+# PROP Intermediate_Dir "..\built\Release\ClientFxDLL"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIENTFXDLL_EXPORTS" /YX /FD /c
-# ADD CPP /nologo /MT /W3 /GX /O2 /I "..\..\libs\STLPORT-4.0\STLPORT" /I "..\shared" /I "..\..\Engine\sdk\inc" /I "..\..\libs\mfcstub" /I "..\..\libs\stdlith" /I "..\..\libs\butemgr" /I "..\..\libs\cryptmgr" /I "..\..\libs\lith" /I "..\libs\ltguimgr" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "NOPS2" /D "MEMTRACK_CLIENTFX" /Yu"stdafx.h" /FD /Zm1000 /c
+# ADD CPP /nologo /MT /W3 /GX /O2 /I "..\shared" /I "..\..\Engine\sdk\inc" /I "..\..\libs\mfcstub" /I "..\..\libs\stdlith" /I "..\..\libs\butemgr" /I "..\..\libs\cryptmgr" /I "..\..\libs\lith" /I "..\libs\ltguimgr" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "NOPS2" /D "MEMTRACK_CLIENTFX" /Yu"stdafx.h" /FD /Zm1000 /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
@@ -54,11 +54,11 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /machine:I386
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /machine:I386 /out:"..\built\Release\ClientFxDll\ClientFx.fxd"
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /machine:I386 /out:"..\built\Release\ClientFxDLL\ClientFx.fxd"
 # SUBTRACT LINK32 /pdb:none
 # Begin Custom Build
-TargetPath=\proj\to2\source_public\Game\built\Release\ClientFxDll\ClientFx.fxd
-InputPath=\proj\to2\source_public\Game\built\Release\ClientFxDll\ClientFx.fxd
+TargetPath=\proj\to2\source_public\Game\built\Release\ClientFxDLL\ClientFx.fxd
+InputPath=\proj\to2\source_public\Game\built\Release\ClientFxDLL\ClientFx.fxd
 SOURCE="$(InputPath)"
 
 "$(GAME_REZ_DIR)\ClientFx.fxd" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
@@ -77,12 +77,12 @@ SOURCE="$(InputPath)"
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "..\built\debug\ClientFxDll"
-# PROP Intermediate_Dir "..\built\debug\ClientFxDll"
+# PROP Output_Dir "..\built\debug\ClientFxDLL"
+# PROP Intermediate_Dir "..\built\debug\ClientFxDLL"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIENTFXDLL_EXPORTS" /YX /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /GX /Zi /Od /I "..\..\libs\STLPORT-4.0\STLPORT" /I "..\shared" /I "..\..\Engine\sdk\inc" /I "..\..\libs\mfcstub" /I "..\..\libs\stdlith" /I "..\..\libs\butemgr" /I "..\..\libs\cryptmgr" /I "..\..\libs\lith" /I "..\libs\ltguimgr" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "NOPS2" /D "MEMTRACK_CLIENTFX" /FR /Yu"stdafx.h" /FD /Zm1000 /c
+# ADD CPP /nologo /MDd /W3 /GX /Zi /Od /I "..\shared" /I "..\..\Engine\sdk\inc" /I "..\..\libs\mfcstub" /I "..\..\libs\stdlith" /I "..\..\libs\butemgr" /I "..\..\libs\cryptmgr" /I "..\..\libs\lith" /I "..\libs\ltguimgr" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "NOPS2" /D "MEMTRACK_CLIENTFX" /FR /Yu"stdafx.h" /FD /Zm1000 /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
@@ -92,11 +92,11 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"..\built\debug\ClientFxDll\ClientFx.fxd" /pdbtype:sept
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"..\built\debug\ClientFxDLL\ClientFx.fxd" /pdbtype:sept
 # SUBTRACT LINK32 /pdb:none
 # Begin Custom Build
-TargetPath=\proj\to2\source_public\Game\built\debug\ClientFxDll\ClientFx.fxd
-InputPath=\proj\to2\source_public\Game\built\debug\ClientFxDll\ClientFx.fxd
+TargetPath=\proj\to2\source_public\Game\built\debug\ClientFxDLL\ClientFx.fxd
+InputPath=\proj\to2\source_public\Game\built\debug\ClientFxDLL\ClientFx.fxd
 SOURCE="$(InputPath)"
 
 "$(GAME_REZ_DIR)\ClientFx.fxd" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
@@ -116,12 +116,12 @@ SOURCE="$(InputPath)"
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "..\built\Final\ClientFxDll"
-# PROP Intermediate_Dir "..\built\Final\ClientFxDll"
+# PROP Output_Dir "..\built\Final\ClientFxDLL"
+# PROP Intermediate_Dir "..\built\Final\ClientFxDLL"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /MT /W3 /GX /O2 /I "..\..\libs\STLPORT-4.0\STLPORT" /I "..\shared" /I "..\..\Engine\sdk\inc" /I "..\..\libs\mfcstub" /I "..\..\libs\stdlith" /I "..\..\libs\butemgr" /I "..\..\libs\cryptmgr" /I "..\..\libs\lith" /I "..\libs\ltguimgr" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "NOPS2" /D "_FINAL" /Yu"stdafx.h" /FD /Zm1000 /c
-# ADD CPP /nologo /MT /W3 /GX /O2 /I "..\..\libs\STLPORT-4.0\STLPORT" /I "..\shared" /I "..\..\Engine\sdk\inc" /I "..\..\libs\mfcstub" /I "..\..\libs\stdlith" /I "..\..\libs\butemgr" /I "..\..\libs\cryptmgr" /I "..\..\libs\lith" /I "..\libs\ltguimgr" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "NOPS2" /D "_FINAL" /D "MEMTRACK_CLIENTFX" /Yu"stdafx.h" /FD /Zm1000 /c
+# ADD BASE CPP /nologo /MT /W3 /GX /O2 /I "..\shared" /I "..\..\Engine\sdk\inc" /I "..\..\libs\mfcstub" /I "..\..\libs\stdlith" /I "..\..\libs\butemgr" /I "..\..\libs\cryptmgr" /I "..\..\libs\lith" /I "..\libs\ltguimgr" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "NOPS2" /D "_FINAL" /Yu"stdafx.h" /FD /Zm1000 /c
+# ADD CPP /nologo /MT /W3 /GX /O2 /I "..\shared" /I "..\..\Engine\sdk\inc" /I "..\..\libs\mfcstub" /I "..\..\libs\stdlith" /I "..\..\libs\butemgr" /I "..\..\libs\cryptmgr" /I "..\..\libs\lith" /I "..\libs\ltguimgr" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "NOPS2" /D "_FINAL" /D "MEMTRACK_CLIENTFX" /Yu"stdafx.h" /FD /Zm1000 /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
@@ -130,13 +130,13 @@ BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /machine:I386 /out:"..\built\Final\ClientFxDll\ClientFx.fxd"
+# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /machine:I386 /out:"..\built\Final\ClientFxDLL\ClientFx.fxd"
 # SUBTRACT BASE LINK32 /pdb:none
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /machine:I386 /out:"..\built\Final\ClientFxDll\ClientFx.fxd"
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /machine:I386 /out:"..\built\Final\ClientFxDLL\ClientFx.fxd"
 # SUBTRACT LINK32 /pdb:none
 # Begin Custom Build
-TargetPath=\proj\to2\source_public\Game\built\Final\ClientFxDll\ClientFx.fxd
-InputPath=\proj\to2\source_public\Game\built\Final\ClientFxDll\ClientFx.fxd
+TargetPath=\proj\to2\source_public\Game\built\Final\ClientFxDLL\ClientFx.fxd
+InputPath=\proj\to2\source_public\Game\built\Final\ClientFxDLL\ClientFx.fxd
 SOURCE="$(InputPath)"
 
 "$(GAME_REZ_DIR)\ClientFx.fxd" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
@@ -187,6 +187,7 @@ SOURCE=.\cycletimer.cpp
 # Begin Source File
 
 SOURCE=..\Shared\DebugNew.cpp
+# SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # Begin Source File
 

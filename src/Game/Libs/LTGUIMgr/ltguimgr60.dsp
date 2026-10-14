@@ -42,7 +42,7 @@ RSC=rc.exe
 # PROP Intermediate_Dir "..\..\built\Debug\libs\LTGuiMgr"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /GX /Z7 /Od /I "..\..\sdk\inc" /I "..\..\sdk\inc\compat" /I "..\incs" /I "..\..\lithshared\incs" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_LITHTECH2" /D "NO_PRAGMA_LIBS" /D "LT15_COMPAT" /YX /FD /c
-# ADD CPP /nologo /MDd /W3 /GX /ZI /Od /I "..\..\..\libs\STLPORT-4.0\STLPORT" /I "..\..\..\Engine\sdk\inc" /I "..\..\..\Engine\sdk\inc\compat" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_LITHTECH2" /D "LT15_COMPAT" /FR /FD /c
+# ADD CPP /nologo /MDd /W3 /GX /ZI /Od /I "..\..\..\Engine\sdk\inc" /I "..\..\..\Engine\sdk\inc\compat" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_LITHTECH2" /D "LT15_COMPAT" /FR /FD /c
 # SUBTRACT CPP /YX /Yc /Yu
 # ADD BASE RSC /l 0x409
 # ADD RSC /l 0x409
@@ -66,7 +66,7 @@ LIB32=xilink6.exe -lib
 # PROP Intermediate_Dir "..\..\built\Release\libs\LTGuiMgr"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /GX /Zi /O2 /I "..\..\sdk\inc" /I "..\..\sdk\inc\compat" /I "..\incs" /I "..\..\lithshared\incs" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_LITHTECH2" /D "NO_PRAGMA_LIBS" /D "LT15_COMPAT" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GX /Zi /O2 /I "..\..\..\libs\STLPORT-4.0\STLPORT" /I "..\..\..\Engine\sdk\inc" /I "..\..\..\Engine\sdk\inc\compat" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_LITHTECH2" /D "LT15_COMPAT" /YX /FD /Zm1000 /c
+# ADD CPP /nologo /MD /W3 /GX /Zi /O2 /I "..\..\..\Engine\sdk\inc" /I "..\..\..\Engine\sdk\inc\compat" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_LITHTECH2" /D "LT15_COMPAT" /YX /FD /Zm1000 /c
 # ADD BASE RSC /l 0x409
 # ADD RSC /l 0x409
 BSC32=bscmake.exe
@@ -88,8 +88,8 @@ LIB32=xilink6.exe -lib
 # PROP Output_Dir "..\..\built\Final\libs\LTGuiMgr"
 # PROP Intermediate_Dir "..\..\built\Final\libs\LTGuiMgr"
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /MD /W3 /GX /Zi /O2 /I "..\..\..\libs\STLPORT-4.0\STLPORT" /I "..\..\..\Engine\sdk\inc" /I "..\..\..\Engine\sdk\inc\compat" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_LITHTECH2" /D "LT15_COMPAT" /D "_FINAL" /YX /FD /Zm1000 /c
-# ADD CPP /nologo /MD /W3 /GX /Zi /O2 /I "..\..\..\libs\STLPORT-4.0\STLPORT" /I "..\..\..\Engine\sdk\inc" /I "..\..\..\Engine\sdk\inc\compat" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_LITHTECH2" /D "LT15_COMPAT" /D "_FINAL" /YX /FD /Zm1000 /c
+# ADD BASE CPP /nologo /MD /W3 /GX /Zi /O2 /I "..\..\..\Engine\sdk\inc" /I "..\..\..\Engine\sdk\inc\compat" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_LITHTECH2" /D "LT15_COMPAT" /D "_FINAL" /YX /FD /Zm1000 /c
+# ADD CPP /nologo /MD /W3 /GX /GS /Zi /O2 /I "..\..\..\Engine\sdk\inc" /I "..\..\..\Engine\sdk\inc\compat" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_LITHTECH2" /D "LT15_COMPAT" /D "_FINAL" /YX /FD /Zm1000 /c
 # ADD BASE RSC /l 0x409
 # ADD RSC /l 0x409
 BSC32=bscmake.exe

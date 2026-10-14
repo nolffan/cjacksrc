@@ -1,6 +1,6 @@
 // ----------------------------------------------------------------------- //
 //
-// MODULE  : TO2InterfaceMgr.cpp
+// MODULE  : TronInterfaceMgr.cpp
 //
 // PURPOSE : Manage all interface related functionality
 //

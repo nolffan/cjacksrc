@@ -39,12 +39,12 @@ RSC=rc.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "..\..\Built\Release\ClientShellDll\TO2"
-# PROP Intermediate_Dir "..\..\Built\Release\ClientShellDll\TO2"
+# PROP Output_Dir "..\..\built\Release\ClientShellDLL\TO2"
+# PROP Intermediate_Dir "..\..\built\Release\ClientShellDLL\TO2"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GX /O2 /I "..\..\Shared\TO2" /I ".\\" /I "..\..\..\libs\STLPORT-4.0\STLPORT" /I "..\ClientShellShared" /I "..\..\clientres\shared" /I "..\..\clientres\TO2" /I "..\..\shared" /I "..\..\..\Engine\sdk\inc" /I "..\..\..\libs\stdlith" /I "..\..\..\libs\butemgr" /I "..\..\..\libs\cryptmgr" /I "..\..\..\libs\lith" /I "..\..\..\libs\mfcstub" /I "..\..\libs\ltguimgr" /I "..\..\..\libs\regmgr" /I "..\..\libs\wonapi" /I "..\..\libs\serverdir" /D "NDEBUG" /D "_CLIENTBUILD" /D "WIN32" /D "_WINDOWS" /D "_NOLFBUILD" /D "NO_PRAGMA_LIBS" /D "NOPS2" /D "MEMTRACK_CLIENT" /Yu"stdafx.h" /FD /Zm1000 /c
+# ADD CPP /nologo /MD /W3 /GX /O2 /I "..\..\Shared\TO2" /I ".\\" /I "..\ClientShellShared" /I "..\..\clientres\shared" /I "..\..\clientres\TO2" /I "..\..\shared" /I "..\..\..\Engine\sdk\inc" /I "..\..\..\libs\stdlith" /I "..\..\..\libs\butemgr" /I "..\..\..\libs\cryptmgr" /I "..\..\..\libs\lith" /I "..\..\..\libs\mfcstub" /I "..\..\libs\ltguimgr" /I "..\..\..\libs\regmgr" /I "..\..\libs\serverdir" /D "NDEBUG" /D "_CLIENTBUILD" /D "WIN32" /D "_WINDOWS" /D "_NOLFBUILD" /D "NO_PRAGMA_LIBS" /D "NOPS2" /D "MEMTRACK_CLIENT" /Yu"stdafx.h" /FD /Zm1000 /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
@@ -54,11 +54,11 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /machine:I386
-# ADD LINK32 winmm.lib ole32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /machine:I386 /nodefaultlib:"LIBCMTD" /out:"..\..\Built\Release\ClientShellDll\TO2\CShell.dll"
+# ADD LINK32 winmm.lib ole32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /machine:I386 /nodefaultlib:"LIBCMTD" /out:"..\..\built\Release\ClientShellDLL\TO2\CShell.dll"
 # SUBTRACT LINK32 /pdb:none /map
 # Begin Custom Build
-TargetPath=\proj\to2\source\Game\Built\Release\ClientShellDll\TO2\CShell.dll
-InputPath=\proj\to2\source\Game\Built\Release\ClientShellDll\TO2\CShell.dll
+TargetPath=\proj\to2\source\Game\built\Release\ClientShellDLL\TO2\CShell.dll
+InputPath=\proj\to2\source\Game\built\Release\ClientShellDLL\TO2\CShell.dll
 SOURCE="$(InputPath)"
 
 "$(GAME_REZ_DIR)\cshell.dll" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
@@ -77,12 +77,12 @@ SOURCE="$(InputPath)"
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "..\..\Built\Debug\ClientShellDll\TO2"
-# PROP Intermediate_Dir "..\..\Built\Debug\ClientShellDll\TO2"
+# PROP Output_Dir "..\..\built\Debug\ClientShellDLL\TO2"
+# PROP Intermediate_Dir "..\..\built\Debug\ClientShellDLL\TO2"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /YX /FD /c
-# ADD CPP /nologo /MDd /W3 /GX /ZI /Od /I "..\..\Shared\TO2" /I ".\\" /I "..\..\..\libs\STLPORT-4.0\STLPORT" /I "..\ClientShellShared" /I "..\..\clientres\shared" /I "..\..\clientres\TO2" /I "..\..\shared" /I "..\..\..\Engine\sdk\inc" /I "..\..\..\libs\stdlith" /I "..\..\..\libs\butemgr" /I "..\..\..\libs\cryptmgr" /I "..\..\..\libs\lith" /I "..\..\..\libs\mfcstub" /I "..\..\libs\ltguimgr" /I "..\..\..\libs\regmgr" /I "..\..\libs\wonapi" /I "..\..\libs\serverdir" /D "_DEBUG" /D "_CLIENTBUILD" /D "WIN32" /D "_WINDOWS" /D "NOPS2" /D "MEMTRACK_CLIENT" /FR /Yu"stdafx.h" /FD /Zm1000 /c
+# ADD CPP /nologo /MDd /W3 /GX /ZI /Od /I "..\..\Shared\TO2" /I ".\\" /I "..\ClientShellShared" /I "..\..\clientres\shared" /I "..\..\clientres\TO2" /I "..\..\shared" /I "..\..\..\Engine\sdk\inc" /I "..\..\..\libs\stdlith" /I "..\..\..\libs\butemgr" /I "..\..\..\libs\cryptmgr" /I "..\..\..\libs\lith" /I "..\..\..\libs\mfcstub" /I "..\..\libs\ltguimgr" /I "..\..\..\libs\regmgr" /I "..\..\libs\serverdir" /D "_DEBUG" /D "_CLIENTBUILD" /D "WIN32" /D "_WINDOWS" /D "NOPS2" /D "MEMTRACK_CLIENT" /FR /Yu"stdafx.h" /FD /Zm1000 /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
@@ -92,11 +92,11 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 winmm.lib ole32.lib wsock32.lib kernel32.lib user32.lib gdi32.lib advapi32.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"..\..\Built\Debug\ClientShellDll\TO2\CShell.dll" /pdbtype:sept
+# ADD LINK32 winmm.lib ole32.lib wsock32.lib kernel32.lib user32.lib gdi32.lib advapi32.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"..\..\built\Debug\ClientShellDLL\TO2\CShell.dll" /pdbtype:sept
 # SUBTRACT LINK32 /verbose /pdb:none
 # Begin Custom Build
-TargetPath=\proj\to2\source\Game\Built\Debug\ClientShellDll\TO2\CShell.dll
-InputPath=\proj\to2\source\Game\Built\Debug\ClientShellDll\TO2\CShell.dll
+TargetPath=\proj\to2\source\Game\built\Debug\ClientShellDLL\TO2\CShell.dll
+InputPath=\proj\to2\source\Game\built\Debug\ClientShellDLL\TO2\CShell.dll
 SOURCE="$(InputPath)"
 
 "$(GAME_REZ_DIR)\cshell.dll" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
@@ -116,12 +116,12 @@ SOURCE="$(InputPath)"
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "..\..\Built\Final\ClientShellDll\TO2"
-# PROP Intermediate_Dir "..\..\Built\Final\ClientShellDll\TO2"
+# PROP Output_Dir "..\..\built\Final\ClientShellDLL\TO2"
+# PROP Intermediate_Dir "..\..\built\Final\ClientShellDLL\TO2"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /MD /W3 /GX /O2 /I "..\..\Shared\TO2" /I ".\\" /I "..\..\..\libs\STLPORT-4.0\STLPORT" /I "..\ClientShellShared" /I "..\..\clientres\shared" /I "..\..\clientres\TO2" /I "..\..\shared" /I "..\..\..\Engine\sdk\inc" /I "..\..\..\libs\stdlith" /I "..\..\..\libs\butemgr" /I "..\..\..\libs\cryptmgr" /I "..\..\..\libs\lith" /I "..\..\..\libs\mfcstub" /I "..\..\libs\ltguimgr" /I "..\..\..\libs\regmgr" /I "..\..\libs\wonapi" /I "..\..\libs\serverdir" /D "NDEBUG" /D "_CLIENTBUILD" /D "WIN32" /D "_WINDOWS" /D "_NOLFBUILD" /D "NO_PRAGMA_LIBS" /D "NOPS2" /D "_FINAL" /Yu"stdafx.h" /FD /Zm1000 /c
-# ADD CPP /nologo /MD /W3 /GX /O2 /I "..\..\Shared\TO2" /I ".\\" /I "..\..\..\libs\STLPORT-4.0\STLPORT" /I "..\ClientShellShared" /I "..\..\clientres\shared" /I "..\..\clientres\TO2" /I "..\..\shared" /I "..\..\..\Engine\sdk\inc" /I "..\..\..\libs\stdlith" /I "..\..\..\libs\butemgr" /I "..\..\..\libs\cryptmgr" /I "..\..\..\libs\lith" /I "..\..\..\libs\mfcstub" /I "..\..\libs\ltguimgr" /I "..\..\..\libs\regmgr" /I "..\..\libs\wonapi" /I "..\..\libs\serverdir" /D "NDEBUG" /D "_CLIENTBUILD" /D "WIN32" /D "_WINDOWS" /D "_NOLFBUILD" /D "NO_PRAGMA_LIBS" /D "NOPS2" /D "_FINAL" /D "MEMTRACK_CLIENT" /Yu"stdafx.h" /FD /Zm1000 /c
+# ADD BASE CPP /nologo /MD /W3 /GX /O2 /I "..\..\Shared\TO2" /I ".\\" /I "..\ClientShellShared" /I "..\..\clientres\shared" /I "..\..\clientres\TO2" /I "..\..\shared" /I "..\..\..\Engine\sdk\inc" /I "..\..\..\libs\stdlith" /I "..\..\..\libs\butemgr" /I "..\..\..\libs\cryptmgr" /I "..\..\..\libs\lith" /I "..\..\..\libs\mfcstub" /I "..\..\libs\ltguimgr" /I "..\..\..\libs\regmgr" /I "..\..\libs\serverdir" /D "NDEBUG" /D "_CLIENTBUILD" /D "WIN32" /D "_WINDOWS" /D "_NOLFBUILD" /D "NO_PRAGMA_LIBS" /D "NOPS2" /D "_FINAL" /Yu"stdafx.h" /FD /Zm1000 /c
+# ADD CPP /nologo /MD /W3 /GR /GX /O2 /I "..\..\Shared\TO2" /I ".\\" /I "..\ClientShellShared" /I "..\..\clientres\shared" /I "..\..\clientres\TO2" /I "..\..\shared" /I "..\..\..\Engine\sdk\inc" /I "..\..\..\libs\stdlith" /I "..\..\..\libs\butemgr" /I "..\..\..\libs\cryptmgr" /I "..\..\..\libs\lith" /I "..\..\..\libs\mfcstub" /I "..\..\libs\ltguimgr" /I "..\..\..\libs\regmgr" /I "..\..\libs\serverdir" /D "NDEBUG" /D "_CLIENTBUILD" /D "WIN32" /D "_WINDOWS" /D "_NOLFBUILD" /D "NO_PRAGMA_LIBS" /D "NOPS2" /D "_FINAL" /D "MEMTRACK_CLIENT" /Yu"stdafx.h" /FD /Zm1000 /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
@@ -130,13 +130,13 @@ BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD BASE LINK32 ole32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /machine:I386 /nodefaultlib:"LIBCMTD" /out:"..\..\Built\Final\ClientShellDll\TO2\CShell.dll"
+# ADD BASE LINK32 ole32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /machine:I386 /nodefaultlib:"LIBCMTD" /out:"..\..\built\Final\ClientShellDLL\TO2\CShell.dll"
 # SUBTRACT BASE LINK32 /pdb:none /map
-# ADD LINK32 winmm.lib ole32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /machine:I386 /nodefaultlib:"LIBCMTD" /out:"..\..\Built\Final\ClientShellDll\TO2\CShell.dll"
+# ADD LINK32 winmm.lib ole32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /machine:I386 /nodefaultlib:"LIBCMTD" /out:"..\..\built\Final\ClientShellDLL\TO2\CShell.dll"
 # SUBTRACT LINK32 /pdb:none /map
 # Begin Custom Build
-TargetPath=\proj\to2\source\Game\Built\Final\ClientShellDll\TO2\CShell.dll
-InputPath=\proj\to2\source\Game\Built\Final\ClientShellDll\TO2\CShell.dll
+TargetPath=\proj\to2\source\Game\built\Final\ClientShellDLL\TO2\CShell.dll
+InputPath=\proj\to2\source\Game\built\Final\ClientShellDLL\TO2\CShell.dll
 SOURCE="$(InputPath)"
 
 "$(GAME_REZ_DIR)\cshell.dll" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
@@ -793,24 +793,7 @@ SOURCE=..\..\..\libs\built\Debug\Lib_Lith\Lib_Lith.lib
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Built\Debug\libs\LTGuiMgr\ltguimgr.lib
-
-!IF  "$(CFG)" == "ClientShellDLL - Win32 Release"
-
-# PROP Exclude_From_Build 1
-
-!ELSEIF  "$(CFG)" == "ClientShellDLL - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "ClientShellDLL - Win32 Final"
-
-# PROP Exclude_From_Build 1
-
-!ENDIF 
-
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\libs\ServerDir\debug\ServerDir.lib
+SOURCE=..\..\built\Debug\libs\LTGuiMgr\ltguimgr.lib
 
 !IF  "$(CFG)" == "ClientShellDLL - Win32 Release"
 
@@ -848,7 +831,7 @@ SOURCE=..\..\..\libs\built\Debug\RegMgr\regmgr.lib
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=..\..\built\Release\ClientShellDll\ClientShellShared\ClientShellShared.lib
+SOURCE=..\..\built\Release\ClientShellDLL\ClientShellShared\ClientShellShared.lib
 
 !IF  "$(CFG)" == "ClientShellDLL - Win32 Release"
 
@@ -950,24 +933,7 @@ SOURCE=..\..\..\libs\built\Release\Lib_Lith\Lib_Lith.lib
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Built\Release\libs\LTGuiMgr\ltguimgr.lib
-
-!IF  "$(CFG)" == "ClientShellDLL - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "ClientShellDLL - Win32 Debug"
-
-# PROP Exclude_From_Build 1
-
-!ELSEIF  "$(CFG)" == "ClientShellDLL - Win32 Final"
-
-# PROP Exclude_From_Build 1
-
-!ENDIF 
-
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\libs\ServerDir\release\ServerDir.lib
+SOURCE=..\..\built\Release\libs\LTGuiMgr\ltguimgr.lib
 
 !IF  "$(CFG)" == "ClientShellDLL - Win32 Release"
 
@@ -1005,7 +971,7 @@ SOURCE=..\..\..\libs\built\Release\RegMgr\regmgr.lib
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=..\..\built\Final\ClientShellDll\ClientShellShared\ClientShellShared.lib
+SOURCE=..\..\built\Final\ClientShellDLL\ClientShellShared\ClientShellShared.lib
 
 !IF  "$(CFG)" == "ClientShellDLL - Win32 Release"
 
@@ -1090,24 +1056,7 @@ SOURCE=..\..\..\libs\built\Final\Lib_Lith\Lib_Lith.lib
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Built\Final\libs\LTGuiMgr\ltguimgr.lib
-
-!IF  "$(CFG)" == "ClientShellDLL - Win32 Release"
-
-# PROP Exclude_From_Build 1
-
-!ELSEIF  "$(CFG)" == "ClientShellDLL - Win32 Debug"
-
-# PROP Exclude_From_Build 1
-
-!ELSEIF  "$(CFG)" == "ClientShellDLL - Win32 Final"
-
-!ENDIF 
-
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\libs\ServerDir\final\ServerDir.lib
+SOURCE=..\..\built\Final\libs\LTGuiMgr\ltguimgr.lib
 
 !IF  "$(CFG)" == "ClientShellDLL - Win32 Release"
 

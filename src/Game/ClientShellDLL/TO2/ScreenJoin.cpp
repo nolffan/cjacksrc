@@ -21,6 +21,8 @@
 
 #include "GameClientShell.h"
 
+#include <algorithm>
+
 void JoinCallBack(LTBOOL bReturn, void *pData);
 
 namespace
@@ -33,7 +35,7 @@ namespace
 	int kColumnWidth_Mission		= 170;
 	int kColumnWidth_Mod			= 170;
 
-	enum eLocalCommands 
+	enum eLocalCommands
 	{
 		CMD_SORT_NAME = CMD_CUSTOM+1,
 		CMD_SORT_PING,
@@ -73,7 +75,7 @@ namespace
 class CServerSortName
 {
 public:
-	
+
 	bool operator()(const CServerEntry & x, const CServerEntry & y) const
 	{
 		return (stricmp(x.m_sName.c_str(), y.m_sName.c_str()) < 0 );
@@ -82,7 +84,7 @@ public:
 class CServerSortMission
 {
 public:
-	
+
 	bool operator()(const CServerEntry & x, const CServerEntry & y) const
 	{
 		return (stricmp(x.m_sMission.c_str(), y.m_sMission.c_str()) < 0 );
@@ -91,7 +93,7 @@ public:
 class CServerSortPing
 {
 public:
-	
+
 	bool operator()(const CServerEntry & x, const CServerEntry & y) const
 	{
 		return (x.m_nPing < y.m_nPing );
@@ -101,7 +103,7 @@ public:
 class CServerSortPlayers
 {
 public:
-	
+
 	bool operator()(const CServerEntry & x, const CServerEntry & y) const
 	{
 		return (x.m_nNumPlayers < y.m_nNumPlayers );
@@ -111,7 +113,7 @@ public:
 class CServerSortLock
 {
 public:
-	
+
 	bool operator()(const CServerEntry & x, const CServerEntry & y) const
 	{
 		return (x.m_bUsePassword || !y.m_bUsePassword );
@@ -170,7 +172,7 @@ LTBOOL CScreenJoin::Build()
 
 	kColumnWidth_Ping = g_pLayoutMgr->GetScreenCustomInt(SCREEN_ID_JOIN,"PingWidth");
 	kColumnWidth_Mission -= kColumnWidth_Ping;
-	
+
 	kColumnWidth_Players = g_pLayoutMgr->GetScreenCustomInt(SCREEN_ID_JOIN,"PlayerWidth");
 	kColumnWidth_Mission -= kColumnWidth_Players;
 

@@ -2,6 +2,12 @@
 #include "TrackedNode.h"
 #include "TrackedNodeMgr.h"
 
+#define DRAWBASIS 0
+#if DRAWBASIS
+	#ifndef _CLIENTBUILD
+		#include "DebugLineSystem.h"
+	#endif
+#endif
 //-----------------------------------------------------------------------------------------
 // Math utilities
 //-----------------------------------------------------------------------------------------
@@ -353,7 +359,7 @@ static LTVector FindConstrainedVector(const LTVector& vTarget, float fWidth, flo
 
 	//we now have the ellipse Y, lets find the X of the ellipse
 	float fXSignScale = (vTarget.x < 0.0f) ? -1.0f : 1.0f;
-	float fEllipseX = fXSignScale * (float)sqrt((1.0f - Sqr(fEllipseY / fHeight)) * Sqr(fWidth));
+	float fEllipseX = fXSignScale * (float)sqrt( LTMAX( 0.0f, (1.0f - Sqr(fEllipseY / fHeight))) * Sqr(fWidth));
 
 	//we now have the X and Y components of the ellipse, we can now build up our constrained
 	//vector with those
@@ -482,6 +488,12 @@ static LTVector FindLookDirectionLS(const CTrackedNode* pNode, const LTMatrix& m
 
 	//we now need to reorient the target position so that it will be aligned with the constraint cone
 	pNode->m_mInvTargetTransform.Apply3x3(vTargetPos);
+
+	if( vTargetPos.MagSqr( ) < 0.01f )
+ 	{
+		ASSERT( !"FindLookDirectionLS: Invalid target position." );
+		return pNode->m_vActualForward;
+ 	}
 
 	//now we need to find the vector from the current position to the point we want
 	//to look at
@@ -669,6 +681,13 @@ void TrackedNodeControlFn(const NodeControlData& Data, void* pUser)
 	//update the time of this node 
 	float fFrameTime = UpdateNodeTime(pNode);
 
+#if DRAWBASIS
+	#ifndef _CLIENTBUILD)
+			DebugLineSystem& system = LineSystem::GetSystem(pNode, "ShowBasisVectors");
+			system.Clear();
+	#endif
+#endif
+
 	//try to early out on updating
 	if(!pNode->m_bEnabled)
 		return;
@@ -712,10 +731,21 @@ void TrackedNodeControlFn(const NodeControlData& Data, void* pUser)
 			LTMatrix mModelOr;
 			ModelRot.ConvertToMatrix(mModelOr);
 
-			MatMul3Tx3(&mBindingSpace, &mModelOr, &mOriginalBinding);
+			MatMul3x3(&mBindingSpace, &mModelOr, &mOriginalBinding);
 			mBindingSpace.SetTranslation(vTranslation);
 		}
 
+#if DRAWBASIS
+	#ifndef _CLIENTBUILD)
+			DebugLineSystem& system = LineSystem::GetSystem(pNode, "ShowBasisVectors");
+			LTVector vInitialPos, vUp, vForward, vRight;
+			mBindingSpace.GetBasisVectors(&vUp, &vForward, &vRight);
+			mBindingSpace.GetTranslation(vInitialPos);
+			system << LineSystem::Arrow( vInitialPos, vInitialPos+vUp.Unit()*48,		Color::Green );
+			system << LineSystem::Arrow( vInitialPos, vInitialPos+vForward.Unit()*48,	Color::Blue );
+			system << LineSystem::Arrow( vInitialPos, vInitialPos+vRight.Unit()*48,		Color::DkRed );
+	#endif
+#endif
 		//we need to actually do full tracking of this node
 		UpdateNormalNode(pNode, mBindingSpace, fFrameTime, Data.m_pNodeTransform);
 	}

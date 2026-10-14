@@ -284,7 +284,7 @@ void CInterfaceResMgr::DrawMessage(const char *pString, uint8 nFontSize)
 	m_MsgDlg.Render();
 
 	g_pLTClient->EndOptimized2D();
-	g_pLTClient->End3D();
+	g_pLTClient->End3D(END3D_CANDRAWCONSOLE);
 	g_pLTClient->FlipScreen(0);
 
 	m_MsgDlg.Show(LTFALSE);
@@ -507,7 +507,7 @@ CUIFont* CInterfaceResMgr::CreateFont(char const* pszFontFile, char const* pszFo
 	//this will set the width of the space character for proportional fonts
 	if (pFont)
 	{
-		pFont->SetDefCharWidth((ptSize/4));
+		//[dlj] This is now handled programmatically in cuiformattedpolystring_impl		pFont->SetDefCharWidth((ptSize/4));
 		pFont->SetDefColor(argbBlack);
 	}
 

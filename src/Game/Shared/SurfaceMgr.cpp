@@ -166,18 +166,18 @@ LTBOOL CSurfaceMgr::Init(const char* szAttributeFile)
 SURFACE* CSurfaceMgr::GetDefaultSurface()
 {
 	SURFACE** pCur  = LTNULL;
-	
+
 	pCur = m_SurfaceList.GetItem( TLIT_FIRST );
 	while( pCur )
 	{
-		if( *pCur && (*pCur)->eType == ST_DEFAULT )
+		if( *pCur && (*pCur)->eType == ST_UNKNOWN )
 		{
 			return *pCur;
 		}
-		
+
 		pCur = m_SurfaceList.GetItem( TLIT_NEXT );
 	}
-	
+
 	// NO Default!!! return NULL
     return LTNULL;
 }
@@ -246,7 +246,7 @@ SURFACE* CSurfaceMgr::GetSurface(const char* pName)
 	char szError[64] = { 0 };
 	sprintf( szError, "Could not find Surface Type: %s", pName );
 	GBM_DisplayError( szError );
-	
+
 	return GetDefaultSurface();
 }
 
@@ -395,7 +395,7 @@ SURFACE::SURFACE()
 
 	szExitFXName[0]			= '\0';
 	szUWExitFXName[0]		= '\0';
-	
+
 	szSnowmobileImpactFXName[0]	= '\0';
 }
 
@@ -440,7 +440,7 @@ LTBOOL SURFACE::Init(CButeMgr & buteMgr, char* aTagName)
 	buteMgr.GetString(aTagName, SRFMGR_SURFACE_NAME, szName, ARRAY_LEN(szName));
 
 	buteMgr.GetString(aTagName, SRFMGR_SURFACE_BULLETHOLESPR, szBulletHoleSpr, ARRAY_LEN(szBulletHoleSpr));
-	
+
 	buteMgr.GetString(aTagName, SRFMGR_SURFACE_RTFOOTPRINTSPR, szRtFootPrintSpr, ARRAY_LEN(szRtFootPrintSpr));
 
 	buteMgr.GetString(aTagName, SRFMGR_SURFACE_LTFOOTPRINTSPR, szLtFootPrintSpr, ARRAY_LEN(szLtFootPrintSpr));
@@ -497,7 +497,7 @@ LTBOOL SURFACE::Init(CButeMgr & buteMgr, char* aTagName)
 
 	}
 
-	
+
 	// Read the name of our FxED created fx for Surface Impacts...
 
 	buteMgr.GetString( aTagName, SRFMGR_SURFACE_IMPACTFXNAME, szImpactFXName, ARRAY_LEN( szImpactFXName ) );

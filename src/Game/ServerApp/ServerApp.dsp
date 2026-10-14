@@ -43,12 +43,12 @@ RSC=rc.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 6
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "..\Built\Release\ServerApp"
-# PROP Intermediate_Dir "..\Built\Release\ServerApp"
+# PROP Output_Dir "..\built\Release\ServerApp"
+# PROP Intermediate_Dir "..\built\Release\ServerApp"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_AFXDLL" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /MD /W3 /GR /GX /O2 /I ".\\" /I "..\..\libs\STLPORT-4.0\STLPORT" /I "..\..\Engine\sdk\inc" /I "..\shared" /I "..\shared\lang\en" /I "..\..\libs\regmgr" /I "..\..\libs\regmgr32" /I "..\..\libs\lith" /I "..\..\libs\butemgr" /I "..\..\libs\cryptmgr" /I "..\..\libs\stdlith" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /Yu"stdafx.h" /FD /c
+# ADD CPP /nologo /MD /W3 /GR /GX /O2 /I ".\\" /I "..\..\Engine\sdk\inc" /I "..\shared" /I "..\shared\lang\en" /I "..\..\libs\regmgr" /I "..\..\libs\regmgr32" /I "..\..\libs\lith" /I "..\..\libs\butemgr" /I "..\..\libs\cryptmgr" /I "..\..\libs\stdlith" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /Yu"stdafx.h" /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 # ADD BASE RSC /l 0x409 /d "NDEBUG" /d "_AFXDLL"
@@ -58,13 +58,13 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /machine:I386
-# ADD LINK32 server.lib regmgr32.lib regmgr.lib lib_lith.lib ButeMgrMfcDll.lib cryptmgrMfcDll.lib lib_stdlith.lib winmm.lib /nologo /subsystem:windows /machine:I386 /out:"..\Built\Release\ServerApp\NOLF2Srv.exe" /libpath:"..\..\engine\sdk\lib" /libpath:"..\..\libs\built\release\regmgr" /libpath:"..\..\libs\built\release\regmgr32" /libpath:"..\..\libs\built\release\lib_lith" /libpath:"..\..\libs\built\release\ButeMgrMFCDll" /libpath:"..\..\libs\built\release\cryptmgrmfcdll" /libpath:"..\..\libs\built\release\lib_stdlith"
+# ADD LINK32 server.lib regmgr32.lib regmgr.lib lib_lith.lib ButeMgrMfcDll.lib cryptmgrMfcDll.lib lib_stdlith.lib winmm.lib /nologo /subsystem:windows /machine:I386 /out:"..\built\Release\ServerApp\ContractJackServer.exe" /libpath:"..\..\engine\sdk\lib" /libpath:"..\..\libs\built\release\regmgr" /libpath:"..\..\libs\built\release\regmgr32" /libpath:"..\..\libs\built\release\lib_lith" /libpath:"..\..\libs\built\release\ButeMgrMFCDll" /libpath:"..\..\libs\built\release\cryptmgrmfcdll" /libpath:"..\..\libs\built\release\lib_stdlith"
 # Begin Custom Build
-TargetPath=\proj\to2\source_public\Game\Built\Release\ServerApp\NOLF2Srv.exe
-InputPath=\proj\to2\source_public\Game\Built\Release\ServerApp\NOLF2Srv.exe
+TargetPath=\proj\to2\source_public\Game\built\Release\ServerApp\ContractJackServer.exe
+InputPath=\proj\to2\source_public\Game\built\Release\ServerApp\ContractJackServer.exe
 SOURCE="$(InputPath)"
 
-"$(GAME_MAIN_DIR)\NOLF2Srv.exe" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+"$(GAME_MAIN_DIR)\ContractJackServer.exe" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
 	Rem IncrediBuild_OutputFile $(TargetPath) 
 	echo copy $(TargetPath) $(GAME_MAIN_DIR) 
 	copy $(TargetPath) $(GAME_MAIN_DIR) 
@@ -80,12 +80,12 @@ SOURCE="$(InputPath)"
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 6
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "..\Built\Debug\ServerApp"
-# PROP Intermediate_Dir "..\Built\Debug\ServerApp"
+# PROP Output_Dir "..\built\Debug\ServerApp"
+# PROP Intermediate_Dir "..\built\Debug\ServerApp"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MDd /W3 /Gm /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_AFXDLL" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /MDd /W3 /Gm /GR /GX /ZI /Od /I ".\\" /I "..\..\libs\STLPORT-4.0\STLPORT" /I "..\..\Engine\sdk\inc" /I "..\shared" /I "..\shared\lang\en" /I "..\..\libs\regmgr" /I "..\..\libs\regmgr32" /I "..\..\libs\lith" /I "..\..\libs\butemgr" /I "..\..\libs\cryptmgr" /I "..\..\libs\stdlith" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /FR /Yu"stdafx.h" /FD /c
+# ADD CPP /nologo /MDd /W3 /Gm /GR /GX /ZI /Od /I ".\\" /I "..\..\Engine\sdk\inc" /I "..\shared" /I "..\shared\lang\en" /I "..\..\libs\regmgr" /I "..\..\libs\regmgr32" /I "..\..\libs\lith" /I "..\..\libs\butemgr" /I "..\..\libs\cryptmgr" /I "..\..\libs\stdlith" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /FR /Yu"stdafx.h" /FD /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
 # ADD BASE RSC /l 0x409 /d "_DEBUG" /d "_AFXDLL"
@@ -95,14 +95,14 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 server.lib regmgr32.lib regmgr.lib lib_lith.lib ButeMgrMfcDll.lib cryptmgrmfcdll.lib lib_stdlith.lib winmm.lib /nologo /subsystem:windows /debug /machine:I386 /out:"..\Built\Debug\ServerApp\NOLF2Srv.exe" /pdbtype:sept /libpath:"..\..\engine\sdk\lib" /libpath:"..\..\libs\built\debug\regmgr" /libpath:"..\..\libs\built\debug\regmgr32" /libpath:"..\..\libs\built\debug\lib_lith" /libpath:"..\..\libs\built\debug\ButeMgrMFCDll" /libpath:"..\..\libs\built\debug\cryptmgrmfcdll" /libpath:"..\..\libs\built\debug\lib_stdlith"
+# ADD LINK32 server.lib regmgr32.lib regmgr.lib lib_lith.lib ButeMgrMfcDll.lib cryptmgrmfcdll.lib lib_stdlith.lib winmm.lib /nologo /subsystem:windows /debug /machine:I386 /out:"..\built\Debug\ServerApp\ContractJackServer.exe" /pdbtype:sept /libpath:"..\..\engine\sdk\lib" /libpath:"..\..\libs\built\debug\regmgr" /libpath:"..\..\libs\built\debug\regmgr32" /libpath:"..\..\libs\built\debug\lib_lith" /libpath:"..\..\libs\built\debug\ButeMgrMFCDll" /libpath:"..\..\libs\built\debug\cryptmgrmfcdll" /libpath:"..\..\libs\built\debug\lib_stdlith"
 # SUBTRACT LINK32 /verbose
 # Begin Custom Build
-TargetPath=\proj\to2\source_public\Game\Built\Debug\ServerApp\NOLF2Srv.exe
-InputPath=\proj\to2\source_public\Game\Built\Debug\ServerApp\NOLF2Srv.exe
+TargetPath=\proj\to2\source_public\Game\built\Debug\ServerApp\ContractJackServer.exe
+InputPath=\proj\to2\source_public\Game\built\Debug\ServerApp\ContractJackServer.exe
 SOURCE="$(InputPath)"
 
-"$(GAME_MAIN_DIR)\NOLF2Srv.exe" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+"$(GAME_MAIN_DIR)\ContractJackServer.exe" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
 	Rem IncrediBuild_OutputFile $(TargetPath) 
 	echo copy $(TargetPath) $(GAME_MAIN_DIR) 
 	copy $(TargetPath) $(GAME_MAIN_DIR) 
@@ -119,12 +119,12 @@ SOURCE="$(InputPath)"
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 6
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "..\Built\Final\ServerApp"
-# PROP Intermediate_Dir "..\Built\Final\ServerApp"
+# PROP Output_Dir "..\built\Final\ServerApp"
+# PROP Intermediate_Dir "..\built\Final\ServerApp"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /MD /W3 /GR /GX /O2 /I ".\\" /I "..\..\libs\STLPORT-4.0\STLPORT" /I "..\..\Engine\sdk\inc" /I "..\shared" /I "..\..\libs\regmgr" /I "..\..\libs\regmgr32" /I "..\..\libs\lith" /I "..\..\libs\butemgr" /I "..\..\libs\cryptmgr" /I "..\..\libs\stdlith" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /MD /W3 /GR /GX /O2 /I ".\\" /I "..\..\libs\STLPORT-4.0\STLPORT" /I "..\..\Engine\sdk\inc" /I "..\shared" /I "..\shared\lang\en" /I "..\..\libs\regmgr" /I "..\..\libs\regmgr32" /I "..\..\libs\lith" /I "..\..\libs\butemgr" /I "..\..\libs\cryptmgr" /I "..\..\libs\stdlith" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /D "_FINAL" /Yu"stdafx.h" /FD /c
+# ADD BASE CPP /nologo /MD /W3 /GR /GX /O2 /I ".\\" /I "..\..\Engine\sdk\inc" /I "..\shared" /I "..\..\libs\regmgr" /I "..\..\libs\regmgr32" /I "..\..\libs\lith" /I "..\..\libs\butemgr" /I "..\..\libs\cryptmgr" /I "..\..\libs\stdlith" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /Yu"stdafx.h" /FD /c
+# ADD CPP /nologo /MD /W3 /GR /GX /O2 /I ".\\" /I "..\..\Engine\sdk\inc" /I "..\shared" /I "..\shared\lang\en" /I "..\..\libs\regmgr" /I "..\..\libs\regmgr32" /I "..\..\libs\lith" /I "..\..\libs\butemgr" /I "..\..\libs\cryptmgr" /I "..\..\libs\stdlith" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /D "_FINAL" /Yu"stdafx.h" /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 # ADD BASE RSC /l 0x409 /i "..\shared" /d "NDEBUG" /d "_REG" /d "_AFXDLL"
@@ -133,15 +133,15 @@ BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD BASE LINK32 server.lib regmgr32.lib regmgr.lib lib_lith.lib ButeMgrMfcDll.lib cryptmgrMfcDll.lib lib_stdlith.lib winmm.lib /nologo /subsystem:windows /machine:I386 /out:"..\Built\Release\ServerApp\NOLF2Srv.exe" /libpath:"..\..\engine\built\Release\Runtime\DLL_Server" /libpath:"..\..\libs\built\release\regmgr" /libpath:"..\..\libs\built\release\regmgr32" /libpath:"..\..\libs\built\release\lib_lith" /libpath:"..\..\libs\built\release\ButeMgrMFCDll" /libpath:"..\..\libs\built\release\cryptmgrmfcdll" /libpath:"..\..\libs\built\release\lib_stdlith"
-# ADD LINK32 server.lib regmgr32.lib regmgr.lib lib_lith.lib ButeMgrMfcDll.lib cryptmgrMfcDll.lib lib_stdlith.lib winmm.lib /nologo /subsystem:windows /machine:I386 /out:"..\Built\Final\ServerApp\NOLF2Srv.exe" /libpath:"..\..\engine\sdk\lib" /libpath:"..\..\libs\built\Final\regmgr" /libpath:"..\..\libs\built\Final\regmgr32" /libpath:"..\..\libs\built\Final\lib_lith" /libpath:"..\..\libs\built\Final\ButeMgrMFCDll" /libpath:"..\..\libs\built\Final\cryptmgrmfcdll" /libpath:"..\..\libs\built\Final\lib_stdlith"
+# ADD BASE LINK32 server.lib regmgr32.lib regmgr.lib lib_lith.lib ButeMgrMfcDll.lib cryptmgrMfcDll.lib lib_stdlith.lib winmm.lib /nologo /subsystem:windows /machine:I386 /out:"..\built\Release\ServerApp\ContractJackServer.exe" /libpath:"..\..\engine\built\Release\Runtime\DLL_Server" /libpath:"..\..\libs\built\release\regmgr" /libpath:"..\..\libs\built\release\regmgr32" /libpath:"..\..\libs\built\release\lib_lith" /libpath:"..\..\libs\built\release\ButeMgrMFCDll" /libpath:"..\..\libs\built\release\cryptmgrmfcdll" /libpath:"..\..\libs\built\release\lib_stdlith"
+# ADD LINK32 server.lib regmgr32.lib regmgr.lib lib_lith.lib ButeMgrMfcDll.lib cryptmgrMfcDll.lib lib_stdlith.lib winmm.lib /nologo /subsystem:windows /machine:I386 /out:"..\built\Final\ServerApp\ContractJackServer.exe" /libpath:"..\..\engine\sdk\lib" /libpath:"..\..\libs\built\Final\regmgr" /libpath:"..\..\libs\built\Final\regmgr32" /libpath:"..\..\libs\built\Final\lib_lith" /libpath:"..\..\libs\built\Final\ButeMgrMFCDll" /libpath:"..\..\libs\built\Final\cryptmgrmfcdll" /libpath:"..\..\libs\built\Final\lib_stdlith"
 # SUBTRACT LINK32 /pdb:none
 # Begin Custom Build
-TargetPath=\proj\to2\source_public\Game\Built\Final\ServerApp\NOLF2Srv.exe
-InputPath=\proj\to2\source_public\Game\Built\Final\ServerApp\NOLF2Srv.exe
+TargetPath=\proj\to2\source_public\Game\built\Final\ServerApp\ContractJackServer.exe
+InputPath=\proj\to2\source_public\Game\built\Final\ServerApp\ContractJackServer.exe
 SOURCE="$(InputPath)"
 
-"$(GAME_MAIN_DIR)\NOLF2Srv.exe" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+"$(GAME_MAIN_DIR)\ContractJackServer.exe" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
 	Rem IncrediBuild_OutputFile $(TargetPath) 
 	echo copy $(TargetPath) $(GAME_MAIN_DIR) 
 	copy $(TargetPath) $(GAME_MAIN_DIR) 
@@ -158,12 +158,12 @@ SOURCE="$(InputPath)"
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 6
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "..\Built\FinalDE\ServerApp"
-# PROP Intermediate_Dir "..\Built\FinalDE\ServerApp"
+# PROP Output_Dir "..\built\FinalDE\ServerApp"
+# PROP Intermediate_Dir "..\built\FinalDE\ServerApp"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /MD /W3 /GR /GX /O2 /I ".\\" /I "..\..\libs\STLPORT-4.0\STLPORT" /I "..\..\Engine\sdk\inc" /I "..\shared" /I "..\shared\lang\eng" /I "..\..\libs\regmgr" /I "..\..\libs\regmgr32" /I "..\..\libs\lith" /I "..\..\libs\butemgr" /I "..\..\libs\cryptmgr" /I "..\..\libs\stdlith" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /D "_FINAL" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /MD /W3 /GR /GX /O2 /I ".\\" /I "..\..\libs\STLPORT-4.0\STLPORT" /I "..\..\Engine\sdk\inc" /I "..\shared" /I "..\shared\lang\de" /I "..\..\libs\regmgr" /I "..\..\libs\regmgr32" /I "..\..\libs\lith" /I "..\..\libs\butemgr" /I "..\..\libs\cryptmgr" /I "..\..\libs\stdlith" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /D "_FINAL" /Yu"stdafx.h" /FD /c
+# ADD BASE CPP /nologo /MD /W3 /GR /GX /O2 /I ".\\" /I "..\..\Engine\sdk\inc" /I "..\shared" /I "..\shared\lang\eng" /I "..\..\libs\regmgr" /I "..\..\libs\regmgr32" /I "..\..\libs\lith" /I "..\..\libs\butemgr" /I "..\..\libs\cryptmgr" /I "..\..\libs\stdlith" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /D "_FINAL" /Yu"stdafx.h" /FD /c
+# ADD CPP /nologo /MD /W3 /GR /GX /O2 /I ".\\" /I "..\..\Engine\sdk\inc" /I "..\shared" /I "..\shared\lang\de" /I "..\..\libs\regmgr" /I "..\..\libs\regmgr32" /I "..\..\libs\lith" /I "..\..\libs\butemgr" /I "..\..\libs\cryptmgr" /I "..\..\libs\stdlith" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /D "_FINAL" /Yu"stdafx.h" /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 # ADD BASE RSC /l 0x409 /i "..\shared" /d "NDEBUG" /d "_REG" /d "_AFXDLL"
@@ -172,15 +172,15 @@ BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD BASE LINK32 server.lib regmgr32.lib regmgr.lib lib_lith.lib ButeMgrMfcDll.lib cryptmgrMfcDll.lib lib_stdlith.lib winmm.lib /nologo /subsystem:windows /machine:I386 /out:"..\Built\Release\ServerApp\NOLF2Srv.exe" /libpath:"..\..\engine\built\Release\Runtime\DLL_Server" /libpath:"..\..\libs\built\release\regmgr" /libpath:"..\..\libs\built\release\regmgr32" /libpath:"..\..\libs\built\release\lib_lith" /libpath:"..\..\libs\built\release\ButeMgrMFCDll" /libpath:"..\..\libs\built\release\cryptmgrmfcdll" /libpath:"..\..\libs\built\release\lib_stdlith"
-# ADD LINK32 server.lib regmgr32.lib regmgr.lib lib_lith.lib ButeMgrMfcDll.lib cryptmgrMfcDll.lib lib_stdlith.lib winmm.lib /nologo /subsystem:windows /pdb:"..\Built\Final\ServerApp/NOLF2Srv.pdb" /machine:I386 /out:"..\Built\FinalDE\ServerApp\NOLF2Srv.exe" /libpath:"..\..\engine\built\Final\Runtime\DLL_Server" /libpath:"..\..\libs\built\Final\regmgr" /libpath:"..\..\libs\built\Final\regmgr32" /libpath:"..\..\libs\built\Final\lib_lith" /libpath:"..\..\libs\built\Final\ButeMgrMFCDll" /libpath:"..\..\libs\built\Final\cryptmgrmfcdll" /libpath:"..\..\libs\built\Final\lib_stdlith"
+# ADD BASE LINK32 server.lib regmgr32.lib regmgr.lib lib_lith.lib ButeMgrMfcDll.lib cryptmgrMfcDll.lib lib_stdlith.lib winmm.lib /nologo /subsystem:windows /machine:I386 /out:"..\built\Release\ServerApp\ContractJackServer.exe" /libpath:"..\..\engine\built\Release\Runtime\DLL_Server" /libpath:"..\..\libs\built\release\regmgr" /libpath:"..\..\libs\built\release\regmgr32" /libpath:"..\..\libs\built\release\lib_lith" /libpath:"..\..\libs\built\release\ButeMgrMFCDll" /libpath:"..\..\libs\built\release\cryptmgrmfcdll" /libpath:"..\..\libs\built\release\lib_stdlith"
+# ADD LINK32 server.lib regmgr32.lib regmgr.lib lib_lith.lib ButeMgrMfcDll.lib cryptmgrMfcDll.lib lib_stdlith.lib winmm.lib /nologo /subsystem:windows /pdb:"..\built\Final\ServerApp/ContractJackServer.pdb" /machine:I386 /out:"..\built\FinalDE\ServerApp\ContractJackServer.exe" /libpath:"..\..\engine\built\Final\Runtime\DLL_Server" /libpath:"..\..\libs\built\Final\regmgr" /libpath:"..\..\libs\built\Final\regmgr32" /libpath:"..\..\libs\built\Final\lib_lith" /libpath:"..\..\libs\built\Final\ButeMgrMFCDll" /libpath:"..\..\libs\built\Final\cryptmgrmfcdll" /libpath:"..\..\libs\built\Final\lib_stdlith"
 # SUBTRACT LINK32 /pdb:none
 # Begin Custom Build
-TargetPath=\proj\to2\source_public\Game\Built\FinalDE\ServerApp\NOLF2Srv.exe
-InputPath=\proj\to2\source_public\Game\Built\FinalDE\ServerApp\NOLF2Srv.exe
+TargetPath=\proj\to2\source_public\Game\built\FinalDE\ServerApp\ContractJackServer.exe
+InputPath=\proj\to2\source_public\Game\built\FinalDE\ServerApp\ContractJackServer.exe
 SOURCE="$(InputPath)"
 
-"$(GAME_MAIN_DIR)\NOLF2Srv.exe" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+"$(GAME_MAIN_DIR)\ContractJackServer.exe" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
 	Rem IncrediBuild_OutputFile $(TargetPath) 
 	echo copy $(TargetPath) $(GAME_MAIN_DIR) 
 	copy $(TargetPath) $(GAME_MAIN_DIR) 
@@ -197,12 +197,12 @@ SOURCE="$(InputPath)"
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 6
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "..\Built\FinalES\ServerApp"
-# PROP Intermediate_Dir "..\Built\FinalES\ServerApp"
+# PROP Output_Dir "..\built\FinalES\ServerApp"
+# PROP Intermediate_Dir "..\built\FinalES\ServerApp"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /MD /W3 /GR /GX /O2 /I ".\\" /I "..\..\libs\STLPORT-4.0\STLPORT" /I "..\..\Engine\sdk\inc" /I "..\shared" /I "..\shared\lang\eng" /I "..\..\libs\regmgr" /I "..\..\libs\regmgr32" /I "..\..\libs\lith" /I "..\..\libs\butemgr" /I "..\..\libs\cryptmgr" /I "..\..\libs\stdlith" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /D "_FINAL" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /MD /W3 /GR /GX /O2 /I ".\\" /I "..\..\libs\STLPORT-4.0\STLPORT" /I "..\..\Engine\sdk\inc" /I "..\shared" /I "..\shared\lang\es" /I "..\..\libs\regmgr" /I "..\..\libs\regmgr32" /I "..\..\libs\lith" /I "..\..\libs\butemgr" /I "..\..\libs\cryptmgr" /I "..\..\libs\stdlith" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /D "_FINAL" /Yu"stdafx.h" /FD /c
+# ADD BASE CPP /nologo /MD /W3 /GR /GX /O2 /I ".\\" /I "..\..\Engine\sdk\inc" /I "..\shared" /I "..\shared\lang\eng" /I "..\..\libs\regmgr" /I "..\..\libs\regmgr32" /I "..\..\libs\lith" /I "..\..\libs\butemgr" /I "..\..\libs\cryptmgr" /I "..\..\libs\stdlith" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /D "_FINAL" /Yu"stdafx.h" /FD /c
+# ADD CPP /nologo /MD /W3 /GR /GX /O2 /I ".\\" /I "..\..\Engine\sdk\inc" /I "..\shared" /I "..\shared\lang\es" /I "..\..\libs\regmgr" /I "..\..\libs\regmgr32" /I "..\..\libs\lith" /I "..\..\libs\butemgr" /I "..\..\libs\cryptmgr" /I "..\..\libs\stdlith" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /D "_FINAL" /Yu"stdafx.h" /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 # ADD BASE RSC /l 0x409 /i "..\shared" /d "NDEBUG" /d "_REG" /d "_AFXDLL"
@@ -211,15 +211,15 @@ BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD BASE LINK32 server.lib regmgr32.lib regmgr.lib lib_lith.lib ButeMgrMfcDll.lib cryptmgrMfcDll.lib lib_stdlith.lib winmm.lib /nologo /subsystem:windows /machine:I386 /out:"..\Built\Release\ServerApp\NOLF2Srv.exe" /libpath:"..\..\engine\built\Release\Runtime\DLL_Server" /libpath:"..\..\libs\built\release\regmgr" /libpath:"..\..\libs\built\release\regmgr32" /libpath:"..\..\libs\built\release\lib_lith" /libpath:"..\..\libs\built\release\ButeMgrMFCDll" /libpath:"..\..\libs\built\release\cryptmgrmfcdll" /libpath:"..\..\libs\built\release\lib_stdlith"
-# ADD LINK32 server.lib regmgr32.lib regmgr.lib lib_lith.lib ButeMgrMfcDll.lib cryptmgrMfcDll.lib lib_stdlith.lib winmm.lib /nologo /subsystem:windows /pdb:"..\Built\Final\ServerApp/NOLF2Srv.pdb" /machine:I386 /out:"..\Built\FinalES\ServerApp\NOLF2Srv.exe" /libpath:"..\..\engine\built\Final\Runtime\DLL_Server" /libpath:"..\..\libs\built\Final\regmgr" /libpath:"..\..\libs\built\Final\regmgr32" /libpath:"..\..\libs\built\Final\lib_lith" /libpath:"..\..\libs\built\Final\ButeMgrMFCDll" /libpath:"..\..\libs\built\Final\cryptmgrmfcdll" /libpath:"..\..\libs\built\Final\lib_stdlith"
+# ADD BASE LINK32 server.lib regmgr32.lib regmgr.lib lib_lith.lib ButeMgrMfcDll.lib cryptmgrMfcDll.lib lib_stdlith.lib winmm.lib /nologo /subsystem:windows /machine:I386 /out:"..\built\Release\ServerApp\ContractJackServer.exe" /libpath:"..\..\engine\built\Release\Runtime\DLL_Server" /libpath:"..\..\libs\built\release\regmgr" /libpath:"..\..\libs\built\release\regmgr32" /libpath:"..\..\libs\built\release\lib_lith" /libpath:"..\..\libs\built\release\ButeMgrMFCDll" /libpath:"..\..\libs\built\release\cryptmgrmfcdll" /libpath:"..\..\libs\built\release\lib_stdlith"
+# ADD LINK32 server.lib regmgr32.lib regmgr.lib lib_lith.lib ButeMgrMfcDll.lib cryptmgrMfcDll.lib lib_stdlith.lib winmm.lib /nologo /subsystem:windows /pdb:"..\built\Final\ServerApp/ContractJackServer.pdb" /machine:I386 /out:"..\built\FinalES\ServerApp\ContractJackServer.exe" /libpath:"..\..\engine\built\Final\Runtime\DLL_Server" /libpath:"..\..\libs\built\Final\regmgr" /libpath:"..\..\libs\built\Final\regmgr32" /libpath:"..\..\libs\built\Final\lib_lith" /libpath:"..\..\libs\built\Final\ButeMgrMFCDll" /libpath:"..\..\libs\built\Final\cryptmgrmfcdll" /libpath:"..\..\libs\built\Final\lib_stdlith"
 # SUBTRACT LINK32 /pdb:none
 # Begin Custom Build
-TargetPath=\proj\to2\source_public\Game\Built\FinalES\ServerApp\NOLF2Srv.exe
-InputPath=\proj\to2\source_public\Game\Built\FinalES\ServerApp\NOLF2Srv.exe
+TargetPath=\proj\to2\source_public\Game\built\FinalES\ServerApp\ContractJackServer.exe
+InputPath=\proj\to2\source_public\Game\built\FinalES\ServerApp\ContractJackServer.exe
 SOURCE="$(InputPath)"
 
-"$(GAME_MAIN_DIR)\NOLF2Srv.exe" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+"$(GAME_MAIN_DIR)\ContractJackServer.exe" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
 	Rem IncrediBuild_OutputFile $(TargetPath) 
 	echo copy $(TargetPath) $(GAME_MAIN_DIR) 
 	copy $(TargetPath) $(GAME_MAIN_DIR) 
@@ -236,12 +236,12 @@ SOURCE="$(InputPath)"
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 6
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "..\Built\FinalIT\ServerApp"
-# PROP Intermediate_Dir "..\Built\FinalIT\ServerApp"
+# PROP Output_Dir "..\built\FinalIT\ServerApp"
+# PROP Intermediate_Dir "..\built\FinalIT\ServerApp"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /MD /W3 /GR /GX /O2 /I ".\\" /I "..\..\libs\STLPORT-4.0\STLPORT" /I "..\..\Engine\sdk\inc" /I "..\shared" /I "..\shared\lang\eng" /I "..\..\libs\regmgr" /I "..\..\libs\regmgr32" /I "..\..\libs\lith" /I "..\..\libs\butemgr" /I "..\..\libs\cryptmgr" /I "..\..\libs\stdlith" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /D "_FINAL" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /MD /W3 /GR /GX /O2 /I ".\\" /I "..\..\libs\STLPORT-4.0\STLPORT" /I "..\..\Engine\sdk\inc" /I "..\shared" /I "..\shared\lang\it" /I "..\..\libs\regmgr" /I "..\..\libs\regmgr32" /I "..\..\libs\lith" /I "..\..\libs\butemgr" /I "..\..\libs\cryptmgr" /I "..\..\libs\stdlith" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /D "_FINAL" /Yu"stdafx.h" /FD /c
+# ADD BASE CPP /nologo /MD /W3 /GR /GX /O2 /I ".\\" /I "..\..\Engine\sdk\inc" /I "..\shared" /I "..\shared\lang\eng" /I "..\..\libs\regmgr" /I "..\..\libs\regmgr32" /I "..\..\libs\lith" /I "..\..\libs\butemgr" /I "..\..\libs\cryptmgr" /I "..\..\libs\stdlith" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /D "_FINAL" /Yu"stdafx.h" /FD /c
+# ADD CPP /nologo /MD /W3 /GR /GX /O2 /I ".\\" /I "..\..\Engine\sdk\inc" /I "..\shared" /I "..\shared\lang\it" /I "..\..\libs\regmgr" /I "..\..\libs\regmgr32" /I "..\..\libs\lith" /I "..\..\libs\butemgr" /I "..\..\libs\cryptmgr" /I "..\..\libs\stdlith" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /D "_FINAL" /Yu"stdafx.h" /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 # ADD BASE RSC /l 0x409 /i "..\shared" /d "NDEBUG" /d "_REG" /d "_AFXDLL"
@@ -250,15 +250,15 @@ BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD BASE LINK32 server.lib regmgr32.lib regmgr.lib lib_lith.lib ButeMgrMfcDll.lib cryptmgrMfcDll.lib lib_stdlith.lib winmm.lib /nologo /subsystem:windows /machine:I386 /out:"..\Built\Release\ServerApp\NOLF2Srv.exe" /libpath:"..\..\engine\built\Release\Runtime\DLL_Server" /libpath:"..\..\libs\built\release\regmgr" /libpath:"..\..\libs\built\release\regmgr32" /libpath:"..\..\libs\built\release\lib_lith" /libpath:"..\..\libs\built\release\ButeMgrMFCDll" /libpath:"..\..\libs\built\release\cryptmgrmfcdll" /libpath:"..\..\libs\built\release\lib_stdlith"
-# ADD LINK32 server.lib regmgr32.lib regmgr.lib lib_lith.lib ButeMgrMfcDll.lib cryptmgrMfcDll.lib lib_stdlith.lib winmm.lib /nologo /subsystem:windows /pdb:"..\Built\Final\ServerApp/NOLF2Srv.pdb" /machine:I386 /out:"..\Built\FinalIT\ServerApp\NOLF2Srv.exe" /libpath:"..\..\engine\built\Final\Runtime\DLL_Server" /libpath:"..\..\libs\built\Final\regmgr" /libpath:"..\..\libs\built\Final\regmgr32" /libpath:"..\..\libs\built\Final\lib_lith" /libpath:"..\..\libs\built\Final\ButeMgrMFCDll" /libpath:"..\..\libs\built\Final\cryptmgrmfcdll" /libpath:"..\..\libs\built\Final\lib_stdlith"
+# ADD BASE LINK32 server.lib regmgr32.lib regmgr.lib lib_lith.lib ButeMgrMfcDll.lib cryptmgrMfcDll.lib lib_stdlith.lib winmm.lib /nologo /subsystem:windows /machine:I386 /out:"..\built\Release\ServerApp\ContractJackServer.exe" /libpath:"..\..\engine\built\Release\Runtime\DLL_Server" /libpath:"..\..\libs\built\release\regmgr" /libpath:"..\..\libs\built\release\regmgr32" /libpath:"..\..\libs\built\release\lib_lith" /libpath:"..\..\libs\built\release\ButeMgrMFCDll" /libpath:"..\..\libs\built\release\cryptmgrmfcdll" /libpath:"..\..\libs\built\release\lib_stdlith"
+# ADD LINK32 server.lib regmgr32.lib regmgr.lib lib_lith.lib ButeMgrMfcDll.lib cryptmgrMfcDll.lib lib_stdlith.lib winmm.lib /nologo /subsystem:windows /pdb:"..\built\Final\ServerApp/ContractJackServer.pdb" /machine:I386 /out:"..\built\FinalIT\ServerApp\ContractJackServer.exe" /libpath:"..\..\engine\built\Final\Runtime\DLL_Server" /libpath:"..\..\libs\built\Final\regmgr" /libpath:"..\..\libs\built\Final\regmgr32" /libpath:"..\..\libs\built\Final\lib_lith" /libpath:"..\..\libs\built\Final\ButeMgrMFCDll" /libpath:"..\..\libs\built\Final\cryptmgrmfcdll" /libpath:"..\..\libs\built\Final\lib_stdlith"
 # SUBTRACT LINK32 /pdb:none
 # Begin Custom Build
-TargetPath=\proj\to2\source_public\Game\Built\FinalIT\ServerApp\NOLF2Srv.exe
-InputPath=\proj\to2\source_public\Game\Built\FinalIT\ServerApp\NOLF2Srv.exe
+TargetPath=\proj\to2\source_public\Game\built\FinalIT\ServerApp\ContractJackServer.exe
+InputPath=\proj\to2\source_public\Game\built\FinalIT\ServerApp\ContractJackServer.exe
 SOURCE="$(InputPath)"
 
-"$(GAME_MAIN_DIR)\NOLF2Srv.exe" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+"$(GAME_MAIN_DIR)\ContractJackServer.exe" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
 	Rem IncrediBuild_OutputFile $(TargetPath) 
 	echo copy $(TargetPath) $(GAME_MAIN_DIR) 
 	copy $(TargetPath) $(GAME_MAIN_DIR) 
@@ -275,12 +275,12 @@ SOURCE="$(InputPath)"
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 6
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "..\Built\FinalFR\ServerApp"
-# PROP Intermediate_Dir "..\Built\FinalFR\ServerApp"
+# PROP Output_Dir "..\built\FinalFR\ServerApp"
+# PROP Intermediate_Dir "..\built\FinalFR\ServerApp"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /MD /W3 /GR /GX /O2 /I ".\\" /I "..\..\libs\STLPORT-4.0\STLPORT" /I "..\..\Engine\sdk\inc" /I "..\shared" /I "..\shared\lang\eng" /I "..\..\libs\regmgr" /I "..\..\libs\regmgr32" /I "..\..\libs\lith" /I "..\..\libs\butemgr" /I "..\..\libs\cryptmgr" /I "..\..\libs\stdlith" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /D "_FINAL" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /MD /W3 /GR /GX /O2 /I ".\\" /I "..\..\libs\STLPORT-4.0\STLPORT" /I "..\..\Engine\sdk\inc" /I "..\shared" /I "..\shared\lang\fr" /I "..\..\libs\regmgr" /I "..\..\libs\regmgr32" /I "..\..\libs\lith" /I "..\..\libs\butemgr" /I "..\..\libs\cryptmgr" /I "..\..\libs\stdlith" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /D "_FINAL" /Yu"stdafx.h" /FD /c
+# ADD BASE CPP /nologo /MD /W3 /GR /GX /O2 /I ".\\" /I "..\..\Engine\sdk\inc" /I "..\shared" /I "..\shared\lang\eng" /I "..\..\libs\regmgr" /I "..\..\libs\regmgr32" /I "..\..\libs\lith" /I "..\..\libs\butemgr" /I "..\..\libs\cryptmgr" /I "..\..\libs\stdlith" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /D "_FINAL" /Yu"stdafx.h" /FD /c
+# ADD CPP /nologo /MD /W3 /GR /GX /O2 /I ".\\" /I "..\..\Engine\sdk\inc" /I "..\shared" /I "..\shared\lang\fr" /I "..\..\libs\regmgr" /I "..\..\libs\regmgr32" /I "..\..\libs\lith" /I "..\..\libs\butemgr" /I "..\..\libs\cryptmgr" /I "..\..\libs\stdlith" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /D "_FINAL" /Yu"stdafx.h" /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 # ADD BASE RSC /l 0x409 /i "..\shared" /d "NDEBUG" /d "_REG" /d "_AFXDLL"
@@ -289,15 +289,15 @@ BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD BASE LINK32 server.lib regmgr32.lib regmgr.lib lib_lith.lib ButeMgrMfcDll.lib cryptmgrMfcDll.lib lib_stdlith.lib winmm.lib /nologo /subsystem:windows /machine:I386 /out:"..\Built\Release\ServerApp\NOLF2Srv.exe" /libpath:"..\..\engine\built\Release\Runtime\DLL_Server" /libpath:"..\..\libs\built\release\regmgr" /libpath:"..\..\libs\built\release\regmgr32" /libpath:"..\..\libs\built\release\lib_lith" /libpath:"..\..\libs\built\release\ButeMgrMFCDll" /libpath:"..\..\libs\built\release\cryptmgrmfcdll" /libpath:"..\..\libs\built\release\lib_stdlith"
-# ADD LINK32 server.lib regmgr32.lib regmgr.lib lib_lith.lib ButeMgrMfcDll.lib cryptmgrMfcDll.lib lib_stdlith.lib winmm.lib /nologo /subsystem:windows /pdb:"..\Built\Final\ServerApp/NOLF2Srv.pdb" /machine:I386 /out:"..\Built\FinalFR\ServerApp\NOLF2Srv.exe" /libpath:"..\..\engine\built\Final\Runtime\DLL_Server" /libpath:"..\..\libs\built\Final\regmgr" /libpath:"..\..\libs\built\Final\regmgr32" /libpath:"..\..\libs\built\Final\lib_lith" /libpath:"..\..\libs\built\Final\ButeMgrMFCDll" /libpath:"..\..\libs\built\Final\cryptmgrmfcdll" /libpath:"..\..\libs\built\Final\lib_stdlith"
+# ADD BASE LINK32 server.lib regmgr32.lib regmgr.lib lib_lith.lib ButeMgrMfcDll.lib cryptmgrMfcDll.lib lib_stdlith.lib winmm.lib /nologo /subsystem:windows /machine:I386 /out:"..\built\Release\ServerApp\ContractJackServer.exe" /libpath:"..\..\engine\built\Release\Runtime\DLL_Server" /libpath:"..\..\libs\built\release\regmgr" /libpath:"..\..\libs\built\release\regmgr32" /libpath:"..\..\libs\built\release\lib_lith" /libpath:"..\..\libs\built\release\ButeMgrMFCDll" /libpath:"..\..\libs\built\release\cryptmgrmfcdll" /libpath:"..\..\libs\built\release\lib_stdlith"
+# ADD LINK32 server.lib regmgr32.lib regmgr.lib lib_lith.lib ButeMgrMfcDll.lib cryptmgrMfcDll.lib lib_stdlith.lib winmm.lib /nologo /subsystem:windows /pdb:"..\built\Final\ServerApp/ContractJackServer.pdb" /machine:I386 /out:"..\built\FinalFR\ServerApp\ContractJackServer.exe" /libpath:"..\..\engine\built\Final\Runtime\DLL_Server" /libpath:"..\..\libs\built\Final\regmgr" /libpath:"..\..\libs\built\Final\regmgr32" /libpath:"..\..\libs\built\Final\lib_lith" /libpath:"..\..\libs\built\Final\ButeMgrMFCDll" /libpath:"..\..\libs\built\Final\cryptmgrmfcdll" /libpath:"..\..\libs\built\Final\lib_stdlith"
 # SUBTRACT LINK32 /pdb:none
 # Begin Custom Build
-TargetPath=\proj\to2\source_public\Game\Built\FinalFR\ServerApp\NOLF2Srv.exe
-InputPath=\proj\to2\source_public\Game\Built\FinalFR\ServerApp\NOLF2Srv.exe
+TargetPath=\proj\to2\source_public\Game\built\FinalFR\ServerApp\ContractJackServer.exe
+InputPath=\proj\to2\source_public\Game\built\FinalFR\ServerApp\ContractJackServer.exe
 SOURCE="$(InputPath)"
 
-"$(GAME_MAIN_DIR)\NOLF2Srv.exe" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+"$(GAME_MAIN_DIR)\ContractJackServer.exe" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
 	Rem IncrediBuild_OutputFile $(TargetPath) 
 	echo copy $(TargetPath) $(GAME_MAIN_DIR) 
 	copy $(TargetPath) $(GAME_MAIN_DIR) 

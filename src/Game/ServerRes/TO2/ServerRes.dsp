@@ -39,8 +39,8 @@ RSC=rc.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "..\..\Built\Release\ServerRes\TO2"
-# PROP Intermediate_Dir "..\..\Built\Release\ServerRes\TO2"
+# PROP Output_Dir "..\..\built\Release\ServerRes\TO2"
+# PROP Intermediate_Dir "..\..\built\Release\ServerRes\TO2"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /YX /FD /c
@@ -54,10 +54,10 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /machine:I386
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /machine:I386 /out:"..\..\Built\Release\ServerRes\TO2\SRes.dll"
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /machine:I386 /out:"..\..\built\Release\ServerRes\TO2\SRes.dll"
 # Begin Custom Build
-TargetPath=\proj\to2\source\Game\Built\Release\ServerRes\TO2\SRes.dll
-InputPath=\proj\to2\source\Game\Built\Release\ServerRes\TO2\SRes.dll
+TargetPath=\proj\to2\source\Game\built\Release\ServerRes\TO2\SRes.dll
+InputPath=\proj\to2\source\Game\built\Release\ServerRes\TO2\SRes.dll
 SOURCE="$(InputPath)"
 
 "$(GAME_REZ_DIR)\sres.dll" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
@@ -76,8 +76,8 @@ SOURCE="$(InputPath)"
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "..\..\Built\Debug\ServerRes\TO2"
-# PROP Intermediate_Dir "..\..\Built\Debug\ServerRes\TO2"
+# PROP Output_Dir "..\..\built\Debug\ServerRes\TO2"
+# PROP Intermediate_Dir "..\..\built\Debug\ServerRes\TO2"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /YX /FD /c
@@ -91,10 +91,10 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"..\..\Built\Debug\ServerRes\TO2\SRes.dll" /pdbtype:sept
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"..\..\built\Debug\ServerRes\TO2\SRes.dll" /pdbtype:sept
 # Begin Custom Build
-TargetPath=\proj\to2\source\Game\Built\Debug\ServerRes\TO2\SRes.dll
-InputPath=\proj\to2\source\Game\Built\Debug\ServerRes\TO2\SRes.dll
+TargetPath=\proj\to2\source\Game\built\Debug\ServerRes\TO2\SRes.dll
+InputPath=\proj\to2\source\Game\built\Debug\ServerRes\TO2\SRes.dll
 SOURCE="$(InputPath)"
 
 "$(GAME_REZ_DIR)\sres.dll" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
@@ -114,8 +114,8 @@ SOURCE="$(InputPath)"
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "..\..\Built\Final\ServerRes\TO2"
-# PROP Intermediate_Dir "..\..\Built\Final\ServerRes\TO2"
+# PROP Output_Dir "..\..\built\Final\ServerRes\TO2"
+# PROP Intermediate_Dir "..\..\built\Final\ServerRes\TO2"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_FINAL" /YX /FD /c
@@ -128,11 +128,11 @@ BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /machine:I386 /out:"..\..\Built\Final\ServerRes\TO2\SRes.dll"
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /machine:I386 /out:"..\..\Built\Final\ServerRes\TO2\SRes.dll"
+# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /machine:I386 /out:"..\..\built\Final\ServerRes\TO2\SRes.dll"
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /machine:I386 /out:"..\..\built\Final\ServerRes\TO2\SRes.dll"
 # Begin Custom Build
-TargetPath=\proj\to2\source\Game\Built\Final\ServerRes\TO2\SRes.dll
-InputPath=\proj\to2\source\Game\Built\Final\ServerRes\TO2\SRes.dll
+TargetPath=\proj\to2\source\Game\built\Final\ServerRes\TO2\SRes.dll
+InputPath=\proj\to2\source\Game\built\Final\ServerRes\TO2\SRes.dll
 SOURCE="$(InputPath)"
 
 "$(GAME_REZ_DIR)\sres.dll" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"

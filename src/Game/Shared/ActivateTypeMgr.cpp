@@ -621,24 +621,27 @@ void CActivateTypeHandler::OnLinkBroken( LTObjRefNotifier *pRef, HOBJECT hObj )
 	{
 		if( pRef == &(*iter) )
 		{
-			// Remove it 
-			m_lstInheritedObjs.erase( iter );
 
 			// If we can and should reset the ActivateType message on the object then do so...
 
-			if( !m_pBase || !m_pBase->m_hObject || (m_nId == (uint8)ATMGR_INVALID_ID) || !(*iter) )
-				return;
+			if ( !( !m_pBase || !m_pBase->m_hObject || (m_nId == (uint8)ATMGR_INVALID_ID) || !(*iter) ) )
+			{
 
-			CAutoMessage cMsg;
-			cMsg.Writeuint8( SFX_ACTIVATEOBJECT_ID );
-			cMsg.Writeuint8( ATMGR_INVALID_ID );
-			cMsg.Writebool( true );
-			cMsg.Writeuint8( ACTIVATETYPE::eOff );
-			g_pLTServer->SetObjectSFXMessage( (*iter), cMsg.Read() );
+				CAutoMessage cMsg;
+				cMsg.Writeuint8( SFX_ACTIVATEOBJECT_ID );
+				cMsg.Writeuint8( ATMGR_INVALID_ID );
+				cMsg.Writebool( true );
+				cMsg.Writeuint8( ACTIVATETYPE::eOff );
+				g_pLTServer->SetObjectSFXMessage( (*iter), cMsg.Read() );
+			}
+
+			// Remove it 
+			m_lstInheritedObjs.erase( iter );
 
 			break;
 		}
 	}
+
 }
 
 // ----------------------------------------------------------------------- //

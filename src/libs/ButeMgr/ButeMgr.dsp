@@ -45,7 +45,7 @@ RSC=rc.exe
 # PROP Intermediate_Dir "..\built\release\ButeMgr"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GX /O2 /I "..\STLPORT-4.0\STLPORT" /I "..\stdlith" /I "..\mfcstub" /I "..\cryptmgr" /I "..\lith" /D "NDEBUG" /D "_NOMFC" /D "WIN32" /D "_WINDOWS" /YX /FD /c
+# ADD CPP /nologo /MD /W3 /GX /O2 /I "..\stdlith" /I "..\mfcstub" /I "..\cryptmgr" /I "..\lith" /D "NDEBUG" /D "_NOMFC" /D "WIN32" /D "_WINDOWS" /YX /FD /c
 # ADD BASE RSC /l 0x409
 # ADD RSC /l 0x409
 BSC32=bscmake.exe
@@ -69,7 +69,7 @@ LIB32=link.exe -lib
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /Yu"StdAfx.h" /FD /c
 # SUBTRACT BASE CPP /Fr
-# ADD CPP /nologo /MDd /W3 /GX /ZI /Od /I "..\STLPORT-4.0\STLPORT" /I "..\stdlith" /I "..\mfcstub" /I "..\cryptmgr" /I "..\lith" /D "_DEBUG" /D "_NOMFC" /D "WIN32" /D "_WINDOWS" /Yu"StdAfx.h" /FD /c
+# ADD CPP /nologo /MDd /W3 /GX /ZI /Od /I "..\stdlith" /I "..\mfcstub" /I "..\cryptmgr" /I "..\lith" /D "_DEBUG" /D "_NOMFC" /D "WIN32" /D "_WINDOWS" /Yu"StdAfx.h" /FD /c
 # SUBTRACT CPP /Fr
 # ADD BASE RSC /l 0x409
 # ADD RSC /l 0x409
@@ -93,7 +93,7 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "..\built\Release\ButeMgrMFCDll\"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W3 /GX /O2 /I "..\incs" /I "..\\" /D "NDEBUG" /D "_NOMFC" /D "WIN32" /D "_WINDOWS" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GX /O2 /I "..\STLPORT-4.0\STLPORT" /I "..\stdlith" /I "..\mfcstub" /I "..\cryptmgr" /I "..\lith" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_AFXDLL" /YX /FD /c
+# ADD CPP /nologo /MD /W3 /GX /O2 /I "..\stdlith" /I "..\mfcstub" /I "..\cryptmgr" /I "..\lith" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_AFXDLL" /YX /FD /c
 # ADD BASE RSC /l 0x409
 # ADD RSC /l 0x409 /d "_AFXDLL"
 BSC32=bscmake.exe
@@ -117,7 +117,7 @@ LIB32=link.exe -lib
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MDd /W3 /GX /ZI /Od /I "..\incs" /I "..\\" /D "_DEBUG" /D "_NOMFC" /D "WIN32" /D "_WINDOWS" /Yu"StdAfx.h" /FD /c
 # SUBTRACT BASE CPP /Fr
-# ADD CPP /nologo /MDd /W3 /GX /ZI /Od /I "..\STLPORT-4.0\STLPORT" /I "..\stdlith" /I "..\mfcstub" /I "..\cryptmgr" /I "..\lith" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_AFXDLL" /Yu"StdAfx.h" /FD /c
+# ADD CPP /nologo /MDd /W3 /GX /ZI /Od /I "..\stdlith" /I "..\mfcstub" /I "..\cryptmgr" /I "..\lith" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_AFXDLL" /Yu"StdAfx.h" /FD /c
 # SUBTRACT CPP /Fr
 # ADD BASE RSC /l 0x409
 # ADD RSC /l 0x409 /d "_AFXDLL"
@@ -140,8 +140,8 @@ LIB32=link.exe -lib
 # PROP Output_Dir "..\built\Final\ButeMgr"
 # PROP Intermediate_Dir "..\built\Final\ButeMgr"
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /MD /W3 /GX /O2 /I "..\STLPORT-4.0\STLPORT" /I "..\stdlith" /I "..\mfcstub" /I "..\cryptmgr" /I "..\lith" /D "NDEBUG" /D "_NOMFC" /D "WIN32" /D "_WINDOWS" /D "_FINAL" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GX /O2 /I "..\STLPORT-4.0\STLPORT" /I "..\stdlith" /I "..\mfcstub" /I "..\cryptmgr" /I "..\lith" /D "NDEBUG" /D "_NOMFC" /D "WIN32" /D "_WINDOWS" /D "_FINAL" /YX /FD /c
+# ADD BASE CPP /nologo /MD /W3 /GX /O2 /I "..\stdlith" /I "..\mfcstub" /I "..\cryptmgr" /I "..\lith" /D "NDEBUG" /D "_NOMFC" /D "WIN32" /D "_WINDOWS" /D "_FINAL" /YX /FD /c
+# ADD CPP /nologo /MD /W3 /GX /O2 /I "..\stdlith" /I "..\mfcstub" /I "..\cryptmgr" /I "..\lith" /D "NDEBUG" /D "_NOMFC" /D "WIN32" /D "_WINDOWS" /D "_FINAL" /YX /FD /c
 # ADD BASE RSC /l 0x409
 # ADD RSC /l 0x409
 BSC32=bscmake.exe
@@ -163,8 +163,8 @@ LIB32=link.exe -lib
 # PROP Output_Dir "..\built\Final\ButeMgrMfcDll"
 # PROP Intermediate_Dir "..\built\Final\ButeMgrMfcDll"
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /MD /W3 /GX /O2 /I "..\STLPORT-4.0\STLPORT" /I "..\stdlith" /I "..\mfcstub" /I "..\cryptmgr" /I "..\lith" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_AFXDLL" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GX /O2 /I "..\STLPORT-4.0\STLPORT" /I "..\stdlith" /I "..\mfcstub" /I "..\cryptmgr" /I "..\lith" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_AFXDLL" /YX /FD /c
+# ADD BASE CPP /nologo /MD /W3 /GX /O2 /I "..\stdlith" /I "..\mfcstub" /I "..\cryptmgr" /I "..\lith" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_AFXDLL" /YX /FD /c
+# ADD CPP /nologo /MD /W3 /GX /O2 /I "..\stdlith" /I "..\mfcstub" /I "..\cryptmgr" /I "..\lith" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_AFXDLL" /YX /FD /c
 # ADD BASE RSC /l 0x409 /d "_AFXDLL"
 # ADD RSC /l 0x409 /d "_AFXDLL"
 BSC32=bscmake.exe

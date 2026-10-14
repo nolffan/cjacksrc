@@ -382,7 +382,7 @@ inline void	CCommandMgr::Clear()
 
 	// Clear all our vars...
 
-	for( i = 0; i < m_nNumVars; ++i )
+	for(int i = 0; i < m_nNumVars; ++i )
 	{
 		m_aVars[i].Clear();
 	}

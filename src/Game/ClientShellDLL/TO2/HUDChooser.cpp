@@ -78,7 +78,7 @@ LTBOOL CHUDWpnChooser::Init()
 			m_nWeaponID[i][n] = WMGR_INVALID_ID;
 		}
 	}
-	for( i = 0; i < kMaxItemsPerClass; ++i )
+	for( uint8 i = 0; i < kMaxItemsPerClass; ++i )
 	{
 		g_pDrawPrim->SetRGBA( &m_ItemPoly[i], argbWhite );
 
@@ -114,7 +114,7 @@ void CHUDWpnChooser::Render()
 //		}
 	}
 
-	for (n = 0; n < kMaxItemsPerClass && m_hItemIcon[n]; n++)
+	for (uint8 n = 0; n < kMaxItemsPerClass && m_hItemIcon[n]; n++)
 	{
 		g_pDrawPrim->SetTexture( m_hItemIcon[n] );
 		SetupQuadUVs(m_ItemPoly[n], m_hItemIcon[n], 0.0f, 0.0f, m_fTexScale, m_fTexScale);
@@ -191,13 +191,13 @@ void CHUDWpnChooser::Update()
 		g_pDrawPrim->SetXYWH( &m_ClassPoly[n-1], x, 0.0f, fHeight, fHeight );
 	}
 	x = fBaseX + fBaseWidth;
-	for (n = m_nClass+1; n < kMaxClasses; n++)
+	for (uint8 n = m_nClass+1; n < kMaxClasses; n++)
 	{
 		g_pDrawPrim->SetXYWH( &m_ClassPoly[n], x, 0.0f, fHeight, fHeight );
 		x += fHeight;
 	}
 
-	for (n = 0; n < kMaxClasses; n++)
+	for (uint8 n = 0; n < kMaxClasses; n++)
 	{
 		if (n == m_nClass) continue;
 

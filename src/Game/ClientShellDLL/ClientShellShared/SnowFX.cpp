@@ -442,7 +442,8 @@ CSnowFXAirspace::CSnowFXAirspace() :
 		float angleStep = (2*PI)/(float)SNOWFX_TABLESIZE;
 		float curAngle = 0.0f;
 
-		for( uint32 i = 0; i < SNOWFX_TABLESIZE; i++ )
+		uint32 i;
+		for( i = 0; i < SNOWFX_TABLESIZE; i++ )
 		{
 			rndTable[i] = (uint32)(((float)rand() / (float)RAND_MAX) * (SNOWFX_TABLESIZE - 1));
 			sinTable[i] = (float)sin( curAngle );
@@ -624,7 +625,7 @@ bool CSnowFXAirspace::Activate( float detail )
 			curPos.z = m_Pos.z + m_Particles[i].pos.z * m_Dims.z;
 
 			// check if the xz of the particle is within the projected xz polygon
-			if( TestParticleBlocker( curPos, numEdges, edgePlanes ) )
+			if( TestParticleBlocker( curPos, numEdges, const_cast<const LTPlane *&>(edgePlanes) ) )
 			{
 				// find where the particle hits the blocker
 				t = dc + curPos.x * xc + curPos.z * zc;

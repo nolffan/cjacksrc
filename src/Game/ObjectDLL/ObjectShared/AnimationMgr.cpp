@@ -11,19 +11,19 @@
 
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	VerifyAnimation()
-//              
-//	PURPOSE:	Added so that we can report the name of an animation and model 
-//				when we have an invalid animation.  This ought to help 
-//				significantly with debugging.  Use this anywhere there is a 
-//				SetModelAnimation.  This does NOT handle error, it just reports 
+//
+//	PURPOSE:	Added so that we can report the name of an animation and model
+//				when we have an invalid animation.  This ought to help
+//				significantly with debugging.  Use this anywhere there is a
+//				SetModelAnimation.  This does NOT handle error, it just reports
 //				them.
 //
-//				This function is not currently tied to a class, as animations 
-//				are set throughout the code.  Once the system is cleaner, this 
-//				function should be moved into the appropriate class 
-//				
+//				This function is not currently tied to a class, as animations
+//				are set throughout the code.  Once the system is cleaner, this
+//				function should be moved into the appropriate class
+//
 //----------------------------------------------------------------------------
 void VerifyAnimation( HOBJECT hObject, const char* const pszAnimationName, CAnimationProps* pProps )
 {
@@ -33,7 +33,7 @@ void VerifyAnimation( HOBJECT hObject, const char* const pszAnimationName, CAnim
 	{
 		char szBuffer[256];
 		sprintf(szBuffer, "Could not find anim with props:\n");
-		pProps->GetString(szBuffer + strlen(szBuffer), 256 - strlen(szBuffer));				
+		pProps->GetString(szBuffer + strlen(szBuffer), 256 - strlen(szBuffer));
 		AIASSERT(0, hObject, szBuffer);
 	}
 
@@ -50,19 +50,19 @@ void VerifyAnimation( HOBJECT hObject, const char* const pszAnimationName, CAnim
 	{
 		hAnim = g_pLTServer->GetAnimIndex( hObject, const_cast<char*>(pszAnimationName) );
 	}
-	
+
 	// If not, then print out debug information
 	if ( hAnim == INVALID_MODEL_ANIM )
 	{
 		char szModelName[128] = { '\0' };
-		
+
 		g_pModelLT->GetModelDBFilename(hObject, szModelName, 127 );
 
-		// This SHOULD NOT be a assert condition as it does not lead to a crash, but 
-		// if an assignment fails, a later check generates a assert and an even more 
+		// This SHOULD NOT be a assert condition as it does not lead to a crash, but
+		// if an assignment fails, a later check generates a assert and an even more
 		// obscure message.  This message provides much more detail about the source
 		// of the crash
-		g_pLTServer->CPrint( "ANIMATION ERROR: %s Invalid Animation: %s, not found in model: %s\n", 
+		g_pLTServer->CPrint( "ANIMATION ERROR: %s Invalid Animation: %s, not found in model: %s\n",
 			GetObjectName(hObject), pszAnimationName, szModelName );
 	}
 	#endif //_DEBUG
@@ -144,13 +144,13 @@ void CAnimationProps::Set(EnumAnimPropGroup eAnimPropGroup, EnumAnimProp eAnimPr
 }
 
 
-LTBOOL CAnimationProps::IsSet(const CAnimationProp& Prop) const
+bool CAnimationProps::IsSet(const CAnimationProp& Prop) const
 {
 	EnumAnimPropGroup eGroup = Prop.m_eGroup;
 	return ((m_aProps[eGroup].m_eProp == kAP_Any) || (m_aProps[eGroup].m_eProp == Prop.m_eProp));
 }
 
-LTBOOL CAnimationProps::IsSet(EnumAnimPropGroup eGroup, EnumAnimProp eProp) const
+bool CAnimationProps::IsSet(EnumAnimPropGroup eGroup, EnumAnimProp eProp) const
 {
 	return ((m_aProps[eGroup].m_eProp == kAP_Any) || (m_aProps[eGroup].m_eProp == eProp));
 }
@@ -196,7 +196,7 @@ void CAnimationContext::Init(uint32 cAnimationInstances, uint32 cTransitionInsta
 
 	m_bLocked = LTFALSE;
 	m_iAnimationLocked = INVALID_MODEL_ANIM;
-	
+
 	m_cAnimationInstances = cAnimationInstances;
 	m_aAnimationInstances = debug_newa(CAnimationInstance, cAnimationInstances);
 
@@ -364,7 +364,7 @@ void CAnimationContext::SetProp(EnumAnimPropGroup eAnimPropGroup, EnumAnimProp e
 	// Verify that the property applies to the group it is setting.
 	if( (eAnimProp == kAP_None) || (it->second == eAnimPropGroup) )
 	{
-		m_Props.Set(eAnimPropGroup, eAnimProp); 
+		m_Props.Set(eAnimPropGroup, eAnimProp);
 	}
 }
 
@@ -1373,7 +1373,8 @@ const CAnimation& CAnimationMgr::FindAnimation(const CAnimationProps& Props,
 	// (A linear search is what we used to do anyway).
 	if(cAnims == 0)
 	{
-		for(uint32 iAnimation=0; iAnimation < m_cAnimations; ++iAnimation)
+		uint32 iAnimation;
+		for(iAnimation=0; iAnimation < m_cAnimations; ++iAnimation)
 		{
 			if( m_aAnimations[iAnimation].GetProps() == props )
 			{

@@ -24,6 +24,9 @@
 #include "WeaponMgr.h"
 #include "CRC32.h"
 
+#pragma message( "FIXFIX:  Should really be called ClientConnectionMgr." )
+
+
 ClientMultiplayerMgr* g_pClientMultiplayerMgr = NULL;
 
 
@@ -459,7 +462,9 @@ IServerDirectory* ClientMultiplayerMgr::CreateServerDir( )
 	g_pLTClient->GetEngineHook("cres_hinstance",&pModule);
 	HMODULE hModule = (HINSTANCE)pModule;
 
-	m_pServerDir = Factory_Create_IServerDirectory_Titan( true, *g_pLTClient, hModule );
+	// CJACK: Contract J.A.C.K. has no WON server directory: it browses
+	// servers with GameSpy (GameSpy.dll's IGameSpyBrowser), still to be written.
+	m_pServerDir = NULL;
 	if( !m_pServerDir )
 		return NULL;
 
@@ -529,6 +534,21 @@ void ClientMultiplayerMgr::GetCurMessageSource(uint8 aAddr[4], uint16 *pPort)
 	*pPort = m_nCurMessageSourcePort;
 }
 
+
+#ifndef SOURCE_RELEASE
+
+#pragma message( "FIXFIX: Remember to remove sections defined without SOURCE_RELEASE defines" )
+
+// Global key used for cross-encryption  NOTE: MUST BE SAME AS ON SERVER!!
+#define KEY_MESSER_UPPER 0xDEADFACE
+
+inline uint32 MessUp32BitValue(uint32 nValue, uint32 nRot)
+{
+	// "Encrypt" the value (Yes, it's a very simple encryption...)
+	uint32 nXORShift = nRot & 0xF;
+	return ((KEY_MESSER_UPPER << nXORShift) + (KEY_MESSER_UPPER >> (32 - nXORShift))) ^ nValue;
+}
+#endif // SOURCE_RELEASE
 
 // ----------------------------------------------------------------------- //
 //
@@ -607,7 +627,11 @@ bool ClientMultiplayerMgr::HandleMsgHandshake( ILTMessage_Read & msg )
 			cResponse.Writeuint8(MID_HANDSHAKE_HELLO);
 		    cResponse.Writeuint16(GAME_HANDSHAKE_VER);
 			// Send them our secret key
+#ifdef SOURCE_RELEASE
 			cResponse.Writeuint32( GAME_HANDSHAKE_PASSWORD );
+#else // SOURCE_RELEASE
+			cResponse.Writeuint32((uint32)this);
+#endif // SOURCE_RELEASE
 			g_pLTClient->SendToServer(cResponse.Read(), MESSAGE_GUARANTEED);
 		}
 		break;
@@ -617,8 +641,25 @@ bool ClientMultiplayerMgr::HandleMsgHandshake( ILTMessage_Read & msg )
 			m_nServerKey = msg.Readuint32();
 			bool   bNeedPassword = msg.Readbool();
 
+#ifdef SOURCE_RELEASE
 			uint32 nPassword = GAME_HANDSHAKE_PASSWORD;
 			uint32 nXORMask = GAME_HANDSHAKE_MASK;
+#else // SOURCE_RELEASE
+			// Get the player name
+			char sName[255];
+			// (Make sure to clear out the first 4 characters, since that's all we care about)
+			sName[0] = sName[1] = sName[2] = sName[3] = 0;
+			CUserProfile *pProfile = g_pProfileMgr->GetCurrentProfile();
+
+			SAFE_STRCPY(sName,pProfile->m_sPlayerGuid.c_str( ));
+
+			// Decrypt it
+			m_nServerKey ^= MessUp32BitValue((uint32)this, (uint32)(sName[0]));
+
+			// Encrypt "the string" with it
+			uint32 nPassword = *((uint32*)sName);
+			uint32 nXORMask = MessUp32BitValue(m_nServerKey, (uint32)(sName[0]));
+#endif // SOURCE_RELEASE
 
 			nPassword ^= nXORMask;
 
@@ -1058,6 +1099,10 @@ bool ClientMultiplayerMgr::UpdateNetClientData( )
 		return false;
 	}
 
+// Don't allow this in the final version because of invalid characters
+
+#ifndef _FINAL
+
 	// Check if the user overrode the player name on the command line.
 	char szPlayerNameOverride[MAX_PLAYER_NAME] = "";
 	LTStrCpy( szPlayerNameOverride, GetConsoleTempString( "playername", "" ), ARRAY_LEN( szPlayerNameOverride ));
@@ -1065,6 +1110,8 @@ bool ClientMultiplayerMgr::UpdateNetClientData( )
 	{
 		pProfile->m_sPlayerName = szPlayerNameOverride;
 	}
+
+#endif
 
 	LTStrCpy(m_NetClientData.m_szName,pProfile->m_sPlayerName.c_str(), ARRAY_LEN( m_NetClientData.m_szName ));
 

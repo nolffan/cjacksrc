@@ -6,9 +6,9 @@
 
 #pragma warning (disable : 4786)
 #include <map>
-#include <slist>
+#include <list>
 
-class CLightGroupFXMgr 
+class CLightGroupFXMgr
 {
 public:
 	CLightGroupFXMgr();
@@ -27,17 +27,22 @@ private:
 	{
 		SWaitingAdj() {}
 		SWaitingAdj(uint32 nID, const LTVector &vAdj) : m_nID(nID), m_vAdj(vAdj) {}
-		SWaitingAdj(const SWaitingAdj &cOther) : m_nID(cOther.m_nID), m_vAdj(cOther.m_vAdj) {}
-		SWaitingAdj &operator=(const SWaitingAdj &cOther) {
-			m_nID = cOther.m_nID;
-			m_vAdj = cOther.m_vAdj;
+		SWaitingAdj(const SWaitingAdj &rhs) : m_nID(rhs.m_nID), m_vAdj(rhs.m_vAdj) {}
+		SWaitingAdj &operator=(const SWaitingAdj &rhs)
+		{
+			if (this != &rhs)
+			{
+				m_nID 	= rhs.m_nID;
+				m_vAdj 	= rhs.m_vAdj;
+			}
+
 			return *this;
 		}
 		uint32 m_nID;
 		LTVector m_vAdj;
 	};
 
-	typedef std::slist<SWaitingAdj> TWaitingAdjList;
+	typedef std::list<SWaitingAdj> TWaitingAdjList;
 	TWaitingAdjList m_aWaitingAdjList;
 };
 

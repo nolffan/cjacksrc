@@ -72,6 +72,10 @@
 
 			void							SetDetailLevel( int nLOD );
 
+
+			void							SetDisableDistances( float fLow, float fMed, float fHigh );
+			void							SetDisableDistance( int nLOD, float fDistance );
+
 			static ILTClient*				GetClientDE();
 
 			void							UseSystemTime(bool bUseSystemTime) {m_bUseSystemTime = bUseSystemTime;}
@@ -130,7 +134,7 @@
 			// Member Variables
 
 			EFXLOD							m_eDetailLevel;
-			LTFLOAT							m_dDetailDistSqr;
+			LTFLOAT							m_dDetailDistSqr[3];
 
 			ILTClient					   *m_pClientDE;
 			static ILTClient			   *s_pClientDE;

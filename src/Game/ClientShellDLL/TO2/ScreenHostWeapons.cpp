@@ -311,7 +311,7 @@ LTBOOL CScreenHostWeapons::FillAvailList()
 		}
 	}
 
-	for (nId = 0; nId <= g_pWeaponMgr->GetNumGearIds(); nId++)
+	for (uint8 nId = 0; nId <= g_pWeaponMgr->GetNumGearIds(); nId++)
 	{
 		GEAR const *pGear = g_pWeaponMgr->GetGear( nId );
 		if (pGear && pGear->bCanServerRestrict)

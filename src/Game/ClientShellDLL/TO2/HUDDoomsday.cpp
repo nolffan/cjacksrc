@@ -187,7 +187,7 @@ void CHUDDoomsday::Update()
 	float fw = (float)(m_nSize) * g_pInterfaceResMgr->GetXRatio();
 	float fgap = fw * 1.25f;
 
-	for (i = 0; i < kNumDDIcons; i++)
+	for (int i = 0; i < kNumDDIcons; i++)
 	{
 		g_pDrawPrim->SetXYWH(&m_Poly[i],fx,fy,fw,fw);
 		fy += fgap;

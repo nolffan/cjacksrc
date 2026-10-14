@@ -13,6 +13,8 @@
 #ifndef _GLOBALS_H_
 #define _GLOBALS_H_
 
+//#define _TRON_E3_DEMO
+
 // global constants
 const int MAX_OBJECT_ARRAY_SIZE = 32;
 

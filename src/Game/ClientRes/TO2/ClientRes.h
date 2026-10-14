@@ -8695,6 +8695,53 @@
 #define IDS_DIALOGUE_33593              33593
 #define IDS_DIALOGUE_33596              33596
 
+// Contract J.A.C.K.'s strings at ids NOLF2 does not name (named by id)
+#define IDS_CJ_1432                             1432
+#define IDS_CJ_1433                             1433
+#define IDS_CJ_1434                             1434
+#define IDS_CJ_1435                             1435
+#define IDS_CJ_1436                             1436
+#define IDS_CJ_1437                             1437
+#define IDS_CJ_1439                             1439
+#define IDS_CJ_1440                             1440
+#define IDS_CJ_1441                             1441
+#define IDS_CJ_1442                             1442
+#define IDS_CJ_1444                             1444
+#define IDS_CJ_1445                             1445
+#define IDS_CJ_1446                             1446
+#define IDS_CJ_1447                             1447
+#define IDS_CJ_1448                             1448
+#define IDS_CJ_1449                             1449
+#define IDS_CJ_1450                             1450
+#define IDS_CJ_1451                             1451
+#define IDS_CJ_2545                             2545
+#define IDS_CJ_2546                             2546
+#define IDS_CJ_2547                             2547
+#define IDS_CJ_2548                             2548
+#define IDS_CJ_2549                             2549
+#define IDS_CJ_5200                             5200
+#define IDS_CJ_5201                             5201
+#define IDS_CJ_5202                             5202
+#define IDS_CJ_4800                             4800
+#define IDS_CJ_4550                             4550
+#define IDS_CJ_4551                             4551
+#define IDS_CJ_7096                             7096
+#define IDS_CJ_2930                             2930
+#define IDS_CJ_2931                             2931
+#define IDS_CJ_2932                             2932
+#define IDS_CJ_2933                             2933
+#define IDS_CJ_2934                             2934
+#define IDS_CJ_2935                             2935
+#define IDS_CJ_2936                             2936
+#define IDS_CJ_2937                             2937
+#define IDS_CJ_2938                             2938
+#define IDS_CJ_2939                             2939
+#define IDS_CJ_2940                             2940
+#define IDS_CJ_2941                             2941
+#define IDS_CJ_2942                             2942
+#define IDS_CJ_143                              143
+#define IDS_CJ_144                              144
+
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED

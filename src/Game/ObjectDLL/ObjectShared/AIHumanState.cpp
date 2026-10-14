@@ -317,8 +317,8 @@ void CAIHumanStateAware::Update()
 		GetAI()->PlaySound( m_eAISound, LTFALSE );
 	}
 
-	if( m_bPlayOnce && 
-		( !m_bFirstUpdate ) && 
+	if( m_bPlayOnce &&
+		( !m_bFirstUpdate ) &&
 		( !GetAnimationContext()->IsLocked() ) &&
 		( !GetAnimationContext()->IsTransitioning() ) )
 	{
@@ -447,14 +447,14 @@ void CAIHumanStateLookAt::UpdateAnimation()
 
 	GetAnimationContext()->SetProp(kAPG_Posture, kAP_Stand);
 
-	if( m_bPause ) 
+	if( m_bPause )
 	{
 		GetAnimationContext()->SetProp(kAPG_WeaponPosition, kAP_Down);
 		GetAnimationContext()->SetProp(kAPG_Action, kAP_Alert);
 		GetAnimationContext()->Lock();
 		return;
 	}
-	
+
 	GetAnimationContext()->SetProp(m_aniLook);
 
 	if(m_eStateStatus != kSStat_StateComplete)
@@ -534,7 +534,7 @@ void CAIHumanStatePatrol::SetAwareness(EnumAnimProp eAwareness)
 
 void CAIHumanStatePatrol::SetNode(AINodePatrol* pNode)
 {
-	ASSERT(pNode); 
+	ASSERT(pNode);
 	m_pNode = pNode;
 }
 
@@ -553,9 +553,9 @@ void CAIHumanStatePatrol::Update()
 		m_fTalkTimer = fPatrolSoundTime + GetRandom(fPatrolSoundTimeRandomMin, fPatrolSoundTimeRandomMax);
 	}
 
-	// Give a little breathing room after a goalset change before turning or 
-	// moving the AI.  This gives AI a chance to react to stimulus that may be 
-	// in the other direction from the patrol node.  (e.g. if an AIs dialogue 
+	// Give a little breathing room after a goalset change before turning or
+	// moving the AI.  This gives AI a chance to react to stimulus that may be
+	// in the other direction from the patrol node.  (e.g. if an AIs dialogue
 	// was interrupted when another AI was killed, AI may need to react to the body).
 
 	if( GetAI()->GetGoalMgr()->GetGoalSetTime() + 2.f > g_pLTServer->GetTime() )
@@ -572,8 +572,8 @@ void CAIHumanStatePatrol::Update()
 		return;
 	}
 
-	// Turn off lights in the source volume. 
-	// Turn on lights in the dest volume. 
+	// Turn off lights in the source volume.
+	// Turn on lights in the dest volume.
 
 	if( m_pStrategyToggleLights->IsUnset() )
 	{
@@ -618,7 +618,7 @@ void CAIHumanStatePatrol::Update()
 		{
 			case kAP_None:
 				bGotoNextNode = LTTRUE;
-				break;				
+				break;
 
 			case kAP_Wait:
 				bGotoNextNode = UpdateTaskWait();
@@ -662,7 +662,7 @@ void CAIHumanStatePatrol::Update()
 
 		if ( m_bForward )
 		{
-			if ( m_pNode->GetNext() ) 
+			if ( m_pNode->GetNext() )
 			{
 				m_pNode = m_pNode->GetNext();
 			}
@@ -675,7 +675,7 @@ void CAIHumanStatePatrol::Update()
 
 		else
 		{
-			if ( m_pNode->GetPrev() ) 
+			if ( m_pNode->GetPrev() )
 			{
 				m_pNode = m_pNode->GetPrev();
 			}
@@ -698,8 +698,8 @@ void CAIHumanStatePatrol::Update()
 
 		if ( !m_pStrategyFollowPath->Set(m_pNode, LTFALSE) )
 		{
-			AIError("AI \"%s\" - Cannot path from node \"%s\" (%s) to node \"%s\" (%s)", 
-				GetAI()->GetName(), 
+			AIError("AI \"%s\" - Cannot path from node \"%s\" (%s) to node \"%s\" (%s)",
+				GetAI()->GetName(),
 				::ToString((m_pLastNode)?m_pLastNode->GetName():LTNULL),
 				(m_pLastNode && m_pLastNode->GetNodeContainingVolume())?m_pLastNode->GetNodeContainingVolume()->GetName():"",
 				::ToString((m_pNode)?m_pNode->GetName():LTNULL),
@@ -947,7 +947,7 @@ void CAIHumanStateGoto::Update()
 {
 	super::Update();
 
-	// Turn off lights in the source volume. 
+	// Turn off lights in the source volume.
 
 	if( m_bTurnOffLights )
 	{
@@ -969,7 +969,7 @@ void CAIHumanStateGoto::Update()
 
 	// Play looping sound.
 
-	if( ( m_eLoopingAISound != kAIS_None ) && 
+	if( ( m_eLoopingAISound != kAIS_None ) &&
 		( !GetAI()->IsPlayingDialogSound() ) )
 	{
 		GetAI()->PlaySound( m_eLoopingAISound, LTFALSE );
@@ -978,8 +978,8 @@ void CAIHumanStateGoto::Update()
 	// Check if we are within some radius of the dest.
 
 	LTBOOL bCloseEnough = LTFALSE;
-	if ( ( m_cNodes == 0 ) && 
-		 ( m_fCloseEnoughDistSqr > 0.f ) && 
+	if ( ( m_cNodes == 0 ) &&
+		 ( m_fCloseEnoughDistSqr > 0.f ) &&
 		   m_pStrategyFollowPath->IsSet() )
 	{
 		if( m_vDest.DistSqr( GetAI()->GetPosition() ) < m_fCloseEnoughDistSqr )
@@ -1073,7 +1073,7 @@ void CAIHumanStateGoto::Update()
 					{
 						SendTriggerMsgToObject( pNode, GetAI()->m_hObject, pNode->GetCmd() );
 					}
-	
+
 					m_eStateStatus = kSStat_StateComplete;
 					return;
 				}
@@ -1514,14 +1514,14 @@ void CAIHumanStateSearch::Update()
 
 	if( m_pStrategyToggleLights->IsDone() && m_pSearchNode )
 	{
-		m_pStrategyFollowPath->Set( m_pSearchNode, LTFALSE ); 
+		m_pStrategyFollowPath->Set( m_pSearchNode, LTFALSE );
 		m_pStrategyToggleLights->Reset();
 	}
 
 
 	// Update our searching
 
-	// Insure that we have a target before attempting to use it 
+	// Insure that we have a target before attempting to use it
 	if ( m_pStrategyFollowPath->IsUnset() )
 	{
 		if ( m_bEngage )
@@ -1670,13 +1670,13 @@ void CAIHumanStateSearch::Update()
 		else
 		{
 			if ( !m_bSearching )
-			{			
+			{
 				// For Corner nodes, choose the appropriate direction and animation
 				// depending on what side of the node we're facing.  Node points towards
 				// a physical corner.
 
 				if( m_pSearchNode->GetSearchType() == AINodeSearch::kSearch_Corner )
-				{					
+				{
 					LTRotation rRot = LTRotation( m_pSearchNode->GetForward(), LTVector(0.0f, 1.0f, 0.0f) );
 
 					if ( GetAI()->GetForwardVector().Dot( m_pSearchNode->GetRight() ) < 0.0f )
@@ -1707,7 +1707,7 @@ void CAIHumanStateSearch::Update()
 				}
 
 				++m_cSearchedNodes;
-			}		
+			}
 
 			m_bSearching = LTTRUE;
 		}
@@ -1738,7 +1738,7 @@ LTBOOL CAIHumanStateSearch::FindNode()
 	{
 		LTFLOAT fCurTime = g_pLTServer->GetTime();
 
-		if ( m_pSearchNode ) 
+		if ( m_pSearchNode )
 		{
 			m_pSearchNode->Unlock( GetAI()->m_hObject );
 			m_pSearchNode->ResetActivationTime();
@@ -1750,12 +1750,12 @@ LTBOOL CAIHumanStateSearch::FindNode()
 		{
 			return LTFALSE;
 		}
-	
+
 		if( !m_pStrategyFollowPath->Set(pNode, LTFALSE) )
 		{
 			AITRACE( AIShowStates, ( m_pAI->m_hObject, "Could not find path to Search Node: %s", ::ToString( pNode->GetName() ) ) );
 
-			// Reset the activation time slightly, so that 
+			// Reset the activation time slightly, so that
 			// the AI will not find this node again until he
 			// has visited other nodes.
 
@@ -1792,7 +1792,7 @@ LTBOOL CAIHumanStateSearch::FindNode()
 
 			if ( vDir.Dot( vCheckDir ) < 0.0f )
 			{
-				// Reset the activation time slightly, so that 
+				// Reset the activation time slightly, so that
 				// the AI will not find this node again until he
 				// has visited a different node.
 
@@ -1809,7 +1809,7 @@ LTBOOL CAIHumanStateSearch::FindNode()
 
 				return LTTRUE;
 			}
-		}	
+		}
 
 		m_pSearchNode = pNode;
 		m_pSearchNode->Lock( GetAI()->m_hObject );
@@ -1822,7 +1822,7 @@ LTBOOL CAIHumanStateSearch::FindNode()
 		}
 
 
-		// Turn on lights in the destination volume. 
+		// Turn on lights in the destination volume.
 
 		m_pStrategyToggleLights->Set( LTFALSE, LTTRUE, m_pSearchNode->GetPos() );
 		if( m_pStrategyToggleLights->IsSet() )
@@ -1849,7 +1849,7 @@ void CAIHumanStateSearch::UpdateAnimation()
 	GetAnimationContext()->SetProp(kAPG_Posture, kAP_Stand);
 	GetAnimationContext()->SetProp(kAPG_WeaponPosition, kAP_Up);
 
-	if ( m_bPause ) 
+	if ( m_bPause )
 	{
 		if( !GetAnimationContext()->IsTransitioning() )
 		{
@@ -1919,7 +1919,7 @@ void CAIHumanStateSearch::HandleVolumeEnter(AIVolume* pVolume)
 			return;
 		}
 
-		if( pTargetVol && 
+		if( pTargetVol &&
 			( pVolume->GetLightSwitchUseObjectNode() == pTargetVol->GetLightSwitchUseObjectNode() ) )
 		{
 			GetAI()->PlaySearchSound( kAIS_Search );
@@ -1937,8 +1937,8 @@ void CAIHumanStateSearch::HandleVolumeEnter(AIVolume* pVolume)
 
 	if ( pVolume->GetVolumeType() == AIVolume::kVolumeType_Junction )
 	{
-		AITRACE(AIShowJunctions, ( GetAI()->m_hObject, "Entered junction %s while searching.\n", 
-			 ::ToString(pVolume->GetName()) ) );
+		AITRACE(AIShowJunctions, ( GetAI()->m_hObject, "Entered junction %s while searching.\n",
+			 pVolume->GetName() ) );
 
 		m_eStateStatus		= kSStat_Junction;
 		m_pLastVolume		= GetAI()->GetLastVolume();
@@ -2030,7 +2030,7 @@ CAIHumanStateUseObject::CAIHumanStateUseObject()
 	m_eWeaponPosition	= kAP_Down;
 	m_eWeaponAction		= kAP_None;
 	m_eMood				= kAP_None;
-	m_ePose				= kAP_Stand;	
+	m_ePose				= kAP_Stand;
 
 	m_hstrSmartObjectCmd = LTNULL;
 
@@ -2165,12 +2165,12 @@ void CAIHumanStateUseObject::Update()
 			return;
 		}
 
-		// Turn off lights in the source volume. 
-		// Turn on lights in the dest volume. 
+		// Turn off lights in the source volume.
+		// Turn on lights in the dest volume.
 
 		if( m_bTurnOffLights || m_bTurnOnLights )
 		{
-			// Wait for AI to get back into the volumes (e.g. while getting 
+			// Wait for AI to get back into the volumes (e.g. while getting
 			// out of a bed or chair.
 
 			if( ( m_eStateStatus == kSStat_Waiting ) &&
@@ -2226,7 +2226,7 @@ void CAIHumanStateUseObject::Update()
 		//
 		// Animating with no node. Start immediately.
 		// If a node was provided, the status will be set to
-		// kSStat_moving before the first update, from SetNode. 
+		// kSStat_moving before the first update, from SetNode.
 		//
 
 		case kSStat_Initialized:
@@ -2244,7 +2244,7 @@ void CAIHumanStateUseObject::Update()
 			GetAI()->DisableNodeTracking();
 
 			// Path may be unset if AI stopped to turn on a light.
-			
+
 			if( m_pStrategyFollowPath->IsUnset() )
 			{
 				if( !m_pStrategyFollowPath->Set( m_pUseNode, LTFALSE ) )
@@ -2259,7 +2259,7 @@ void CAIHumanStateUseObject::Update()
 					return;
 				}
 			}
-			
+
 			if( m_pStrategyFollowPath->IsSet() )
 			{
 				// TODO: check for strategy failure
@@ -2293,7 +2293,7 @@ void CAIHumanStateUseObject::Update()
 						return;
 					}
 				}
-				
+
 				// Pre-activate the node.
 
 				m_pUseNode->PreActivate();
@@ -2307,7 +2307,7 @@ void CAIHumanStateUseObject::Update()
 				}
 
 				// start using object.
-	
+
 				StartAnimation();
 			}
 		}
@@ -2322,7 +2322,7 @@ void CAIHumanStateUseObject::Update()
 			// Play first sound
 
 			if( m_pUseNode &&
-				( !m_bPlayedFirstSound ) && 
+				( !m_bPlayedFirstSound ) &&
 				( m_pUseNode->GetFirstSound() != kAIS_None ) &&
 				( !m_pAI->GetAnimationContext()->IsTransitioning() ) )
 			{
@@ -2336,7 +2336,7 @@ void CAIHumanStateUseObject::Update()
 
 			// Update non-looping animation.
 
-			if( ( m_eActivity == kAP_None ) 
+			if( ( m_eActivity == kAP_None )
 				&& ( ( m_eAction != kAP_None ) || ( m_eWeaponAction != kAP_None ) ) )
 			{
 				// TODO: check for strategy failure
@@ -2407,10 +2407,10 @@ void CAIHumanStateUseObject::Update()
 				// Check for completion.
 				// AnimTime == 0 means anim loops infinitely.
 
-				if( ( m_fAnimTime != 0.f ) && 
+				if( ( m_fAnimTime != 0.f ) &&
 					( m_fAnimTimer >= m_fAnimTime ) &&
 					( !m_pStrategyOneShotAni->IsSet() ) &&
-					( !GetAnimationContext()->IsLocked() ) )			
+					( !GetAnimationContext()->IsLocked() ) )
 				{
 					// Activate the node.
 
@@ -2472,7 +2472,7 @@ void CAIHumanStateUseObject::Update()
 				if ( m_bPickedUp )
 				{
 					DoPickupObject();
-	
+
 					// Remove it
 					g_pLTServer->RemoveObject(m_hObject);
 				}
@@ -2494,15 +2494,15 @@ void CAIHumanStateUseObject::Update()
 void CAIHumanStateUseObject::StartAnimation()
 {
 	// start smartobject animation.
-	
+
 	SendTriggerMsgToObject(GetAI(), GetAI()->m_hObject, LTFALSE, g_pLTServer->GetStringData(m_hstrSmartObjectCmd));
 
 	m_eStateStatus = kSStat_PathComplete;
 
-			
+
 	// Start a one-shot animation if not looping.
 
-	if( ( m_eActivity == kAP_None ) 
+	if( ( m_eActivity == kAP_None )
 		&& ( ( m_eAction != kAP_None ) || ( m_eWeaponAction != kAP_None) ) )
 	{
 		if( m_eAction != kAP_None )
@@ -2510,7 +2510,7 @@ void CAIHumanStateUseObject::StartAnimation()
 			m_pStrategyOneShotAni->Set(kAPG_Action, m_eAction);
 		}
 		else {
-			m_pStrategyOneShotAni->Set(kAPG_WeaponAction, m_eWeaponAction);						
+			m_pStrategyOneShotAni->Set(kAPG_WeaponAction, m_eWeaponAction);
 		}
 	}
 
@@ -2531,7 +2531,7 @@ void CAIHumanStateUseObject::UpdateAnimation()
 	GetAnimationContext()->SetProp(kAPG_Posture, kAP_Stand);
 	GetAnimationContext()->SetProp(kAPG_WeaponPosition, m_eWeaponPosition);
 
-	if( m_bAlertFirst ) 
+	if( m_bAlertFirst )
 	{
 		GetAnimationContext()->SetProp(kAPG_WeaponPosition, kAP_Down);
 		GetAnimationContext()->SetProp(kAPG_Action, kAP_Alert);
@@ -2574,13 +2574,13 @@ void CAIHumanStateUseObject::UpdateAnimation()
 			GetAnimationContext()->SetProp(kAPG_WeaponPosition, kAP_Lower);
 			GetAnimationContext()->SetProp(kAPG_Mood, m_eMood);
 
-			if( ( m_eActivity == kAP_None ) && 
+			if( ( m_eActivity == kAP_None ) &&
 				( ( m_eAction != kAP_None ) || ( m_eWeaponAction != kAP_None ) ) )
 			{
 				m_pStrategyOneShotAni->UpdateAnimation();
 			}
-			
-			else 
+
+			else
 			{
 				GetAnimationContext()->SetProp(kAPG_Awareness, m_eActivity);
 
@@ -2699,7 +2699,7 @@ LTBOOL CAIHumanStateUseObject::SetNode(AINodeUseObject* pUseNode)
 		AITRACE( AIShowStates, ( GetAI()->m_hObject, "USEOBJECT DEST=%s - use node is already locked!", g_pLTServer->GetStringData(pUseNode->GetName() ) ) );
 		return LTFALSE;
 	}
-	
+
 	if ( pUseNode->HasObject())
 	{
 		HOBJECT hObj = NULL;
@@ -3210,7 +3210,7 @@ void CAIHumanStateFollowFootprint::UpdateAnimation()
 void CAIHumanStateFollowFootprint::ResetFootprint(LTFloat fTimestamp, const LTVector& vPos)
 {
 	m_fNewTimestamp = fTimestamp;
-	m_vFootprintPos = vPos;	
+	m_vFootprintPos = vPos;
 }
 
 // ----------------------------------------------------------------------- //
@@ -3313,10 +3313,10 @@ void CAIHumanStateInvestigate::Reset(HOBJECT hStimulusSource, EnumAISenseType eS
 {
 	m_hEnemy	 = hStimulusSource;
 	m_eSenseType = eSenseType;
-	m_eAISound	 = eAISound; 
+	m_eAISound	 = eAISound;
 	m_vPosition	 = vStimulusPos;
 	m_vDirection = vStimulusDir;
-	
+
 	m_pStrategyFollowPath->Reset();
 }
 
@@ -3363,7 +3363,7 @@ void CAIHumanStateInvestigate::Update()
 		else return;
 	}
 
-	// Turn on lights in the destination volume. 
+	// Turn on lights in the destination volume.
 
 	if( m_pStrategyToggleLights->IsUnset() )
 	{
@@ -3394,7 +3394,7 @@ void CAIHumanStateInvestigate::Update()
 				break;
 		}
 
-		LTBOOL bDivergePaths = GetAI()->GetBrain()->GetAIDataExist( kAIData_DivergePaths ) && 
+		LTBOOL bDivergePaths = GetAI()->GetBrain()->GetAIDataExist( kAIData_DivergePaths ) &&
 			( GetAI()->GetBrain()->GetAIData( kAIData_DivergePaths ) > 0.f );
 
 		if ( m_pStrategyFollowPath->Set( vDestination, m_vDirection, bDivergePaths ) == LTFALSE )
@@ -3443,7 +3443,7 @@ void CAIHumanStateInvestigate::UpdateAnimation()
 	GetAnimationContext()->SetProp(kAPG_Posture, kAP_Stand);
 	GetAnimationContext()->SetProp(kAPG_WeaponPosition, kAP_Up);
 
-	if( m_bPause ) 
+	if( m_bPause )
 	{
 		GetAnimationContext()->SetProp(kAPG_WeaponPosition, kAP_Down);
 		GetAnimationContext()->SetProp(kAPG_Action, kAP_Alert);
@@ -3691,7 +3691,7 @@ void CAIHumanStateCheckBody::Update()
 
 			vDest += ( fOffset * rBodyRot.Right() ) + ( 12.f * rBodyRot.Forward() );
 		}
-		
+
 		else {
 			m_eCheckAnim = kAP_KickBody;
 			vDest = vBodyPos + ( fOffset * rBodyRot.Right() );
@@ -3785,7 +3785,7 @@ void CAIHumanStateCheckBody::Update()
 			{
 				GetAI()->PlaySound( kAIS_SeeBody, LTFALSE );
 			}
-			
+
 		}
 	}
 
@@ -3961,12 +3961,12 @@ void CAIHumanStateChase::SetStateStatus(EnumAIStateStatus eStateStatus)
 	if( eStateStatus != m_eStateStatus )
 	{
 		super::SetStateStatus(eStateStatus);
-		m_bStatusChanged = LTTRUE; 
+		m_bStatusChanged = LTTRUE;
 	}
 
 	// Endurance.
 
-	if( ( eStateStatus == kSStat_Pursue ) && 
+	if( ( eStateStatus == kSStat_Pursue ) &&
 		( GetAI()->GetBrain()->GetAIDataExist( kAIData_ChaseEndurance ) ) )
 	{
 		m_fEnduranceTime = g_pLTServer->GetTime() + GetAI()->GetBrain()->GetAIData( kAIData_ChaseEndurance );
@@ -4009,7 +4009,7 @@ void CAIHumanStateChase::Update()
 		if ( flMovementDist > flRange )
 		{
 			m_pStrategyFollowPath->Reset();
-		
+
 			CalculatePath();
 
 			if ( m_eStateStatus == kSStat_StateComplete )
@@ -4034,7 +4034,7 @@ void CAIHumanStateChase::Update()
 	// ---
 
 	if( m_eStateStatus == kSStat_Retry )
-	{	
+	{
 		m_bCanGetLost = LTTRUE;
 		m_pAIHuman->SetAwareness( kAware_Suspicious );
 
@@ -4110,7 +4110,7 @@ void CAIHumanStateChase::Update()
 
 	// --
 
-	if(m_eStateStatus == kSStat_Pursue) 
+	if(m_eStateStatus == kSStat_Pursue)
 	{
 		// Some AI may get out of breath after running for some time.
 
@@ -4140,7 +4140,7 @@ void CAIHumanStateChase::Update()
 			}
 		}
 
-		if ( m_bFirstUpdate || 
+		if ( m_bFirstUpdate ||
 			 m_bSeekTarget ||
 			( ( m_fSeeEnemyTime > 0.f ) && ( fCurTime - m_fSeeEnemyTime > 1.f ) ) )
 		{
@@ -4199,10 +4199,10 @@ void CAIHumanStateChase::Update()
 				// Be sure to update the strategy if we are in the middle of
 				// firing as this means that we recieved a firing key this frame
 				// which has not yet been processed
-			
+
 				m_pStrategyShoot->Update();
 			}
-			else if ( ( eRangeStatus != eRangeStatusTooFar ) && 
+			else if ( ( eRangeStatus != eRangeStatusTooFar ) &&
 					  ( pTarget->IsVisibleFromWeapon() ) )
 			{
 				m_pStrategyShoot->Update();
@@ -4249,13 +4249,13 @@ void CAIHumanStateChase::Update()
 		// Stop if an ally gets in our way.  Ask him to dodge out of the
 		// way if possible.
 
-		else if( pTarget->GetVisionBlocker() && 
+		else if( pTarget->GetVisionBlocker() &&
 				IsAI( pTarget->GetVisionBlocker() ) &&
 				( !m_pAI->GetAnimationContext()->IsLocked() ) &&
 				( !m_pAI->GetAIMovement()->IsMovementLocked() ) )
 		{
 			CAI* pBlockingAI = (CAI*)g_pLTServer->HandleToObject( pTarget->GetVisionBlocker() );
-	
+
 			LTBOOL bOutOfBreath = LTFALSE;
 			if( pBlockingAI->GetState()->GetStateType() == kState_HumanChase )
 			{
@@ -4263,13 +4263,13 @@ void CAIHumanStateChase::Update()
 				bOutOfBreath = pStateChase->IsOutOfBreath();
 			}
 
-			if( ( !bOutOfBreath ) && 
+			if( ( !bOutOfBreath ) &&
 				( GetAI()->GetForwardVector().Dot( pBlockingAI->GetPosition() - GetAI()->GetPosition() ) > 0.f ) )
 			{
 				if( pBlockingAI->GetPosition().DistSqr( GetAI()->GetPosition() ) < ( 64.f * 64.f ) )
 				{
 					// Head and Torso tracking.
-	
+
 					GetAI()->EnableNodeTracking( kTrack_AimAt, pTarget->GetObject() );
 
 					m_pStrategyFollowPath->Reset();
@@ -4291,11 +4291,11 @@ void CAIHumanStateChase::Update()
 
 		// ---
 
-		if( ( !GetAI()->GetAIMovement()->IsMovementLocked() ) && 
+		if( ( !GetAI()->GetAIMovement()->IsMovementLocked() ) &&
 			( !m_pStrategyFollowPath->IsSet() ) &&
 			( fCurTime > m_fVisionBlockedTime + 1.f ) )
 		{
-			// TODO: CHECK TO SEE IF WE'RE TOO CLOSE TO THEIR LAST VOLUME POSITION 
+			// TODO: CHECK TO SEE IF WE'RE TOO CLOSE TO THEIR LAST VOLUME POSITION
 
 			if( !CalculatePath() )
 			{
@@ -4303,7 +4303,7 @@ void CAIHumanStateChase::Update()
 			}
 		}
 	}
-	
+
 	// ---
 
 	// If we are not done following the path, then follow it more
@@ -4343,11 +4343,11 @@ LTBOOL CAIHumanStateChase::CalculatePath()
 	m_pJunctionCorrectVolume = LTNULL;
 
 
-	LTBOOL bDivergePaths = ( ( GetAI()->GetBrain()->GetAIDataExist( kAIData_DivergePaths ) ) && 
+	LTBOOL bDivergePaths = ( ( GetAI()->GetBrain()->GetAIDataExist( kAIData_DivergePaths ) ) &&
 							 ( GetAI()->GetBrain()->GetAIData( kAIData_DivergePaths ) > 0.f ) );
-	 
+
 	// Do not diverge paths if the enemy is in view.
-	
+
 	if( GetAI()->HasTarget() && GetAI()->GetTarget()->IsVisibleFromEye() )
 	{
 		bDivergePaths = LTFALSE;
@@ -4359,7 +4359,7 @@ LTBOOL CAIHumanStateChase::CalculatePath()
 	if ( m_bSeen )
 	{
 		m_bSeen = LTFALSE;
-		
+
 
 		// Do NOT set the status to kSStat_StateComplete, even if a path cannot be found.
 		// The chase goal needs to stay resident so that the AI remains aware of the enemy,
@@ -4384,7 +4384,7 @@ LTBOOL CAIHumanStateChase::CalculatePath()
 					AITRACE( AIShowStates, ( GetAI()->m_hObject, "Chase: AI not in volumes" ) );
 				}
 
-				AIVolume* pVolumeDest = g_pAIVolumeMgr->FindContainingVolume( LTNULL, m_vSeenPosition, eAxisAll, GetAI()->GetVerticalThreshold(), GetAI()->GetLastVolume() ); 
+				AIVolume* pVolumeDest = g_pAIVolumeMgr->FindContainingVolume( LTNULL, m_vSeenPosition, eAxisAll, GetAI()->GetVerticalThreshold(), GetAI()->GetLastVolume() );
 				if( pVolumeDest )
 				{
 					AITRACE( AIShowStates, ( GetAI()->m_hObject, "Chase: Dest volume %s", pVolumeDest->GetName() ) );
@@ -4414,7 +4414,7 @@ LTBOOL CAIHumanStateChase::CalculatePath()
 			if( fMinPathWeight > 0.f )
 			{
 				AIVolume* pVolumeLast = GetAI()->GetTarget()->GetCharacter()->GetLastVolume();
-				if( ( !pVolumeLast ) || 
+				if( ( !pVolumeLast ) ||
 					( pVolumeLast->GetPathWeight( LTTRUE, LTFALSE ) > fMinPathWeight ) )
 				{
 					m_eStateStatus = kSStat_StateComplete;
@@ -4441,7 +4441,7 @@ LTBOOL CAIHumanStateChase::CalculatePath()
 			if ( !m_pStrategyFollowPath->Set( GetAI()->GetTarget()->GetCharacter()->GetLastVolumePos(), bDivergePaths ) )
 			{
 				// CAN'T SET A PATH TO THEIR LAST POSITION
-		
+
 				AITRACE( AIShowStates, ( GetAI()->m_hObject, "Chase: Error setting path" ) );
 				if( GetAI()->GetLastVolume() )
 				{
@@ -4462,7 +4462,7 @@ LTBOOL CAIHumanStateChase::CalculatePath()
 		}
 
 
-		// Cap path at next junction, so that AI runs straight instead of 
+		// Cap path at next junction, so that AI runs straight instead of
 		// turning right toward the player -- gives better odds of getting away.
 
 		AIVolume* pNextJunctionVolume = m_pStrategyFollowPath->GetNextVolume( GetAI()->GetLastVolume(), AIVolume::kVolumeType_Junction );
@@ -4504,7 +4504,7 @@ void CAIHumanStateChase::HandleVolumeEnter(AIVolume* pVolume)
 			return;
 		}
 
-		if( pTargetVol && 
+		if( pTargetVol &&
 			( pVolume->GetLightSwitchUseObjectNode() == pTargetVol->GetLightSwitchUseObjectNode() ) )
 		{
 			GetAI()->PlaySearchSound( kAIS_Search );
@@ -4524,7 +4524,7 @@ void CAIHumanStateChase::HandleVolumeEnter(AIVolume* pVolume)
 	{
 		return;
 	}
-	
+
 	if ( pVolume->GetVolumeType() != AIVolume::kVolumeType_Junction )
 	{
 		return;
@@ -4532,8 +4532,8 @@ void CAIHumanStateChase::HandleVolumeEnter(AIVolume* pVolume)
 
 	if( ( !m_bCanGetLost ) || GetAI()->GetTarget()->IsVisibleFromEye() )
 	{
-		AITRACE(AIShowJunctions, ( GetAI()->m_hObject, "Saw target past junction %s. Runnning through.\n", 
-			 ::ToString(pVolume->GetName()) ) );
+		AITRACE(AIShowJunctions, ( GetAI()->m_hObject, "Saw target past junction %s. Runnning through.\n",
+			 pVolume->GetName() ) );
 		return;
 	}
 
@@ -4543,8 +4543,8 @@ void CAIHumanStateChase::HandleVolumeEnter(AIVolume* pVolume)
 	if( GetAI()->GetBrain()->GetAIDataExist( kAIData_IgnoreJunctions ) && (
 		GetAI()->GetBrain()->GetAIData( kAIData_IgnoreJunctions ) > 0.f ) )
 	{
-		AITRACE(AIShowJunctions, ( GetAI()->m_hObject, "AI ignores junctions.  continuing thru %s\n", 
-					::ToString(pVolume->GetName()) ) );
+		AITRACE(AIShowJunctions, ( GetAI()->m_hObject, "AI ignores junctions.  continuing thru %s\n",
+					pVolume->GetName() ) );
 		return;
 	}
 
@@ -4564,8 +4564,8 @@ void CAIHumanStateChase::HandleVolumeEnter(AIVolume* pVolume)
 
 	// Record relevant junction info for goals querying the Chase state.
 
-	AITRACE(AIShowJunctions, ( GetAI()->m_hObject, "Lost target in junction %s\n", 
-			 ::ToString(pVolume->GetName()) ) );
+	AITRACE(AIShowJunctions, ( GetAI()->m_hObject, "Lost target in junction %s\n",
+			 pVolume->GetName() ) );
 
 	m_eStateStatus		= kSStat_Junction;
 	m_pJunctionVolume	= pVolume;
@@ -4806,14 +4806,14 @@ void CAIHumanStateDraw::Update()
 		// Knock target back if we're drawing a melee weapon.
 
 		else if( ( !m_bFired ) &&
-				 ( m_eWeaponType == kAIWeap_Melee ) ) 
+				 ( m_eWeaponType == kAIWeap_Melee ) )
 		{
 			GetAI()->GetTarget()->SetPushSpeed(800.f);
 			GetAI()->GetTarget()->SetPushMinDist( GetAI()->GetDims().z * 2.f );
 
 			if( m_bDrew &&
 				( GetAI()->GetBrain()->GetRangeStatus( kAIWeap_Melee ) != eRangeStatusTooFar ) )
-			{				
+			{
 				// AccuracyModifier is subtracted. Using 2 to make AI really
 				// accurate when drawing the weapon.
 
@@ -4866,7 +4866,7 @@ void CAIHumanStateDraw::HandleModelString(ArgList* pArgList)
 		// Right Hand
 		//
 
-		sprintf(szAttachment, "%s RightHand (%s)", KEY_ATTACH, szHolsterRight);		
+		sprintf(szAttachment, "%s RightHand (%s)", KEY_ATTACH, szHolsterRight);
 		SendTriggerMsgToObject(GetAI(), GetAI()->GetObject(), LTFALSE, szAttachment);
 
 		// Optional comma separates a weapon from its ammo type.
@@ -4892,7 +4892,7 @@ void CAIHumanStateDraw::HandleModelString(ArgList* pArgList)
 
 		if( szHolsterLeft[0] )
 		{
-			sprintf(szAttachment, "%s LeftHand (%s)", KEY_ATTACH, szHolsterLeft);		
+			sprintf(szAttachment, "%s LeftHand (%s)", KEY_ATTACH, szHolsterLeft);
 			SendTriggerMsgToObject(GetAI(), GetAI()->GetObject(), LTFALSE, szAttachment);
 
 			// Optional comma separates a weapon from its ammo type.

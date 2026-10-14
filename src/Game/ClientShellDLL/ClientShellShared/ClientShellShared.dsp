@@ -38,11 +38,11 @@ RSC=rc.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "..\..\Built\Release\ClientShellDLL\ClientShellShared"
-# PROP Intermediate_Dir "..\..\Built\Release\ClientShellDLL\ClientShellShared"
+# PROP Output_Dir "..\..\built\Release\ClientShellDLL\ClientShellShared"
+# PROP Intermediate_Dir "..\..\built\Release\ClientShellDLL\ClientShellShared"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /MD /W3 /GR /GX /O2 /I ".\\" /I "..\..\..\libs\STLPORT-4.0\STLPORT" /I "..\..\clientres\shared" /I "..\..\shared" /I "..\..\..\Engine\sdk\inc" /I "..\..\..\libs\stdlith" /I "..\..\..\libs\butemgr" /I "..\..\..\libs\cryptmgr" /I "..\..\..\libs\lith" /I "..\..\..\libs\mfcstub" /I "..\..\libs\ltguimgr" /I "..\..\..\libs\regmgr" /I "..\\" /I "..\..\libs\serverdir" /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /D "_CLIENTBUILD" /D "NOPS2" /D "MEMTRACK_CLIENT" /Yu"stdafx.h" /FD /Zm1000 /c
+# ADD CPP /nologo /MD /W3 /GR /GX /O2 /I ".\\" /I "..\..\clientres\shared" /I "..\..\shared" /I "..\..\..\Engine\sdk\inc" /I "..\..\..\libs\stdlith" /I "..\..\..\libs\butemgr" /I "..\..\..\libs\cryptmgr" /I "..\..\..\libs\lith" /I "..\..\..\libs\mfcstub" /I "..\..\libs\ltguimgr" /I "..\..\..\libs\regmgr" /I "..\\" /I "..\..\libs\serverdir" /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /D "_CLIENTBUILD" /D "NOPS2" /D "MEMTRACK_CLIENT" /Yu"stdafx.h" /FD /Zm1000 /c
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
 # ADD RSC /l 0x409 /d "NDEBUG"
 BSC32=bscmake.exe
@@ -61,11 +61,11 @@ LIB32=link.exe -lib
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "..\..\Built\Debug\ClientShellDLL\ClientShellShared"
-# PROP Intermediate_Dir "..\..\Built\Debug\ClientShellDLL\ClientShellShared"
+# PROP Output_Dir "..\..\built\Debug\ClientShellDLL\ClientShellShared"
+# PROP Intermediate_Dir "..\..\built\Debug\ClientShellDLL\ClientShellShared"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /Yu"stdafx.h" /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /GR /GX /ZI /Od /I ".\\" /I "..\..\..\libs\STLPORT-4.0\STLPORT" /I "..\..\clientres\shared" /I "..\..\shared" /I "..\..\..\Engine\sdk\inc" /I "..\..\..\libs\stdlith" /I "..\..\..\libs\butemgr" /I "..\..\..\libs\cryptmgr" /I "..\..\..\libs\lith" /I "..\..\..\libs\mfcstub" /I "..\..\libs\ltguimgr" /I "..\..\..\libs\regmgr" /I "..\\" /I "..\..\libs\serverdir" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /D "_CLIENTBUILD" /D "NOPS2" /D "MEMTRACK_CLIENT" /FR /Yu"stdafx.h" /FD /GZ /Zm1000 /c
+# ADD CPP /nologo /MDd /W3 /Gm /GR /GX /ZI /Od /I ".\\" /I "..\..\clientres\shared" /I "..\..\shared" /I "..\..\..\Engine\sdk\inc" /I "..\..\..\libs\stdlith" /I "..\..\..\libs\butemgr" /I "..\..\..\libs\cryptmgr" /I "..\..\..\libs\lith" /I "..\..\..\libs\mfcstub" /I "..\..\libs\ltguimgr" /I "..\..\..\libs\regmgr" /I "..\\" /I "..\..\libs\serverdir" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /D "_CLIENTBUILD" /D "NOPS2" /D "MEMTRACK_CLIENT" /FR /Yu"stdafx.h" /FD /GZ /Zm1000 /c
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
 # ADD RSC /l 0x409 /d "_DEBUG"
 BSC32=bscmake.exe
@@ -84,11 +84,11 @@ LIB32=link.exe -lib
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "..\..\Built\Final\ClientShellDLL\ClientShellShared"
-# PROP Intermediate_Dir "..\..\Built\Final\ClientShellDLL\ClientShellShared"
+# PROP Output_Dir "..\..\built\Final\ClientShellDLL\ClientShellShared"
+# PROP Intermediate_Dir "..\..\built\Final\ClientShellDLL\ClientShellShared"
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /MD /W3 /GR /GX /O2 /I ".\\" /I "..\..\..\libs\STLPORT-4.0\STLPORT" /I "..\..\clientres\shared" /I "..\..\shared" /I "..\..\..\Engine\sdk\inc" /I "..\..\..\libs\stdlith" /I "..\..\..\libs\butemgr" /I "..\..\..\libs\cryptmgr" /I "..\..\..\libs\lith" /I "..\..\..\libs\mfcstub" /I "..\..\libs\ltguimgr" /I "..\..\..\libs\regmgr" /I "..\\" /I "..\..\libs\serverdir" /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /D "_CLIENTBUILD" /D "NOPS2" /D "_FINAL" /Yu"stdafx.h" /FD /Zm1000 /c
-# ADD CPP /nologo /MD /W3 /GR /GX /O2 /I ".\\" /I "..\..\..\libs\STLPORT-4.0\STLPORT" /I "..\..\clientres\shared" /I "..\..\shared" /I "..\..\..\Engine\sdk\inc" /I "..\..\..\libs\stdlith" /I "..\..\..\libs\butemgr" /I "..\..\..\libs\cryptmgr" /I "..\..\..\libs\lith" /I "..\..\..\libs\mfcstub" /I "..\..\libs\ltguimgr" /I "..\..\..\libs\regmgr" /I "..\\" /I "..\..\libs\serverdir" /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /D "_CLIENTBUILD" /D "NOPS2" /D "_FINAL" /D "MEMTRACK_CLIENT" /Yu"stdafx.h" /FD /Zm1000 /c
+# ADD BASE CPP /nologo /MD /W3 /GR /GX /O2 /I ".\\" /I "..\..\clientres\shared" /I "..\..\shared" /I "..\..\..\Engine\sdk\inc" /I "..\..\..\libs\stdlith" /I "..\..\..\libs\butemgr" /I "..\..\..\libs\cryptmgr" /I "..\..\..\libs\lith" /I "..\..\..\libs\mfcstub" /I "..\..\libs\ltguimgr" /I "..\..\..\libs\regmgr" /I "..\\" /I "..\..\libs\serverdir" /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /D "_CLIENTBUILD" /D "NOPS2" /D "_FINAL" /Yu"stdafx.h" /FD /Zm1000 /c
+# ADD CPP /nologo /MD /W3 /GR /GX /O2 /I ".\\" /I "..\..\clientres\shared" /I "..\..\shared" /I "..\..\..\Engine\sdk\inc" /I "..\..\..\libs\stdlith" /I "..\..\..\libs\butemgr" /I "..\..\..\libs\cryptmgr" /I "..\..\..\libs\lith" /I "..\..\..\libs\mfcstub" /I "..\..\libs\ltguimgr" /I "..\..\..\libs\regmgr" /I "..\\" /I "..\..\libs\serverdir" /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /D "_CLIENTBUILD" /D "NOPS2" /D "_FINAL" /D "MEMTRACK_CLIENT" /Yu"stdafx.h" /FD /Zm1000 /c
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
 # ADD RSC /l 0x409 /d "NDEBUG"
 BSC32=bscmake.exe
@@ -295,6 +295,7 @@ SOURCE=.\DebugLineFX.cpp
 # Begin Source File
 
 SOURCE=..\..\Shared\DebugNew.cpp
+# SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # Begin Source File
 

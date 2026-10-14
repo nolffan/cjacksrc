@@ -297,9 +297,12 @@ bool CScatterFX::UpdateSubVolumes( void )
 	if( !m_bEnabled )
 	{
 		std::set<CScatterFXSubVolume*>::iterator it = activeSubVolumes.begin();
-		for( ; it != activeSubVolumes.end(); it++ )
+		while( it != activeSubVolumes.end() )
 		{
+			std::set<CScatterFXSubVolume*>::iterator next = it;
+			next++;
 			(*it)->Deactivate();
+			it = next;
 		}
 
 		return true;
@@ -313,9 +316,12 @@ bool CScatterFX::UpdateSubVolumes( void )
 	{
 		// camera is farther away than the max draw distance for this volume, so kill all the subvolumes
 		std::set<CScatterFXSubVolume*>::iterator it = activeSubVolumes.begin();
-		for( ; it != activeSubVolumes.end(); it++ )
+		while( it != activeSubVolumes.end() )
 		{
+			std::set<CScatterFXSubVolume*>::iterator next = it;
+			next++;
 			(*it)->Deactivate();
+			it = next;
 		}
 
 		// don't test any of the subvolumes directly
@@ -390,7 +396,8 @@ CScatterFXSubVolume::CScatterFXSubVolume() :
 		float angleStep = (2*PI)/(float)SCATTERFX_TABLESIZE;
 		float curAngle = 0.0f;
 
-		for( uint32 i = 0; i < SCATTERFX_TABLESIZE; ++i )
+		uint32 i;
+		for( i = 0; i < SCATTERFX_TABLESIZE; ++i )
 		{
 			rndTable[i] = (uint32)(((float)rand() / (float)RAND_MAX) * (SCATTERFX_TABLESIZE - 1));
 			sinTable[i] = (float)sin( curAngle );

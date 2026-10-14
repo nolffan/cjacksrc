@@ -22,6 +22,8 @@
 #include "AIUtils.h"
 #include "AIMovement.h"
 
+#include <algorithm>
+
 
 // Globals/statics.
 static LTFLOAT s_fGoalUpdateBasis = 0.0f;
@@ -56,7 +58,7 @@ std::unary_function<INVALID_NODE*, int>
 //
 // Unlocks a locked node represented by an INVALID_NODE structure
 //
-struct UnblockNode : 
+struct UnblockNode :
 std::unary_function<INVALID_NODE*, int>
 {
 	UnblockNode( HOBJECT hBlocker ) { m_hBlocker = hBlocker; }
@@ -243,15 +245,15 @@ void CAIGoalAbstract::InitGoal(CAI* pAI, LTFLOAT fImportance, LTFLOAT fTime)
 	// Goals that are not triggered start with their base importance.
 
 	AIGBM_GoalTemplate* pTemplate = g_pAIGoalButeMgr->GetTemplate( GetGoalType() );
-	if( pTemplate->aAttractors || 
-		pTemplate->flagSenseTriggers || 
+	if( pTemplate->aAttractors ||
+		pTemplate->flagSenseTriggers ||
 		pTemplate->nDamagePriority)
 	{
 		m_fCurImportance = 0.f;
 	}
 
 	// Recalc CurImportance.
-	
+
 	RecalcImportance();
 }
 
@@ -302,7 +304,7 @@ void CAIGoalAbstract::SetBaseImportance(LTFLOAT fImportance)
 // ----------------------------------------------------------------------- //
 
 LTFLOAT CAIGoalAbstract::UpdateGoalTimer(LTFLOAT fTime)
-{	
+{
 	AIGBM_GoalTemplate* pTemplate = g_pAIGoalButeMgr->GetTemplate( GetGoalType() );
 
 	LTFLOAT fDeltaTime = fTime - m_fLastUpdateTime;
@@ -321,13 +323,13 @@ LTFLOAT CAIGoalAbstract::UpdateGoalTimer(LTFLOAT fTime)
 	else if( ( !m_pGoalMgr->IsGoalLocked(this) )
 		&& ( m_pGoalMgr->GetCurrentGoal() )
 		&& ( m_pGoalMgr->GetCurrentGoal()->GetCurImportance() > 0.f )
-		&& ( m_fCurImportance > 0.f ) 
-		&& ( m_fDecayRate > 0.f ) 
-		&& ( ( m_fLastCurToBaseTime + m_pAI->GetSenseUpdateRate() ) < fTime ) 
-		&& ( !m_pGoalMgr->FreezeDecay() ) 
+		&& ( m_fCurImportance > 0.f )
+		&& ( m_fDecayRate > 0.f )
+		&& ( ( m_fLastCurToBaseTime + m_pAI->GetSenseUpdateRate() ) < fTime )
+		&& ( !m_pGoalMgr->FreezeDecay() )
 		&& ( !m_pAI->GetAnimationContext()->IsTransitioning() ) )
 	{
-		// Triggered goals should go completely inactive 
+		// Triggered goals should go completely inactive
 		// when another goal is active.
 
 		if( !m_bRequiresImmediateResponse )
@@ -345,7 +347,7 @@ LTFLOAT CAIGoalAbstract::UpdateGoalTimer(LTFLOAT fTime)
 		}
 	}
 
-	if( m_bRequiresUpdates || 
+	if( m_bRequiresUpdates ||
 		( !m_pGoalMgr->HasLockedGoal() ) )
 	{
 		// Check if it's time to Recalc.
@@ -424,7 +426,7 @@ void CAIGoalAbstract::SetCurToBaseImportance()
 			m_fCurImportance = m_fBaseImportance;
 			m_fLastCurToBaseTime = fCurTime;
 		}
-		else 
+		else
 		{
 			// Reset NextUpdateTime.
 
@@ -575,7 +577,7 @@ void CAIGoalAbstract::BlockAttractorNodeFromSearch(HOBJECT hNode)
 void CAIGoalAbstract::UnblockAttractorNodeFromSearch(HOBJECT hNode)
 {
 	AIASSERT( (hNode == LTNULL) || (m_hBlockedAttractorNode == hNode), m_pAI->m_hObject, "CAIGoalAbstract::UnblockAttractorNodeFromSearch: hNode does not match.");
-	if( m_hBlockedAttractorNode != LTNULL ) 
+	if( m_hBlockedAttractorNode != LTNULL )
 	{
 		AINode* pBlockedAttractorNode = (AINode*)g_pLTServer->HandleToObject(hNode);
 		pBlockedAttractorNode->Unlock( m_pAI->m_hObject );
@@ -626,19 +628,19 @@ bool CAIGoalAbstract::HandleCommand(const CParsedMsg &cMsg)
 		}
 
 		HandleNameValuePair(szName, szValue);
-	}	
+	}
 
 	return true;
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CAIGoalAbstract::AddInvalidNode()
-//              
+//
 //	PURPOSE:	Adds an invalid node to the list of nodes which are filtered
-//				out of searches.  This will minimize the number of unneeded 
+//				out of searches.  This will minimize the number of unneeded
 //				search hits.
-//              
+//
 //----------------------------------------------------------------------------
 void CAIGoalAbstract::AddInvalidNode( HOBJECT hNode )
 {
@@ -650,11 +652,12 @@ void CAIGoalAbstract::AddInvalidNode( HOBJECT hNode )
 
 	// If the node is already in the list, then return.  This shouldn't
 	// really happen, but it is worth checking for.
+	INVALID_NODE *pNull = NULL;
 	std::vector<INVALID_NODE*>::iterator it;
 	it = find_if(
 		pList->begin(),
 		pList->end(),
-		bind2nd( equal_to<INVALID_NODE*>(), NULL ));
+		bind2nd( equal_to<INVALID_NODE*>(), pNull ));
 
 	if ( it !=  pList->end() )
 	{
@@ -667,12 +670,12 @@ void CAIGoalAbstract::AddInvalidNode( HOBJECT hNode )
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CAIGoalAbstract::IsPathToNodeValid()
-//              
+//
 //	PURPOSE:	Checks to see if there is a valid path to a node.  If there
 //				is not, then add the node to the invalid node list.
-//              
+//
 //	NOTE:		Ugly early return to allow enabling/disabling of feature
 //
 //----------------------------------------------------------------------------
@@ -696,11 +699,11 @@ bool CAIGoalAbstract::IsPathToNodeValid( AINode* pNode )
 
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	AutoNodeBlocker::AutoNodeBlocker()
-//              
+//
 //	PURPOSE:	Blocks the list of nodes.
-//              
+//
 //	NOTE:		Ugly early return to allow enabling/disabling of feature
 //
 //----------------------------------------------------------------------------
@@ -733,13 +736,13 @@ AutoNodeBlocker::AutoNodeBlocker( HOBJECT hBlocker, std::vector<INVALID_NODE*>* 
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	AutoNodeBlocker::AutoNodeBlocker()
-//              
+//
 //	PURPOSE:	Unlocks all blocked nodes in the list.
-//     
+//
 //	NOTE:		Ugly early return to allow enabling/disabling of feature
-//         
+//
 //----------------------------------------------------------------------------
 AutoNodeBlocker::~AutoNodeBlocker()
 {
@@ -753,7 +756,7 @@ AutoNodeBlocker::~AutoNodeBlocker()
 		"~AutoNodeBlocker: No invalid node list!" );
 
 	using std::for_each;
-	for_each( 
+	for_each(
 		m_plistInvalidNodes->begin(),
 		m_plistInvalidNodes->end(),
 		UnblockNode( m_hBlocker )
@@ -765,11 +768,11 @@ AutoNodeBlocker::~AutoNodeBlocker()
 
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	INVALID_NODE::INVALID_NODE()
-//              
+//
 //	PURPOSE:	Initializes the node
-//              
+//
 //----------------------------------------------------------------------------
 INVALID_NODE::INVALID_NODE()
 {
@@ -779,11 +782,11 @@ INVALID_NODE::INVALID_NODE()
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	INVALID_NODE::operator==()
-//              
+//
 //	PURPOSE:	Handles equality testing of the INVALID_NODE
-//              
+//
 //----------------------------------------------------------------------------
 bool INVALID_NODE::operator==(const LTObjRef& rhs )
 {
@@ -795,11 +798,11 @@ bool INVALID_NODE::operator==(const LTObjRef& rhs )
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	INVALID_NODE::INVALID_NODE()
-//              
+//
 //	PURPOSE:	Copies a INVALID_NODE.
-//              
+//
 //----------------------------------------------------------------------------
 INVALID_NODE::INVALID_NODE(const INVALID_NODE& rhs)
 {
@@ -809,11 +812,11 @@ INVALID_NODE::INVALID_NODE(const INVALID_NODE& rhs)
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	INVALID_NODE::operator=()
-//              
+//
 //	PURPOSE:	Does assignment of a INVALID_NODE to another INVALID_NODE
-//              
+//
 //----------------------------------------------------------------------------
 INVALID_NODE& INVALID_NODE::operator=(const INVALID_NODE& rhs )
 {

@@ -1,28 +1,30 @@
 //----------------------------------------------------------------------------
-//              
+//
 //	MODULE:		CollectiveRelationMgr.cpp
-//              
+//
 //	PURPOSE:	CCollectiveRelationMgr implementation
-//              
+//
 //	CREATED:	21.01.2002
 //
 //	(c) 2002 Monolith Productions, Inc.  All Rights Reserved
 //
 //
 //	COMMENTS:	-
-//              
-//              
+//
+//
 //----------------------------------------------------------------------------
 
 
 // Includes
 #include "stdafx.h"
 
-#include "CollectiveRelationMgr.h"		
+#include "CollectiveRelationMgr.h"
 #include "ObjectRelationMgr.h"
 #include "RelationMgr.h"
 #include "AIAssert.h"
 #include "ServerUtilities.h"
+
+#include <algorithm>
 
 // Forward declarations
 
@@ -43,12 +45,12 @@ public:
 };
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CCollectiveRelationMgr::CCollectiveRelationMgr()
-//              
+//
 //	PURPOSE:	Link the Collective up with the RelationMgrs list of
 //				collectives.
-//              
+//
 //----------------------------------------------------------------------------
 CCollectiveRelationMgr::CCollectiveRelationMgr()
 {
@@ -58,15 +60,15 @@ CCollectiveRelationMgr::CCollectiveRelationMgr()
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CCollectiveRelationMgr::~CCollectiveRelationMgr()
-//              
-//	PURPOSE:	
+//
+//	PURPOSE:
 //				ToDo!: Should notify the members (if any) that this collective
 //				no longer exists to avoid dangling pointers!!!  Currently
 //				passable as collectives are destroyed when the game level
 //				ends, but still nasty
-//              
+//
 //----------------------------------------------------------------------------
 CCollectiveRelationMgr::~CCollectiveRelationMgr()
 {
@@ -75,26 +77,26 @@ CCollectiveRelationMgr::~CCollectiveRelationMgr()
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CCollectiveRelationMgr::operator=()
-//              
+//
 //	PURPOSE:	Create a CCollectiveRelationMgr from a template
-//              
+//
 //----------------------------------------------------------------------------
 CCollectiveRelationMgr& CCollectiveRelationMgr::operator=(const Collective_Template& rhs )
 {
 	LTStrCpy( m_szName, rhs.m_szKey, sizeof(m_szName) );
 	LTStrCpy( m_szRelationSet, rhs.m_szRelationSet, sizeof(m_szRelationSet) );
-	
+
 	return *this;
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CCollectiveRelationMgr::Save()
-//              
-//	PURPOSE:	
-//              
+//
+//	PURPOSE:
+//
 //----------------------------------------------------------------------------
 int CCollectiveRelationMgr::Save(ILTMessage_Write *pMsg)
 {
@@ -106,11 +108,11 @@ int CCollectiveRelationMgr::Save(ILTMessage_Write *pMsg)
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CCollectiveRelationMgr::Load()
-//              
-//	PURPOSE:	
-//              
+//
+//	PURPOSE:
+//
 //----------------------------------------------------------------------------
 int CCollectiveRelationMgr::Load(ILTMessage_Read *pMsg)
 {
@@ -122,12 +124,12 @@ int CCollectiveRelationMgr::Load(ILTMessage_Read *pMsg)
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CCollectiveRelationMgr::Init()
-//              
+//
 //	PURPOSE:	Initialize the CollectiveRelationMgr, reading it from the bute
 //				file.  Then Initialize its aggregate RelationSet instance.
-//              
+//
 //----------------------------------------------------------------------------
 void CCollectiveRelationMgr::Init(const char* const szName)
 {
@@ -143,15 +145,15 @@ void CCollectiveRelationMgr::Init(const char* const szName)
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CCollectiveRelationMgr::Sync()
-//              
+//
 //	PURPOSE:	For each relation in the collective, remove any momentos this
 //				Instance contained with the matching description, then add
 //				the collective version of the relation.
-//              
+//
 //	PURPOSE:	Do an update IF it is time to (as this function may be called
-//				several times per frame since the members of the collective 
+//				several times per frame since the members of the collective
 //				call the collectives update when they sync with it.)
 //
 //----------------------------------------------------------------------------
@@ -167,14 +169,14 @@ void CCollectiveRelationMgr::Sync(const CObjectRelationMgr* pObjectRelationMgr)
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CCollectiveRelationMgr::AddRelation()
-//              
+//
 //	PURPOSE:	Collectives add relationships to themselves only, allowing the
 //				members to sync to the Collective (at which point we add the
 //				relation directly to the object, skipping over the Personal
 //				relation momentos.
-//              
+//
 //----------------------------------------------------------------------------
 void CCollectiveRelationMgr::AddRelation(const RelationDescription& RD)
 {
@@ -188,13 +190,13 @@ void CCollectiveRelationMgr::AddRelation(const RelationDescription& RD)
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CCollectiveRelationMgr::RemoveRelationCallback()
-//              
+//
 //	PURPOSE:	For each member, remove from their relation state the
 //				described relation.  Note that this ignores any personal
 //				state, and blindly erases the value.
-//              
+//
 //----------------------------------------------------------------------------
 void CCollectiveRelationMgr::RemoveRelationCallback(const RelationDescription& RD)
 {

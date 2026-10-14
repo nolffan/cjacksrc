@@ -137,7 +137,7 @@ void CHUDDecision::Show(ILTMessage_Read *pMsg)
 		//fill the new window
 		m_Dlg.SetScale(1.0f);
 		LTIntPt offset = m_Offset;
-		for (i=0; i < MAX_DECISION_CHOICES; i++)
+		for (int i=0; i < MAX_DECISION_CHOICES; i++)
 		{
 			char szStr[256] = "";
 			if (nID[i])

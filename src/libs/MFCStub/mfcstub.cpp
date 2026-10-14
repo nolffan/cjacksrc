@@ -30,7 +30,7 @@ CPoint::CPoint(const POINT *pPt)
 	*(POINT *)this = *pPt;
 }
 
-CPoint::CPoint(Suint32 newx, Suint32 newy)
+CPoint::CPoint(int32 newx, int32 newy)
 {
 	x = newx;
 	y = newy;
@@ -53,7 +53,7 @@ CRect::CRect(const RECT *pRect)
 	*(RECT *)this = *pRect;
 }
 
-CRect::CRect(Suint32 l, Suint32 t, Suint32 r, Suint32 b) 
+CRect::CRect(int32 l, int32 t, int32 r, int32 b) 
 {
 	left = l;
 	top = t;
@@ -72,7 +72,7 @@ CRect::CRect(POINT topLeft, POINT bottomRight)
 
 // CRect Functions
 
-void CRect::SetRect(Suint32 l, Suint32 t, Suint32 r, Suint32 b)
+void CRect::SetRect(int32 l, int32 t, int32 r, int32 b)
 { 
 	left = l; 
 	top = t; 
@@ -120,7 +120,7 @@ const CPoint& CRect::BottomRight() const
 
 void CRect::NormalizeRect()
 {
-	Suint32 temp;
+	int32 temp;
 	if (left > right)
 	{
 		temp = right;
@@ -421,7 +421,7 @@ int CString::Find(char ch, uint32 start) const
 	if (start >= GetLength())
 		return -1;
 
-	char *pResult = strchr(&(GetBuffer()[start]), ch);
+	const char *pResult = strchr(&(GetBuffer()[start]), ch);
 
 	return (pResult) ? pResult - GetBuffer() : -1;
 }
@@ -431,12 +431,12 @@ int CString::Find(LPCTSTR pSub, uint32 start) const
 	if (start >= GetLength())
 		return -1;
 
-	char *pResult = strstr(&(GetBuffer()[start]), pSub);
+	const char *pResult = strstr(&(GetBuffer()[start]), pSub);
 
 	return (pResult) ? pResult - GetBuffer() : -1;
 }
 
-void CString::ReleaseBuffer(Suint32 length)
+void CString::ReleaseBuffer(int32 length)
 {
 	// Calculate the length if they don't give us one
 	if (length < 0)

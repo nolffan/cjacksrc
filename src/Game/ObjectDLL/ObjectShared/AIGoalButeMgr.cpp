@@ -340,8 +340,8 @@ void CAIGoalButeMgr::ReadGoalSet()
 EnumAIGoalType CAIGoalButeMgr::ConvertToGoalTypeEnum(char* szGoalType)
 {
 	// Look for goal name in enum list.
-
-	for(uint32 iGoalType=0; iGoalType < kGoal_Count; ++iGoalType)
+	uint32 iGoalType;
+	for(iGoalType=0; iGoalType < kGoal_Count; ++iGoalType)
 	{
 		if(0 == stricmp(szGoalType, s_aszGoalTypes[iGoalType]) )
 		{
@@ -516,7 +516,7 @@ void CAIGoalButeMgr::ReadSmartObjectTemplate(uint32 nID)
 			}
 			else 
 			{
-				pSmartObject->mapCmds.insert( SMART_OBJECT_CMD_MAP::value_type( eNodeType, LTNULL ) );
+				pSmartObject->mapCmds.insert( SMART_OBJECT_CMD_MAP::value_type( eNodeType, (HSTRING)LTNULL ) );
 			}
 
 			++iFlag;

@@ -99,6 +99,11 @@ VarTrack			g_vtApplyWorldOffset;
 VarTrack			g_vtPTestMinFPS;
 VarTrack			g_vtPTestMaxFPS;
 
+#ifdef _TRON_E3_DEMO
+	#define TRON_E3_DEMO_IDLE_TIME		120.0f
+	float             s_fDemoTime		= 0.0f;
+#endif
+
 extern CCheatMgr*	g_pCheatMgr;
 extern LTVector		g_vPlayerCameraOffset;
 extern VarTrack		g_vtFOVXNormal;
@@ -1579,6 +1584,16 @@ void CGameClientShell::Update()
 		SetPhysicsStateTimeStep(&g_waterPhysicsState, m_fFrameTime);
 	}
 
+#ifdef _TRON_E3_DEMO
+	// Check to see if they've left the game idle for too long
+	// If so, take them to the demo screen state
+	s_fDemoTime += g_pLTClient->GetFrameTime();
+	if(s_fDemoTime > TRON_E3_DEMO_IDLE_TIME)
+	{
+		GetInterfaceMgr()->ShowDemoScreens(LTFALSE);
+	}
+#endif
+
 	// Update the interface (don't do anything if the interface mgr
 	// handles the update...)
 
@@ -1683,9 +1698,9 @@ void CGameClientShell::UpdatePlaying()
 						( nEndTicks + ~g_nStartTicks );
 
 					// Make sure all the counters match up.
-					if((( uint32 )abs( nDeltaTimeB - nDeltaClientTime ) > g_nTolerance ) || 
-						(( uint32 )abs( nDeltaTicks - nDeltaClientTime ) > g_nTolerance ) ||
-						(( uint32 )abs( nDeltaTimeB - nDeltaTicks ) > g_nTolerance ))
+					if( (( uint32 ) abs( (long)(nDeltaTimeB - nDeltaClientTime) ) > g_nTolerance ) || 
+						(( uint32 ) abs( (long)(nDeltaTicks - nDeltaClientTime) ) > g_nTolerance ) ||
+						(( uint32 ) abs( (long)(nDeltaTimeB - nDeltaTicks) ) > g_nTolerance ) )
 					{
 						g_pLTClient->CPrint( "Speedhack kick" );
 						g_pLTClient->CPrint( "nDeltaTimeB %d", nDeltaTimeB );
@@ -1978,6 +1993,11 @@ static void QuickLoadCallBack(LTBOOL bReturn, void *pData)
 void CGameClientShell::OnCommandOn(int command)
 {
 
+#ifdef _TRON_E3_DEMO
+	// Reset the demo timer
+	s_fDemoTime = 0.0f;
+#endif
+
 	// Make sure we're in the world...
 
 	if (!GetPlayerMgr()->IsPlayerInWorld()) return;
@@ -2011,6 +2031,11 @@ void CGameClientShell::OnCommandOn(int command)
 
 void CGameClientShell::OnCommandOff(int command)
 {
+#ifdef _TRON_E3_DEMO
+	// Reset the demo timer
+	s_fDemoTime = 0.0f;
+#endif
+
 	// Let the interface handle the command first...
 	if (GetInterfaceMgr( )->OnCommandOff(command))
 	{
@@ -2094,6 +2119,7 @@ void CGameClientShell::OnKeyDown(int key, int rep)
 	}
 
 #ifndef _DEMO
+#ifndef _TRON_E3_DEMO
 #ifndef _FINAL
 	if (key == VK_MULTIPLY)
 	{
@@ -2108,6 +2134,7 @@ void CGameClientShell::OnKeyDown(int key, int rep)
 			g_pLTClient->RunConsoleString("cmd msg player EndLightCycle");
 		}
 	}
+#endif
 #endif
 #endif
 
@@ -3905,6 +3932,10 @@ void CGameClientShell::FirstUpdate()
 {
 	if (!m_bFirstUpdate) return; 
 
+#ifdef _TRON_E3_DEMO
+	s_fDemoTime = 0.0f;
+#endif
+
 	GetPlayerMgr()->FirstUpdate();
 
     m_bFirstUpdate = false;
@@ -4141,7 +4172,7 @@ void CGameClientShell::RenderCamera(bool bDrawInterface)
 	RenderDebugStrings();
 
     g_pLTClient->EndOptimized2D();
-    g_pLTClient->End3D();
+    g_pLTClient->End3D(END3D_CANDRAWCONSOLE);
 
 }
 
@@ -4572,9 +4603,9 @@ BOOL HookWindow()
 
 	// Get the window procedure
 #ifdef STRICT
-	g_pfnMainWndProc = (WNDPROC)GetWindowLong(g_hMainWnd,GWL_WNDPROC);
+	g_pfnMainWndProc = (WNDPROC)GetWindowLongPtr(g_hMainWnd,GWLP_WNDPROC);
 #else
-	g_pfnMainWndProc = (FARPROC)GetWindowLong(g_hMainWnd,GWL_WNDPROC);
+	g_pfnMainWndProc = (FARPROC)GetWindowLongPtr(g_hMainWnd,GWLP_WNDPROC);
 #endif
 
 	if(!g_pfnMainWndProc)
@@ -4584,7 +4615,7 @@ BOOL HookWindow()
 	}
 
 	// Replace it with ours
-	if(!SetWindowLong(g_hMainWnd,GWL_WNDPROC,(LONG)HookedWindowProc))
+	if(!SetWindowLongPtr(g_hMainWnd,GWLP_WNDPROC, (LONG_PTR)HookedWindowProc))
 	{
 		TRACE("HookWindow - ERROR - could not set the window procedure!\n");
 		return FALSE;
@@ -4605,7 +4636,7 @@ void UnhookWindow()
 {
 	if(g_pfnMainWndProc && g_hMainWnd)
 	{
-		SetWindowLong(g_hMainWnd, GWL_WNDPROC, (LONG)g_pfnMainWndProc);
+		SetWindowLongPtr(g_hMainWnd, GWLP_WNDPROC, (LONG_PTR)g_pfnMainWndProc);
 		g_hMainWnd = 0;
 		g_pfnMainWndProc = NULL;
 	}

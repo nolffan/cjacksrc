@@ -25,8 +25,8 @@
 
 // Defines....
 
-#define	FXLOD_DIST_LOW					1500.0f
-#define FXLOD_DIST_MED					3000.0f
+#define FXLOD_DIST_LOW					6000.0f
+#define FXLOD_DIST_MED					6000.0f
 #define FXLOD_DIST_HIGH					6000.0f
 
 // Globals....
@@ -283,7 +283,9 @@ void CLIENTFX_INSTANCE::RemoveAllEffects()
 CClientFXMgr::CClientFXMgr()
 {
 	m_eDetailLevel		= FXLOD_HIGH;
-	m_dDetailDistSqr	= FXLOD_DIST_HIGH * FXLOD_DIST_HIGH;
+	m_dDetailDistSqr[FXLOD_LOW]	= FXLOD_DIST_LOW * FXLOD_DIST_LOW;
+	m_dDetailDistSqr[FXLOD_MED]	= FXLOD_DIST_MED * FXLOD_DIST_MED;
+	m_dDetailDistSqr[FXLOD_HIGH]	= FXLOD_DIST_HIGH * FXLOD_DIST_HIGH;
 	m_nPrevSystemTime	= 0;
 	m_nSystemTimeBase	= GetTickCount();
 	m_bPaused			= false;
@@ -519,7 +521,7 @@ bool CClientFXMgr::UpdateInstanceSuspended(const LTVector& vCameraPos, CLIENTFX_
 
 			//see if they are outside or inside the range.
 			// Really close FX should always be in range...
-			if( fDistToEffectSqr > m_dDetailDistSqr )
+			if( fDistToEffectSqr > m_dDetailDistSqr[m_eDetailLevel] )
 			{
 				bSuspendInstance	= true;
 
@@ -582,7 +584,8 @@ void CClientFXMgr::ApplyEffectStartingOffset(CBaseFX* pFX, const FX_KEY* pKey)
 
 	//now actually update
 	
-	for(float fCurrTime = 0.0f; fCurrTime + fTimeInc <= fOffsetAmount; fCurrTime += fTimeInc)
+	float fCurrTime;
+	for(fCurrTime = 0.0f; fCurrTime + fTimeInc <= fOffsetAmount; fCurrTime += fTimeInc)
 	{
 		pFX->Update(fTimeInc);
 
@@ -1673,6 +1676,43 @@ void CClientFXMgr::SetDetailLevel( int nLOD )
 			break;
 	}
 }
+
+
+// ----------------------------------------------------------------------- //
+//
+//  ROUTINE:	CClientFXMgr::SetDisableDistances
+//
+//  PURPOSE:	Sets the distances that effect are disabled at if the 
+//					disable at dist flag is set
+//
+// ----------------------------------------------------------------------- //
+
+void CClientFXMgr::SetDisableDistances( float fLow, float fMed, float fHigh )
+{
+	SetDisableDistance(FXLOD_LOW, fLow);
+	SetDisableDistance(FXLOD_MED, fMed);
+	SetDisableDistance(FXLOD_HIGH, fHigh);
+}
+
+
+
+// ----------------------------------------------------------------------- //
+//
+//  ROUTINE:	CClientFXMgr::SetDisableDistance
+//
+//  PURPOSE:	Sets the distances that effect are disabled at if the 
+//					disable at dist flag is set
+//
+// ----------------------------------------------------------------------- //
+
+void CClientFXMgr::SetDisableDistance( int nLOD, float fDistance )
+{
+	nLOD = LTCLAMP(nLOD, FXLOD_LOW, FXLOD_HIGH);
+
+	m_dDetailDistSqr[nLOD] = fDistance * fDistance;
+
+}
+
 
 float CClientFXMgr::GetFrameTime()
 {

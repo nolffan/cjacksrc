@@ -26,7 +26,7 @@ CTO2LayoutMgr::CTO2LayoutMgr() : CLayoutMgr()
 
 // ----------------------------------------------------------------------- //
 //
-//	ROUTINE:	CTO2LayoutMgr::Init()
+//	ROUTINE:	CTronLayoutMgr::Init()
 //
 //	PURPOSE:	Init mgr
 //

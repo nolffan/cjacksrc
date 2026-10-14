@@ -22,6 +22,7 @@
 #include "AutoMessage.h"
 #include "NetDefs.h"
 #include <vector>
+#include <algorithm>
 
 // ----------------------------------------------------------------------- //
 //
@@ -34,7 +35,7 @@
 class ScmdConsoleCommandHandler
 {
 	public:
-		
+
 		// String token.
 		virtual CParsedMsg::CToken const& Token( ) = 0;
 

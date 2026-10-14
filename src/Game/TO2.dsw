@@ -1,0 +1,284 @@
+Microsoft Developer Studio Workspace File, Format Version 6.00
+# WARNING: DO NOT EDIT OR DELETE THIS WORKSPACE FILE!
+
+###############################################################################
+
+Project: "ButeMgr"=..\libs\ButeMgr\ButeMgr.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name ltmem
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "ClientFxDLL"=.\ClientFxDLL\ClientFxDLL.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name MFCStub
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name ButeMgr
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name CryptMgr
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name Lib_StdLith
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name Lib_Lith
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name LTGUIMgr
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name ltmem
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "ClientRes"=.\ClientRes\TO2\ClientRes.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "ClientShellDLL"=.\ClientShellDLL\TO2\ClientShellDLL.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name ButeMgr
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name CryptMgr
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name Lib_Lith
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name Lib_StdLith
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name LTGUIMgr
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name MFCStub
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name RegMgr
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name ClientShellShared
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name ClientRes
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name ltmem
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "ClientShellShared"=.\CLIENTSHELLDLL\ClientShellShared\ClientShellShared.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name ClientRes
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "CryptMgr"=..\libs\CryptMgr\cryptmgr.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name ltmem
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "LTGUIMgr"=.\Libs\LTGUIMgr\ltguimgr60.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name ltmem
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "Lib_Lith"=..\libs\lith\Lib_Lith.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name ltmem
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "Lib_StdLith"=..\libs\stdlith\Lib_StdLith.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name ltmem
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "MFCStub"=..\libs\MFCStub\MFCStub60.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name ltmem
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "Object"=.\ObjectDLL\TO2\Object.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name ButeMgr
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name CryptMgr
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name Lib_Lith
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name Lib_StdLith
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name MFCStub
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name RegMgr
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name ObjectShared
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "ObjectShared"=.\ObjectDLL\ObjectShared\ObjectShared.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name ltmem
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "RegMgr"=..\libs\RegMgr\regmgr60.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name ltmem
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "ServerRes"=.\ServerRes\TO2\ServerRes.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Global:
+
+Package=<5>
+{{{
+}}}
+
+Package=<3>
+{{{
+}}}
+
+###############################################################################
+

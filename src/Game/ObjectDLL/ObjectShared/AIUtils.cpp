@@ -411,7 +411,7 @@ bool RayIntersectBox(const LTVector& vBoxMin,
 
 	// Calculate T distances to candidate planes.
 
-	for( iDim=0; iDim < kNumDimensions; ++iDim )
+	for(int iDim=0; iDim < kNumDimensions; ++iDim )
 	{
 		if( ( eQuad[iDim] != kQuad_Middle ) && ( vDir[iDim] != 0.f ) )
 		{
@@ -424,7 +424,7 @@ bool RayIntersectBox(const LTVector& vBoxMin,
 
 	// Get largest of the maxT's for final choice of intersection.
 
-	for( iDim=1; iDim < kNumDimensions; ++iDim )
+	for(int iDim=1; iDim < kNumDimensions; ++iDim )
 	{
 		if( fMaxT[nWhichPlane] < fMaxT[iDim] )
 		{
@@ -439,7 +439,7 @@ bool RayIntersectBox(const LTVector& vBoxMin,
 		return false;
 	}
 
-	for( iDim=0; iDim < kNumDimensions; ++iDim )
+	for(int iDim=0; iDim < kNumDimensions; ++iDim )
 	{
 		if( nWhichPlane != iDim )
 		{

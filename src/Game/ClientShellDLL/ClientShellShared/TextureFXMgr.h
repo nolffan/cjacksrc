@@ -5,9 +5,9 @@
 #define __TEXTUREFXMGR_H__
 
 #include <map>
-#include <slist>
+#include <list>
 
-class CTextureFXMgr 
+class CTextureFXMgr
 {
 public:
 
@@ -28,11 +28,16 @@ private:
 	{
 		SWaitingVar() {}
 		SWaitingVar(uint32 nID, uint32 nVar, float fVal) : m_nID(nID), m_nVar(nVar), m_fVal(fVal) {}
-		SWaitingVar(const SWaitingVar &cOther) : m_nID(cOther.m_nID), m_nVar(cOther.m_nVar), m_fVal(cOther.m_fVal) {}
-		SWaitingVar &operator=(const SWaitingVar &cOther) {
-			m_nID = cOther.m_nID;
-			m_nVar = cOther.m_nVar;
-			m_fVal = cOther.m_fVal;
+		SWaitingVar(const SWaitingVar &rhs) : m_nID(rhs.m_nID), m_nVar(rhs.m_nVar), m_fVal(rhs.m_fVal) {}
+		SWaitingVar &operator=(const SWaitingVar &rhs)
+		{
+			if (this != &rhs)
+			{
+				m_nID 	= rhs.m_nID;
+				m_nVar 	= rhs.m_nVar;
+				m_fVal 	= rhs.m_fVal;
+			}
+
 			return *this;
 		}
 		uint32 m_nID;
@@ -40,7 +45,7 @@ private:
 		float  m_fVal;
 	};
 
-	typedef std::slist<SWaitingVar> TWaitingVarList;
+	typedef std::list<SWaitingVar> TWaitingVarList;
 	TWaitingVarList m_aWaitingVarList;
 };
 

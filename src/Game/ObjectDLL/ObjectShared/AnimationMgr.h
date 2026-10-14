@@ -104,74 +104,74 @@ class CAnimationProps
 
 		// Comparison
 
-		LTBOOL operator==(const CAnimationProps& Props) const
-		{			
+		bool operator==(const CAnimationProps& Props) const
+		{
 			for ( uint32 iProp = 0 ; iProp < kAPG_Count ; ++iProp )
 			{
 				if ( !(m_aProps[iProp] == Props.m_aProps[iProp]) )
 				{
-					return LTFALSE;
+					return false;
 				}
 			}
-			
-			return LTTRUE;
+
+			return true;
 		}
 
 		// LessThan is used for sorting props in STL maps.
-		LTBOOL operator<(const CAnimationProps& Props) const
+		bool operator<(const CAnimationProps& Props) const
 		{
 			for ( uint32 iProp = 0 ; iProp < kAPG_Count ; ++iProp )
 			{
 				if ( (m_aProps[iProp] < Props.m_aProps[iProp]) )
 				{
-					return LTTRUE;
+					return true;
 				}
 
 				if ( (Props.m_aProps[iProp] < m_aProps[iProp]) )
 				{
-					return LTFALSE;
+					return false;
 				}
 			}
 
-			return LTFALSE;
+			return false;
 		}
 
-		LTBOOL Contains(const CAnimationProps& Props) const
+		bool Contains(const CAnimationProps& Props) const
 		{
 			for ( uint32 iProp = 0 ; iProp < kAPG_Count ; iProp++ )
 			{
 				if ( !m_aProps[iProp].Contains(Props.m_aProps[iProp]) )
 				{
-					return LTFALSE;
+					return false;
 				}
 			}
 
-			return LTTRUE;
+			return true;
 		}
 
-		LTBOOL Disjoint(const CAnimationProps& Props) const
+		bool Disjoint(const CAnimationProps& Props) const
 		{
 			for ( uint32 iProp = 0 ; iProp < kAPG_Count ; iProp++ )
 			{
 				if ( !m_aProps[iProp].Disjoint(Props.m_aProps[iProp]) )
 				{
-					return LTFALSE;
+					return false;
 				}
 			}
 
-			return LTTRUE;
+			return true;
 		}
 
 		// Simple accessors
 
 		void Clear();
 		void Set(const CAnimationProp& Prop);
-		LTBOOL IsSet(const CAnimationProp& Prop) const;
+		bool IsSet(const CAnimationProp& Prop) const;
 
 		void Set(EnumAnimPropGroup eAnimPropGroup, EnumAnimProp eAnimProp);
-		LTBOOL IsSet(EnumAnimPropGroup eAnimPropGroup, EnumAnimProp eAnimProp) const;
+		bool IsSet(EnumAnimPropGroup eAnimPropGroup, EnumAnimProp eAnimProp) const;
 		EnumAnimProp Get(EnumAnimPropGroup eAnimPropGroup) const { return m_aProps[eAnimPropGroup].m_eProp; }
-		
+
 
 		// Debugging
 
@@ -426,7 +426,7 @@ class CAnimationMgr
 		const char* GetFilename() const { return m_szFilename; }
 
 		// Contexts
-		
+
 		CAnimationContext* CreateAnimationContext(HOBJECT hObject);
 		void DestroyAnimationContext(CAnimationContext* pAnimationContex);
 		LTRESULT		ResetAnimationContext( CAnimationContext *, HOBJECT );

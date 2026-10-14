@@ -31,9 +31,6 @@ class CInterfaceTimer
 
 		void		Draw();
 
-		// RETAIL: reconstructed from the retail 1.3 CShell.dll (0x1005c484,
-		// 0x10063f4e): the timer has no m_fTimeLeft, and SetTime only
-		// stores; the source release also kept the time left while paused.
 		void        SetTime(LTFLOAT fTime, bool bPause) { m_fTime = fTime; m_bPause = bPause; }
 		float		GetTime() const { return m_fTime; }
 

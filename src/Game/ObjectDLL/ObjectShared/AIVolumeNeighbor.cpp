@@ -178,13 +178,13 @@ LTBOOL AISpatialNeighbor::Init(AISpatialRepresentation* pThis, AISpatialRepresen
 	if(m_cGates == 0)
 	{
 		AIError("Volume has Invalid Neighbor %s -> %s. Connection < 48 units!",
-			::ToString(pThis->GetName()), ::ToString(pNeighbor->GetName()) );
+			pThis->GetName(), pNeighbor->GetName() );
 
 		return LTFALSE;
 	}
-	
+
 	m_vecfGateOccupancy.resize(m_cGates);
-	
+
 	for ( uint32 iGate = 0 ; iGate < m_cGates ; iGate++ )
 	{
 		m_vecfGateOccupancy[iGate] = 0.0f;
@@ -235,7 +235,7 @@ void AISpatialNeighbor::FindNearestEntryPoint(const LTVector& vPoint, LTVector* 
 		return;
 	}
 
-	// Find the opening nearest to the specified point, 
+	// Find the opening nearest to the specified point,
 	// and return that openings midpoint.
 
 	long iOpening;
@@ -259,11 +259,11 @@ void AISpatialNeighbor::FindNearestEntryPoint(const LTVector& vPoint, LTVector* 
 			{
 				iOpening = cOpenings - 1;
 			}
-	
+
 			// Calculate the opening's midpoint.
 
 			*pvEntryPoint = m_avConnectionEndpoints[0];
-			pvEntryPoint->z = fMin + ( ((LTFLOAT)iOpening) * fWidth ) + ( fWidth * 0.5f ); 
+			pvEntryPoint->z = fMin + ( ((LTFLOAT)iOpening) * fWidth ) + ( fWidth * 0.5f );
 			break;
 
 		// Horizontal connection.
@@ -273,7 +273,7 @@ void AISpatialNeighbor::FindNearestEntryPoint(const LTVector& vPoint, LTVector* 
 			iOpening = (long)( ( vPoint.x - fMin ) / fWidth );
 
 			// Point is above or below the connection.
-			
+
 			if( iOpening < 0 )
 			{
 				iOpening = 0;
@@ -282,11 +282,11 @@ void AISpatialNeighbor::FindNearestEntryPoint(const LTVector& vPoint, LTVector* 
 			{
 				iOpening = cOpenings - 1;
 			}
-	
+
 			// Calculate the opening's midpoint.
 
 			*pvEntryPoint = m_avConnectionEndpoints[0];
-			pvEntryPoint->x = fMin + ( ((LTFLOAT)iOpening) * fWidth ) + ( fWidth * 0.5f ); 
+			pvEntryPoint->x = fMin + ( ((LTFLOAT)iOpening) * fWidth ) + ( fWidth * 0.5f );
 			break;
 	}
 }
@@ -304,7 +304,7 @@ VolumeGate AISpatialNeighbor::AllocateGate(const LTVector& vPoint, LTBOOL* pbGot
 
 	for ( int32 iGate = 0 ; iGate < (int32)m_cGates ; iGate++ )
 	{
-		LTFLOAT fGate = m_vecfGateOccupancy[iGate] + (LTFLOAT)fabs(iGate - iGateNearest);
+		LTFLOAT fGate = m_vecfGateOccupancy[iGate] + (LTFLOAT)fabs((float)(iGate - iGateNearest));
 		if ( fGate < fGateBest )
 		{
 			fGateBest = fGate;

@@ -409,7 +409,9 @@ bool IsTeamGameType();
 bool IsRevivePlayerGameType( );
 bool IsDifficultyGameType();
 
+#ifdef SOURCE_RELEASE
 #define GAME_HANDSHAKE_PASSWORD		0x40404040
 #define GAME_HANDSHAKE_MASK			0x73173173
+#endif // SOURCE_RELEASE
 
 #endif  // __CLIENT_SERVER_SHARED_H__

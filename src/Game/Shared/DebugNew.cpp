@@ -1,10 +1,9 @@
 //////////////////////////////////////////////////////////////////////////////
 // Debug new handler implementation
 
-#include "StdAfx.h"
-
 #ifdef LTMEMTRACK
 
+	#include "StdAfx.h"
 	#include "iltmemory.h"
 
 	//the global ILTMemory interface for use	

@@ -47,18 +47,17 @@ CInterfaceTimer::~CInterfaceTimer()
 void CInterfaceTimer::Draw()
 {
 
-	// RETAIL: reconstructed from the retail 1.3 CShell.dll (0x100eb260): the
-	// time left is counted from the game time on every draw, paused or not.
-	float fTimeLeft = m_fTime - g_pLTClient->GetGameTime( );
+	// Get the time left.
+	float fCountDownTime = m_fTime - g_pLTClient->GetGameTime( );
 
 	// Update/Draw the timer if there is anytime left...
-	if( fTimeLeft <= 0.0f )
+	if( fCountDownTime <= 0.0f )
 		return;
 
 	// Draw the string to the surface...
 
-	int nMinutes = int(fTimeLeft) / 60;
-	int nSeconds = fTimeLeft > 60.0 ? int(fTimeLeft) % 60 : int(fTimeLeft);
+	int nMinutes = int(fCountDownTime) / 60;
+	int nSeconds = fCountDownTime > 60.0 ? int(fCountDownTime) % 60 : int(fCountDownTime);
 
 	char aBuffer[8];
 	char aMinutes[8];

@@ -1,25 +1,25 @@
 
 //----------------------------------------------------------------------------
-//              
+//
 //	MODULE:		RelationButeMgr.cpp
-//              
+//
 //	PURPOSE:	- implementation
-//              
+//
 //	CREATED:	29.11.2001
 //
 //	(c) 2001 Monolith Productions, Inc.  All Rights Reserved
 //
 //
 //	COMMENTS:	-
-//              
-//              
+//
+//
 //----------------------------------------------------------------------------
 
 
 // Includes
 #include "stdafx.h"
 
-#include "RelationButeMgr.h"		
+#include "RelationButeMgr.h"
 #include "ButeTools.h"
 #include "AIUtils.h"
 #include "RelationMgr.h"
@@ -28,6 +28,8 @@
 #include "ObjectRelationMgr.h"
 #include "CollectiveRelationMgr.h"
 #include "AIAssert.h"
+
+#include <algorithm>
 
 // Forward declarations
 
@@ -74,7 +76,7 @@ struct DeleteMomentoWithoutCallback
 struct Momento_RelationData_Equality :
 std::binary_function<RelationMomento*, const RelationDescription* const, bool>
 {
-	bool operator() (RelationMomento* pMomento, 
+	bool operator() (RelationMomento* pMomento,
 		const RelationDescription* const pRD) const
 	{
 		AIASSERT( pMomento!=NULL, NULL, "Attempted description match with NULL Momento" );
@@ -98,7 +100,7 @@ public std::binary_function< RelationMomento*, CObjectRelationMgr*, bool>
 
 
 //----------------------------------------------------------------------------
-//              
+//
 //	CRelationTools
 
 // Static Members:
@@ -107,11 +109,11 @@ CRelationTools::_mapAlignmentToName CRelationTools::sm_mapRelationAlignmentToNam
 CRelationTools* CRelationTools::sm_pInstance;
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CRelationTools::GetInstance()
-//              
-//	PURPOSE:	
-//              
+//
+//	PURPOSE:
+//
 //----------------------------------------------------------------------------
 CRelationTools* CRelationTools::GetInstance()
 {
@@ -138,9 +140,9 @@ CRelationTools* CRelationTools::GetInstance()
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CRelationTools::ParseRelation()
-//              
+//
 //	PURPOSE:	Breaks a line down into the Enum Trait, the Enum Alignment,
 //				and the Value.
 //
@@ -166,7 +168,7 @@ void CRelationTools::ParseRelation(const char* const pszLine, RelationDescriptio
 	if ( nArgs != 3 )
 	{
 		char szError[1024];
-		sprintf( szError, "ParseRelation: Invalid Relation: %s", pszLine ); 
+		sprintf( szError, "ParseRelation: Invalid Relation: %s", pszLine );
 		AIASSERT( 0, NULL, szError );
 	}
 
@@ -179,7 +181,7 @@ void CRelationTools::ParseRelation(const char* const pszLine, RelationDescriptio
 	if ( pRD->eTrait == RelationTraits::kTrait_Invalid )
 	{
 		char szError[1024];
-		sprintf( szError, "Invalid Trait Name: %s", szTrait ); 
+		sprintf( szError, "Invalid Trait Name: %s", szTrait );
 		AIASSERT( 0, NULL, szError );
 	}
 
@@ -188,7 +190,7 @@ void CRelationTools::ParseRelation(const char* const pszLine, RelationDescriptio
 	if ( pRD->eAlignment == INVALID )
 	{
 		char szError[1024];
-		sprintf( szError, "Invalid Alignment Name: %s", szAlignment ); 
+		sprintf( szError, "Invalid Alignment Name: %s", szAlignment );
 		AIASSERT( 0, NULL, szError );
 	}
 
@@ -196,13 +198,13 @@ void CRelationTools::ParseRelation(const char* const pszLine, RelationDescriptio
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CRelationTools::ParseData()
-//              
+//
 //	PURPOSE:	Breaks a line down into the Enum Trait and Value.
 //
 //				Format:		TraitName ObjectID
-//              
+//
 //----------------------------------------------------------------------------
 void CRelationTools::ParseData(const char* const pszLine, RelationTraits::eRelationTraits* pTr, char* pszValue, int nValueLen)
 {
@@ -221,7 +223,7 @@ void CRelationTools::ParseData(const char* const pszLine, RelationTraits::eRelat
 	if ( nArgs != 2 )
 	{
 		char szError[1024];
-		sprintf( szError, "ParseData: Invalid Data: %s", pszLine ); 
+		sprintf( szError, "ParseData: Invalid Data: %s", pszLine );
 		AIASSERT( 0, NULL, szError );
 	}
 
@@ -233,7 +235,7 @@ void CRelationTools::ParseData(const char* const pszLine, RelationTraits::eRelat
 	if ( *pTr == RelationTraits::kTrait_Invalid )
 	{
 		char szError[1024];
-		sprintf( szError, "Invalid Trait Name: %s", szTrait ); 
+		sprintf( szError, "Invalid Trait Name: %s", szTrait );
 		AIASSERT( 0, NULL, szError );
 	}
 
@@ -242,14 +244,14 @@ void CRelationTools::ParseData(const char* const pszLine, RelationTraits::eRelat
 
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CRelationTools::ConvertAlignmentNameToEnum()
-//              
+//
 //	PURPOSE:	Convert a string into a CharacterAlignment.
 //
 //				TODO: May want to convert CharacterAlignment Iteration to
 //				Jeffs macro expansion?
-//              
+//
 //----------------------------------------------------------------------------
 CharacterAlignment CRelationTools::ConvertAlignmentNameToEnum(const char* const szName) const
 {
@@ -257,11 +259,11 @@ CharacterAlignment CRelationTools::ConvertAlignmentNameToEnum(const char* const 
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CRelationTools::ConvertTraitNameToEnum()
-//              
+//
 //	PURPOSE:	Converts a string into an Trait
-//              
+//
 //----------------------------------------------------------------------------
 RelationTraits::eRelationTraits CRelationTools::ConvertTraitNameToEnum(const char* const szName) const
 {
@@ -292,16 +294,16 @@ const char* const CRelationTools::ConvertTraitEnumToString(RelationTraits::eRela
 	using std::find;
 	_mapTraitToName::const_iterator it = sm_mapRelationTraitToName.find(static_cast<int>(eTrait));
 	UBER_ASSERT(it != sm_mapRelationTraitToName.end(), "Unable to find CharacterTrait name" );
-	return (*it).second.c_str();		
+	return (*it).second.c_str();
 }
 
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CRelationButeMgr::Init()
-//              
+//
 //	PURPOSE:	Initializes the Bute Mgr.
-//              
+//
 //----------------------------------------------------------------------------
 LTBOOL CRelationButeMgr::Init(const char* const szAttributeFile)
 {
@@ -326,7 +328,7 @@ LTBOOL CRelationButeMgr::Init(const char* const szAttributeFile)
 		// Add the CRelationUser to our map so we can find it later.
 		m_mapCollectiveNameToID.insert( _mapNameToID::value_type(std::string(pCC_Template->m_szKey), m_listpCollectiveTemplates.size()) );
 		m_listpCollectiveTemplates.push_back( pCC_Template );
-		
+
 		sprintf(szTagName, "%s%d", "Collective", m_listpCollectiveTemplates.size());
 	}
 
@@ -339,7 +341,7 @@ LTBOOL CRelationButeMgr::Init(const char* const szAttributeFile)
 		// Add the CRelationUser to our map so we can find it later.
 		m_mapObjectRelationMgrNameToID.insert( _mapNameToID::value_type(std::string(pORM_Template->m_szKey), m_listpObjectRelationMgrTemplates.size()) );
 		m_listpObjectRelationMgrTemplates.push_back( pORM_Template );
-		
+
 		sprintf(szTagName, "%s%d", "RelationalObject", m_listpObjectRelationMgrTemplates.size());
 	}
 
@@ -377,11 +379,11 @@ LTBOOL CRelationButeMgr::Init(const char* const szAttributeFile)
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CRelationButeMgr::GetObjectRelationMgrTemplateName()
-//              
+//
 //	PURPOSE:	Returns the name of the template, or "" if none exists.
-//              
+//
 //----------------------------------------------------------------------------
 
 const char*	CRelationButeMgr::GetObjectRelationMgrTemplateName(int nTemplateID)
@@ -401,11 +403,11 @@ const char*	CRelationButeMgr::GetObjectRelationMgrTemplateName(int nTemplateID)
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CRelationButeMgr::GetTemplateIDByName()
-//              
+//
 //	PURPOSE:	Returns the Data template ID, -1 if none exists
-//              
+//
 //----------------------------------------------------------------------------
 int CRelationButeMgr::GetTemplateIDByName( const char* const pszName, CDataUser* ) const
 {
@@ -422,11 +424,11 @@ int CRelationButeMgr::GetTemplateIDByName( const char* const pszName, CDataUser*
 
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CRelationButeMgr::GetTemplateIDByName()
-//              
+//
 //	PURPOSE:	Returns the Relation template ID, -1 if none exists
-//              
+//
 //----------------------------------------------------------------------------
 int CRelationButeMgr::GetTemplateIDByName(const char* const pszName, CRelationUser*) const
 {
@@ -442,11 +444,11 @@ int CRelationButeMgr::GetTemplateIDByName(const char* const pszName, CRelationUs
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CRelationButeMgr::GetCollectiveTemplateIDByName()
-//              
+//
 //	PURPOSE:	Returns the Data template ID, -1 if none exists
-//              
+//
 //----------------------------------------------------------------------------
 int CRelationButeMgr::GetTemplateIDByName( const char* const pszName, CCollectiveRelationMgr* ) const
 {
@@ -462,11 +464,11 @@ int CRelationButeMgr::GetTemplateIDByName( const char* const pszName, CCollectiv
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CRelationButeMgr::GetTemplateIDByName()
-//              
+//
 //	PURPOSE:	Returns the Data template ID, -1 if none exists
-//              
+//
 //----------------------------------------------------------------------------
 int CRelationButeMgr::GetTemplateIDByName( const char* const pszName, CObjectRelationMgr* ) const
 {
@@ -482,11 +484,11 @@ int CRelationButeMgr::GetTemplateIDByName( const char* const pszName, CObjectRel
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CRelationButeMgr::CopyTemplate()
-//              
+//
 //	PURPOSE:	Overload to set only the RelationData
-//              
+//
 //----------------------------------------------------------------------------
 void CRelationButeMgr::CopyTemplate(const char* const szName,
 									CObjectRelationMgr* pORM ) const
@@ -503,11 +505,11 @@ void CRelationButeMgr::CopyTemplate(const char* const szName,
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CRelationButeMgr::CopyTemplate()
-//              
+//
 //	PURPOSE:	Overload to set only the RelationData
-//              
+//
 //----------------------------------------------------------------------------
 void CRelationButeMgr::CopyTemplate(const char* const szName,
 									CDataUser* pDataUser ) const
@@ -524,11 +526,11 @@ void CRelationButeMgr::CopyTemplate(const char* const szName,
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CRelationButeMgr::CopyTemplate()
-//              
+//
 //	PURPOSE:	Overload to set only the CCollectiveRelationMgr
-//              
+//
 //----------------------------------------------------------------------------
 void CRelationButeMgr::CopyTemplate(const char* const szName,
 									CCollectiveRelationMgr* pCollective ) const
@@ -545,11 +547,11 @@ void CRelationButeMgr::CopyTemplate(const char* const szName,
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CRelationButeMgr::CopyTemplate()
-//              
+//
 //	PURPOSE:	Overload to set only the RelationUser
-//              
+//
 //----------------------------------------------------------------------------
 void CRelationButeMgr::CopyTemplate(const char* const szName,
 									CRelationUser* pRelationUser) const
@@ -566,11 +568,11 @@ void CRelationButeMgr::CopyTemplate(const char* const szName,
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CRelationButeMgr::ReadTemplate()
-//              
-//	PURPOSE:	
-//              
+//
+//	PURPOSE:
+//
 //----------------------------------------------------------------------------
 void CRelationButeMgr::ReadTemplate(const char* const szTagName,
 									Collective_Template* pCC_Template )
@@ -584,11 +586,11 @@ void CRelationButeMgr::ReadTemplate(const char* const szTagName,
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CRelationButeMgr::ReadTemplate()
-//              
-//	PURPOSE:	
-//              
+//
+//	PURPOSE:
+//
 //----------------------------------------------------------------------------
 void CRelationButeMgr::ReadTemplate(const char* const szTagName,
 									ObjectRelationMgr_Template* pORM_Template)
@@ -604,11 +606,11 @@ void CRelationButeMgr::ReadTemplate(const char* const szTagName,
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CRelationButeMgr::ReadTemplate()
-//              
+//
 //	PURPOSE:
-//              
+//
 //----------------------------------------------------------------------------
 void CRelationButeMgr::ReadTemplate(const char* const szTagName, RelationUser_Template* pRU_Template)
 {
@@ -643,10 +645,10 @@ void CRelationButeMgr::ReadTemplate(const char* const szTagName, RelationUser_Te
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CRelationButeMgr::ReadTemplate()
-//              
-//	PURPOSE:	
+//
+//	PURPOSE:
 //
 //----------------------------------------------------------------------------
 void CRelationButeMgr::ReadTemplate(const char* const szTagName, DataUser_Template* pRD_Template)
@@ -671,8 +673,8 @@ void CRelationButeMgr::ReadTemplate(const char* const szTagName, DataUser_Templa
 	char szAttName[RELATION_VALUE_LENGTH];
 
 	// Stores the line associated with the AttName
-	char szLine[512];	
-	
+	char szLine[512];
+
 	while ( true )
 	{
 		// Retrieve the string from the buteMgr.
@@ -687,7 +689,7 @@ void CRelationButeMgr::ReadTemplate(const char* const szTagName, DataUser_Templa
 		// Add the new triple to the CRelationUser.
 		if( szValue[0] && ( eTrait != RelationTraits::kTrait_Invalid ) )
 		{
-			pRD_Template->m_RelationData.SetTraitValue( eTrait, szValue ); 
+			pRD_Template->m_RelationData.SetTraitValue( eTrait, szValue );
 		}
 
 		// Get the next string
@@ -697,12 +699,12 @@ void CRelationButeMgr::ReadTemplate(const char* const szTagName, DataUser_Templa
 
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CRelationButeMgr::Term()
-//              
-//	PURPOSE:	Deallocate any allocated memory (all memory allocated by the 
+//
+//	PURPOSE:	Deallocate any allocated memory (all memory allocated by the
 //				CRelationButeMgr should be deallocated here)
-//              
+//
 //----------------------------------------------------------------------------
 void CRelationButeMgr::Term()
 {
@@ -744,17 +746,17 @@ void CRelationButeMgr::Term()
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CRelationButeMgr::FillRelationSet()
-//              
-//	PURPOSE:	For when we want to extract a relation independant of a 
-//				character, object or system.  This is useful for determining 
-//				how a player would feel about someone else for instance 
+//
+//	PURPOSE:	For when we want to extract a relation independant of a
+//				character, object or system.  This is useful for determining
+//				how a player would feel about someone else for instance
 //				without having an instance of the player.
-//	
-//				Returns by parameter a RelationSet representing how a 
+//
+//				Returns by parameter a RelationSet representing how a
 //				prototypical instance of szTemplateName.
-//              
+//
 //----------------------------------------------------------------------------
 void CRelationButeMgr::FillRelationSet(const char* const szTemplateName, RelationSet* pOut)
 {
@@ -791,24 +793,24 @@ void CRelationButeMgr::FillRelationSet(const char* const szTemplateName, Relatio
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CRelationUser::CRelationUser()
-//              
-//	PURPOSE:	
-//              
+//
+//	PURPOSE:
+//
 //----------------------------------------------------------------------------
-CRelationUser::CRelationUser(IMomentoUser* pMomentoCallbackReceiver) : 
+CRelationUser::CRelationUser(IMomentoUser* pMomentoCallbackReceiver) :
 			m_pMomentoCallbackReceiver( pMomentoCallbackReceiver ),
 			m_flTimeRelationsLast( 0 )
 {
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CRelationUser::~CRelationUser()
-//              
-//	PURPOSE:	
-//              
+//
+//	PURPOSE:
+//
 //----------------------------------------------------------------------------
 CRelationUser::~CRelationUser()
 {
@@ -816,19 +818,19 @@ CRelationUser::~CRelationUser()
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CRelationUser::operator=()
-//              
-//	PURPOSE:	Handles 
-//              
+//
+//	PURPOSE:	Handles
+//
 //----------------------------------------------------------------------------
 CRelationUser& CRelationUser::operator=(const RelationUser_Template& rhs )
 {
 	AIASSERT( m_pMomentoCallbackReceiver, NULL, "No Callback Reciever Specified!" );
 
 	// Clear out all of the relations we have, as the last thing we want to
-	// do is end up in an undefined state because we have two sets of 
-	// relations overlapping.  This can particularly happen for the player, 
+	// do is end up in an undefined state because we have two sets of
+	// relations overlapping.  This can particularly happen for the player,
 	// who reinits frequently.
 	ClearRelationUser();
 
@@ -841,7 +843,7 @@ CRelationUser& CRelationUser::operator=(const RelationUser_Template& rhs )
 		AIASSERT( CanAddRelation( (*iter) ), NULL, "Failed to add relation on Template Copy." );
 		if ( CanAddRelation( (*iter) ) )
 		{
-			// Add the Relation with a NULL owner, indicating that this is NOT 
+			// Add the Relation with a NULL owner, indicating that this is NOT
 			// a temp relation.  It is permanent, and should never be removed.
 			AddRelation( (*iter), true );
 		}
@@ -853,11 +855,11 @@ CRelationUser& CRelationUser::operator=(const RelationUser_Template& rhs )
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CRelationUser::Save()
-//              
-//	PURPOSE:	
-//              
+//
+//	PURPOSE:
+//
 //----------------------------------------------------------------------------
 int CRelationUser::Save(ILTMessage_Write *pMsg)
 {
@@ -876,11 +878,11 @@ int CRelationUser::Save(ILTMessage_Write *pMsg)
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CRelationUser::Load()
-//              
-//	PURPOSE:	
-//              
+//
+//	PURPOSE:
+//
 //----------------------------------------------------------------------------
 int CRelationUser::Load(ILTMessage_Read *pMsg, IMomentoUser* pUser)
 {
@@ -888,7 +890,7 @@ int CRelationUser::Load(ILTMessage_Read *pMsg, IMomentoUser* pUser)
 
 	m_pMomentoCallbackReceiver = pUser;
 
-	// Load each of the relationships, passing it the RelationUser that 
+	// Load each of the relationships, passing it the RelationUser that
 	// the they are hooked to, load the rest of the information, then add
 	// them to the list of active momentos
 	int nActiveRelations;
@@ -901,23 +903,23 @@ int CRelationUser::Load(ILTMessage_Read *pMsg, IMomentoUser* pUser)
 	}
 
 	LOAD_TIME( m_flTimeRelationsLast );
-	
+
 	return 0;
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CRelationUser::RemoveAllRelationMomentos()
-//              
+//
 //	PURPOSE:	Function to remove all RelationMomentos from the manager.
 //
 //				This is a cleanup function, so don't do any callbacks on
 //				momento deletion
-//              
+//
 //----------------------------------------------------------------------------
 void CRelationUser::RemoveAllRelationMomentos()
 {
-	std::transform( 
+	std::transform(
 		m_Momentos.begin(),
 		m_Momentos.end(),
 		m_Momentos.begin(),
@@ -929,23 +931,23 @@ void CRelationUser::RemoveAllRelationMomentos()
 
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CRelationUser::CanAddRelation()
-//              
+//
 //	PURPOSE:	Returns true if the relation can be added, false if it cannot
-//              
+//
 //----------------------------------------------------------------------------
-bool CRelationUser::CanAddRelation(const RelationDescription& RD) const 
+bool CRelationUser::CanAddRelation(const RelationDescription& RD) const
 {
 	return ( !HasMatchingRelationMomento(RD) && m_RelationSet.CanAddRelation(RD) );
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CRelationUser::CanRemoveRelation()
-//              
+//
 //	PURPOSE:	Returns true if the relation can be removed, false if it cannot
-//              
+//
 //----------------------------------------------------------------------------
 bool CRelationUser::CanRemoveRelation(const RelationDescription& RD) const
 {
@@ -953,11 +955,11 @@ bool CRelationUser::CanRemoveRelation(const RelationDescription& RD) const
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CRelationUser::AddRelation()
-//              
-//	PURPOSE:	Adds a new relation to our list.  
-//              
+//
+//	PURPOSE:	Adds a new relation to our list.
+//
 //----------------------------------------------------------------------------
 void CRelationUser::AddRelation(const RelationDescription& RD, bool bPermanent )
 {
@@ -973,12 +975,12 @@ void CRelationUser::AddRelation(const RelationDescription& RD, bool bPermanent )
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CRelationUser::HasMatchingRelationMomento()
-//              
+//
 //	PURPOSE:	returns true if the relation specified by the momento is
-//				currently Maintainer, false if it is not.  
-//              
+//				currently Maintainer, false if it is not.
+//
 //----------------------------------------------------------------------------
 bool CRelationUser::HasMatchingRelationMomento(const RelationDescription& RD) const
 {
@@ -992,16 +994,16 @@ bool CRelationUser::HasMatchingRelationMomento(const RelationDescription& RD) co
 
 	// If we are not at the end, then we did find a matching momento, so return
 	// true;
-	return ( itFound != m_Momentos.end() ); 
+	return ( itFound != m_Momentos.end() );
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CRelationUser::RemoveRelation()
-//              
-//	PURPOSE:	Removes a Momento matching the description from the list.  
+//
+//	PURPOSE:	Removes a Momento matching the description from the list.
 //				Assumes a matching momento exists
-//              
+//
 //----------------------------------------------------------------------------
 void CRelationUser::RemoveRelation(const RelationDescription& RD)
 {
@@ -1016,11 +1018,11 @@ void CRelationUser::RemoveRelation(const RelationDescription& RD)
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CRelationUser::ClearRelationUser()
-//              
-//	PURPOSE:	
-//              
+//
+//	PURPOSE:
+//
 //----------------------------------------------------------------------------
 void CRelationUser::ClearRelationUser(void)
 {
@@ -1029,12 +1031,12 @@ void CRelationUser::ClearRelationUser(void)
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CRelationUser::InitRelations()
-//              
+//
 //	PURPOSE:	Initializes the Relation with the RelationTemplate matching
 //				the Key, asserts if there is no matching Template.
-//              
+//
 //----------------------------------------------------------------------------
 void CRelationUser::InitRelations(const char* const szKey)
 {
@@ -1042,11 +1044,11 @@ void CRelationUser::InitRelations(const char* const szKey)
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CRelationUser::ResetRelationTime()
-//              
-//	PURPOSE:	
-//              
+//
+//	PURPOSE:
+//
 //----------------------------------------------------------------------------
 void CRelationUser::ResetRelationTime(CObjectRelationMgr* pORM)
 {
@@ -1064,13 +1066,13 @@ void CRelationUser::ResetRelationTime(CObjectRelationMgr* pORM)
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CRelationUser::Update()()
-//              
+//
 //	PURPOSE:	Added function to check all of the relations to see if any
 //				need to be expired.  This only needs to be done once per frame,
 //				though frequency is non critical.
-//              
+//
 //				Deleted expired relation momentos by deallocating them, and then
 //              removing all NULL pointers from the list.
 //
@@ -1082,7 +1084,7 @@ void CRelationUser::Update(bool bCanRemoveExpiredRelations)
 {
 	if ( bCanRemoveExpiredRelations )
 	{
-		std::transform( 
+		std::transform(
 			m_Momentos.begin(),
 			m_Momentos.end(),
 			m_Momentos.begin(),
@@ -1109,29 +1111,28 @@ public std::binary_function<RelationMomento*, CObjectRelationMgr*, bool>
 };
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CRelationUser::Sync()
-//              
+//
 //	PURPOSE:	Sync the passed in AI to match self.
-//              
+//
 //----------------------------------------------------------------------------
 void CRelationUser::Sync(const CObjectRelationMgr* pObjectRelationMgr)
 {
-	using std::for_each;
-	using std::bind2nd;
-	for_each(m_Momentos.begin(), m_Momentos.end(),
-		bind2nd( SyncObjectRelationMgr(), pObjectRelationMgr));
+	CObjectRelationMgr *pTakeIt = const_cast<CObjectRelationMgr*>(pObjectRelationMgr);
+	std::for_each(m_Momentos.begin(), m_Momentos.end(),
+		std::bind2nd( SyncObjectRelationMgr(), pTakeIt));
 
 	m_Momentos.remove_if( MomentoIsNull() );
 }
 
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CDataUser::operator=()
-//              
+//
 //	PURPOSE:	Copies to the DataUser the specified template
-//              
+//
 //----------------------------------------------------------------------------
 CDataUser& CDataUser::operator=( const DataUser_Template& RU_Template )
 {
@@ -1140,12 +1141,12 @@ CDataUser& CDataUser::operator=( const DataUser_Template& RU_Template )
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CDataUser::InitData()
-//              
+//
 //	PURPOSE:	Initializes the Data with the Template Name matching the Key,
 //				and the owner name.  Asserts if the key is not found
-//              
+//
 //----------------------------------------------------------------------------
 void CDataUser::InitData(const char* const szKey, HOBJECT hOwner)
 {
@@ -1168,7 +1169,7 @@ int CDataUser::Load(ILTMessage_Read *pMsg)
 	return 0;
 }
 
-ostream& operator << (ostream& os, const CRelationUser& User)
+std::ostream& operator << (std::ostream& os, const CRelationUser& User)
 {
 	for( _listMomentos::const_iterator it = User.m_Momentos.begin(); it != User.m_Momentos.end(); ++it )
 	{
@@ -1184,12 +1185,12 @@ ostream& operator << (ostream& os, const CRelationUser& User)
 
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	RelationMomento()
-//              
+//
 //	PURPOSE:	Constructor for Loading, when we want to create a momento
 //				without fully initializing it.
-//              
+//
 //----------------------------------------------------------------------------
 RelationMomento::RelationMomento(IMomentoUser* pUser) :
 	m_pMomentoUser( pUser ),
@@ -1199,11 +1200,11 @@ RelationMomento::RelationMomento(IMomentoUser* pUser) :
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	RelationMomento::RelationMomento()
-//              
+//
 //	PURPOSE:	Constructor adds the relation to the RelationUser
-//              
+//
 //----------------------------------------------------------------------------
 RelationMomento::RelationMomento(IMomentoUser* pUser, float time, const RelationDescription& RD ) :
 	m_pMomentoUser( pUser ),
@@ -1243,16 +1244,16 @@ void RelationMomento::AddMomento( _listMomentos& listAddTo )
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	RelationMomento::IsExpired()
-//              
-//	PURPOSE:	Returns true if the RelationMomento is expired, false if it is 
+//
+//	PURPOSE:	Returns true if the RelationMomento is expired, false if it is
 //				not
-//              
+//
 //----------------------------------------------------------------------------
 bool RelationMomento::IsExpired(float flCurrentTime) const
 {
-	if (m_eRelationMomentoType==ePermanent) 
+	if (m_eRelationMomentoType==ePermanent)
 	{
 		return false;
 	}
@@ -1264,18 +1265,18 @@ bool RelationMomento::IsExpired(float flCurrentTime) const
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	RelationMomento::DoAddRelationCallback()
-//              
-//	PURPOSE:	Informs the owner of the Relation that the relation is being 
+//
+//	PURPOSE:	Informs the owner of the Relation that the relation is being
 //				added.  This allows the owner to respond correctly, as well
-//				as 
-//              
+//				as
+//
 //----------------------------------------------------------------------------
 void RelationMomento::DoAddRelationCallback(void)
 {
 	AIASSERT( m_pMomentoUser, NULL, "RelationMomento:DoRemoveCallback: No Owner!" );
-	
+
 	if ( m_pMomentoUser->GetRelationUser()->GetRelations().CanAddRelation(m_RD))
 	{
 		m_pMomentoUser->GetRelationUser()->SetRelations().AddRelation(m_RD);
@@ -1285,12 +1286,12 @@ void RelationMomento::DoAddRelationCallback(void)
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	RelationMomento::DoRemoveRelationCallback()
-//              
+//
 //	PURPOSE:	Informs the owner of the Relation that the relation expired by
 //				removing the Relation with the Momentos relation description
-//              
+//
 //----------------------------------------------------------------------------
 void RelationMomento::DoRemoveRelationCallback(void)
 {
@@ -1305,7 +1306,7 @@ void RelationMomento::DoRemoveRelationCallback(void)
 }
 
 
-ostream& operator << (ostream &os, const RelationMomento& Momento)
+std::ostream& operator << (std::ostream &os, const RelationMomento& Momento)
 {
 	os << " " << CRelationTools::GetInstance()->ConvertAlignmentEnumToString(Momento.m_RD.eAlignment);
 	os << " " << CRelationTools::GetInstance()->ConvertTraitEnumToString(Momento.m_RD.eTrait);

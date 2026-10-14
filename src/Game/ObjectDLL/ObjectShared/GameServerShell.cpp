@@ -63,6 +63,7 @@
 #include "ScmdServer.h"
 #include "BanIPMgr.h"
 #include <time.h>
+#include <algorithm>
 
 #define MAX_CLIENT_NAME_LENGTH		100
 #define CLIENT_PING_UPDATE_RATE		3.0f
@@ -76,17 +77,17 @@
 //#define _DEGUG
 
 // debug output messages to sever console
-#ifdef _DEGUG				
+#ifdef _DEGUG
 	enum EDebugOutput {eAlways = 0, eSomeTimes = 1, eRarely = 2};
 
 	// if true all server messages will be output to console
 	LTBOOL			g_debugOutputMessages(LTFALSE);
 	EDebugOutput	g_debugOutputLevel(eRarely);
-		
+
 	#define DEBUG_CONSOLE_OUTPUT(output, level)						\
 		if (g_debugOutputMessages && level >= g_debugOutputLevel)	\
-			g_pLTServer->CPrint(output)								
-#else 
+			g_pLTServer->CPrint(output)
+#else
 	#define DEBUG_CONSOLE_OUTPUT(output, level)
 #endif // _DEBUG
 
@@ -194,7 +195,7 @@ LTRESULT CGameServerShell::OnServerInitialized()
 
 	//////////////////////////////////////////////////////////////////////////////
 	// Do all the stuff that used to be in the ctor for the server
-	
+
 	ClearClientList();
 	SetUpdateGameServ();
 
@@ -804,7 +805,8 @@ void CGameServerShell::SendObjectivesDataToClient( HCLIENT hClient )
     cMsg.Writeuint8((uint8)nNumObj);
 
 	//send list of general objectives
-	for (uint8 i = 0; i < m_Objectives.m_IDArray.size(); i++)
+	uint8 i;
+	for (i = 0; i < m_Objectives.m_IDArray.size(); i++)
 	{
         cMsg.Writeuint32((uint32)m_Objectives.m_IDArray[i]);
 	}
@@ -994,6 +996,19 @@ void CGameServerShell::SendPlayerInfoMsgToClients(HCLIENT hClients, CPlayerObj *
 
 }
 
+#ifndef SOURCE_RELEASE
+// Global key used for cross-encryption  NOTE: MUST BE SAME AS ON CLIENT!!
+#define KEY_MESSER_UPPER 0xDEADFACE
+
+inline uint32 MessUp32BitValue(uint32 nValue, uint32 nRot)
+{
+	// "Encrypt" the value (Yes, it's a very simple encryption...)
+	uint32 nXORShift = nRot & 0xF;
+	return ((KEY_MESSER_UPPER << nXORShift) + (KEY_MESSER_UPPER >> (32 - nXORShift))) ^ nValue;
+}
+#endif // SOURCE_RELEASE
+
+
 void CGameServerShell::ProcessHandshake(HCLIENT hClient, ILTMessage_Read *pMsg)
 {
 	// Get the player
@@ -1044,7 +1059,11 @@ void CGameServerShell::ProcessHandshake(HCLIENT hClient, ILTMessage_Read *pMsg)
 			CAutoMessage cResponse;
 			cResponse.Writeuint8(MID_HANDSHAKE);
 			cResponse.Writeuint8(MID_HANDSHAKE_PASSWORD);
+#ifdef SOURCE_RELEASE
 			cResponse.Writeuint32( GAME_HANDSHAKE_PASSWORD );
+#else // SOURCE_RELEASE
+			cResponse.Writeuint32((uint32)this ^ MessUp32BitValue(nClientKey, (uint32)(szClientName[0])));
+#endif // SOURCE_RELEASE
 			cResponse.Writebool((!bIsHost && m_ServerGameOptions.m_bUsePassword));
 			g_pLTServer->SendToClient(cResponse.Read(), hClient, MESSAGE_GUARANTEED);
 		}
@@ -1054,9 +1073,27 @@ void CGameServerShell::ProcessHandshake(HCLIENT hClient, ILTMessage_Read *pMsg)
 			// Get the client's password
 			uint32 nClientPassword = pMsg->Readuint32();
 
+#ifdef SOURCE_RELEASE
+
 			uint32 nXORMask = GAME_HANDSHAKE_MASK;
 			nClientPassword ^= nXORMask;
 			uint32 nClientName = GAME_HANDSHAKE_PASSWORD;
+
+#else // SOURCE_RELEASE
+
+			// Encrypt the first 4 bytes of the client name
+			uint32 nClientName = *((uint32*)( &szClientName[0] ));
+			// Handle short client names...
+			if ((nClientName && 0xFF) == 0)
+				nClientName = 0;
+			else if ((nClientName && 0xFF00) == 0)
+				nClientName &= 0xFF;
+			else if ((nClientName && 0xFF0000) == 0)
+				nClientName &= 0xFFFF;
+			uint32 nXORMask = MessUp32BitValue((uint32)this, (uint32)(szClientName[0]));
+			nClientName ^= nXORMask;
+
+#endif // SOURCE_RELEASE
 
 			// Validate
 			if (nClientName != nClientPassword)

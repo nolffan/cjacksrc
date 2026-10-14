@@ -1,10 +1,10 @@
 
 //----------------------------------------------------------------------------
-//              
+//
 //	MODULE:		RelationMgr.cpp
-//              
+//
 //	PURPOSE:	- implementation
-//              
+//
 //	CREATED:	30.11.2001
 //
 //	(c) 2001 Monolith Productions, Inc.  All Rights Reserved
@@ -12,20 +12,22 @@
 //
 //	COMMENTS:	Global RelationMgr which handled lookups of the individual
 //				system.
-//              
-//              
+//
+//
 //----------------------------------------------------------------------------
 
 
 // Includes
 #include "stdafx.h"
 
-#include "RelationMgr.h"		
+#include "RelationMgr.h"
 #include "RelationButeMgr.h"
 #include "CollectiveRelationMgr.h"
 #include "AITypes.h"
 #include "AIAssert.h"
 #include "ObjectRelationMgr.h"
+
+#include <algorithm>
 
 // Forward declarations
 
@@ -61,11 +63,11 @@ struct CollectiveKeyMatch
 
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CRelationMgr::CRelationMgr()
-//              
+//
 //	PURPOSE:	Constructor to handle any initialization
-//              
+//
 //----------------------------------------------------------------------------
 CRelationMgr::CRelationMgr() :
 	m_pRelationButeMgr(NULL )
@@ -73,12 +75,12 @@ CRelationMgr::CRelationMgr() :
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CRelationMgr::~CRelationMgr()
-//              
+//
 //	PURPOSE:	Destructor to handle any cleanup.  Free all resources, just in
 //				case Term was not called.
-//              
+//
 //----------------------------------------------------------------------------
 CRelationMgr::~CRelationMgr()
 {
@@ -88,12 +90,12 @@ CRelationMgr::~CRelationMgr()
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CRelationMgr::Save()/Load()
-//              
+//
 //	PURPOSE:	Handle the saving and loading of the RelationMgr.  This will
 //				handle saving and restoring the collectives.
-//              
+//
 //----------------------------------------------------------------------------
 void CRelationMgr::Save(ILTMessage_Write *pMsg)
 {
@@ -117,12 +119,12 @@ void CRelationMgr::Load(ILTMessage_Read *pMsg)
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CRelationMgr::GetGlobalRelationMgr()
-//              
-//	PURPOSE:	Created a new instance of the RelationMgr, and returns it if 
+//
+//	PURPOSE:	Created a new instance of the RelationMgr, and returns it if
 //				one hasn't been created yet.  Otherwise, just returns it.
-//              
+//
 //----------------------------------------------------------------------------
 CRelationMgr* CRelationMgr::GetGlobalRelationMgr()
 {
@@ -135,11 +137,11 @@ CRelationMgr* CRelationMgr::GetGlobalRelationMgr()
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CRelationMgr::GetButeMgr()
-//              
+//
 //	PURPOSE:	Returns a pointer to the RelationMgrs bute parser
-//              
+//
 //----------------------------------------------------------------------------
 CRelationButeMgr* CRelationMgr::GetButeMgr()
 {
@@ -148,11 +150,11 @@ CRelationButeMgr* CRelationMgr::GetButeMgr()
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CRelationMgr::Init()
-//              
+//
 //	PURPOSE:	Sets up and initializes the RelationMgr.
-//              
+//
 //----------------------------------------------------------------------------
 LTBOOL CRelationMgr::Init()
 {
@@ -162,16 +164,16 @@ LTBOOL CRelationMgr::Init()
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CRelationMgr::Term()
-//              
+//
 //	PURPOSE:	Cleans up the RelationMgr instance
-//              
+//
 //----------------------------------------------------------------------------
 void CRelationMgr::Term()
 {
 	FreeAllResources();
-	
+
 	// Clean up the Singleton instance
 	debug_delete( m_pSingleInstance );
 	m_pSingleInstance = NULL;
@@ -179,11 +181,11 @@ void CRelationMgr::Term()
 
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CRelationMgr::PerWorldInit()
-//              
+//
 //	PURPOSE:	Does any per world setup.
-//              
+//
 //----------------------------------------------------------------------------
 void CRelationMgr::PerWorldInit()
 {
@@ -191,12 +193,12 @@ void CRelationMgr::PerWorldInit()
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CRelationMgr::PerWorldTerm()
-//              
-//	PURPOSE:	Does any per world cleanup.  Currently, it deallocates the 
+//
+//	PURPOSE:	Does any per world cleanup.  Currently, it deallocates the
 //				collectives, and clears out the RelationMgr lists.
-//              
+//
 //----------------------------------------------------------------------------
 void CRelationMgr::PerWorldTerm()
 {

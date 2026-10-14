@@ -622,8 +622,10 @@ void ActiveWorldModel::OnObjectCreated( )
 	uint32	dwUsrFlags = 0;
 	g_pCommonLT->GetObjectFlags( m_hObject, OFT_User, dwUsrFlags );
 
-	if( fabs(m_fMoveDist >= 0.01f) || m_vRotationAngles.LengthSquared() >= 0.01f )
+	if ( ( fabs(m_fMoveDist) >= 0.01f ) || ( m_vRotationAngles.LengthSquared() >= 0.01f )  )
+	{
 		dwUsrFlags |= USRFLG_MOVEABLE;
+	}
 
 	// See if we can be activated or not
 

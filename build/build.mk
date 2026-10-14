@@ -214,7 +214,9 @@ ifneq ($$(DSP_OK),ok)
 $$(error tools/dsp2mk.py failed on $(1): $$(file <$(DEPDIR)/dsp2mk-$(basename $(notdir $(1))).log))
 endif
 include $(DEPDIR)/$(basename $(notdir $(1))).mk
-WANTED += $(subst $(comma), ,$(2))
+# (a wanted project the workspace does not have yet is skipped, as
+# dsp2mk.py skips it: the launcher and the dedicated server come later)
+WANTED += $$(filter $$(PROJECTS),$(subst $(comma), ,$(2)))
 endif
 endef
 $(foreach w,$(WORKSPACES),$(eval $(call workspace,$(firstword $(subst :, ,$(w))),$(lastword $(subst :, ,$(w))))))

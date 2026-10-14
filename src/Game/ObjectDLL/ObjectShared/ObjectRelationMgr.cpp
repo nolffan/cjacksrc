@@ -1,27 +1,27 @@
 //----------------------------------------------------------------------------
-//              
+//
 //	MODULE:		ObjectRelationMgr.cpp
-//              
+//
 //	PURPOSE:	- implementation
-//              
+//
 //	CREATED:	21.01.2002
 //
 //	(c) 2002 Monolith Productions, Inc.  All Rights Reserved
 //
 //
-//	TODO:	Convert the Relation Change Notification to pass the 
+//	TODO:	Convert the Relation Change Notification to pass the
 //			RelationDescription.  That way we can do FULL checks to see if
 //			we should change how we are acting.
 //
 //			Do this through a new 'MatchesDescription() function test.
-//              
+//
 //----------------------------------------------------------------------------
 
 
 // Includes
 #include "stdafx.h"
 
-#include "ObjectRelationMgr.h"		
+#include "ObjectRelationMgr.h"
 #include "AIRegion.h"
 #include "AIVolume.h"
 #include "RelationMgr.h"
@@ -31,6 +31,7 @@
 #include "CharacterMgr.h"
 #include "RelationChangeObserver.h"
 #include <list>
+#include <algorithm>
 
 // Forward declarations
 
@@ -39,11 +40,11 @@
 // Statics
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CObjectRelationMgr::CObjectRelationMgr()
-//              
+//
 //	PURPOSE:	Constructor to handle any required initialization
-//              
+//
 //----------------------------------------------------------------------------
 CObjectRelationMgr::CObjectRelationMgr()
 {
@@ -64,13 +65,13 @@ CObjectRelationMgr::CObjectRelationMgr()
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CObjectRelationMgr::~CObjectRelationMgr()
-//              
-//	PURPOSE:	Unsubstrive the object from the GlobalRelationMgr and the 
-//				CollectiveRelationMgr.  Destructor to clean up all allocated 
+//
+//	PURPOSE:	Unsubstrive the object from the GlobalRelationMgr and the
+//				CollectiveRelationMgr.  Destructor to clean up all allocated
 //				memory.
-//              
+//
 //----------------------------------------------------------------------------
 CObjectRelationMgr::~CObjectRelationMgr()
 {
@@ -95,11 +96,11 @@ CObjectRelationMgr::~CObjectRelationMgr()
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CObjectRelationMgr::operator=()
-//              
-//	PURPOSE:	
-//              
+//
+//	PURPOSE:
+//
 //----------------------------------------------------------------------------
 CObjectRelationMgr& CObjectRelationMgr::operator=(const ObjectRelationMgr_Template& rhs)
 {
@@ -113,11 +114,11 @@ CObjectRelationMgr& CObjectRelationMgr::operator=(const ObjectRelationMgr_Templa
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CObjectRelationMgr::Save()
-//              
-//	PURPOSE:	
-//              
+//
+//	PURPOSE:
+//
 //----------------------------------------------------------------------------
 int CObjectRelationMgr::Save(ILTMessage_Write *pMsg)
 {
@@ -134,17 +135,17 @@ int CObjectRelationMgr::Save(ILTMessage_Write *pMsg)
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CObjectRelationMgr::Load()
-//              
-//	PURPOSE:	
-//              
+//
+//	PURPOSE:
+//
 //----------------------------------------------------------------------------
 int CObjectRelationMgr::Load(ILTMessage_Read *pMsg)
 {
 	AIASSERT(m_pRelationUser, NULL, "CObjectRelationMgr::Load: No RelationUser");
 	AIASSERT(m_pDataUser, NULL, "CObjectRelationMgr::Load: No DataUser");
-	
+
 	m_pRelationUser->Load(pMsg, this);
 	m_pDataUser->Load(pMsg);
 
@@ -164,15 +165,15 @@ int CObjectRelationMgr::Load(ILTMessage_Read *pMsg)
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CObjectRelationMgr::Init()
-//              
+//
 //	PURPOSE:	Sets up this instance of the ObjectRelationMgr.  First unlinks
 //				the ObjectRelationMgr, then updates the information and
 //				relinks it.  In most cases, the unlinking is not required
-//				as Init should really be called only once for a character 
+//				as Init should really be called only once for a character
 //				except in exceptional cases (like the player).
-//              
+//
 //----------------------------------------------------------------------------
 void CObjectRelationMgr::Init(HOBJECT hObject, const char* const szKey)
 {
@@ -200,11 +201,11 @@ void CObjectRelationMgr::Init(HOBJECT hObject, const char* const szKey)
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CObjectRelationMgr::Update()
-//              
-//	PURPOSE:	
-//              
+//
+//	PURPOSE:
+//
 //----------------------------------------------------------------------------
 void CObjectRelationMgr::Update(bool bCanRemoveExpiredRelations /*=false*/)
 {
@@ -218,11 +219,11 @@ void CObjectRelationMgr::Update(bool bCanRemoveExpiredRelations /*=false*/)
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CObjectRelationMgr::ClearRelationSystem()
-//              
+//
 //	PURPOSE:	Clears the Relations and the RelationData for this instance.
-//              
+//
 //----------------------------------------------------------------------------
 void CObjectRelationMgr::ClearRelationSystem(void)
 {
@@ -234,12 +235,12 @@ void CObjectRelationMgr::ClearRelationSystem(void)
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CRelationUser::SetCollective()
-//              
+//
 //	PURPOSE:	Sets RelationUsers pointer to a collective, and then informs
 //				the Collective that it is joining.
-//              
+//
 //----------------------------------------------------------------------------
 void CObjectRelationMgr::SetCollective(CCollectiveRelationMgr* pCollective)
 {
@@ -249,15 +250,15 @@ void CObjectRelationMgr::SetCollective(CCollectiveRelationMgr* pCollective)
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CObjectRelationMgr::CommunicateMessage()
-//              
+//
 //	PURPOSE:	Added a Message to the ObjectRelationMgr, and any collective
 //				it subscribes to.
 //
 //	NOTE:		If in string form, first convert to RelationDescription
 //				using CRelationTools
-//              
+//
 //----------------------------------------------------------------------------
 void CObjectRelationMgr::CommunicateMessage(CCharacter* pSender,
 											const RelationDescription& RD,
@@ -283,7 +284,7 @@ void CObjectRelationMgr::CommunicateMessage(CCharacter* pSender,
 	// For each character, see if we like them.
 
 	// Loop thru character lists.
-	
+
 	int cCharLists = g_pCharacterMgr->GetNumCharacterLists();
 	for ( int iList = 0 ; iList < cCharLists ; ++iList )
 	{
@@ -303,11 +304,11 @@ void CObjectRelationMgr::CommunicateMessage(CCharacter* pSender,
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CObjectRelationMgr::RecipientMeetsRestrictions()
-//              
-//	PURPOSE:	
-//              
+//
+//	PURPOSE:
+//
 //----------------------------------------------------------------------------
 bool CObjectRelationMgr::RecipientMeetsRestrictions(CCharacter* pSender,
 													CCharacter* pReceiver,
@@ -319,7 +320,7 @@ bool CObjectRelationMgr::RecipientMeetsRestrictions(CCharacter* pSender,
 		return false;
 	}
 
-	// This transmition requires that the the sender considers the reciever 
+	// This transmition requires that the the sender considers the reciever
 	// to be a friend.
 	if ( iRestrictionFlags & CommReqs::kCommReqs_Friend )
 	{
@@ -348,7 +349,7 @@ bool CObjectRelationMgr::RecipientMeetsRestrictions(CCharacter* pSender,
 			return false;
 		}
 
-		if (pSenderVolume->GetRegion()->GetHOBJECT() != 
+		if (pSenderVolume->GetRegion()->GetHOBJECT() !=
 			pRecipientVolume->GetRegion()->GetHOBJECT())
 		{
 			return false;
@@ -359,16 +360,16 @@ bool CObjectRelationMgr::RecipientMeetsRestrictions(CCharacter* pSender,
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CObjectRelationMgr::AddRelation()
-//              
+//
 //	PURPOSE:	Adds a new relation to the AI if the AI doesn't yet have this
 //				exact relation, or if the AI already has a more extreme
 //				relation (HATE has priority over everything else)
 //
 //	NOTES:		First construct a RelationDescription, parsing from a string
 //				with CRelationTools if needed
-//              
+//
 //----------------------------------------------------------------------------
 void CObjectRelationMgr::AddRelation(const RelationDescription& RD)
 {
@@ -379,13 +380,13 @@ void CObjectRelationMgr::AddRelation(const RelationDescription& RD)
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CObjectRelationMgr::AddRelationCallback()
-//              
-//	PURPOSE:	Called when a momento attempts to add a relation.  Called 
-//				regardless of the creator -- could be local or could be the 
+//
+//	PURPOSE:	Called when a momento attempts to add a relation.  Called
+//				regardless of the creator -- could be local or could be the
 //				creative
-//              
+//
 //----------------------------------------------------------------------------
 void CObjectRelationMgr::AddRelationCallback(const RelationDescription& RD)
 {
@@ -397,7 +398,7 @@ void CObjectRelationMgr::AddRelationCallback(const RelationDescription& RD)
 	AITRACE(AIShowRelations, ( m_hOwner, " adding relation: %s %s %s", CRelationTools::GetInstance()->ConvertTraitEnumToString(RD.eTrait), CRelationTools::GetInstance()->ConvertAlignmentEnumToString(RD.eAlignment), RD.szValue ) );
 
 	// TODO!!!!!
-	// Allow lookups here based on things besides name.  This extremely incomplete!  
+	// Allow lookups here based on things besides name.  This extremely incomplete!
 	if ( RD.eTrait == RelationTraits::kTrait_Name)
 	{
 		CObjectRelationMgr* pORM = CRelationMgr::GetGlobalRelationMgr()->GetObjectRelationMgr( RD.szValue );
@@ -417,11 +418,11 @@ void CObjectRelationMgr::AddRelationCallback(const RelationDescription& RD)
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CObjectRelationMgr::RemoveRelationCallback()
-//              
+//
 //	PURPOSE:	Clears out the Relation.  Called when a Memento is destructed.
-//              
+//
 //----------------------------------------------------------------------------
 void CObjectRelationMgr::RemoveRelationCallback(const RelationDescription& RD)
 {
@@ -430,9 +431,9 @@ void CObjectRelationMgr::RemoveRelationCallback(const RelationDescription& RD)
 	using std::mem_fun;
 
 	AITRACE(AIShowRelations, ( m_hOwner, " removing relation: %s %s %s", CRelationTools::GetInstance()->ConvertTraitEnumToString(RD.eTrait), CRelationTools::GetInstance()->ConvertAlignmentEnumToString(RD.eAlignment), RD.szValue ) );
-	
+
 	// TODO!!!!!
-	// Allow lookups here based on things besides name.  This extremely incomplete!  
+	// Allow lookups here based on things besides name.  This extremely incomplete!
 	if ( RD.eTrait == RelationTraits::kTrait_Name)
 	{
 		CObjectRelationMgr* pORM = CRelationMgr::GetGlobalRelationMgr()->GetObjectRelationMgr( RD.szValue );
@@ -453,11 +454,11 @@ void CObjectRelationMgr::RemoveRelationCallback(const RelationDescription& RD)
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CObjectRelationMgr::ResetRelationTime()
-//              
-//	PURPOSE:	
-//              
+//
+//	PURPOSE:
+//
 //----------------------------------------------------------------------------
 void CObjectRelationMgr::ResetRelationTime(CObjectRelationMgr* pORM)
 {
@@ -476,30 +477,28 @@ void CObjectRelationMgr::ResetRelationTime(CObjectRelationMgr* pORM)
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CObjectRelationMgr::RegisterObserver()
-//              
+//
 //	PURPOSE:	Adds a new callback
-//              
+//
 //----------------------------------------------------------------------------
 /*virtual*/ void CObjectRelationMgr::RegisterObserver(RelationChangeNotifier* pRCN )
 {
-	using std::find;
-
 	AIASSERT( pRCN, GetOwningHObject(), "NULL RelationChangeNotifer passed in to Register" );
-	AIASSERT( find(listChangeReceivers.begin(),listChangeReceivers.end(), pRCN) == listChangeReceivers.end(), GetOwningHObject(), "Attempted second insertation of RelationCallbackNotifier" );
-	if (find(listChangeReceivers.begin(),listChangeReceivers.end(), pRCN) == listChangeReceivers.end()) 
+	AIASSERT( std::find(listChangeReceivers.begin(), listChangeReceivers.end(), pRCN) == listChangeReceivers.end(), GetOwningHObject(), "Attempted second insertation of RelationCallbackNotifier" );
+	if (std::find(listChangeReceivers.begin(), listChangeReceivers.end(), pRCN) == listChangeReceivers.end())
 	{
 		listChangeReceivers.push_back( pRCN );
 	}
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CObjectRelationMgr::UnregisterObserver()
-//              
+//
 //	PURPOSE:	Removes the callback from the list.
-//              
+//
 //----------------------------------------------------------------------------
 /*virtual*/ void CObjectRelationMgr::UnregisterObserver(RelationChangeNotifier* pRCN)
 {

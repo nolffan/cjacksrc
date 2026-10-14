@@ -70,7 +70,7 @@ void CAIGoalChase::Save(ILTMessage_Write *pMsg)
 	JunctionStack::iterator it;
 	for( it = m_stkJunctions.begin(); it != m_stkJunctions.end(); ++it )
 	{
-		pRec = it;
+		pRec = &(*it);
 		SAVE_COBJECT(pRec->pVolume);
 		SAVE_BYTE(pRec->mskActionVolumes)
 	}
@@ -99,7 +99,7 @@ void CAIGoalChase::Load(ILTMessage_Read *pMsg)
 	JunctionStack::iterator it;
 	for( it = m_stkJunctions.begin(); it != m_stkJunctions.end(); ++it )
 	{
-		pRec = it;
+		pRec = &(*it);
 		LOAD_COBJECT( pRec->pVolume, AIVolume );
 		LOAD_BYTE(pRec->mskActionVolumes)
 	}
@@ -123,7 +123,7 @@ void CAIGoalChase::Load(ILTMessage_Read *pMsg)
 void CAIGoalChase::ActivateGoal()
 {
 	super::ActivateGoal();
-	
+
 	if( m_pAI->GetState()->GetStateType() == kState_HumanChase )
 	{
 		return;
@@ -184,7 +184,7 @@ void CAIGoalChase::SetStateChase(LTBOOL bClearState)
 	m_bGiveUpChase = LTFALSE;
 
 	// Unlock goal in case it was locked while lost.
-	// Keep it unlocked so that AI may be attracted to 
+	// Keep it unlocked so that AI may be attracted to
 	// vantage, cover, and view nodes.
 
 	if( m_pGoalMgr->IsGoalLocked(this) )
@@ -432,11 +432,11 @@ void CAIGoalChase::HandleJunctionVolume()
 
 	// No actions are left for this junction.
 
-	if( (pRec == LTNULL) || (pRec->mskActionVolumes == 0) || 
+	if( (pRec == LTNULL) || (pRec->mskActionVolumes == 0) ||
 		( !(pJunctionVolume->GetAction(m_pAI, &(pRec->mskActionVolumes), pLastVolume, pCorrectVolume, &pJunctionActionVolume, &eJunctionAction) ) ) )
 	{
-		AITRACE(AIShowJunctions, ( m_pAI->m_hObject, "Exhuasted junction %s\n", 
-				 ::ToString(pJunctionVolume->GetName()) ) );
+		AITRACE(AIShowJunctions, ( m_pAI->m_hObject, "Exhuasted junction %s\n",
+				 pJunctionVolume->GetName() ) );
 
 		m_bGiveUpChase = LTTRUE;
 		AwareOnce();
@@ -465,13 +465,13 @@ void CAIGoalChase::HandleJunctionVolume()
 	switch ( eJunctionAction )
 	{
 		case eJunctionActionSearch:
-			AITRACE(AIShowJunctions, ( m_pAI->m_hObject, "Junction search into %s\n", 
-					::ToString(pJunctionActionVolume->GetName()) ) );
+			AITRACE(AIShowJunctions, ( m_pAI->m_hObject, "Junction search into %s\n",
+					pJunctionActionVolume->GetName() ) );
 			{
 				m_pAI->SetState( kState_HumanGoto );
 				CAIHumanStateGoto* pStateGoto = (CAIHumanStateGoto*)m_pAI->GetState();
 
-				// If the action volume is a door volume, run through it to the 
+				// If the action volume is a door volume, run through it to the
 				// following volume.
 
 				AIVolume* pDestVolume = LTNULL;
@@ -511,8 +511,8 @@ void CAIGoalChase::HandleJunctionVolume()
 
 		// Look into a hallway or room.
 		case eJunctionActionPeek:
-			AITRACE(AIShowJunctions, ( m_pAI->m_hObject, "Junction peek into %s\n", 
-					::ToString(pJunctionActionVolume->GetName()) ) );
+			AITRACE(AIShowJunctions, ( m_pAI->m_hObject, "Junction peek into %s\n",
+					pJunctionActionVolume->GetName() ) );
 			{
 				AIVolumeNeighbor* pNeighbor = g_pAIVolumeMgr->FindNeighbor( m_pAI, m_pLastVolume, m_pAI->GetLastVolume() );
 				if( pNeighbor )
@@ -537,8 +537,8 @@ void CAIGoalChase::HandleJunctionVolume()
 
 		// Run through this junction.
 		case eJunctionActionContinue:
-			AITRACE(AIShowJunctions, ( m_pAI->m_hObject, "Junction continue into %s\n", 
-					::ToString(pJunctionActionVolume->GetName()) ) );
+			AITRACE(AIShowJunctions, ( m_pAI->m_hObject, "Junction continue into %s\n",
+					pJunctionActionVolume->GetName() ) );
 
 			// If continuing into the correct volume (where the target really is)
 			// pause first.
@@ -639,7 +639,7 @@ void CAIGoalChase::AwareOnce()
 // ----------------------------------------------------------------------- //
 
 void CAIGoalChase::GiveUpChase(LTBOOL bSearch)
-{	
+{
 	m_bGiveUpChase = LTTRUE;
 
 	// Search or go aware.
@@ -849,7 +849,7 @@ void CAIGoalChase::HandleStateSearch()
 void CAIGoalChase::RecalcImportance()
 {
 	// Lose interest in chasing if the AI has lost track of his target.
-	// Chase normally does not lose importance, because we want to ensure 
+	// Chase normally does not lose importance, because we want to ensure
 	// the AI does not lose interest in an enemy when they go out of sight,
 	// or the AI goes into cover.
 	// If the AI is not attacking, and has fallen back to searching, the
@@ -985,7 +985,7 @@ LTBOOL CAIGoalChase::HandleGoalSenseTrigger(AISenseRecord* pSenseRecord)
 				return LTTRUE;
 			}
 		}
-		else if( m_pGoalMgr->IsCurGoal( this ) && 
+		else if( m_pGoalMgr->IsCurGoal( this ) &&
 				 ( !m_bNeverGiveUp ) &&
 				 ( pSenseRecord->eSenseType != kSense_SeeEnemy ) )
 		{

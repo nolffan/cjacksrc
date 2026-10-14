@@ -625,7 +625,7 @@ void CNodeController::HandleNodeControlLipSync( char const* pszSoundFile, LTFLOA
 		m_aNodes[eModelNode].cControllers++;
 	}
 
-	for ( iBone = 0 ; iBone < cBones ; iBone++ )
+	for ( uint32 iBone = 0 ; iBone < cBones ; iBone++ )
 	{
 		//read in all the keyframes for this node
 		if( aiNodeControls[iBone] != INVALID_NODE_CONTROL )

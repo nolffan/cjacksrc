@@ -54,6 +54,8 @@
 #include "AIGoalSpecialDamage.h"
 #include "SharedFXStructs.h"
 
+#include <algorithm>
+
 extern CAIGoalButeMgr* g_pAIGoalButeMgr;
 extern CServerSoundMgr* g_pServerSoundMgr;
 extern CAIStimulusMgr* g_pAIStimulusMgr;
@@ -152,11 +154,13 @@ END_CLASS_DEFAULT_FLAGS_PLUGIN(CAI, CCharacter, NULL, NULL, 0, CAIPlugin)
 
 static LTBOOL ValidateMsgRemoveGoal( ILTPreInterface *pInterface, ConParse &cpMsgParams )
 {
+	uint32 iGoalType;
+
 	if( !g_pAIGoalButeMgr )
 		return LTTRUE;
 
 	// Find goal by name.
-	for(uint32 iGoalType=0; iGoalType < kGoal_Count; ++iGoalType)
+	for(iGoalType=0; iGoalType < kGoal_Count; ++iGoalType)
 	{
 		if( stricmp(s_aszGoalTypes[iGoalType], cpMsgParams.m_Args[1]) == 0)
 		{
@@ -173,7 +177,7 @@ static LTBOOL ValidateMsgRemoveGoal( ILTPreInterface *pInterface, ConParse &cpMs
 			pInterface->CPrint( "ERROR! - ValidateMsgRemoveGoal()" );
 			pInterface->CPrint( "    MSG - REMOVEGOAL - Invalid goal '%s' not found in file '%s'!", cpMsgParams.m_Args[1], GOAL_FILE );
 		}
-		
+
 		return LTFALSE;
 	}
 
@@ -198,7 +202,8 @@ static LTBOOL ValidateMsgAddGoal( ILTPreInterface *pInterface, ConParse &cpMsgPa
 	}
 
 	// Find goal by name.
-	for(uint32 iGoalType=0; iGoalType < kGoal_Count; ++iGoalType)
+	uint32 iGoalType;
+	for(iGoalType=0; iGoalType < kGoal_Count; ++iGoalType)
 	{
 		if( stricmp(s_aszGoalTypes[iGoalType], cpMsgParams.m_Args[1]) == 0)
 		{
@@ -215,7 +220,7 @@ static LTBOOL ValidateMsgAddGoal( ILTPreInterface *pInterface, ConParse &cpMsgPa
 			pInterface->CPrint( "ERROR! - ValidateMsgAddGoal()" );
 			pInterface->CPrint( "    MSG - ADDGOAL - Invalid goal '%s' not found in file '%s'!", cpMsgParams.m_Args[1], GOAL_FILE );
 		}
-		
+
 		return LTFALSE;
 	}
 
@@ -226,7 +231,7 @@ static LTBOOL ValidateMsgGoalset( ILTPreInterface *pInterface, ConParse &cpMsgPa
 {
 	if( !g_pAIGoalButeMgr )
 		return LTTRUE;
-	
+
 	uint32 iGoalSet = g_pAIGoalButeMgr->GetGoalSetIndex( cpMsgParams.m_Args[1] );
 	if( iGoalSet == (uint32)-1 )
 	{
@@ -236,7 +241,7 @@ static LTBOOL ValidateMsgGoalset( ILTPreInterface *pInterface, ConParse &cpMsgPa
 			pInterface->CPrint( "ERROR! - ValidateMsgGoalset()" );
 			pInterface->CPrint( "    MSG - GOALSET - Invalid goalset '%s' not found in file '%s'!", cpMsgParams.m_Args[1], GOAL_FILE );
 		}
-		
+
 		return LTFALSE;
 	}
 
@@ -251,10 +256,10 @@ static LTBOOL ValidateMsgGoalPrefix( ILTPreInterface *pInterface, ConParse &cpMs
 	uint8 len = strlen(GOAL_CMD_PREFIX);
 
 	// Check to see if this is a goal prefix command and verrify the goal...
-	
+
 	if( _strnicmp( cpMsgParams.m_Args[0], GOAL_CMD_PREFIX, len ) == 0 )
 	{
-		char szMsg[128] = {0}; 
+		char szMsg[128] = {0};
 		LTStrCpy( szMsg, cpMsgParams.m_Args[0], ARRAY_LEN( szMsg ));
 
 		const char* pPrefix = strtok( szMsg, "_" );
@@ -273,16 +278,17 @@ static LTBOOL ValidateMsgGoalPrefix( ILTPreInterface *pInterface, ConParse &cpMs
 
 			return LTTRUE;
 		}
-		
+
 		// Find goal by name.
-		for(uint32 iGoalType=0; iGoalType < kGoal_Count; ++iGoalType)
+		uint32 iGoalType;
+		for(iGoalType=0; iGoalType < kGoal_Count; ++iGoalType)
 		{
 			if( stricmp(s_aszGoalTypes[iGoalType], pGoal) == 0)
 			{
 				break;
 			}
 		}
-		
+
 
 		AIGBM_GoalTemplate* pGoalTemplate = g_pAIGoalButeMgr->GetTemplate( (EnumAIGoalType)iGoalType );
 		if( !pGoalTemplate || iGoalType == kGoal_Count )
@@ -292,7 +298,7 @@ static LTBOOL ValidateMsgGoalPrefix( ILTPreInterface *pInterface, ConParse &cpMs
 				pInterface->ShowDebugWindow( LTTRUE );
 				pInterface->CPrint( "ERROR! - ValidateMsgGoalPrefix()" );
 				pInterface->CPrint( "    MSG - %s - Invalid goal '%s' not found in file '%s'!", GOAL_CMD_PREFIX, pGoal, GOAL_FILE );
-			
+
 				CCommandMgrPlugin::SetForceDisplayPropInfo( true );
 			}
 		}
@@ -315,7 +321,7 @@ static LTBOOL ValidateFaceObject( ILTPreInterface *pInterface, ConParse &cpMsgPa
 			{
 				pInterface->ShowDebugWindow( LTTRUE );
 				pInterface->CPrint( "ERROR! - ValidateFaceObject()" );
-				pInterface->CPrint( "    MSG - FACEOBJECT - Could not find object '%s'!", cpMsgParams.m_Args[1] );	
+				pInterface->CPrint( "    MSG - FACEOBJECT - Could not find object '%s'!", cpMsgParams.m_Args[1] );
 			}
 
 			return LTFALSE;
@@ -328,7 +334,7 @@ static LTBOOL ValidateFaceObject( ILTPreInterface *pInterface, ConParse &cpMsgPa
 	{
 		pInterface->ShowDebugWindow( LTTRUE );
 		pInterface->CPrint( "ERROR! - ValidateFaceObject()" );
-		pInterface->CPrint( "    MSG - FACEOBJECT - No Object specified!");	
+		pInterface->CPrint( "    MSG - FACEOBJECT - No Object specified!");
 	}
 
 	return LTFALSE;
@@ -344,7 +350,7 @@ static LTBOOL ValidateTarget( ILTPreInterface *pInterface, ConParse &cpMsgParams
 			{
 				pInterface->ShowDebugWindow( LTTRUE );
 				pInterface->CPrint( "ERROR! - ValidateTarget()" );
-				pInterface->CPrint( "    MSG - TARGET - Could not find object '%s'!", cpMsgParams.m_Args[1] );	
+				pInterface->CPrint( "    MSG - TARGET - Could not find object '%s'!", cpMsgParams.m_Args[1] );
 			}
 
 			return LTFALSE;
@@ -357,7 +363,7 @@ static LTBOOL ValidateTarget( ILTPreInterface *pInterface, ConParse &cpMsgParams
 	{
 		pInterface->ShowDebugWindow( LTTRUE );
 		pInterface->CPrint( "ERROR! - ValidateTarget()" );
-		pInterface->CPrint( "    MSG - TARGET - No Object specified!");	
+		pInterface->CPrint( "    MSG - TARGET - No Object specified!");
 	}
 
 	return LTFALSE;
@@ -387,7 +393,7 @@ static LTBOOL VelidateDelcmd( ILTPreInterface *pInterface, ConParse &cpMsgParams
 	{
 		pInterface->ShowDebugWindow( LTTRUE );
 		pInterface->CPrint( "ERROR! - VelidateDelcmd()" );
-		pInterface->CPrint( "    MSG - DELCMD - No Command specified!");	
+		pInterface->CPrint( "    MSG - DELCMD - No Command specified!");
 	}
 
 	return LTFALSE;
@@ -470,7 +476,7 @@ std::binary_function<INVALID_NODE*, float, INVALID_NODE*>
 		{
 			// If the node timed out, delete it.
 			s_bankINVALID_NODE.Delete( pNode );
-			pNode = NULL; 
+			pNode = NULL;
 		}
 		return pNode;
 	}
@@ -670,7 +676,7 @@ CAI::CAI() : CCharacter()
 	VEC_INIT(m_vMovePos);
 	m_bMove = LTFALSE;
 	m_fJumpOverVel = 0.f;
-	
+
 	m_flHoverAccelerationRate = 50;
 	m_flLastHoverTime = 0;
 	m_flCurrentHoverSpeed = 0;
@@ -928,7 +934,7 @@ uint32 CAI::EngineMessageFn(uint32 messageID, void *pData, LTFLOAT fData)
 			{
 				PreUpdate();
 				m_bTimeToUpdate = LTTRUE;
-			} 		
+			}
 		}
 		break;
 
@@ -987,7 +993,7 @@ uint32 CAI::EngineMessageFn(uint32 messageID, void *pData, LTFLOAT fData)
 			}
 
 			uint32 dwRet = CCharacter::EngineMessageFn(messageID, pData, fData);
-			
+
 			if (nInfo != INITIALUPDATE_SAVEGAME)
 			{
 				// Update our position, rotation, etc.  Need to do this
@@ -995,7 +1001,7 @@ uint32 CAI::EngineMessageFn(uint32 messageID, void *pData, LTFLOAT fData)
 				// sets up our dims.
 				UpdatePosition();
 
-				// Update our can activate flags.  Need to do this after the character does the 
+				// Update our can activate flags.  Need to do this after the character does the
 				// initialupdate because character creates our hitbox.
 				UpdateUserFlagCanActivate();
 			}
@@ -1054,7 +1060,7 @@ uint32 CAI::EngineMessageFn(uint32 messageID, void *pData, LTFLOAT fData)
 			// Movement encoding hint.
 
 			m_hHintAnim = g_pLTServer->GetModelAnimation(m_hObject);
- 
+
 			if(m_bClearMovementHint)
 			{
 				m_tfLastMovementHint = *(LTransform*)pData;
@@ -1097,10 +1103,10 @@ uint32 CAI::EngineMessageFn(uint32 messageID, void *pData, LTFLOAT fData)
 					}
 				}
 			}
-			
+
 		}
 		break;
-		
+
 		case MID_PARENTATTACHMENTREMOVED:
 		{
 			if( m_bBeingCarried )
@@ -1167,22 +1173,22 @@ uint32 CAI::ObjectMessageFn(HOBJECT hSender, ILTMessage_Read *pMsg)
 
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CAI::PreReadProp()
-//              
+//
 //	PURPOSE:	Hacked in PreReadProp so that the CAI class can get the first
 //				shot at accessing the ObjectCreateStruct, since the derived
 //				class needs a few pointers in CAI initialized first.  This is
 //				a dirty, ugly hack which needs to be addressed later by either
 //				increasing or decreasing the coupling with the derived class.
-//              
+//
 //----------------------------------------------------------------------------
 void CAI::PreReadProp(ObjectCreateStruct* pData)
 {
 	AIASSERT( g_pLTServer && pData, m_hObject, "Server or ObjectCreateStruct is NULL" );
 
-	// Set the template before calling ReadProp, as the template 
-	// is used in both the 
+	// Set the template before calling ReadProp, as the template
+	// is used in both the
 	GenericProp genProp;
 	if (g_pLTServer->GetPropGeneric("ModelTemplate", &genProp) == LT_OK)
 	{
@@ -1192,7 +1198,7 @@ void CAI::PreReadProp(ObjectCreateStruct* pData)
 		// Set the AIs template
 		SetAITemplate( g_pModelButeMgr->GetModelAIName(eModelId) );
 	}
-	
+
 }
 
 // ----------------------------------------------------------------------- //
@@ -1308,7 +1314,7 @@ LTBOOL CAI::ReadProp(ObjectCreateStruct *pData)
 
     if ( g_pLTServer->GetPropGeneric("AccuracyIncreaseRate", &g_gp ) == LT_OK )
 		if ( g_gp.m_String[0] )
-			 
+
 			m_fAccuracyIncreaseRate = g_gp.m_Float;
 
     if ( g_pLTServer->GetPropGeneric("AccuracyDecreaseRate", &g_gp ) == LT_OK )
@@ -1348,13 +1354,13 @@ LTBOOL CAI::ReadProp(ObjectCreateStruct *pData)
 		{
 			if( g_gp.m_String[0] )
 			{
-				if( IsTrueChar( g_gp.m_String[0] ) && 
+				if( IsTrueChar( g_gp.m_String[0] ) &&
 					( !m_pAISenseRecorder->HasSense( eSenseType ) ) )
 				{
 					m_flagsBaseSenses |= eSenseType;
 					m_pAISenseRecorder->AddSense( eSenseType, 0.f );
 				}
-				else if( IsFalseChar( g_gp.m_String[0] ) && 
+				else if( IsFalseChar( g_gp.m_String[0] ) &&
 					( m_pAISenseRecorder->HasSense( eSenseType ) ) )
 				{
 					m_flagsBaseSenses &= ~eSenseType;
@@ -1398,7 +1404,7 @@ void CAI::PostPropRead(ObjectCreateStruct *pStruct)
 
 	g_pModelButeMgr->CopySkinFilenames(m_eModelId, 0, pStruct->m_SkinNames[0], MAX_CS_FILENAME_LEN+1);
 	g_pModelButeMgr->CopyRenderStyleFilenames(m_eModelId, pStruct);
-	
+
 
 	// Add all our editables
 
@@ -1435,13 +1441,13 @@ void CAI::InitialUpdate()
 
 	// fix the skinnames for body texturemaps.
 	if( m_hstrBodySkinExtension &&
-		(strlen(g_pLTServer->GetStringData(m_hstrBodySkinExtension)) && 
+		(strlen(g_pLTServer->GetStringData(m_hstrBodySkinExtension)) &&
 		strlen(createstruct.m_SkinNames[BODY_SKIN_INDEX])) )
 	{
 		// insert the value into into pStruct.
 		// get the head ext value
 		const char *ext_val = g_pLTServer->GetStringData(m_hstrBodySkinExtension) ;
-		
+
 		if( !_stricmp( ext_val, SKIN_EXT_RANDOM ))
 		{
 			// Randomly use one of the 'AltBodySkin#' for the model...
@@ -1462,17 +1468,17 @@ void CAI::InitialUpdate()
 			const char *szExt   = strrchr(createstruct.m_SkinNames[BODY_SKIN_INDEX],'.');
 			// get the position of the extention
 			uint32 pos = szExt - (char*)(createstruct.m_SkinNames[BODY_SKIN_INDEX]) + 1 ;
-			
+
 			// add the headextension.
 			SAFE_STRCPY( createstruct.m_SkinNames[BODY_SKIN_INDEX] +pos -1, ext_val);
 			// put back the file extension.
 			SAFE_STRCPY( (createstruct.m_SkinNames[BODY_SKIN_INDEX]) + pos + (strlen(ext_val)-1), ".dtx");
 		}
 	}
-	
+
 	// fix the skinnames if head extension or body extension have values.
 	if( m_hstrHeadExtension &&
-		(strlen(g_pLTServer->GetStringData(m_hstrHeadExtension)) && 
+		(strlen(g_pLTServer->GetStringData(m_hstrHeadExtension)) &&
 		strlen(createstruct.m_SkinNames[HEAD_SKIN_INDEX])) )
 	{
 		// insert the value into into pStruct.
@@ -1499,7 +1505,7 @@ void CAI::InitialUpdate()
 			const char *szExt   = strrchr(createstruct.m_SkinNames[HEAD_SKIN_INDEX],'.');
 			// get the position of the extention
 			uint32 pos = szExt - (char*)(createstruct.m_SkinNames[HEAD_SKIN_INDEX]) + 1 ;
-			
+
 			// add the headextension.
 			SAFE_STRCPY( createstruct.m_SkinNames[HEAD_SKIN_INDEX] +pos -1, ext_val);
 			// put back the file extension.
@@ -1507,7 +1513,7 @@ void CAI::InitialUpdate()
 		}
 	}
 
-	
+
 	// add child models but since we are not guarenteed that the client side object
 	// is created yet, we're going to put the new child models on the objectcreatestruct.
 	// also we are going to cache our new file...
@@ -1515,7 +1521,7 @@ void CAI::InitialUpdate()
 	{
 		if( m_hstrExtraChildModels[cm_cnt] != 0 )
 		{
-			HMODELDB hmodeldb ;	
+			HMODELDB hmodeldb ;
 			const char *filename = g_pLTServer->GetStringData(m_hstrExtraChildModels[cm_cnt] );
 			// cache the requested child model and get a ref to it
 			createstruct.m_Filenames[cm_cnt+1][0] = '\0' ;
@@ -1525,7 +1531,7 @@ void CAI::InitialUpdate()
 			}
 		}
 	}
-	
+
 	// change object information based on stuff gotten from bute file.
     g_pCommonLT->SetObjectFilenames(m_hObject, &createstruct);
 
@@ -1560,16 +1566,16 @@ void CAI::InitialUpdate()
 	// Set up the Character Relation Information --
 	//	(use the model name as the key)
 
-	// This includes the RelationData and the RelationSet.  We want 
-	// to share this with non AI systems, so the mgr is NOT liked to the 
+	// This includes the RelationData and the RelationSet.  We want
+	// to share this with non AI systems, so the mgr is NOT liked to the
 	// attribute template.  Scanners (searchlights and cameras) both are
 	// to use this system as well as the AI, so the structures should abstract
 	// away the implementor by setting up the data driven side as much in the
-	// shared data mgr.  
+	// shared data mgr.
 
 	// Reuse the AIButeMgr name for the AI instances (trying to use it as a
 	// more consistant 'access key' for the AI.
-	
+
 	AIASSERT( GetRelationMgr() != NULL, m_hObject,  "No RelationMgr" );
 	GetRelationMgr()->Init( m_hObject, GetAITemplate()->szAlignment );
 }
@@ -1686,7 +1692,7 @@ LTBOOL CAI::FindFloorHeight(const LTVector& vPos, LTFLOAT* pfFloorHeight)
 		// to register for AI walking around...
 
 		m_eStandingOnSurface = GetSurfaceType(IInfo);
-		
+
 		return LTTRUE;
 	}
 
@@ -1848,11 +1854,11 @@ bool CAI::OnTrigger(HOBJECT hSender, const CParsedMsg &cMsg)
 	static CParsedMsg::CToken s_cTok_IgnoreVolumes("IGNOREVOLUMES");
 	static CParsedMsg::CToken s_cTok_WakeUp("WAKEUP");
 	static CParsedMsg::CToken s_cTok_CineractAI("CINERACTAI");
-	
 
-	
+
+
 	// If we haven't updated then queue our commands for later processing...
-	
+
 	if ( m_bFirstUpdate )
 	{
 		QueueTriggerMsg( cMsg );
@@ -1862,7 +1868,7 @@ bool CAI::OnTrigger(HOBJECT hSender, const CParsedMsg &cMsg)
 		return true;
 	}
 
-	
+
 
 	if( cMsg.GetArg(0) == s_cTok_Activate )
 	{
@@ -1983,7 +1989,7 @@ bool CAI::OnTrigger(HOBJECT hSender, const CParsedMsg &cMsg)
 		}
 		return true;
 	}
-	
+
 	// Wake us back up if we get a message
 
 ///	g_pLTServer->SetNextUpdate(m_hObject, c_fUpdateDelta);
@@ -2050,7 +2056,7 @@ void CAI::Cineract(const char* szAnim, LTBOOL bLoop)
 {
 	if( !m_pAnimationContext )
 		return;
-	
+
 	m_pAnimationContext->SetSpecial( szAnim );
 
 	if( bLoop )
@@ -2083,7 +2089,7 @@ void CAI::HideCharacter(LTBOOL bHide)
 	{
 		SetClientSolid( LTFALSE );
 	}
-	else 
+	else
 	{
 		SetClientSolid( LTTRUE );
 	}
@@ -2104,7 +2110,7 @@ void CAI::UpdateUserFlagCanActivate()
 		if ( m_bAlwaysActivate || (m_pState && m_pState->CanActivate()) )
 		{
 			g_pCommonLT->SetObjectFlags(m_hObject, OFT_User, USRFLG_CAN_ACTIVATE, USRFLG_CAN_ACTIVATE);
-				
+
 			return;
 		}
 	}
@@ -2143,7 +2149,7 @@ void CAI::SetUnconscious(bool bUnconscious)
 				if (GetAnimationContext()->IsPropSet(kAPG_Posture,kAP_Stand))
 				{
 					//if we were standing, adjust our hitbox to cover us lying down
-					
+
 					vNewDims.x *= 2.0f;
 					vNewDims.z *= 2.0f;
 					vNewDims.y = 15.0f;
@@ -2182,7 +2188,7 @@ void CAI::SetUnconscious(bool bUnconscious)
 				apAttachmentPositions[cWeapons]->GetAttachment()->CreateSpawnString(szSpawn);
 
 				BaseClass* pObj = SpawnObject(szSpawn, LTVector(0,0,0), LTRotation());
-				
+
 				if ( pObj && pObj->m_hObject )
 				{
 			 		if (dwAni != INVALID_ANI)
@@ -2195,11 +2201,11 @@ void CAI::SetUnconscious(bool bUnconscious)
 					}
 
 					apAttachmentPositions[cWeapons]->GetAttachment()->CreateAttachString(apAttachmentPositions[cWeapons],szSpawn);
-					
+
 					//remove associated attachment
 					m_pAttachments->Detach(apAttachmentPositions[cWeapons]->GetName());
 					HandleDetach();
-					
+
 					//attach pickup item
 					HATTACHMENT hAttachment;
 					if ( LT_OK != g_pLTServer->CreateAttachment(m_hObject, pObj->m_hObject, (char *)apAttachmentPositions[cWeapons]->GetName(), &LTVector(0,0,0), &LTRotation(), &hAttachment) )
@@ -2226,7 +2232,7 @@ void CAI::SetUnconscious(bool bUnconscious)
 
 			g_pCommonLT->SetObjectFlags(m_hObject, OFT_User, 0, USRFLG_CAN_ACTIVATE);
 		}
-		
+
 		// Add our spears to the searchobject...
 
 		for( uint32 iSpear = 0 ; iSpear < m_cSpears ; ++iSpear )
@@ -2249,11 +2255,11 @@ void CAI::SetUnconscious(bool bUnconscious)
 			{
 				LTVector vDims;
 				pHitBox->GetDefaultModelDims( vDims );
-				
+
 				LTVector vHitDims = vDims;
 				vHitDims *= 1.2f;
 				g_pPhysicsLT->SetObjectDims(m_hHitBox, &vHitDims, 0);
-				
+
 				pHitBox->SetOffset( LTVector( 0.0f, 0.0f, 0.0f ) );
 				pHitBox->SetCanBeSearched(LTFALSE);
 				pHitBox->Update();
@@ -2283,7 +2289,7 @@ void CAI::SetUnconscious(bool bUnconscious)
 			}
 
 			m_aDroppedWeapons[iWpn].Clear();
-			
+
 		}
 
 		m_cDroppedWeapons = 0;
@@ -2304,7 +2310,7 @@ void CAI::SetUnconscious(bool bUnconscious)
 		m_pSearch->ClearPickupItems();
 
 	}
-	
+
 	m_pSearch->Enable(bUnconscious & m_pSearch->HasItem());
 
 	SetCanCarry( m_bUnconscious );
@@ -2372,7 +2378,7 @@ void CAI::HandleDamage(const DamageStruct& damage)
 
 		g_pMusicMgr->DoEvent(CMusicMgr::eEventAIDie);
 
-		// Clean up the armor FX/attachments if they are still running.  
+		// Clean up the armor FX/attachments if they are still running.
 		DestroyArmor();
 
 		m_cWeapons = 0;
@@ -2438,7 +2444,7 @@ void CAI::QueueTriggerMsg(const char* szMsg)
 	// Re-build the message
 
 	m_sQueuedCommands += szMsg;
-	
+
 	AIASSERT( m_sQueuedCommands.GetLength( ) < 2048, m_hObject, "CAI::QueueTriggerMsg: Trigger Msg > 2048 characters!" );
 }
 
@@ -2747,7 +2753,7 @@ void CAI::HandleCommandParameters(const CParsedMsg &cMsg)
 		char szName[64];
 		char szValue[256];
 
-		char *pEqual = strchr(cMsg.GetArg(iToken), '=');
+		const char *pEqual = strchr(cMsg.GetArg(iToken), '=');
 
 		if ( !pEqual )
 		{
@@ -2964,7 +2970,7 @@ void CAI::PreUpdate()
 	// and AI has returned to a relaxed state.
 	// RestoreBackupWeaponTime is set in SetAwareness().
 
-	if( ( m_fRestoreBackupWeaponTime != 0.f ) && 
+	if( ( m_fRestoreBackupWeaponTime != 0.f ) &&
 		( m_fRestoreBackupWeaponTime < g_pLTServer->GetTime() ) &&
 		( m_eAwareness == kAware_Relaxed ) )
 	{
@@ -3119,7 +3125,7 @@ EnumAIWeaponType CAI::GetCurrentWeaponType()
 }
 
 CWeapon* CAI::GetWeapon(int iWeapon)
-{ 
+{
 	AIASSERT(iWeapon >= 0 && iWeapon < m_cWeapons, m_hObject, "CAI::GetWeapon: Invalid weapon index.");
 	return m_apWeapons[iWeapon];
 }
@@ -3143,7 +3149,7 @@ EnumAnimProp CAI::GetWeaponProp(WEAPON const* pWeaponData)
 {
 	if (pWeaponData)
 	{
-		return GetWeaponProp( (EnumAIWeaponType)pWeaponData->nAIWeaponType ); 
+		return GetWeaponProp( (EnumAIWeaponType)pWeaponData->nAIWeaponType );
 	}
 
 	return kAP_Weapon3;
@@ -3157,7 +3163,7 @@ EnumAnimProp CAI::GetWeaponProp(EnumAIWeaponType eWeaponType)
 			return kAP_Weapon1;
 		case kAIWeap_Melee:
 // HACK: for TO2 AIs with grenades, comment out Thrown weapons so AI choose correct animations.
-//		case kAIWeap_Thrown:	
+//		case kAIWeap_Thrown:
 			return kAP_Weapon2;
 	}
 
@@ -3387,7 +3393,7 @@ void CAI::Update()
 	TIME(UpdateMusic());
 
 	// Update debug info
-	
+
 	TIME(UpdateInfo());
 
 	// Post update
@@ -3518,7 +3524,7 @@ void CAI::UpdateInfo()
 	{
 		char szTemp[128];
 
-		CString info = m_cstrNameInfo; 
+		CString info = m_cstrNameInfo;
 		info += "\n";
 
 		if( g_AIInfoTrack.GetFloat() == 1.0f )
@@ -3551,7 +3557,7 @@ void CAI::UpdateInfo()
 			{
 				info += "none";
 			}
-			
+
 			info += "\n";
 
 			info += "G : ";
@@ -3581,7 +3587,7 @@ void CAI::UpdateInfo()
 				sprintf( szTemp, " %s %s %s",
 					(nStep == m_pGoalMgr->GetCurrentScriptStep()) ? "*" : " ",
 					s_aszGoalTypes[element.eGoalType],
-					element.hstrNameValuePairs ? 
+					element.hstrNameValuePairs ?
 					          g_pLTServer->GetStringData(element.hstrNameValuePairs)
 							: "" );
 				info += szTemp;
@@ -3592,7 +3598,7 @@ void CAI::UpdateInfo()
 			{
 				info += "None\n";
 			}
-				
+
 		}
 		else if( g_AIInfoTrack.GetFloat() == 3.0f )
 		{
@@ -3613,7 +3619,11 @@ void CAI::UpdateInfo()
 		else if( g_AIInfoTrack.GetFloat() == 4.0f )
 		{
 			// Show Relations.
+#if _MSC_VER >= 1300
+			std::ostrstream out;
+#else
 			ostrstream out;
+#endif // VC7
 			out << *(m_pRelationMgr->GetRelationUser()) << '\n' << '\0';
 			info += out.str();
 		}
@@ -3636,12 +3646,12 @@ void CAI::UpdateInfo()
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CAI::UpdateInvalidNodeList()
-//              
+//
 //	PURPOSE:	Check for invalid nodes which have expired, and now are
 //				potentially valid again.
-//              
+//
 //	NOTE:		Ugly early return to allow enabling/disabling of feature
 //
 //----------------------------------------------------------------------------
@@ -3664,21 +3674,22 @@ void CAI::UpdateInvalidNodeList( )
 		bind2nd( DeleteExpiredNodes(), g_pLTServer->GetTime() ));
 
 	std::vector<INVALID_NODE*>::iterator pos;
+	INVALID_NODE *pNull = NULL;
 	pos = remove_if(
 		m_InvalidNodeList.begin(),
 		m_InvalidNodeList.end(),
-		bind2nd( equal_to<INVALID_NODE*>(), NULL ));
-    
+		bind2nd( equal_to<INVALID_NODE*>(), pNull ));
+
 	m_InvalidNodeList.erase(pos, m_InvalidNodeList.end());
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CAI::AddNewInvalidNode()
-//              
+//
 //	PURPOSE:	Returns a new INVALIDNODE, after adding it to the list so that
 //				it will definitely be cleaned up later.
-//              
+//
 //----------------------------------------------------------------------------
 INVALID_NODE* CAI::AddNewInvalidNode()
 {
@@ -3696,7 +3707,7 @@ INVALID_NODE* CAI::AddNewInvalidNode()
 // ----------------------------------------------------------------------- //
 
 float CAI::GetDefensePercentage( LTVector const *pIncomingProjectilePosition ) const
-{ 
+{
 	if ( m_bDefenseOn )
 	{
 		return GetAITemplate()->fDefensePercentage;
@@ -3753,12 +3764,12 @@ LTVector CAI::GetWeaponPosition(CWeapon* pWeapon)
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CAI::GetWeaponSocket()
-//              
+//
 //	PURPOSE:	Returns the socket the weapon is attached to.  Asserts if the
 //				socket cannot be found (error condition).
-//              
+//
 //----------------------------------------------------------------------------
 HMODELSOCKET CAI::GetWeaponSocket(CWeapon* pWeapon)
 {
@@ -3767,7 +3778,7 @@ HMODELSOCKET CAI::GetWeaponSocket(CWeapon* pWeapon)
 	// Set up the weapon and attachment arrays so we can Enumerate the weapons
 	CWeapon* apWeapons[kMaxWeapons];
 	CAttachmentPosition* apAttachmentPositions[kMaxWeapons];
-	const uint32 cWeapons = GetAttachments()->EnumerateWeapons(apWeapons, 
+	const uint32 cWeapons = GetAttachments()->EnumerateWeapons(apWeapons,
 		apAttachmentPositions, kMaxWeapons);
 
 	// Loop through the weapon array, looking for the weapon with the same ID.
@@ -3778,7 +3789,7 @@ HMODELSOCKET CAI::GetWeaponSocket(CWeapon* pWeapon)
 		AIASSERT( apWeapons[i], m_hObject, "GetWeaponSocket: Invalid weapon pointer" );
 		if ( apWeapons[i]->GetId() == pWeapon->GetId() )
 		{
-			AIASSERT( pSelectedAttachment == NULL, m_hObject, "GetWeaponSocket: Attachment found at multiple positions" ); 
+			AIASSERT( pSelectedAttachment == NULL, m_hObject, "GetWeaponSocket: Attachment found at multiple positions" );
 			pSelectedAttachment = apAttachmentPositions[i];
 		}
 	}
@@ -3789,7 +3800,7 @@ HMODELSOCKET CAI::GetWeaponSocket(CWeapon* pWeapon)
 	HMODELSOCKET hSocket;
 	LTRESULT SocketResult = g_pModelLT->GetSocket(m_hObject, const_cast<char*>(pSelectedAttachment->GetName()), hSocket);
 	AIASSERT( SocketResult == LT_OK, m_hObject, "GetWeaponSocket: Unable to get socket for transform" );
-	
+
 	return hSocket;
 }
 
@@ -3805,14 +3816,14 @@ const LTVector& CAI::GetEyePosition()
 {
 	// Nodes will only really update once per sense update.
 	UpdateNodes();
-	return m_vEyePos; 
+	return m_vEyePos;
 }
 
 const LTVector& CAI::GetEyeForward()
 {
 	// Nodes will only really update once per sense update.
 	UpdateNodes();
-	return m_vEyeForward; 
+	return m_vEyeForward;
 }
 
 // ----------------------------------------------------------------------- //
@@ -3827,14 +3838,14 @@ const LTVector& CAI::GetTorsoRight()
 {
 	// Nodes will only really update once per sense update.
 	UpdateNodes();
-	return m_vTorsoRight; 
+	return m_vTorsoRight;
 }
 
 const LTVector& CAI::GetTorsoForward()
 {
 	// Nodes will only really update once per sense update.
 	UpdateNodes();
-	return m_vTorsoForward; 
+	return m_vTorsoForward;
 }
 
 // ----------------------------------------------------------------------- //
@@ -3933,7 +3944,7 @@ LTBOOL CAI::EnableNodeTracking(EnumTrackedNodeGroup eGroup, HOBJECT hFace)
 			return FaceObject( hFace );
 		}
 
-		return LTFALSE;		
+		return LTFALSE;
 	}
 
 	return LTTRUE;
@@ -4042,7 +4053,7 @@ LTBOOL CAI::IsObjectPositionVisible(ObjectFilterFn ofn, PolyFilterFn pfn, const 
 
 	if ( hObj != LTNULL )
 	{
-		LTVector vObjectDims;	
+		LTVector vObjectDims;
 		g_pPhysicsLT->GetObjectDims(hObj, &vObjectDims);
 
 		// See if the position is inside the object...
@@ -4128,9 +4139,9 @@ LTBOOL CAI::IsObjectPositionVisible(ObjectFilterFn ofn, PolyFilterFn pfn, const 
 
 	if( bDoVolumeCheck )
 	{
-		uint32 dwExcludeVolumes =	AIVolume::kVolumeType_Ladder | 
+		uint32 dwExcludeVolumes =	AIVolume::kVolumeType_Ladder |
 									AIVolume::kVolumeType_Stairs |
-									AIVolume::kVolumeType_JumpOver | 
+									AIVolume::kVolumeType_JumpOver |
 									AIVolume::kVolumeType_JumpUp |
 									AIVolume::kVolumeType_AmbientLife |
 									AIVolume::kVolumeType_Teleport;
@@ -4255,10 +4266,10 @@ LTBOOL CAI::IsPositionVisible(ObjectFilterFn ofn, PolyFilterFn pfn, const LTVect
 
 	if( bDoVolumeCheck )
 	{
-		uint32 dwExcludeVolumes =	AIVolume::kVolumeType_Ladder | 
+		uint32 dwExcludeVolumes =	AIVolume::kVolumeType_Ladder |
 									AIVolume::kVolumeType_Stairs |
-									AIVolume::kVolumeType_JumpOver | 
-									AIVolume::kVolumeType_JumpUp | 
+									AIVolume::kVolumeType_JumpOver |
+									AIVolume::kVolumeType_JumpUp |
 									AIVolume::kVolumeType_AmbientLife |
 									AIVolume::kVolumeType_Teleport;
 
@@ -4401,12 +4412,12 @@ LTBOOL CAI::FacePos(const LTVector& vTargetPos)
 }
 
 LTBOOL CAI::FacePosMoving(const LTVector& vTargetPos)
-{	
+{
 	LTVector vDir = vTargetPos - m_vPos;
 	vDir.y = 0.f;
 	vDir.Normalize();
 
-	LTVector vNewTargetPos = m_vPos + ( vDir * 10.f ); 
+	LTVector vNewTargetPos = m_vPos + ( vDir * 10.f );
 
 	if( m_eAwareness == kAware_Relaxed )
 	{
@@ -4415,8 +4426,8 @@ LTBOOL CAI::FacePosMoving(const LTVector& vTargetPos)
 			return FacePos( vNewTargetPos, ROTATION_SPEED_MOVING );
 		}
 	}
-	
-	return FacePos( vNewTargetPos, ROTATION_SPEED_STATIC );	
+
+	return FacePos( vNewTargetPos, ROTATION_SPEED_STATIC );
 }
 
 LTBOOL CAI::FacePos(const LTVector& vTargetPos, LTFLOAT fRotationSpeed)
@@ -4424,35 +4435,35 @@ LTBOOL CAI::FacePos(const LTVector& vTargetPos, LTFLOAT fRotationSpeed)
     LTVector vDir;
   	VEC_SUB(vDir, vTargetPos, m_vPos);
    	vDir.y = 0.0f; // Don't look up/down
-   
+
  	if ( vDir.MagSqr() < 1.f )
    	{
  		// Ignore requests to to face a pos very close to where we already are.
  		// They are likely to make the AI pop the wrong direction.
-   
+
         //_ASSERT(LTFALSE);
         return LTTRUE;
    	}
-   
+
   	VEC_NORM(vDir);
-   
+
     LTFLOAT fDpTargetForward = vDir.Dot(m_vTargetForward);
     LTFLOAT fDpForward = vDir.Dot(m_vForward);
-   
+
   	if ( m_bRotating && (fabs(fDpTargetForward) > c_fFacingThreshhold) )
    	{
    		// We're already (going to be) faceing "close enough", so just ignore this request
-   
+
   		return (fabs(fDpForward) > c_fFacingThreshhold);
    	}
   	else
   	{
   		// The time we have to turn is based on how far we have to turn. Turning 0' will take 0
   		// seconds, and turning 180' will take 1 second.
-   
+
           m_bRotating = LTTRUE;
           //m_fRotationTime = (LTFLOAT)fabs(0.5f - fDpForward/2.0f)/m_fRotationSpeed + 1.0e-5f;
-   
+
   		g_pLTServer->GetObjectRotation(m_hObject, &m_rStartRot);
   		m_rTargetRot = LTRotation(vDir, LTVector(0.0f, 1.0f, 0.0f));
   		m_vTargetRight = m_rTargetRot.Right();
@@ -4467,11 +4478,11 @@ LTBOOL CAI::FacePos(const LTVector& vTargetPos, LTFLOAT fRotationSpeed)
   		{
   			fDpForward = -1.f;
   		}
-   
+
   		m_fRotationTime = ( ((LTFLOAT)acos( fDpForward )) * MATH_ONE_OVER_PI ) * fRotationSpeed;
-   
+
   		m_fRotationTimer = 0.0f;
-   
+
           return LTFALSE;
   	}
 }
@@ -4561,7 +4572,7 @@ void CAI::HandleModelString(ArgList* pArgList)
 		// Argument 1:	Attachment position/name to send the animation to
 		// Argument 2:	Name of the animation to send it
 		AIASSERT( pArgList->argc >= 2, m_hObject, "Format: ATTACHMENTANIM SocketName AnimationName" );
-		
+
 		const char* const pszAttachmentPos = pArgList->argv[1];
 		AIASSERT( pszAttachmentPos, m_hObject, "missing SocketName (ATTACHMENTANIM SocketName AnimationName)" );
 
@@ -4723,7 +4734,7 @@ void CAI::Save(ILTMessage_Write *pMsg, uint32 dwSaveFlags)
 	SAVE_DWORD(m_flagsBaseSenses);
 	SAVE_BOOL(m_bSensesOn);
 	m_pAISenseRecorder->Save(pMsg);
-	
+
 	SAVE_RANGE(m_rngSightGridX);
 	SAVE_RANGE(m_rngSightGridY);
 
@@ -4739,7 +4750,7 @@ void CAI::Save(ILTMessage_Write *pMsg, uint32 dwSaveFlags)
 
 	m_pGoalMgr->Save(pMsg);
 
-	// [JO] 8/16/02 
+	// [JO] 8/16/02
 	// Intentionally do not save/load member m_pAIMovement in CAI.
 	// It needs to be saved/loaded AFTER the CAIState, because
 	// Init on state calls Init on Strategy, which will overwrite
@@ -4770,7 +4781,7 @@ void CAI::Save(ILTMessage_Write *pMsg, uint32 dwSaveFlags)
 	std::vector<INVALID_NODE*>::iterator it;
 	for( it = m_InvalidNodeList.begin(); it != m_InvalidNodeList.end(); ++it )
 	{
-		INVALID_NODE* pInvalidNode = *it; 
+		INVALID_NODE* pInvalidNode = *it;
 		SAVE_BOOL( pInvalidNode->m_bBlocked );
 		SAVE_TIME( pInvalidNode->m_flTime );
 		SAVE_HOBJECT( pInvalidNode->m_hNode );
@@ -4961,7 +4972,7 @@ void CAI::Load(ILTMessage_Read *pMsg, uint32 dwLoadFlags)
 		m_pAnimationMgr->DestroyAnimationContext(m_pAnimationContext);
 		m_pAnimationContext = LTNULL;
 	}
-	
+
 	if (bAnimationContext)
 	{
 		m_pAnimationContext = m_pAnimationMgr->CreateAnimationContext(m_hObject);
@@ -4976,7 +4987,7 @@ void CAI::Load(ILTMessage_Read *pMsg, uint32 dwLoadFlags)
 	m_pGoalMgr->Init(this);
 	m_pGoalMgr->Load(pMsg);
 
-	// [JO] 8/16/02 
+	// [JO] 8/16/02
 	// Intentionally do not save/load member m_pAIMovement in CAI.
 	// It needs to be saved/loaded AFTER the CAIState, because
 	// Init on state calls Init on Strategy, which will overwrite
@@ -5033,7 +5044,7 @@ void CAI::Load(ILTMessage_Read *pMsg, uint32 dwLoadFlags)
 	LOAD_bool( m_bIsCinematicAI );
 	LOAD_bool( m_bCanWake );
 
-	// Recreate the specialfx message since we know all of our data is loaded and 
+	// Recreate the specialfx message since we know all of our data is loaded and
 	// it may have gotten created inadvertently with default data by loading other
 	// data such as the GoalMgr...
 
@@ -5073,7 +5084,7 @@ LTBOOL CAI::HasTarget()
 //
 //	ROUTINE:	CAI::GetRightAndLeftHolsterStrings
 //
-//	PURPOSE:	Get separate right and left holster strings, 
+//	PURPOSE:	Get separate right and left holster strings,
 //              which are stored concatenated.
 //
 // ----------------------------------------------------------------------- //
@@ -5105,7 +5116,7 @@ void CAI::GetRightAndLeftHolsterStrings(char* szBufferRight, char* szBufferLeft,
 
 	// Optional semi-colon separates a RightHand attachment from a LeftHand.
 
-	char* pColon = strchr(szHolsterString, ';');
+	const char* pColon = strchr(szHolsterString, ';');
 	if( !pColon )
 	{
 		strncpy( szBufferRight, szHolsterString + iStartHolster, nBufferSize );
@@ -5166,7 +5177,7 @@ void CAI::SetAwareness(EnumAIAwareness eAwareness)
 		return;
 	}
 
-	// If we are returning to a relaxed state, we want to ignore disturbed allies 
+	// If we are returning to a relaxed state, we want to ignore disturbed allies
 	// who were stimulated before we returned to relaxed.
 
 	if( ( eAwareness == kAware_Relaxed ) && ( m_eAwareness > kAware_Relaxed ) )
@@ -5186,7 +5197,7 @@ void CAI::SetAwareness(EnumAIAwareness eAwareness)
 	// If we going into or out of an alert state, clear path knowledge
 	// because some volumes may only be useable for pathfinding when alert.
 
-	if( ( eAwareness == kAware_Alert ) || 
+	if( ( eAwareness == kAware_Alert ) ||
 		( m_eAwareness == kAware_Alert ) )
 	{
 		m_pPathKnowledgeMgr->ClearPathKnowledge();
@@ -5310,7 +5321,7 @@ void CAI::PlaySound(EnumAISoundType eSound, LTBOOL bInterrupt)
 
 LTBOOL CAI::CanLipSync()
 {
-	return ( m_pBrain ) ? m_pBrain->CanLipSync() : LTFALSE; 
+	return ( m_pBrain ) ? m_pBrain->CanLipSync() : LTFALSE;
 }
 
 // ----------------------------------------------------------------------- //
@@ -5462,11 +5473,11 @@ void CAI::SetAccuracyModifier(LTFLOAT fModifier, LTFLOAT fTime)
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CAI::GetAccuracy()
-//              
+//
 //	PURPOSE:	returns the heavily modified accuracy modifier
-//              
+//
 //----------------------------------------------------------------------------
 LTFLOAT CAI::GetAccuracy()
 {
@@ -5484,21 +5495,21 @@ LTFLOAT CAI::GetAccuracy()
 
 LTFLOAT	CAI::GetAccuracyMissPerturb()
 {
-	return LOWER_BY_DIFFICULTY(m_fAccuracyMissPerturb); 
+	return LOWER_BY_DIFFICULTY(m_fAccuracyMissPerturb);
 }
 
 LTFLOAT	CAI::GetMaxMovementAccuracyPerturb()
 {
-	return LOWER_BY_DIFFICULTY(m_fMaxMovementAccuracyPerturb); 
+	return LOWER_BY_DIFFICULTY(m_fMaxMovementAccuracyPerturb);
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CAI::SetPosition()
-//              
+//
 //	PURPOSE:	Function to set the AIs position -- added so that all setting
 //				of the position can be trapped at a single point.
-//              
+//
 //----------------------------------------------------------------------------
 void CAI::SetPosition(const LTVector& vPos, LTBOOL bFindFloorHeight)
 {
@@ -5513,7 +5524,7 @@ void CAI::SetPosition(const LTVector& vPos, LTBOOL bFindFloorHeight)
 	{
 		vPathingPos.y = flHeight;
 	}
-	
+
 	SetPathingPosition( vPathingPos );
 }
 
@@ -5563,9 +5574,9 @@ void CAI::UpdatePosition()
    	{
 		m_fRotationTimer += g_pLTServer->GetFrameTime();
         m_fRotationTimer = Min<LTFLOAT>(m_fRotationTime, m_fRotationTimer);
-   
+
         LTFLOAT fRotationInterpolation = GetRotationInterpolation(m_fRotationTimer/m_fRotationTime);
- 
+
 		// Rotate us if our timer is going
 
         LTRotation rNewRot;
@@ -5646,7 +5657,7 @@ LTFLOAT CAI::ComputeDamageModifier(ModelNode eModelNode)
 //
 // ----------------------------------------------------------------------- //
 
-LTBOOL CAI::IsAlert() 
+LTBOOL CAI::IsAlert()
 {
 //	return (m_eAwareness >= kAware_Alert)? LTTRUE : LTFALSE;
 	return (m_eAwareness >= kAware_Suspicious)? LTTRUE : LTFALSE;
@@ -5675,7 +5686,7 @@ LTBOOL CAI::IsSuspicious()
 
 void CAI::IncrementAlarmLevel(uint32 nIncr)
 {
-	m_nAlarmLevel += nIncr; 
+	m_nAlarmLevel += nIncr;
 }
 
 // ----------------------------------------------------------------------- //
@@ -5852,13 +5863,13 @@ void CAI::StartDeath()
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CAI::SetPathingPosition()
-//              
+//
 //	PURPOSE:	Sets the pathing position for the AI.  Certain AIs, such as
 //				floating AIs, use this offset to keep consistant with ground
 //				dwellers
-//              
+//
 //----------------------------------------------------------------------------
 void CAI::SetPathingPosition( const LTVector& vPos )
 {
@@ -5866,12 +5877,12 @@ void CAI::SetPathingPosition( const LTVector& vPos )
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CAI::GetPathingPosition()
-//              
-//	PURPOSE:	Returns the anchor point the AI uses in conjunction with the 
+//
+//	PURPOSE:	Returns the anchor point the AI uses in conjunction with the
 //				pathing system.
-//              
+//
 //----------------------------------------------------------------------------
 LTVector CAI::GetPathingPosition() const
 {
@@ -5879,11 +5890,11 @@ LTVector CAI::GetPathingPosition() const
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CAI::GetVerticalThreshold()
-//              
+//
 //	PURPOSE:	Returns the distance up and down the AI checks for volumes
-//              
+//
 //----------------------------------------------------------------------------
 float CAI::GetVerticalThreshold() const
 {
@@ -5891,11 +5902,11 @@ float CAI::GetVerticalThreshold() const
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CAI::GetInfoVerticalThreshold()
-//              
+//
 //	PURPOSE:	Returns the distance up and down the AI checks for information volumes
-//              
+//
 //----------------------------------------------------------------------------
 float CAI::GetInfoVerticalThreshold() const
 {
@@ -5906,18 +5917,18 @@ float CAI::GetInfoVerticalThreshold() const
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CAI::SetAITemplate()
-//              
+//
 //	PURPOSE:	Sets the AIs
-//              
+//
 //----------------------------------------------------------------------------
 void CAI::SetAITemplate(const char* pszName )
 {
 	AIASSERT( m_pAITemplate == NULL, m_hObject, "AITemplate already set." );
 	AIASSERT( pszName != NULL, m_hObject, "Setting AITemplate to NULL template." );
 
-	int nTemplate = g_pAIButeMgr->GetTemplateIDByName( pszName ); 
+	int nTemplate = g_pAIButeMgr->GetTemplateIDByName( pszName );
 	AIASSERT( nTemplate >= 0 && nTemplate < g_pAIButeMgr->GetNumTemplates(), m_hObject, "Template out of bounds" );
 
 	AIBM_Template* pTemplate = g_pAIButeMgr->GetTemplate( nTemplate );
@@ -5928,16 +5939,16 @@ void CAI::SetAITemplate(const char* pszName )
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CAI::GetHoverSpeed()
-//              
+//
 //	PURPOSE:	Returns the AIs Hover Speed
-//              
+//
 //----------------------------------------------------------------------------
 LTFLOAT CAI::GetHoverSpeed()
 {
 	// Find the difference between the last time we swam, and the current time
-	// After half a second of not Hoverming, reset the speed to 0 
+	// After half a second of not Hoverming, reset the speed to 0
 
 	float flTimeDifference = g_pLTServer->GetTime() - m_flLastHoverTime;
 	if ( flTimeDifference >= GetBrain()->GetAIData( kAIData_HoverResetSpeedTime ) )
@@ -5952,17 +5963,17 @@ LTFLOAT CAI::GetHoverSpeed()
 	float flMinSpeed = GetBrain()->GetAIData(kAIData_HoverMinSpeed);
 	float flMaxSpeed = GetBrain()->GetAIData(kAIData_HoverMaxSpeed);
 
-	m_flCurrentHoverSpeed = ( Clamp<float>( flUncappedSpeed, flMinSpeed, flMaxSpeed ) ); 
-	
+	m_flCurrentHoverSpeed = ( Clamp<float>( flUncappedSpeed, flMinSpeed, flMaxSpeed ) );
+
 	return m_flCurrentHoverSpeed;
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CAI::HoverIsDrifting()
-//              
+//
 //	PURPOSE:	This can be used to see if the AI has stopped drifting
-//              
+//
 //----------------------------------------------------------------------------
 bool CAI::HoverIsDrifting()
 {
@@ -5970,13 +5981,13 @@ bool CAI::HoverIsDrifting()
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CAI::GetAITemplate()
-//              
+//
 //	PURPOSE:	Returns a pointer to this AIs template.  Asserts if either
 //				the AI does not have a template, or if the template is invalid
 //				or for some reason NULL
-//              
+//
 //----------------------------------------------------------------------------
 const AIBM_Template* const CAI::GetAITemplate() const
 {
@@ -5991,25 +6002,25 @@ const AIBM_Template* const CAI::GetAITemplate() const
 //
 //	AIBM_Template* pTemplate = g_pAIButeMgr->GetTemplate(nTemplateID);
 //	AIASSERT( pTemplate != NULL, m_hObject, "NULL AI Template" );
-//	
+//
 //	return pTemplate;
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CAI::UpdateRelationButeMgr()
-//              
-//	PURPOSE:	If we can see our target, then preserve any relationship with 
+//
+//	PURPOSE:	If we can see our target, then preserve any relationship with
 //				them that we have.  This MAY allow relationships to fail when
-//				they should be preserved if are unable to maintain their 
+//				they should be preserved if are unable to maintain their
 //				targets.
-//              
+//
 //----------------------------------------------------------------------------
 void CAI::UpdateRelationMgr()
 {
 	if ( HasTarget() && GetTarget()->IsVisibleFromEye() )
 	{
-		// Find out if the Object is entered in the ObjectRelationMgrs 
+		// Find out if the Object is entered in the ObjectRelationMgrs
 		// database of relation objects.  It should be.
 		CObjectRelationMgr* pORM = CRelationMgr::GetGlobalRelationMgr()->GetObjectRelationMgr(GetTarget()->GetObject());
 		if ( pORM )
@@ -6100,13 +6111,13 @@ void CAI::PreCreateSpecialFX( CHARCREATESTRUCT& cs )
 #ifndef __PSX2
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CAIPlugin::CAIPlugin, ~CAIPlugin, GetAttachmentsPlugin
-//              
+//
 //	PURPOSE:	Now handles pointers instead to the CHumanAttachmentsPlugin
 //				instead of instances, as this lets us avoid coupling in the
 //				header with attachments.h
-//              
+//
 //----------------------------------------------------------------------------
 CAIPlugin::CAIPlugin()
 {
@@ -6122,7 +6133,7 @@ CAIPlugin::~CAIPlugin()
 }
 CAttachmentsPlugin* CAIPlugin::GetAttachmentsPlugin()
 {
-	ASSERT( m_pAttachmentsPlugin != NULL ); 
+	ASSERT( m_pAttachmentsPlugin != NULL );
 	return m_pAttachmentsPlugin;
 }
 
@@ -6167,8 +6178,8 @@ LTRESULT CAIPlugin::PreHook_EditStringList(const char* szRezPath, const char* sz
 // ----------------------------------------------------------------------- //
 
 LTRESULT CAIPlugin::PreHook_PropChanged( const char *szObjName,
-											 const char *szPropName, 
-											 const int  nPropType, 
+											 const char *szPropName,
+											 const int  nPropType,
 											 const GenericProp &gpPropValue,
 											 ILTPreInterface *pInterface,
 											 const char *szModifiers )
@@ -6188,7 +6199,7 @@ LTRESULT CAIPlugin::PreHook_PropChanged( const char *szObjName,
 			{
 				if( LT_OK != m_CommandMgrPlugin.PreHook_PropChanged( szObjName,
 																	 szPropName,
-																	 nPropType, 
+																	 nPropType,
 																	 gpPropValue,
 																	 pInterface,
 																	 szModifiers ))
@@ -6198,7 +6209,7 @@ LTRESULT CAIPlugin::PreHook_PropChanged( const char *szObjName,
 			}
 			else if( cpCmd.m_nArgs > 0 )
 			{
-				// Since we can send commands to AIs without using the command syntax, 
+				// Since we can send commands to AIs without using the command syntax,
 				// build the command like we were using propper syntax and and try to validate it...
 
 				std::string sCmd = "";
@@ -6216,7 +6227,7 @@ LTRESULT CAIPlugin::PreHook_PropChanged( const char *szObjName,
 
 				if( LT_OK != m_CommandMgrPlugin.PreHook_PropChanged( szObjName,
 																	 szPropName,
-																	 nPropType, 
+																	 nPropType,
 																	 gp,
 																	 pInterface,
 																	 szModifiers ))
@@ -6228,9 +6239,9 @@ LTRESULT CAIPlugin::PreHook_PropChanged( const char *szObjName,
 
 		return LT_OK;
 	}
-	else if( m_CommandMgrPlugin.PreHook_PropChanged( szObjName, 
-													 szPropName, 
-													 nPropType, 
+	else if( m_CommandMgrPlugin.PreHook_PropChanged( szObjName,
+													 szPropName,
+													 nPropType,
 													 gpPropValue,
 													 pInterface,
 													 szModifiers ) == LT_OK )

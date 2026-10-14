@@ -1118,7 +1118,7 @@ void CTO2PlayerStats::OnObjectivesDataMessage(ILTMessage_Read *pMsg)
     uint8 nNumOptObj = pMsg->Readuint8();
 
 	//read list of optional objectives
-	for (i = 0; i < nNumOptObj; i++)
+	for (uint8 i = 0; i < nNumOptObj; i++)
 	{
         uint32 dwId = pMsg->Readuint32();
 		m_OptionalObjectives.Add(dwId);
@@ -1128,7 +1128,7 @@ void CTO2PlayerStats::OnObjectivesDataMessage(ILTMessage_Read *pMsg)
     uint8 nNumCompObj = pMsg->Readuint8();
 
 	//read list of completed objectives
-	for (i = 0; i < nNumCompObj; i++)
+	for (uint8 i = 0; i < nNumCompObj; i++)
 	{
         uint32 dwId = pMsg->Readuint32();
 		m_CompletedObjectives.Add(dwId);
@@ -1138,7 +1138,7 @@ void CTO2PlayerStats::OnObjectivesDataMessage(ILTMessage_Read *pMsg)
     uint8 nNumParam = pMsg->Readuint8();
 
 	//read list of parameters
-    for (i = 0; i < nNumParam; i++)
+    for (uint8 i = 0; i < nNumParam; i++)
 	{
         uint32 dwId = pMsg->Readuint32();
 		m_Parameters.Add(dwId);

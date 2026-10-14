@@ -1,18 +1,18 @@
 
 //----------------------------------------------------------------------------
-//              
+//
 //	MODULE:		AISpatialRepresentationMgr.cpp
-//              
+//
 //	PURPOSE:	- implementation
-//              
+//
 //	CREATED:	18.01.2002
 //
 //	(c) 2002 Monolith Productions, Inc.  All Rights Reserved
 //
 //
 //	COMMENTS:	-
-//              
-//              
+//
+//
 //----------------------------------------------------------------------------
 
 
@@ -20,7 +20,7 @@
 #include "stdafx.h"
 
 #ifndef __AISPATIALREPRESENTATIONMGR_H__
-#include "AISpatialRepresentationMgr.h"		
+#include "AISpatialRepresentationMgr.h"
 #endif
 
 #include "AI.h"
@@ -28,6 +28,8 @@
 #include "FastHeap.h"
 #include "WorldProperties.h"
 #include "AIUtils.h"
+
+#include <algorithm>
 
 // Forward declarations
 
@@ -38,11 +40,11 @@
 
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CAISpatialRepresentationMgr::CAISpatialRepresentationMgr()
-//              
+//
 //	PURPOSE:	Initializes the SpatialRepMgr
-//              
+//
 //----------------------------------------------------------------------------
 CAISpatialRepresentationMgr::CAISpatialRepresentationMgr()
 {
@@ -51,11 +53,11 @@ CAISpatialRepresentationMgr::CAISpatialRepresentationMgr()
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CAISpatialRepresentationMgr::~CAISpatialRepresentationMgr()
-//              
+//
 //	PURPOSE:	Cleans up the SpatialRepMgr
-//              
+//
 //----------------------------------------------------------------------------
 CAISpatialRepresentationMgr::~CAISpatialRepresentationMgr()
 {
@@ -68,7 +70,7 @@ void CAISpatialRepresentationMgr::Load(ILTMessage_Read *pMsg)
 	uint32 nVolumes;
 	LOAD_INT(nVolumes);
 	m_listpVolumes.clear( );
-	m_listpVolumes.resize(nVolumes); 
+	m_listpVolumes.resize(nVolumes);
 
     for ( uint32 iVolume = 0 ; iVolume < nVolumes; iVolume++ )
 	{
@@ -88,11 +90,11 @@ void CAISpatialRepresentationMgr::Save(ILTMessage_Write *pMsg)
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CAISpatialRepresentationMgr::Term()
-//              
+//
 //	PURPOSE:	Deinitializes the CAISpatialRepresentationMgr
-//              
+//
 //----------------------------------------------------------------------------
 void CAISpatialRepresentationMgr::Term()
 {
@@ -100,11 +102,11 @@ void CAISpatialRepresentationMgr::Term()
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CAISpatialRepresentationMgr::CountInstances()
-//              
+//
 //	PURPOSE:	Counts the instances of a class of objects.
-//              
+//
 //----------------------------------------------------------------------------
 int CAISpatialRepresentationMgr::CountInstances(const char* const szClass) const
 {
@@ -134,11 +136,11 @@ int CAISpatialRepresentationMgr::CountInstances(const char* const szClass) const
 }
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CAISpatialRepresentationMgr::SetupInstanceArray()
-//              
+//
 //	PURPOSE:	Sets the Vector of pointers to all instances of type Volume
-//              
+//
 //----------------------------------------------------------------------------
 void CAISpatialRepresentationMgr::SetupInstanceArray(const char* const szClass)
 {
@@ -187,13 +189,13 @@ struct SetupNeighbors : public std::binary_function< AISpatialRepresentation*, C
 };
 
 //----------------------------------------------------------------------------
-//              
+//
 //	ROUTINE:	CAISpatialRepresentationMgr::Init()
-//              
+//
 //	PURPOSE:	Initializes the CAISpatialRepresentationMgr to use a specific
 //				type of volume the passed classname.  Sets up the Vector of
 //				instance pointers, and calls Init() on all members
-//              
+//
 //----------------------------------------------------------------------------
 void CAISpatialRepresentationMgr::Init(const char* const szClass)
 {

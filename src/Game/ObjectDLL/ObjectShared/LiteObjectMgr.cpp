@@ -15,6 +15,7 @@
 #include "GameBaseLite.h"
 
 #include <set>
+#include <algorithm>
 
 CVarTrack g_ShowLiteObjectInfoTrack;
 
@@ -116,7 +117,7 @@ void CLiteObjectMgr::RemoveObject(GameBaseLite *pObject)
 		--m_nNumActiveObjects;
 		ASSERT(!IsObjectInList(m_aInactiveObjects, pObject));
 	}
-	else 
+	else
 	{
 		bRemoveResult = RemoveObjectFromList(m_aInactiveObjects, pObject);
 		--m_nNumInactiveObjects;
@@ -176,14 +177,14 @@ void CLiteObjectMgr::RenameObject(GameBaseLite *pObject, const char *pName)
 
 bool CLiteObjectMgr::HasObject(GameBaseLite *pObject)
 {
-	return IsObjectInList(m_aActiveObjects, pObject) || 
+	return IsObjectInList(m_aActiveObjects, pObject) ||
 		IsObjectInList(m_aInactiveObjects, pObject);
 }
 
 void CLiteObjectMgr::Clear()
 {
 	HandlePendingDeletes();
-	
+
 	// Clear the object lists
 	RemoveObjectList(m_aActiveObjects);
 	m_nNumActiveObjects = 0;

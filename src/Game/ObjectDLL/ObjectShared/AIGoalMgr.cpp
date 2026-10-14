@@ -22,11 +22,11 @@
 #include "AIMovement.h"
 #include "AIBrain.h"
 
-#define GOAL_CMD_PREFIX		"GOAL_" 
-#define GOAL_CMD_GOALSET	"GoalSet" 
-#define GOAL_CMD_ADDGOAL	"AddGoal" 
-#define GOAL_CMD_REMOVEGOAL	"RemoveGoal" 
-#define GOAL_CMD_GOALSCRIPT	"GoalScript" 
+#define GOAL_CMD_PREFIX		"GOAL_"
+#define GOAL_CMD_GOALSET	"GoalSet"
+#define GOAL_CMD_ADDGOAL	"AddGoal"
+#define GOAL_CMD_REMOVEGOAL	"RemoveGoal"
+#define GOAL_CMD_GOALSCRIPT	"GoalScript"
 
 DEFINE_AI_FACTORY_CLASS(CAIGoalMgr);
 
@@ -75,7 +75,7 @@ void CAIGoalMgr::Save(ILTMessage_Write *pMsg)
 		pGoal->Save(pMsg);
 
 		// See if this goal is a damage handler and save the damage priority if it is...
-		
+
 		dwDamagePriority = 0;
 		for( dit = m_mapDamageHandlers.begin(); dit != m_mapDamageHandlers.end(); ++dit )
 		{
@@ -96,7 +96,7 @@ void CAIGoalMgr::Save(ILTMessage_Write *pMsg)
 	SAVE_DWORD( m_pTriggeredGoal ? m_pTriggeredGoal->GetGoalType() : kGoal_InvalidType );
 	SAVE_DWORD( m_pLockedGoal ? m_pLockedGoal->GetGoalType() : kGoal_InvalidType );
 	SAVE_DWORD( m_pDeactivatingGoal ? m_pDeactivatingGoal->GetGoalType() : kGoal_InvalidType );
-	
+
 
 	// Save goal script.
 
@@ -106,11 +106,11 @@ void CAIGoalMgr::Save(ILTMessage_Write *pMsg)
 	GOAL_SCRIPT_LIST::iterator gsit;
 	for(gsit = m_lstScriptGoals.begin(); gsit != m_lstScriptGoals.end(); ++gsit)
 	{
-		gss = gsit;
+		gss = &(*gsit);
 		SAVE_DWORD(gss->eGoalType);
 		SAVE_HSTRING(gss->hstrNameValuePairs);
 	}
-	
+
 	SAVE_DWORD(m_nScriptStep);
 	SAVE_BOOL(m_bQueuedGoalScript);
 
@@ -203,11 +203,11 @@ void CAIGoalMgr::Load(ILTMessage_Read *pMsg)
 	GOAL_SCRIPT_LIST::iterator gsit;
 	for(gsit = m_lstScriptGoals.begin(); gsit != m_lstScriptGoals.end(); ++gsit)
 	{
-		gss = gsit;
+		gss = &(*gsit);
 		LOAD_DWORD_CAST(gss->eGoalType, EnumAIGoalType);
 		LOAD_HSTRING(gss->hstrNameValuePairs);
 	}
-	
+
 	LOAD_DWORD(m_nScriptStep);
 	LOAD_BOOL(m_bQueuedGoalScript);
 
@@ -215,14 +215,14 @@ void CAIGoalMgr::Load(ILTMessage_Read *pMsg)
 	// Load queued goals.
 
 	LOAD_DWORD( cGoals );
-	for( iGoal=0; iGoal < cGoals; ++iGoal )
+	for(int iGoal=0; iGoal < cGoals; ++iGoal )
 	{
 		LOAD_DWORD_CAST( eGoalType, EnumAIGoalType);
 		m_lstQueuedGoals.push_back( eGoalType );
 	}
 
 	HSTRING hstrQueuedGoalArgs;
-	for( iGoal=0; iGoal < cGoals; ++iGoal )
+	for(int iGoal=0; iGoal < cGoals; ++iGoal )
 	{
 		LOAD_HSTRING( hstrQueuedGoalArgs );
 		m_lstQueuedGoalArgs.push_back( hstrQueuedGoalArgs );
@@ -231,13 +231,13 @@ void CAIGoalMgr::Load(ILTMessage_Read *pMsg)
 	// Load queued goal prefix commands.
 
 	LOAD_DWORD( cGoals );
-	for( iGoal=0; iGoal < cGoals; ++iGoal )
+	for(int iGoal=0; iGoal < cGoals; ++iGoal )
 	{
 		LOAD_DWORD_CAST( eGoalType, EnumAIGoalType);
 		m_lstQueuedPrefixCmdGoals.push_back( eGoalType );
 	}
 
-	for( iGoal=0; iGoal < cGoals; ++iGoal )
+	for(int iGoal=0; iGoal < cGoals; ++iGoal )
 	{
 		LOAD_HSTRING( hstrQueuedGoalArgs );
 		m_lstQueuedPrefixCmdGoalArgs.push_back( hstrQueuedGoalArgs );
@@ -255,7 +255,7 @@ void CAIGoalMgr::Load(ILTMessage_Read *pMsg)
 //
 //	ROUTINE:	CAIGoalMgr::Init
 //
-//	PURPOSE:	Initialization. 
+//	PURPOSE:	Initialization.
 //
 // ----------------------------------------------------------------------- //
 
@@ -283,7 +283,7 @@ void CAIGoalMgr::Init(CAI* pAI)
 //
 //	ROUTINE:	CAIGoalMgr::Term
 //
-//	PURPOSE:	Termination. 
+//	PURPOSE:	Termination.
 //
 // ----------------------------------------------------------------------- //
 
@@ -295,7 +295,7 @@ void CAIGoalMgr::Term(LTBOOL bDestroyAll)
 	}
 
 	// Delete all goals.
-	// Use RemoveGoal so that all goal removals follow the same 
+	// Use RemoveGoal so that all goal removals follow the same
 	// code path.  When SetGoalSet is called, it may call Term()
 	// to clear the goals.  Calling RemoveGoal ensures that there
 	// are no dangling pointers.
@@ -334,8 +334,8 @@ void CAIGoalMgr::Term(LTBOOL bDestroyAll)
 			FREE_HSTRING( *qgait );
 		}
 		m_lstQueuedGoalArgs.clear();
-	
-	
+
+
 		// Cleanup queued goal prefix commands.
 
 		m_lstQueuedPrefixCmdGoals.clear();
@@ -388,7 +388,7 @@ void CAIGoalMgr::SetGoalSet(uint32 iGoalSet, LTBOOL bClearGoals)
 		if( !pGoalSet->lstRequiredBrains.empty() )
 		{
 			int iBrainID = g_pAIButeMgr->GetBrainIDByName( m_pAI->GetBrain()->GetName() );
-			
+
 			AIBRAIN_LIST::iterator it_brain;
 			for( it_brain = pGoalSet->lstRequiredBrains.begin(); it_brain != pGoalSet->lstRequiredBrains.end(); ++it_brain )
 			{
@@ -419,7 +419,7 @@ void CAIGoalMgr::SetGoalSet(uint32 iGoalSet, LTBOOL bClearGoals)
 
 			Term( LTFALSE );
 			Init( m_pAI );
-			
+
 			m_bQueuedGoalScript = bQueuedGoalScript;
 
 			// Allow transitions to finish.  Stomp anything else.
@@ -522,7 +522,7 @@ CAIGoalAbstract* CAIGoalMgr::AI_FACTORY_NEW_Goal(EnumAIGoalType eGoalType)
 //
 // ----------------------------------------------------------------------- //
 
-CAIGoalAbstract* CAIGoalMgr::AddGoal(EnumAIGoalType eGoalType, LTFLOAT fImportance, 
+CAIGoalAbstract* CAIGoalMgr::AddGoal(EnumAIGoalType eGoalType, LTFLOAT fImportance,
 									 LTFLOAT fTime, LTBOOL bScripted)
 {
 	CAIGoalAbstract* pGoal = LTNULL;
@@ -574,7 +574,7 @@ CAIGoalAbstract* CAIGoalMgr::AddGoal(EnumAIGoalType eGoalType, LTFLOAT fImportan
 
 		// Reset last update time to the current time.
 		// This allows other code to detect if a goal was added during the same update.
-			
+
 		pGoal->SetLastUpdateTime( fTime );
 
 		// Clear flag to delete goal next update.
@@ -618,7 +618,7 @@ void CAIGoalMgr::AddQueuedGoals()
 			if( pGoal )
 			{
 				AITRACE(AIShowGoals, ( m_pAI->m_hObject, "Added Goal: %s", s_aszGoalTypes[eGoalType] ) );
-			
+
 				// Process any additional name value pairs for this goal.
 				if( hstrGoalArgs )
 				{
@@ -801,7 +801,7 @@ void CAIGoalMgr::DeleteGoalNextUpdate(EnumAIGoalType eGoalType)
 
 void CAIGoalMgr::LockGoal(CAIGoalAbstract* pGoal)
 {
-	AIASSERT( (m_pLockedGoal == LTNULL) || (m_pLockedGoal == pGoal), m_pAI->m_hObject, "CAIGoalMgr::LockGoal: There is already a locked goal."); 
+	AIASSERT( (m_pLockedGoal == LTNULL) || (m_pLockedGoal == pGoal), m_pAI->m_hObject, "CAIGoalMgr::LockGoal: There is already a locked goal.");
 	m_pLockedGoal = pGoal;
 
 	AITRACE(AIShowGoalsVerbose, ( m_pAI->m_hObject, "Locking Goal %s\n", s_aszGoalTypes[pGoal->GetGoalType()] ) );
@@ -815,11 +815,11 @@ void CAIGoalMgr::LockGoal(CAIGoalAbstract* pGoal)
 //
 // ----------------------------------------------------------------------- //
 
-void CAIGoalMgr::UnlockGoal(CAIGoalAbstract* pGoal) 
+void CAIGoalMgr::UnlockGoal(CAIGoalAbstract* pGoal)
 {
 	if( m_pLockedGoal == pGoal )
 	{
-		m_pLockedGoal = LTNULL; 
+		m_pLockedGoal = LTNULL;
 		AITRACE(AIShowGoalsVerbose, ( m_pAI->m_hObject, "Unlocking Goal %s\n", s_aszGoalTypes[pGoal->GetGoalType()] ) );
 	}
 }
@@ -837,7 +837,7 @@ void CAIGoalMgr::UpdateGoals()
 //	AITRACE(AIShowGoalsVerbose, ( m_pAI->m_hObject, "CurGoal %s\n", m_pCurGoal ? s_aszGoalTypes[m_pCurGoal->GetGoalType()] : "Null" ) );
 //	AITRACE(AIShowGoalsVerbose, ( m_pAI->m_hObject, "NextGoal %s\n", m_pNextGoal ? s_aszGoalTypes[m_pNextGoal->GetGoalType()] : "Null") );
 //	AITRACE(AIShowGoalsVerbose, ( m_pAI->m_hObject, "LastGoal %s\n", m_pLastGoal ? s_aszGoalTypes[m_pLastGoal->GetGoalType()] : "Null") );
-	
+
 	if( m_pAI->IsDead() )
 	{
 		return;
@@ -899,10 +899,10 @@ void CAIGoalMgr::UpdateGoals()
 
 			// Check if current goal has dropped to zero importance.
 
-			if( m_pCurGoal 
-				&& ( !m_pAI->GetAnimationContext()->IsLocked() ) 
-				&& ( !m_pAI->GetAnimationContext()->IsTransitioning() ) 
-				&& ( !m_pAI->GetAIMovement()->IsMovementLocked() ) 
+			if( m_pCurGoal
+				&& ( !m_pAI->GetAnimationContext()->IsLocked() )
+				&& ( !m_pAI->GetAnimationContext()->IsTransitioning() )
+				&& ( !m_pAI->GetAIMovement()->IsMovementLocked() )
 				&& ( m_pCurGoal->GetCurImportance() <= 0.f ) )
 			{
 				SetNextGoal( LTNULL );
@@ -997,6 +997,7 @@ void CAIGoalMgr::UpdateGoals()
 			if( pGoal->GetDeleteGoalNextUpdate() )
 			{
 				RemoveGoal( pGoal->GetGoalType() );
+				it = m_lstGoals.begin();
 			}
 			else {
 				++it;
@@ -1095,7 +1096,7 @@ void CAIGoalMgr::UpdateGoalTimers(LTFLOAT fTime)
 			( !m_pAI->GetAIMovement()->IsMovementLocked() ) )
 		{
 			// Goals may not change in the middle of locked or transition
-			// animations, unless the current goal allows interrupts or the 
+			// animations, unless the current goal allows interrupts or the
 			// new goal forces interrupts.
 
 			if( ( m_pAI->GetAnimationContext()->IsLocked() ||
@@ -1103,7 +1104,7 @@ void CAIGoalMgr::UpdateGoalTimers(LTFLOAT fTime)
 				( !pGoal->DoesForceAnimInterrupt() ) &&
 				( m_pCurGoal && !m_pCurGoal->IsLockedAnimInterruptable() ) )
 			{
-				// Some situations require an immediate response 
+				// Some situations require an immediate response
 				// (e.g. AI getting shot) no matter what the animation
 				// is doing.
 
@@ -1202,7 +1203,7 @@ void CAIGoalMgr::ClearGoalScript()
 void CAIGoalMgr::HandleGoalSenseTriggers(AISenseRecord* pSenseRecord)
 {
 	AIASSERT(pSenseRecord && (pSenseRecord->eSenseType != kSense_InvalidType), m_pAI->m_hObject, "CAIGoalMgr::HandleGoalSenseTriggers: Invalid sense type.");
-	
+
 	// Change to queued goalset.
 
 	if( m_iQueuedGoalSet != -1 )
@@ -1260,7 +1261,7 @@ void CAIGoalMgr::HandleGoalSenseTriggers(AISenseRecord* pSenseRecord)
 			pGoal->SetCurToBaseImportance();
 			pGoal->SetLastUpdateTime(g_pLTServer->GetTime());
 
-			AITRACE(AIShowGoalsVerbose, ( m_pAI->m_hObject, "Goal %s responded to sense %s (%.2f)\n", 
+			AITRACE(AIShowGoalsVerbose, ( m_pAI->m_hObject, "Goal %s responded to sense %s (%.2f)\n",
 				s_aszGoalTypes[pGoal->GetGoalType()],
 				CAISenseRecorderAbstract::SenseToString(pSenseRecord->eSenseType),
 				pGoal->GetCurImportance() ) );
@@ -1288,10 +1289,10 @@ void CAIGoalMgr::HandleGoalSenseTriggers(AISenseRecord* pSenseRecord)
 
 			// Check if goal should be triggered.
 
-			if( (fImportance > fCurMax) && 
+			if( (fImportance > fCurMax) &&
 				( ( m_pCurGoal && m_pCurGoal->IsLockedAnimInterruptable() )
 					|| ( pGoal->DoesForceAnimInterrupt() )
-					|| ( !m_pAI->GetAnimationContext()->IsLocked() ) ) 
+					|| ( !m_pAI->GetAnimationContext()->IsLocked() ) )
 				&& ( !m_pAI->GetAnimationContext()->IsTransitioning() )
 				&& ( !m_pAI->GetAIMovement()->IsMovementLocked() ) )
 			{
@@ -1320,7 +1321,7 @@ void CAIGoalMgr::HandleGoalSenseTriggers(AISenseRecord* pSenseRecord)
 	{
 		m_pAI->PlaySound( eAISoundMax, LTFALSE );
 
-		AITRACE(AIShowGoals, ( m_pAI->m_hObject, "Playing trigger sound for Goal %s\n", 
+		AITRACE(AIShowGoals, ( m_pAI->m_hObject, "Playing trigger sound for Goal %s\n",
 			s_aszGoalTypes[pGoalSoundMax->GetGoalType()] ) );
 	}
 
@@ -1330,7 +1331,7 @@ void CAIGoalMgr::HandleGoalSenseTriggers(AISenseRecord* pSenseRecord)
 
 		// Console output.
 
-		AITRACE(AIShowGoals, ( m_pAI->m_hObject, "Goal %s triggered by sense %s (%.2f)\n", 
+		AITRACE(AIShowGoals, ( m_pAI->m_hObject, "Goal %s triggered by sense %s (%.2f)\n",
 			s_aszGoalTypes[m_pTriggeredGoal->GetGoalType()],
 			CAISenseRecorderAbstract::SenseToString(pSenseRecord->eSenseType),
 			m_pTriggeredGoal->GetCurImportance() ) );
@@ -1400,11 +1401,11 @@ bool CAIGoalMgr::HandleCommand(const CParsedMsg &cMsg)
 		}
 
 		// Do not actually add goal now.
-		// Queue it for the next update in case we are in the middle of 
+		// Queue it for the next update in case we are in the middle of
 		// a goal or state.  Add the goal after possible goalset changes.
 
 		m_lstQueuedGoals.push_back( eGoalType );
-			
+
 		// Process any additional name value pairs for this goal.
 		if(cMsg.GetArgCount() > 2)
 		{
@@ -1638,7 +1639,8 @@ CAIGoalAbstract* CAIGoalMgr::FindGoalByType(EnumAIGoalType eGoalType)
 EnumAIGoalType CAIGoalMgr::GetGoalTypeEnumFromName(const char* szGoalType)
 {
 	// Find goal by name.
-	for(uint32 iGoalType=0; iGoalType < kGoal_Count; ++iGoalType)
+	uint32 iGoalType;
+	for(iGoalType=0; iGoalType < kGoal_Count; ++iGoalType)
 	{
 		if( stricmp(s_aszGoalTypes[iGoalType], szGoalType) == 0)
 		{

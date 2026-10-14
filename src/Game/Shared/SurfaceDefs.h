@@ -15,7 +15,7 @@
 
 // Special pre-defined surface types...
 
-enum SurfaceType 
+enum SurfaceType
 {
 	ST_UNKNOWN				= 0,	// Unknown value
 	ST_AIR					= 1,	// Not a surface, but not the sky either
@@ -25,10 +25,7 @@ enum SurfaceType
 	ST_LADDER				= 200,	// Ladder volume brush
 	ST_LIQUID				= 201,	// Liquid volume brush
 	ST_INVISIBLE			= 202,	// Invisible surface
-
-	
-	// Set this to a known surface to fall back on if GetSurface() fails.
-	ST_DEFAULT				= ST_UNKNOWN
 };
+
 
 #endif // __SURFACE_DEFS_H__

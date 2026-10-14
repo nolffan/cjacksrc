@@ -111,7 +111,13 @@ public:
     };
 
 	// Used to define map of strings to CSymTabItems.
+#if _MSC_VER == 1300
+	typedef std::hash_map< char const*, CReservedWord, ButeMgrHashCompare > ReservedWordMap;
+#elif _MSC_VER > 1300  // NET 2003
+	typedef stdext::hash_map< char const*, CReservedWord, ButeMgrHashCompare > ReservedWordMap;
+#else
 	typedef std::hash_map< char const*, CReservedWord, hash_str_nocase, equal_str_nocase > ReservedWordMap;
+#endif // NEXT2002
 
     CReservedWords()
     {
@@ -258,7 +264,7 @@ static TranType TransTable[NumStates][NumClasses] = {
 
 
 CButeMgr::CButeMgr()
-{ 
+{
 	m_decryptCode = 0;
 	m_checksum = 0;
 	m_lineNumber = 0;
@@ -268,7 +274,7 @@ CButeMgr::CButeMgr()
 	m_bErrorFlag = false;
 	// m_sErrorString
 
-	m_pDisplayFunc = NULL; 
+	m_pDisplayFunc = NULL;
 
 	// TableOfItems
 	// TableOfTags
@@ -317,7 +323,7 @@ bool CButeMgr::TraverseTableOfItemsDeleteSymTab( char const* pszAttName, CSymTab
 	return true;
 }
 
-bool CButeMgr::TraverseTableOfTagsDeleteSymTab( char const* pszTagName, TableOfItems& theTableOfItems, 
+bool CButeMgr::TraverseTableOfTagsDeleteSymTab( char const* pszTagName, TableOfItems& theTableOfItems,
 											   void* pContext )
 {
 	TraverseTableOfItems( theTableOfItems, TraverseTableOfItemsDeleteSymTab, pContext );
@@ -347,16 +353,16 @@ void CButeMgr::Reset()
 
 
 
-void CButeMgr::Init() 
+void CButeMgr::Init()
 {
 	Term( );
 }
 
 
 
-void CButeMgr::Init(void (*pF)(const char* szMsg)) 
-{ 
-	m_pDisplayFunc = pF; 
+void CButeMgr::Init(void (*pF)(const char* szMsg))
+{
+	m_pDisplayFunc = pF;
 }
 
 
@@ -366,7 +372,7 @@ void CButeMgr::Term( )
 	TraverseTableOfTags( m_tagTab, TraverseTableOfTagsDeleteSymTab, this );
 
 	// Remove all the tableofitems from the tag table
-	{ 
+	{
 		TableOfTags::iterator iter = m_tagTab.begin( );
 		while( iter != m_tagTab.end( ) )
 		{
@@ -404,6 +410,8 @@ void CButeMgr::Term( )
 	m_auxTagTab.clear();
 
 	TraverseTableOfTags( m_newTagTab, TraverseTableOfTagsDeleteSymTab, this );
+	//m_tagTab.clear();
+	//m_auxTagTab.clear();
 
 	// Remove all the tableofitems from the new tag table
 	{
@@ -422,13 +430,13 @@ void CButeMgr::Term( )
 	}
 
 	m_newTagTab.clear();
+	//m_stringHolder.clear();
 
 	m_RectBank.Init( 8, 0 );
 	m_PointBank.Init( 8, 0 );
 	m_AVectorBank.Init( 8, 0 );
 	m_ARangeBank.Init( 8, 0 );
 	m_SymTabItemBank.Init( 64, 0 );
-
 
 	m_stringHolder.clear();
 
@@ -454,7 +462,7 @@ void CButeMgr::ConsumeChar()
 		// Do we need to refresh our buffer?
 		if( !m_szLineBufferPtr || !*m_szLineBufferPtr || m_szLineBufferPtr >= m_szLineBuffer + nLineBufferSize )
 		{
-			if (m_pData->eof()) 
+			if (m_pData->eof())
 			{
 				m_currentChar = 0;
 				return;
@@ -481,13 +489,13 @@ void CButeMgr::ConsumeChar()
 		// one character at a time.
 		c = m_pData->get();
 
-		if (m_pData->eof()) 
+		if (m_pData->eof())
 		{
 			m_currentChar = 0;
 			return;
 		}
 	}
-	
+
 	c -= m_decryptCode;
 
 
@@ -555,7 +563,7 @@ bool CButeMgr::ScanTok()
     static short Pos;
 
     Pos = 0;
-    for(;;) 
+    for(;;)
 	{
         switch (Action(State, m_currentChar))
 		{
@@ -617,7 +625,7 @@ void CButeMgr::DisplayMessage(const char* szMsg, ...)
 	_vsnprintf(aMsgBuffer, sizeof(aMsgBuffer), szMsg, v);
 	m_sErrorString.Format("ButeMgr (%s, %d):  %s", m_sAttributeFilename, m_lineNumber, aMsgBuffer);
 
-	TRACE("%s\n", m_sErrorString.GetBuffer(0));
+//	TRACE("%s\n", (m_sErrorString.GetBuffer(0)));
 	if (m_pDisplayFunc)
 		(*m_pDisplayFunc)(m_sErrorString.GetBuffer(0));
 }
@@ -665,7 +673,7 @@ bool CButeMgr::Statement()
 
 	if (!Match(EqualTok))
 		return false;
-		
+
 
 	if (m_pSaveData)
 	{
@@ -954,7 +962,11 @@ bool CButeMgr::Tag()
 
 bool CButeMgr::AuxTabItemsSave( char const* pszAttName, CSymTabItem& theItem, void* pContext )
 {
+#if _MSC_VER >= 1300
+	std::ofstream* pSaveData = (std::ofstream*)pContext;
+#else
 	ofstream* pSaveData = (ofstream*)pContext;
+#endif // VC7
 
 	*pSaveData << "\r\n" << pszAttName << " = ";
 
@@ -973,7 +985,7 @@ bool CButeMgr::AuxTabItemsSave( char const* pszAttName, CSymTabItem& theItem, vo
 		if (theItem.data.b)
 			*pSaveData << "TRUE";
 		else
-			*pSaveData << "FALSE";		
+			*pSaveData << "FALSE";
 		break;
 	case FloatType:
 		*pSaveData << theItem.data.f << 'f';
@@ -1009,7 +1021,11 @@ bool CButeMgr::AuxTabItemsSave( char const* pszAttName, CSymTabItem& theItem, vo
 
 bool CButeMgr::NewTabsSave( const char* pszTagName, TableOfItems& theTabOfItems, void* pContext )
 {
+#if _MSC_VER >= 1300
+	std::ofstream* pSaveData = (std::ofstream*)pContext;
+#else
 	ofstream* pSaveData = (ofstream*)pContext;
+#endif // VC7
 
 	*pSaveData << "\r\n\r\n" << "[" << pszTagName << "]";
 
@@ -1035,7 +1051,7 @@ bool CButeMgr::TagList()
 	{
 		if(!Tag())
 			return false;
-		
+
 		if (m_pSaveData) // Add new items if saving
 		{
 			TableOfItems* pTableOfItems = FindTableOfItems( m_auxTagTab, m_sTagName );
@@ -1077,27 +1093,54 @@ bool CButeMgr::Save(const char* szNewFileName)
 
 	char buf[4096];
 
-	ifstream is(m_sAttributeFilename, ios::nocreate | ios::binary);	
+	if ( m_sAttributeFilename.GetBuffer() == NULL )
+		m_sAttributeFilename = "";
 
-	long nFileLength=0;
+#if _MSC_VER >= 1300
+	std::ifstream is(m_sAttributeFilename, std::ios_base::binary);
+#else
+	ifstream is(m_sAttributeFilename, ios::nocreate | ios::binary);
+#endif // VC7
+
+#if _MSC_VER >= 1300
+	std::streamoff nFileLength=0;
+#else
+	streamoff nFileLength=0;
+#endif
 	if (is.is_open())
 	{
+#if _MSC_VER >= 1300
+		is.seekg(0, std::ios_base::end);
+#else
 		is.seekg(0, ios::end);
+#endif // VC7
 		nFileLength = is.tellg();
 	}
 
-	if (nFileLength==0)
-		nFileLength = 1;
+ 	if (nFileLength==0)
+ 		nFileLength = 1;
 
 	is.clear();
 	is.seekg(0);
 
-	strstream ss(new char[nFileLength], nFileLength, ios::in | ios::out);
+	// Create the buffer.
+	char *pssBuf = new char[nFileLength];
+	pssBuf[0] = '\0';
+
+#if _MSC_VER >= 1300
+	std::strstream ss(pssBuf, nFileLength, std::ios_base::in | std::ios_base::out);
+#else
+	strstream ss(pssBuf, nFileLength, ios::in | ios::out);
+#endif // VC7
 
 	if (m_bCrypt)
 	{
 		m_cryptMgr.Decrypt(is, ss);
+#if _MSC_VER >= 1300
+		m_pSaveData = new std::iostream(new std::strstreambuf(nFileLength));
+#else
 		m_pSaveData = new iostream(new strstreambuf(nFileLength));
+#endif // VC7
 	}
 	else
 	{
@@ -1113,9 +1156,17 @@ bool CButeMgr::Save(const char* szNewFileName)
 		is.close();
 
 		if (szNewFileName)
+#if _MSC_VER >= 1300
+			m_pSaveData = new std::fstream(szNewFileName, std::ios_base::binary | std::ios_base::in | std::ios_base::out | std::ios_base::trunc);
+#else
 			m_pSaveData = new fstream(szNewFileName, ios::binary | ios::in | ios::out | ios::trunc);
+#endif // VC7
 		else
+#if _MSC_VER >= 1300
+			m_pSaveData = new std::fstream(m_sAttributeFilename, std::ios_base::binary | std::ios_base::in | std::ios_base::out | std::ios_base::trunc);
+#else
 			m_pSaveData = new fstream(m_sAttributeFilename, ios::binary | ios::in | ios::out | ios::trunc);
+#endif // VC7
 
 	}
 
@@ -1124,14 +1175,20 @@ bool CButeMgr::Save(const char* szNewFileName)
 		delete m_pSaveData;
 		m_pSaveData = NULL;
 
-		delete ss.str();
+		// Delete the buffer.
+		delete [] pssBuf;
+		pssBuf = NULL;
 
 		m_bPutChar = false;
 
 		return false;
 	}
 
+#if _MSC_VER >= 1300
+    m_pSaveData->flags(m_pSaveData->flags() | std::ios_base::showpoint | std::ios_base::fixed);
+#else
     m_pSaveData->flags(m_pSaveData->flags() | ios::showpoint | ios::fixed);
+#endif // VC7
 
 	ss.clear();
 	m_pData = &ss;
@@ -1145,12 +1202,23 @@ bool CButeMgr::Save(const char* szNewFileName)
 	if (m_bCrypt)
 	{
 		if (szNewFileName)
+#if _MSC_VER >= 1300
+			m_cryptMgr.Encrypt(*m_pSaveData, std::ofstream(szNewFileName, std::ios_base::binary));
+#else
 			m_cryptMgr.Encrypt(*m_pSaveData, ofstream(szNewFileName, ios::binary));
+#endif // VC7
 		else
+#if _MSC_VER >= 1300
+			m_cryptMgr.Encrypt(*m_pSaveData, std::ofstream(m_sAttributeFilename, std::ios_base::binary));
+#else
 			m_cryptMgr.Encrypt(*m_pSaveData, ofstream(m_sAttributeFilename, ios::binary));
+#endif // VC7
 	}
 
-	delete ss.str();
+	// Delete the buffer.
+	delete [] pssBuf;
+	pssBuf = NULL;
+
 	if (m_bCrypt)
 		delete m_pSaveData->rdbuf();
 	delete m_pSaveData;
@@ -1318,7 +1386,7 @@ CButeMgr::TableOfItems* CButeMgr::CreateTableOfItems( TableOfTags& tableOfTags, 
 	// Check inputs.
 	if( !pszTagName )
 		return NULL;
-	
+
 	// Create a new table of items.
 	TableOfItems* pTableOfItems = new TableOfItems;
 	if( !pTableOfItems )
@@ -1494,13 +1562,13 @@ CButeMgr::CSymTabItem* CButeMgr::FindSymTabItem( char const* pszTagName, char co
 // Description:	Looks through the main table of tags.  If tag is found, then
 //				looks for attribute.  If attribute found, then returns CSymTabItem.
 //				If tag found, but attribute isn't found, then it looks in the auxiliary
-//				tagtable.  It will create a new TableOfItems if tag isn't found in the 
+//				tagtable.  It will create a new TableOfItems if tag isn't found in the
 //				auxiliary table.  If neither the tag nor the attribute were found in the
 //				main tagtable, it looks in the new tagtable.  It will create a new TableOfItems
 //				if not found there.
 //
 ////////////////////////////////////////////////////////////////////////
-CButeMgr::CSymTabItem* CButeMgr::GetSymTabItem( const char* pszTagName, const char* pszAttName ) 
+CButeMgr::CSymTabItem* CButeMgr::GetSymTabItem( const char* pszTagName, const char* pszAttName )
 {
 	// Check inputs.
 	if( !pszTagName || !pszAttName )
@@ -1585,7 +1653,7 @@ CButeMgr::CSymTabItem* CButeMgr::GetSymTabItem( const char* pszTagName, const ch
 
 
 int CButeMgr::GetInt(const char* szTagName, const char* szAttName, int defVal)
-{ 
+{
 	m_bSuccess = true;
 	CSymTabItem* pItem;
 	if (pItem = FindSymTabItem(szTagName, szAttName))
@@ -1602,8 +1670,8 @@ int CButeMgr::GetInt(const char* szTagName, const char* szAttName, int defVal)
 
 
 
-int CButeMgr::GetInt(const char* szTagName, const char* szAttName) 
-{ 
+int CButeMgr::GetInt(const char* szTagName, const char* szAttName)
+{
 	int nRet = GetInt( szTagName, szAttName, INT_MIN );
 	if( !m_bSuccess )
 		DisplayMessage("Symbol not found - [%s]:%s", szTagName, szAttName);
@@ -1614,7 +1682,7 @@ int CButeMgr::GetInt(const char* szTagName, const char* szAttName)
 
 
 
-void CButeMgr::SetInt(const char* szTagName, const char* szAttName, int val) 
+void CButeMgr::SetInt(const char* szTagName, const char* szAttName, int val)
 {
 	CSymTabItem* pItem = GetSymTabItem( szTagName, szAttName );
 	if( pItem )
@@ -1633,7 +1701,7 @@ void CButeMgr::SetInt(const char* szTagName, const char* szAttName, int val)
 
 
 DWORD CButeMgr::GetDword(const char* szTagName, const char* szAttName, DWORD defVal)
-{ 
+{
 	m_bSuccess = true;
 	CSymTabItem* pItem;
 	if (pItem = FindSymTabItem(szTagName, szAttName))
@@ -1654,7 +1722,7 @@ DWORD CButeMgr::GetDword(const char* szTagName, const char* szAttName, DWORD def
 
 
 DWORD CButeMgr::GetDword(const char* szTagName, const char* szAttName)
-{ 
+{
 	DWORD nRet = GetDword( szTagName, szAttName, 0 );
 	if( !m_bSuccess )
 		DisplayMessage("Symbol not found - [%s]:%s", szTagName, szAttName);
@@ -1665,7 +1733,7 @@ DWORD CButeMgr::GetDword(const char* szTagName, const char* szAttName)
 
 
 
-void CButeMgr::SetDword(const char* szTagName, const char* szAttName, DWORD val) 
+void CButeMgr::SetDword(const char* szTagName, const char* szAttName, DWORD val)
 {
 	CSymTabItem* pItem = GetSymTabItem( szTagName, szAttName );
 	if( pItem )
@@ -1684,7 +1752,7 @@ void CButeMgr::SetDword(const char* szTagName, const char* szAttName, DWORD val)
 
 
 BYTE CButeMgr::GetByte(const char* szTagName, const char* szAttName, BYTE defVal)
-{ 
+{
 	m_bSuccess = true;
 	CSymTabItem* pItem;
 	if (pItem = FindSymTabItem(szTagName, szAttName))
@@ -1705,7 +1773,7 @@ BYTE CButeMgr::GetByte(const char* szTagName, const char* szAttName, BYTE defVal
 
 
 BYTE CButeMgr::GetByte(const char* szTagName, const char* szAttName)
-{ 
+{
 	BYTE nRet = GetByte( szTagName, szAttName, 0 );
 	if( !m_bSuccess )
 		DisplayMessage("Symbol not found - [%s]:%s", szTagName, szAttName);
@@ -1716,7 +1784,7 @@ BYTE CButeMgr::GetByte(const char* szTagName, const char* szAttName)
 
 
 
-void CButeMgr::SetByte(const char* szTagName, const char* szAttName, BYTE val) 
+void CButeMgr::SetByte(const char* szTagName, const char* szAttName, BYTE val)
 {
 	CSymTabItem* pItem = GetSymTabItem( szTagName, szAttName );
 	if( pItem )
@@ -1735,7 +1803,7 @@ void CButeMgr::SetByte(const char* szTagName, const char* szAttName, BYTE val)
 
 
 bool CButeMgr::GetBool(const char* szTagName, const char* szAttName, bool defVal)
-{ 
+{
 	m_bSuccess = true;
 	CSymTabItem* pItem;
 	if (pItem = FindSymTabItem(szTagName, szAttName))
@@ -1759,7 +1827,7 @@ bool CButeMgr::GetBool(const char* szTagName, const char* szAttName, bool defVal
 
 
 bool CButeMgr::GetBool(const char* szTagName, const char* szAttName)
-{ 
+{
 	bool bRet = GetBool( szTagName, szAttName, 0 );
 	if( !m_bSuccess )
 		DisplayMessage("Symbol not found - [%s]:%s", szTagName, szAttName);
@@ -1770,7 +1838,7 @@ bool CButeMgr::GetBool(const char* szTagName, const char* szAttName)
 
 
 
-void CButeMgr::SetBool(const char* szTagName, const char* szAttName, bool val) 
+void CButeMgr::SetBool(const char* szTagName, const char* szAttName, bool val)
 {
 	CSymTabItem* pItem = GetSymTabItem( szTagName, szAttName );
 	if( pItem )
@@ -1791,7 +1859,7 @@ void CButeMgr::SetBool(const char* szTagName, const char* szAttName, bool val)
 
 
 float CButeMgr::GetFloat(const char* szTagName, const char* szAttName, float defVal)
-{ 
+{
 	m_bSuccess = true;
 	CSymTabItem* pItem;
 	if (pItem = FindSymTabItem(szTagName, szAttName))
@@ -1813,7 +1881,7 @@ float CButeMgr::GetFloat(const char* szTagName, const char* szAttName, float def
 
 
 float CButeMgr::GetFloat(const char* szTagName, const char* szAttName)
-{ 
+{
 	float fRet = GetFloat( szTagName, szAttName, FLT_MIN );
 	if( !m_bSuccess )
 		DisplayMessage("Symbol not found - [%s]:%s", szTagName, szAttName);
@@ -1825,7 +1893,7 @@ float CButeMgr::GetFloat(const char* szTagName, const char* szAttName)
 
 
 
-void CButeMgr::SetFloat(const char* szTagName, const char* szAttName, float val) 
+void CButeMgr::SetFloat(const char* szTagName, const char* szAttName, float val)
 {
 	CSymTabItem* pItem = GetSymTabItem( szTagName, szAttName );
 	if( pItem )
@@ -1845,7 +1913,7 @@ void CButeMgr::SetFloat(const char* szTagName, const char* szAttName, float val)
 
 
 double CButeMgr::GetDouble(const char* szTagName, const char* szAttName, double defVal)
-{ 
+{
 	m_bSuccess = true;
 	CSymTabItem* pItem;
 	if (pItem = FindSymTabItem(szTagName, szAttName))
@@ -1867,7 +1935,7 @@ double CButeMgr::GetDouble(const char* szTagName, const char* szAttName, double 
 
 
 double CButeMgr::GetDouble(const char* szTagName, const char* szAttName)
-{ 
+{
 	double fRet = GetDouble( szTagName, szAttName, DBL_MIN );
 	if( !m_bSuccess )
 		DisplayMessage("Symbol not found - [%s]:%s", szTagName, szAttName);
@@ -1879,7 +1947,7 @@ double CButeMgr::GetDouble(const char* szTagName, const char* szAttName)
 
 
 
-void CButeMgr::SetDouble(const char* szTagName, const char* szAttName, double val) 
+void CButeMgr::SetDouble(const char* szTagName, const char* szAttName, double val)
 {
 	CSymTabItem* pItem = GetSymTabItem( szTagName, szAttName );
 	if( pItem )
@@ -1898,7 +1966,7 @@ void CButeMgr::SetDouble(const char* szTagName, const char* szAttName, double va
 
 
 const char *CButeMgr::GetString(const char* szTagName, const char* szAttName, const char *defVal)
-{ 
+{
 	m_bSuccess = true;
 	CSymTabItem* pItem;
 	if (pItem = FindSymTabItem(szTagName, szAttName))
@@ -1915,7 +1983,7 @@ const char *CButeMgr::GetString(const char* szTagName, const char* szAttName, co
 
 
 const char *CButeMgr::GetString(const char* szTagName, const char* szAttName)
-{ 
+{
 	const char *pRet = GetString( szTagName, szAttName, "" );
 	if( !m_bSuccess )
 		DisplayMessage("Symbol not found - [%s]:%s", szTagName, szAttName);
@@ -1954,7 +2022,7 @@ void CButeMgr::GetString(const char* szTagName, const char* szAttName, char *szR
 }
 
 
-void CButeMgr::SetString(const char* szTagName, const char* szAttName, const char *val) 
+void CButeMgr::SetString(const char* szTagName, const char* szAttName, const char *val)
 {
 	CSymTabItem* pItem = GetSymTabItem( szTagName, szAttName );
 	if( pItem )
@@ -1973,7 +2041,7 @@ void CButeMgr::SetString(const char* szTagName, const char* szAttName, const cha
 
 
 CRect& CButeMgr::GetRect(const char* szTagName, const char* szAttName, CRect& defVal)
-{ 
+{
 	m_bSuccess = true;
 	CSymTabItem* pItem;
 	if (pItem = FindSymTabItem(szTagName, szAttName))
@@ -1990,7 +2058,7 @@ CRect& CButeMgr::GetRect(const char* szTagName, const char* szAttName, CRect& de
 
 
 CRect& CButeMgr::GetRect(const char* szTagName, const char* szAttName)
-{ 
+{
 	static CRect defVal(0, 0, 0, 0);
 	CRect& rect = GetRect( szTagName, szAttName, defVal );
 	if( !m_bSuccess )
@@ -2003,7 +2071,7 @@ CRect& CButeMgr::GetRect(const char* szTagName, const char* szAttName)
 
 
 
-void CButeMgr::SetRect(const char* szTagName, const char* szAttName, const CRect& val) 
+void CButeMgr::SetRect(const char* szTagName, const char* szAttName, const CRect& val)
 {
 	CSymTabItem* pItem = GetSymTabItem( szTagName, szAttName );
 	if( pItem )
@@ -2022,7 +2090,7 @@ void CButeMgr::SetRect(const char* szTagName, const char* szAttName, const CRect
 
 
 CPoint& CButeMgr::GetPoint(const char* szTagName, const char* szAttName, CPoint& defVal)
-{ 
+{
 	m_bSuccess = true;
 	CSymTabItem* pItem;
 	if (pItem = FindSymTabItem(szTagName, szAttName))
@@ -2039,7 +2107,7 @@ CPoint& CButeMgr::GetPoint(const char* szTagName, const char* szAttName, CPoint&
 
 
 CPoint& CButeMgr::GetPoint(const char* szTagName, const char* szAttName)
-{ 
+{
 	static CPoint defVal(0, 0);
 	CPoint& point = GetPoint( szTagName, szAttName, defVal );
 	if( !m_bSuccess )
@@ -2052,7 +2120,7 @@ CPoint& CButeMgr::GetPoint(const char* szTagName, const char* szAttName)
 
 
 
-void CButeMgr::SetPoint(const char* szTagName, const char* szAttName, const CPoint& val) 
+void CButeMgr::SetPoint(const char* szTagName, const char* szAttName, const CPoint& val)
 {
 	CSymTabItem* pItem = GetSymTabItem( szTagName, szAttName );
 	if( pItem )
@@ -2071,7 +2139,7 @@ void CButeMgr::SetPoint(const char* szTagName, const char* szAttName, const CPoi
 
 
 CAVector& CButeMgr::GetVector(const char* szTagName, const char* szAttName, CAVector& defVal)
-{ 
+{
 	m_bSuccess = true;
 	CSymTabItem* pItem;
 	if (pItem = FindSymTabItem(szTagName, szAttName))
@@ -2088,7 +2156,7 @@ CAVector& CButeMgr::GetVector(const char* szTagName, const char* szAttName, CAVe
 
 
 CAVector& CButeMgr::GetVector(const char* szTagName, const char* szAttName)
-{ 
+{
 	static CAVector defVal(0, 0, 0);
 	CAVector& vect = GetVector( szTagName, szAttName, defVal );
 	if( !m_bSuccess )
@@ -2101,7 +2169,7 @@ CAVector& CButeMgr::GetVector(const char* szTagName, const char* szAttName)
 
 
 
-void CButeMgr::SetVector(const char* szTagName, const char* szAttName, const CAVector& val) 
+void CButeMgr::SetVector(const char* szTagName, const char* szAttName, const CAVector& val)
 {
 	CSymTabItem* pItem = GetSymTabItem( szTagName, szAttName );
 	if( pItem )
@@ -2121,7 +2189,7 @@ void CButeMgr::SetVector(const char* szTagName, const char* szAttName, const CAV
 
 
 CARange& CButeMgr::GetRange(const char* szTagName, const char* szAttName, CARange& defVal)
-{ 
+{
 	m_bSuccess = true;
 	CSymTabItem* pItem;
 	if (pItem = FindSymTabItem(szTagName, szAttName))
@@ -2138,7 +2206,7 @@ CARange& CButeMgr::GetRange(const char* szTagName, const char* szAttName, CARang
 
 
 CARange& CButeMgr::GetRange(const char* szTagName, const char* szAttName)
-{ 
+{
 	static CARange defVal(0, 0);
 	CARange& range = GetRange( szTagName, szAttName, defVal );
 	if( !m_bSuccess )
@@ -2150,7 +2218,7 @@ CARange& CButeMgr::GetRange(const char* szTagName, const char* szAttName)
 
 
 
-void CButeMgr::SetRange(const char* szTagName, const char* szAttName, const CARange& val) 
+void CButeMgr::SetRange(const char* szTagName, const char* szAttName, const CARange& val)
 {
 	CSymTabItem* pItem = GetSymTabItem( szTagName, szAttName );
 	if( pItem )
@@ -2175,27 +2243,27 @@ bool CButeMgr::AddTag(const char *szTagName)
 	pTabOfItems = FindTableOfItems( m_tagTab, szTagName );
 	if( pTabOfItems )
 	{
-		return true;		
+		return true;
 	}
 
 	// See if the tag exists in the auxiliary tag table.
 	pTabOfItems = FindTableOfItems( m_auxTagTab, szTagName );
 	if( pTabOfItems )
 	{
-		return true;		
+		return true;
 	}
 
 	// See if the tag exists in the new tag table.
 	pTabOfItems = FindTableOfItems( m_newTagTab, szTagName );
 	if( pTabOfItems )
 	{
-		return true;		
+		return true;
 	}
 
 	// Create the tag in the new tag table.
 	pTabOfItems = CreateTableOfItems( m_newTagTab, szTagName );
 	if( pTabOfItems )
-		return true;		
+		return true;
 
 	m_bSuccess = false;
 	return false;
@@ -2239,7 +2307,7 @@ void CButeMgr::TraverseTableOfTags( TableOfTags& tableOfTags, TraverseTableOfTag
 		// Get the tag data.
 		TableOfItems* pTableOfItems = (*iter).second;
 		if( pTableOfItems )
-		{		
+		{
 			// Call the callback.  If it returns false, then stop iterating.
 			// The iterator's first memeber will be a pointer to a CString.
 			if( !pCb( (*iter).first, *pTableOfItems, pContext ))

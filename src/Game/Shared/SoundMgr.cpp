@@ -179,7 +179,7 @@ void CGameSoundMgr::GetRandomSoundFilename(const char* pTag, const char* pAttrib
 			// to unmark them all (except for the sound associated with pBuf which we
 			// want to leave as the only marked sound)...
 
-			for (j=0; j < nNumSounds; j++)
+			for (int j=0; j < nNumSounds; j++)
 			{
 				// nCurSndNumber is the sound associated with pBuf, so don't unmark
 				// that one...
