@@ -392,7 +392,7 @@ void SBServerListInit(SBServerList *slist, const char *queryForGamename, const c
 #endif
 	SBSetLastListErrorPtr(slist, "");
 	slist->mLanAdapterOverride = NULL;
-	slist->backendgameflags = QR2_USE_QUERY_CHALLENGE;
+	slist->backendgameflags = 0; // 2003: no query challenges (qr2 3.00.2x does not answer them)
 
 	srand((unsigned int)current_time());
 	SocketStartUp();

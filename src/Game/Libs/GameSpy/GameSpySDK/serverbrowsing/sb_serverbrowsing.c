@@ -322,14 +322,12 @@ SBError ServerBrowserAuxUpdateIPA(ServerBrowser sb, const char *ip, unsigned sho
 			SBServerListAppendServer(&sb->list, server);
 		}
 		else
+		{
+			// (2003: the 2007 SDK's duplicate-update check refused every new
+			// server, which its own query has just made pending)
 			server = SBServerListNth(&sb->list, i);
-
-		// Don't overwrite the existing update, otherwise the response for the first update
-		// will be mistaken as the response for the second update.  (Which is bad if they have different update parameters.)
-		if (server->state & (STATE_PENDINGBASICQUERY|STATE_PENDINGFULLQUERY|STATE_PENDINGICMPQUERY))
-			return sbe_duplicateupdateerror;
-		else
 			SBQueryEngineUpdateServer(&sb->engine, server, 1, (fullUpdate) ? QTYPE_FULL : QTYPE_BASIC, usequerychallenge);
+		}
 
 	} else //do a master update
 	{

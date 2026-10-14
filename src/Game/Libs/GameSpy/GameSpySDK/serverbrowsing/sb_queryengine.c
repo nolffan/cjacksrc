@@ -247,10 +247,7 @@ static void QEStartQuery(SBQueryEngine *engine, SBServer server)
 					queryBuffer[pos++] = 0xFF;
 					queryBuffer[pos++] = 0xFF;
 					queryBuffer[pos++] = 0xFF;
-					
-					// Tell the server we support split packets
-					queryBuffer[pos++] = 0x1;
-					queryLen = pos; // 11
+					queryLen = pos; // 10 (2003: no split packets)
 				}
 			}
 		} else //GOA
