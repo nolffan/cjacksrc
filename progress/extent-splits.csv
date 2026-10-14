@@ -1,0 +1,7 @@
+image,addr,reason
+SndDrv.dll,0x10001030,CounterFinal::StartMS (push ecx; call QueryPerformanceCounter; ret): counter.obj compiled /Ox keeps it though nothing calls it; enumerated inside cnt_NumTicksPerSecond 0x10001000
+SndDrv.dll,0x100010b0,CounterFinal::StartMicro (the same 8 bytes): uncalled; enumerated inside CountMS 0x100010a0 (jmp EndMS)
+SndDrv.dll,0x100085e0,LTMemTerm (ret): ltmem.obj's code in source order after LTMemInit (0x100085d0); uncalled; enumerated with it
+SndDrv.dll,0x10008610,LTMemReAlloc (jmp [realloc]): uncalled; enumerated inside LTMemFree 0x10008600
+SndDrv.dll,0x10008620,CLTMemInitialize::CLTMemInitialize (mov eax,ecx; ret): called by ltmem's initializer 0x10008f80..; enumerated inside LTMemFree 0x10008600
+SndDrv.dll,0x10008630,CLTMemInitialize::~CLTMemInitialize (ret): registered by atexit at 0x10009040 (thunk 0x10009060); enumerated inside LTMemFree 0x10008600

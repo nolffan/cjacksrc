@@ -1,5 +1,5 @@
 // parsewavefile.cpp: finds the format and data chunks of a RIFF WAVE file
-// image in memory (retail 0x10001150).
+// image in memory (retail 0x100011b0).
 
 #include "stdafx.h"
 #include "s_dx8.h"

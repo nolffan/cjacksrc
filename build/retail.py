@@ -34,3 +34,51 @@ REFERENCE_GAME = [("CSHELL.dll", "CShell.dll", "Update_v1x1.rez"),
 OPEN_RUNTIME = [
     ("binkw32.dll", "src/modern/binkw32 + ext/ffmpeg: our Bink player"),
 ]
+
+# --- the public archive's install scripts (tools/mkinstall.py) ------------
+# The game's data is copied out of the player's own disc images -- the
+# European or the USA release's two discs (their InstallShield 6 cabinets
+# span both: data1.cab, data2.cab on disc 1, data3.cab on disc 2) -- and
+# the 1.1 update, by build/game-scripts/linux-install.sh and
+# windows-install.ps1 with the list mkinstall.py writes.
+INSTALL_RELEASE = "contract-jack-eu-1.1"
+INSTALL_UPDATE = "patches/contractjack_update_en_10_11.exe"
+_CJ = "Contract J.A.C.K."
+INSTALL_DISCS = {
+    "eu1": f"{_CJ} (Europe) (Disc 1)",
+    "eu2": f"{_CJ} (Europe) (Disc 2)",
+    "us1": f"{_CJ} (USA) (Disc 1)",
+    "us2": f"{_CJ} (USA) (Disc 2)",
+}
+INSTALL_ALIASES = {}
+INSTALL_REGIONS = {"Europe": ("eu1", "eu2"), "USA": ("us1", "us2")}
+INSTALL_SETS = [("Europe", ["eu1", "eu2"]), ("USA", ["us1", "us2"])]
+INSTALL_TAG = "CJACK"
+INSTALL_BAT_HEADER = r"""@echo off
+rem windows-install.bat -- install the game data from your Contract J.A.C.K. discs.
+rem
+rem   Drop the images of both discs of Contract J.A.C.K. (the European or
+rem   the USA release) and the English 1.1 update,
+rem   contractjack_update_en_10_11.exe, onto this file -- or put them in this
+rem   folder or the one above it and double-click it. An image is a plain
+rem   .iso, redump's .bin (or its .cue), or redump's .zip download; a .bin or
+rem   .zip is first converted to a temporary .iso in this folder (about
+rem   0.7 GB a disc, removed at the end).
+rem
+rem It checks each file's SHA-256, copies the game's data out of them into
+rem this folder and checks every file it writes. Nothing is installed or run
+rem from them, and nothing else is changed.
+setlocal
+set "CJACK_SELF=%~f0"
+set "CJACK_PS1=%TEMP%\cjack-install-%RANDOM%%RANDOM%.ps1"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$t=[IO.File]::ReadAllText($env:CJACK_SELF); $m='#'+'__CJACK_PS__'; $a=$t.IndexOf($m); $b=$t.IndexOf($m,$a+1); [IO.File]::WriteAllText($env:CJACK_PS1,$t.Substring($a,$b-$a))"
+if errorlevel 1 goto failed
+powershell -NoProfile -ExecutionPolicy Bypass -File "%CJACK_PS1%" "%~f0" %*
+set "CJACK_RC=%errorlevel%"
+del "%CJACK_PS1%" 2>nul
+pause
+exit /b %CJACK_RC%
+:failed
+echo Could not start PowerShell.
+pause
+exit /b 1"""
