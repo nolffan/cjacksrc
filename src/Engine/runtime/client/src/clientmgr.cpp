@@ -196,7 +196,8 @@ LTRESULT CClientMgr::Init(const char *resTrees[MAX_RESTREES], uint32 nResTrees, 
 {
     const char *pDLLPath;
     char cmd[64];
-    TreeType treeTypes[MAX_RESTREES];
+    // RETAIL: a vector of the trees' count (Lithtech.exe 0x40fb16)
+    std::vector<TreeType> treeTypes(nResTrees);
     int nTreesLoaded;
     LTRESULT dResult;
     RMode defaultMode;
@@ -230,9 +231,6 @@ LTRESULT CClientMgr::Init(const char *resTrees[MAX_RESTREES], uint32 nResTrees, 
 
 
     // Add files to the file manager.
-    if (nResTrees > MAX_RESTREES)
-        nResTrees = MAX_RESTREES;
-
     if (nResTrees == 0)
     {
         SetupError(LT_NOGAMERESOURCES);
@@ -240,10 +238,11 @@ LTRESULT CClientMgr::Init(const char *resTrees[MAX_RESTREES], uint32 nResTrees, 
         RETURN_ERROR(1, CClientMgr::Init, LT_NOGAMERESOURCES);
     }
 
-    memcpy(m_ResTrees, resTrees, sizeof(m_ResTrees));
-    m_nResTrees = nResTrees;
+    // RETAIL: 0x40fc25..0x40fc76
+    m_ResTrees.reserve(nResTrees);
+    m_ResTrees.insert(m_ResTrees.begin(), resTrees, resTrees + nResTrees);
 
-    client_file_mgr->AddResourceTrees(resTrees, nResTrees, treeTypes, &nTreesLoaded);
+    client_file_mgr->AddResourceTrees(&m_ResTrees[0], m_ResTrees.size(), &treeTypes[0], &nTreesLoaded);
     if (nTreesLoaded == 0)
     {
         SetupError(LT_CANTLOADGAMERESOURCES, resTrees[0]);
@@ -596,7 +595,20 @@ void CClientMgr::EndShell()
 {
     if (m_pCurShell)
     {
+		// RETAIL: as the 2006 tree (Lithtech.exe 0x40d1b0)
+		if (m_bInCurShellUpdate)
+		{
+			// Don't delete the old shell yet -- we may still have it on the
+			// call stack.  As we may be starting a new shell however, store
+			// off a pointer to it to be deleted later.
+			ASSERT(m_pOldShell == NULL);
+			m_pCurShell->Term();
+			m_pOldShell = m_pCurShell;
+		}
+		else
+		{
         delete m_pCurShell;
+		}
         m_pCurShell = NULL;
     }
 	// Set us back to the default net handler
@@ -864,7 +876,22 @@ LTRESULT CClientMgr::Update()
     // Update client shells.
     if (m_pCurShell)
     {
+		// RETAIL: as the 2006 tree (Lithtech.exe 0x40e952)
+		// Insure that the shell doesn't delete itself while updating.
+		// EndShell switches on these bools to determine if it should delay
+		// the deletion of m_pCurShell or if it should do it immediately.
+		m_bInCurShellUpdate = true;
         dResult = m_pCurShell->Update();
+		m_bInCurShellUpdate = false;
+
+		// A shell was deleted this update.  Delete it now that we know it 
+		// is off the call stack
+		if (m_pOldShell != NULL)
+		{
+			delete m_pOldShell;
+			m_pOldShell = NULL;
+		}
+
         if (dResult != LT_OK)
             return ProcessError(dResult);
     }
@@ -1171,6 +1198,8 @@ void cm_Init()
 
     g_pClientMgr->m_bNotifyRemoves = true;
     g_pClientMgr->m_pCurShell = NULL;
+    g_pClientMgr->m_pOldShell = NULL;			// RETAIL: 0x40ffa2
+    g_pClientMgr->m_bInCurShellUpdate = false;	// RETAIL: 0x40ffae
     g_pClientMgr->m_hShellModule = NULL;
     g_pClientMgr->m_hClientResourceModule = NULL;
     g_pClientMgr->m_hLocalizedClientResourceModule = NULL;
@@ -1218,7 +1247,6 @@ void cm_Init()
     g_pClientMgr->m_bTrackingInputDevices = false;
     g_pClientMgr->m_ModelHookFn = NULL;
     g_pClientMgr->m_ModelHookUser = NULL;
-    g_pClientMgr->m_nResTrees = 0;
 
     LT_MEM_TRACK_ALLOC(g_pClientMgr->m_MoveAbstract = new CMoveAbstract(), LT_MEM_TYPE_MISC);
 
@@ -1250,6 +1278,13 @@ void CClientMgr::Term()
     // Kill all the shells.  This must be before saving the config so the console state can
     // be restored for any demo playbacks.
     EndShell();
+
+	// RETAIL: as the 2006 tree (Lithtech.exe 0x40f7ce)
+	if (m_pOldShell != NULL)
+	{
+		delete m_pOldShell;
+		m_pOldShell = NULL;
+	}
 
 #ifdef COMPILE_JUPITER_EVAL
 	m_WaterMark.Term();

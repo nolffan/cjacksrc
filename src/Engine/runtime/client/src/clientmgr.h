@@ -342,6 +342,11 @@ class CClientMgr {
         // before calling any client shell functions that could throw exceptions.  If the
         // shell throws an exception that says it wants the shell shutdown, it'll know which one to shutdown.
         CClientShell            *m_pCurShell;
+		// RETAIL: as the 2006 tree (nolf2src took them out for NOLF2): a
+		// shell ended during its own Update is deleted afterwards
+		// (Lithtech.exe 0x40d1b0, 0x40e952)
+		CClientShell            *m_pOldShell;
+		bool					m_bInCurShellUpdate;
         
         int                     m_LastErrorCode;
         uint32                  m_ExceptionFlags;   // Flags from the last exception thrown.
@@ -370,8 +375,9 @@ class CClientMgr {
         // File manager..
 //      ClientFileMgr           *m_hFileMgr;
 
-        const char              *m_ResTrees[MAX_RESTREES];
-        uint32                  m_nResTrees;
+        // RETAIL: a vector, not NOLF2's array and count (CClientMgr::Init
+        // reserves and inserts, 0x40fc25)
+        std::vector<const char*> m_ResTrees;
 
         VideoMgr                *m_pVideoMgr;
 
@@ -543,6 +549,10 @@ private:
 	};
 
 	CDefaultNetHandler m_cDefaultNetHandler;
+
+	// RETAIL: four more bytes that no code of retail's reads or writes
+	// (sizeof 0xaa0: cm_Init's new, Lithtech.exe 0x40ff31)
+	uint32 m_nUnknownA9C;
 
 #ifdef COMPILE_JUPITER_EVAL
 	WaterMark				m_WaterMark;

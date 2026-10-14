@@ -296,7 +296,8 @@ LTRESULT CClientShell::StartupLocal(StartGameRequest *pRequest,
 
 
     // Add the resources to it and listen locally by default.
-    if (!g_pServerMgr->AddResources(g_pClientMgr->m_ResTrees, g_pClientMgr->m_nResTrees))
+    // RETAIL: from the vector (Lithtech.exe 0x411d85)
+    if (!g_pServerMgr->AddResources(&g_pClientMgr->m_ResTrees[0], g_pClientMgr->m_ResTrees.size()))
     {
         g_pServerMgr->GetErrorString(errorString, 256);
         RETURN_ERROR_PARAM(1, CClientShell::StartupLocal, LT_SERVERERROR, errorString);
