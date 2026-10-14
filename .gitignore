@@ -10,3 +10,5 @@ src/**/[Bb]uilt/
 __pycache__/
 *.log
 !src/**/*.log
+# agents' worktrees (tools/agentwt.sh)
+/.worktrees/

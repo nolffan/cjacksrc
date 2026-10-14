@@ -67,13 +67,17 @@ CJACKSRC_RCFLAGS ?=
 #                                      EAX's GUIDs (eaxguid), which the
 #                                      retail Rich header says VC6's cl
 #                                      12.00.8168 compiled: CL_eaxguid
+#   src/Game/Libs/GameSpy/GameSpy.dsw  GameSpy.dll, Monolith's wrapper
+#                                      around GameSpy's SDK, which the game
+#                                      DLLs import (so it comes first)
 #   src/Game/TO2.dsw                   the game DLLs, the launcher and the
 #                                      dedicated server
 #   src/Engine/runtime/winbuild/Engine.dsw   the engine
 WORKSPACES := \
     src/Engine/ltmsg/ltmsg.dsw:ltmsg \
     src/Engine/snddrv/snddrv.dsw:snddrv \
-    src/Game/TO2.dsw:ClientShellDLL,Object,ClientFxDLL,ClientRes,ServerRes,ServerApp,Launcher,GameSpy \
+    src/Game/Libs/GameSpy/GameSpy.dsw:GameSpy \
+    src/Game/TO2.dsw:ClientShellDLL,Object,ClientFxDLL,ClientRes,ServerRes,ServerApp,Launcher \
     src/Engine/runtime/winbuild/Engine.dsw:Lithtech,server
 
 # ---------------------------------------------------------------------------
