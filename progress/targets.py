@@ -132,14 +132,31 @@ TARGETS = [
          app=[(0x10001000, 0x100085f0), (0x10008656, 0x1000868b)]),
     dict(label="GameSpy.dll", what="the GameSpy services", kind="image",
          shipped=REFERENCE + "/GameSpy.dll", stem="GameSpy",
-         # Monolith's Game/Libs/GameSpy (its paths are in the image:
-         # C:\proj\to2\source\Game\Libs\GameSpy\Ping.cpp) around
-         # GameSpy's SDK (GameSpySDK\serverbrowsing, pt, ghttp, gcdkey,
-         # hashtable.c: the Rich header's 29 C objects), which will be
-         # `middleware` once its block is placed
-         built="src/Game/built/Final/libs/GameSpy/GameSpy.dll", optional=True,
-         # provisional: msvcprt's operator new at 0x10014e5e, then msvcrt.lib
-         app=[(0x10001000, 0x10014e5e)]),
+         # src/Game/Libs/GameSpy/GameSpy.dsw: Monolith's Game/Libs/GameSpy
+         # (C:\proj\to2\source\Game\Libs\GameSpy\Ping.cpp in the image's
+         # strings), GameSpy's C SDK (GameSpySDK/: the Rich header's 29 C
+         # objects with the runtime's) and the part of WONAPI.lib its CD key
+         # check links (src/Game/Libs/WONAPI)
+         built="src/Game/built/Final/libs/GameSpy/GameSpy.dll",
+         cites=True, cited_src=["src/Game/Libs/GameSpy"],
+         # As in our map: Monolith's objects (GameSpyBrowser, GameSpyCommon,
+         # GameSpyPatchInfo, GameSpyServer, Ping), then the SDK's objects
+         # from darray.obj's ArrayGrow (0x10006390) to sb_serverlist.obj,
+         # then WONAPI.lib (CDKey.obj from 0x10014740, CRC.obj,
+         # ByteBuffer.obj), then msvcprt's operator new (0x10014e5e) and
+         # msvcrt.lib
+         app=[(0x10001000, 0x10014e5e)],
+         # GameSpy's SDK and WONAPI: third-party, listed, not counted, and
+         # our builds of them are left out of our side (third_party)
+         middleware=[(0x10006390, 0x10014e5e)],
+         third_party=["darray.obj", "gcdkeyc.obj", "gcdkeys.obj",
+                      "ghttpBuffer.obj", "ghttpCallbacks.obj", "ghttpCommon.obj",
+                      "ghttpConnection.obj", "ghttpMain.obj", "ghttpPost.obj",
+                      "ghttpProcess.obj", "hashtable.obj", "md5c.obj",
+                      "natneg.obj", "nonport.obj", "ptMain.obj", "qr2.obj",
+                      "qr2regkeys.obj", "sb_crypt.obj", "sb_queryengine.obj",
+                      "sb_server.obj", "sb_serverbrowsing.obj",
+                      "sb_serverlist.obj", "WONAPI.lib"]),
     dict(label="ltmsg.dll", what="the engine's messages", kind="resources",
          shipped=REFERENCE + "/ltmsg.dll", stem="ltmsg",
          built="src/Engine/built/Final/ltmsg/ltmsg.dll", optional=True),

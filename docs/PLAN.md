@@ -75,7 +75,7 @@ Every one is Visual C++ .NET 2003 (13.10.3077): `progress/COMPILERS.md`.
 | 2 | `build`: `build/env.sh`, `build/build.mk` and `build/compile.sh` for VC .NET 2003 under Wine, the workspace `src/Game/TO2.dsw`, `build/all.sh` assembling a game directory, `build/variant.sh` (debug, modern) | 1 | partly: everything but the game workspace and the variants (below) |
 | 3 | `small`: `ltmsg.dll`, `CRes.dll`, `SRes.dll` (resource scripts from the retail resources; `tools/rsrcdiff.py`), `SndDrv.dll` (nolf2src's reconstruction, compiled with VC .NET 2003) | 2 | `ltmsg.dll` done (retail's but for its time stamp); `SndDrv.dll` builds, 172/260 identical; CRes/SRes to do |
 | 4 | `game`: `CShell.dll`, `Object.lto`, `ClientFx.fxd` from NOLF2's source release toward Contract J.A.C.K. -- first the shared code (with Build 69's TO2/TRON as the later reference), then Contract J.A.C.K.'s own (its weapons, its missions' objects, its HUD and menus), placed by the scoreboard | 2 | |
-| 5 | `gamespy`: `GameSpy.dll`: Monolith's wrapper from the image, GameSpy's SDK rolled back to 2003 | 2 | |
+| 5 | `gamespy`: `GameSpy.dll`: Monolith's wrapper from the image, GameSpy's SDK rolled back to 2003 | 2 | builds, exports retail's; wrapper being matched (below) |
 | 6 | `engine`: `Lithtech.exe` and `server.dll` from the Jupiter tree, trimmed to 2003, D3D8; the demos' engine for the SecuROM pages and the imports (a `demoimports.py` for these demos) | 2 | |
 | 7 | `apps`: the launcher `ContractJack.exe` and the dedicated server `ContractJackServer.exe` from NOLF2's Launcher and ServerApp | 2 | |
 | 8 | `boot`: the built binaries in the game under Wine, to the menu, a level, saving and loading (`make test`, tools/playtest.sh) | 3-7 | |
@@ -134,3 +134,47 @@ Done.
   functions identical as it stands; the 2006 tree's
   `runtime/sound/src/sys/s_dx8` is the later version to compare the rest
   against. Our image is 53,248 bytes against retail's 57,344.
+
+### 5. gamespy
+
+`src/Game/Libs/GameSpy/GameSpy.dsw` builds `GameSpy.dll` (and
+`GameSpy.lib`) into `src/Game/built/Final/libs/GameSpy/`, with the retail
+exports exactly (names and ordinals 1-16).
+
+- **The header for the game**: `src/Game/Libs/GameSpy/IGameSpy.h`
+  (`IGameSpyBrowser`, `IGameSpyPatchInfo`, `IGameSpyServer`, their
+  `StartupInfo`s and enums, and `IsCDKeyValid`), with `GAMESPY_EXPORTS`
+  defined only when building the DLL. The virtual functions are in the
+  retail vtables' order, their argument lists from the retail code; names
+  follow FEAR's later use of these interfaces where one exists. The `game`
+  package links CShell.dll and Object.lto against a stopgap import library
+  made from the retail export table; at merge it switches to
+  `src/Game/built/Final/libs/GameSpy/GameSpy.lib` and this header (add
+  `Game/Libs/GameSpy` to its include path; the header needs only
+  `<string>`).
+- **Layout of the image**: Monolith's code 0x10001000..0x10006390
+  (GameSpyBrowser, GameSpyCommon -- each build's gamenames, secret keys
+  and product ids --, GameSpyPatchInfo, GameSpyServer, Ping), then the
+  GameSpy SDK (darray.c .. sb_serverlist.c, alphabetical), then WONAPI's
+  CD key check (0x10014740: RTTI names `WONAPI::CDKey`), then the runtime
+  from msvcprt's operator new (0x10014e5e). `targets.py` counts only the
+  first part: the SDK and WONAPI are `middleware`.
+- **The SDK** (`GameSpySDK/`, BSD, from the 2007 snapshot of
+  github.com/nitrocaster/GameSpy) is rolled back toward the July-October
+  2003 versions: a 2003-style `nonport.h`/`nonport.c` (written from the
+  retail functions) instead of `common/`; ghttp without SSL/XML/DIME;
+  natneg protocol 2 with two servers; pt's 2003 URLs; gcdkey without
+  re-authentication; ServerBrowserNew without `lanBrowse`. Still 2007 code
+  in most functions (sb, qr2, ghttp internals); the API the wrapper calls
+  is the 2003 one (argument counts checked against the retail calls).
+- **WONAPI**: `src/Game/Libs/WONAPI/` is the part of WON's library the
+  image links (CDKey, CRC16, ByteBuffer), written from the image (the
+  Jupiter SDK's WONAPI is not public), built as `WONAPI.lib` with `/GX
+  /GR`.
+- **Flags** (`progress/COMPILERS.md`): the wrapper `/MD /Ox /GF`, no
+  `/Gy`, no `/GX`, no `NDEBUG`; `wsock32.lib` through a pragma in
+  nonport.c (it puts WSOCK32 last among the imports, as retail).
+- **Retail bugs** found (`RETAIL_BUGS.md` on master): every CWinSync_PulseEvent
+  leaks the manual-reset event its base class created; the browser's
+  thread handle is uninitialised if the game type is unknown;
+  `GetCDKeyChallenge` writes 9 bytes after reporting a length of 8.
