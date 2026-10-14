@@ -1,0 +1,243 @@
+// d3dmeshrendobj_vertanim.cpp
+
+#include "precompile.h"
+
+#include "d3dmeshrendobj_vertanim.h"
+#include "model.h"
+#include "ltanimtracker.h"
+#include "renderstruct.h"
+#include "ltb.h"
+#include "d3d_device.h"
+#include "d3d_texture.h"
+#include "d3d_renderstatemgr.h"
+#include "de_objects.h"
+#include "rendererconsolevars.h"
+
+
+CD3DVAMesh::CD3DVAMesh()
+{
+	Reset();
+}
+
+CD3DVAMesh::~CD3DVAMesh()
+{
+	FreeAll();
+}
+
+void CD3DVAMesh::Reset()
+{
+	// (retail's Reset, inlined in FreeAll at 0x510162, leaves m_bNonFixPipeData)
+	m_VBController.Reset();
+	m_iMaxBonesPerVert	= 0;
+	m_iMaxBonesPerTri	= 0;
+	m_iVertCount		= 0;
+	m_iUnDupVertCount	= 0;
+	m_iPolyCount		= 0;
+	m_iBoneEffector		= 0;
+	m_iAnimNodeIdx		= 0;
+	m_iDupMapListCount	= 0;
+	m_pDupMapList		= NULL;
+	m_pIndexData		= NULL;
+
+	for (uint32 i = 0; i < 4; ++i) m_pVertData[i] = NULL;
+}
+
+void CD3DVAMesh::FreeAll()
+{
+	m_VBController.FreeAll();
+	if (m_pDupMapList)	{ delete[] m_pDupMapList; m_pDupMapList = NULL; }
+	if (m_pIndexData)	{ delete[] m_pIndexData; m_pIndexData = NULL; }
+	for (uint32 i = 0; i < 4; ++i) { if (m_pVertData[i]) { delete[] m_pVertData[i];  m_pVertData[i] = NULL; } }
+
+	Reset();
+}
+
+bool CD3DVAMesh::Load(ILTStream& File, LTB_Header& LTBHeader)
+{
+	if (LTBHeader.m_iFileType != LTB_D3D_MODEL_FILE)
+	{
+		OutputDebugString("Error: Wrong file type in CD3DSkelMesh::Load\n");
+		return false;
+	}
+	if (LTBHeader.m_iVersion  != CD3D_LTB_LOAD_VERSION)
+	{
+		OutputDebugString("Error: Wrong file version in CD3DSkelMesh::Load\n");
+		return false;
+	}
+
+	// Read in the basics...
+	uint32 iObjSize; File.Read(&iObjSize,sizeof(iObjSize));
+	File.Read(&m_iVertCount,sizeof(m_iVertCount));
+	File.Read(&m_iUnDupVertCount,sizeof(m_iUnDupVertCount));
+	File.Read(&m_iPolyCount,sizeof(m_iPolyCount));
+	File.Read(&m_iMaxBonesPerTri,sizeof(m_iMaxBonesPerTri));
+	File.Read(&m_iMaxBonesPerVert,sizeof(m_iMaxBonesPerVert));
+	File.Read(&m_VertStreamFlags[0],sizeof(uint32)*4);
+	File.Read(&m_iAnimNodeIdx,sizeof(m_iAnimNodeIdx));
+	File.Read(&m_iBoneEffector,sizeof(m_iBoneEffector));
+
+	// Read in our Verts...
+	for (uint32 i=0;i<4;++i)
+	{
+		if (!m_VertStreamFlags[i]) continue;
+
+		uint32 iVertexSize	= 0;									// Figure out the vertex size...
+		uint32 iVertFlags	= 0;
+		uint32 iUVSets		= 0;
+		GetVertexFlags_and_Size(eNO_WORLD_BLENDS,m_VertStreamFlags[i],iVertFlags,iVertexSize,iUVSets,m_bNonFixPipeData);
+
+		uint32 iSize = iVertexSize * m_iVertCount;					// Alloc the VertData...
+		LT_MEM_TRACK_ALLOC(m_pVertData[i] = new uint8[iSize],LT_MEM_TYPE_RENDERER);
+		File.Read(m_pVertData[i],iSize);
+	}
+
+	// Read in pIndexList...
+	LT_MEM_TRACK_ALLOC(m_pIndexData = new uint8[sizeof(uint16) * m_iPolyCount * 3],LT_MEM_TYPE_RENDERER);
+	File.Read(m_pIndexData,sizeof(uint16) * m_iPolyCount * 3);
+
+	// Read in m_pDupMapList...
+	File.Read(&m_iDupMapListCount,sizeof(m_iDupMapListCount)); assert(m_iDupMapListCount < 1000000 && "Invalid VA VertData");
+	LT_MEM_TRACK_ALLOC(m_pDupMapList = new DupMap[m_iDupMapListCount],LT_MEM_TYPE_RENDERER);
+	File.Read(m_pDupMapList,sizeof(DupMap) * m_iDupMapListCount);
+
+	// Create the VBs and stuff...
+	ReCreateObject();
+
+	return true;
+}
+
+// Create the VBs and stuff from our sys mem copies...
+void CD3DVAMesh::ReCreateObject()
+{
+	// Create our VB...
+	uint32 i;
+	for (i=0;i<4;++i)
+	{
+		if (!m_VertStreamFlags[i])
+			continue;
+		if (!m_VBController.CreateStream(i,m_iVertCount,m_VertStreamFlags[i],eNO_WORLD_BLENDS,false,true,false))
+		{
+			FreeAll(); return;
+		}
+	}
+	if (!m_VBController.CreateIndexBuffer(m_iPolyCount*3,false,true,false))
+	{
+		FreeAll();
+		return;
+	}
+
+	// Read in our Verts...
+	for (i=0;i<4;++i)
+	{
+		if (!m_VertStreamFlags[i])
+			continue;
+		m_VBController.Lock((VertexBufferController::VB_TYPE)(VertexBufferController::eVERTSTREAM0 + i),false);
+		uint8* pVertData = (uint8*)m_VBController.getVertexData(i);
+		uint32 iSize = m_VBController.getVertexSize(i) * m_iVertCount;
+		memcpy(pVertData,m_pVertData[i],iSize);
+		m_VBController.UnLock((VertexBufferController::VB_TYPE)(VertexBufferController::eVERTSTREAM0 + i));
+	}
+
+	// Read in pIndexList...
+	m_VBController.Lock(VertexBufferController::eINDEX,false);
+	memcpy(m_VBController.getIndexData(),m_pIndexData,sizeof(uint16) * m_iPolyCount * 3);
+	m_VBController.UnLock(VertexBufferController::eINDEX);
+}
+
+// We're loosing focus, free the stuff...
+void CD3DVAMesh::FreeDeviceObjects()
+{
+	m_VBController.FreeAll();									// Free our VB...
+}
+
+// Update the VA verts (the model has the anim)...
+void CD3DVAMesh::UpdateVA(Model* pModel, AnimTimeRef* pAnimTimeRef)
+{
+	ModelAnim*		pAnims[2];
+	pAnims[0]		= pModel->GetAnim(pAnimTimeRef->m_Prev.m_iAnim);
+	pAnims[1]		= pModel->GetAnim(pAnimTimeRef->m_Cur.m_iAnim);
+
+	AnimNode* pAnimNodes[2];
+	pAnimNodes[0]	= pAnims[0]->GetAnimNode(m_iAnimNodeIdx);
+	pAnimNodes[1]	= pAnims[1]->GetAnimNode(m_iAnimNodeIdx);
+
+	// Get vertex data from key. To do interp between frames ...
+	CDefVertexLst*	pDefVerts[2];
+	pDefVerts[0]	= pAnimNodes[0]->GetVertexData(pAnimTimeRef->m_Prev.m_iFrame);
+	pDefVerts[1]	= pAnimNodes[1]->GetVertexData(pAnimTimeRef->m_Cur.m_iFrame);
+
+	float percent	= pAnimTimeRef->m_Percent;
+
+	if (pDefVerts[1] == NULL) 
+	{
+		pDefVerts[1] = pDefVerts[0];
+	}
+
+	// Get the vertex animation  multiply it by current transforms
+	if (!m_VBController.Lock(VertexBufferController::eVERTSTREAM0,false))
+	{
+		assert(0);
+		return;
+	}
+
+	uint8* pVertData		= (uint8*)m_VBController.getVertexData(0);
+	uint32 Vertex_Size		= m_VBController.getVertexSize(0);
+	//uint32 NormalOffset		= m_VBController.getXYZSize();
+	int i;
+	for (i = 0; i < (int)m_iUnDupVertCount ; ++i)
+	{
+		const float *prv_val = pDefVerts[0]->getValue(i);
+		const float *cur_val = pDefVerts[1]->getValue(i);
+
+		float val[3] ;
+		vertexLerp(val, prv_val, cur_val, percent);
+
+		D3DVECTOR* pPos		= (D3DVECTOR*)(pVertData);
+		pPos->x = val[0]; pPos->y = val[1]; pPos->z = val[2];
+
+		pVertData += Vertex_Size;
+	}
+
+	// Copy the DupVerts...
+	pVertData		= (uint8*)m_VBController.getVertexData(0);
+	for (i = 0;i < (int)m_iDupMapListCount; ++i)
+	{
+		D3DVECTOR* pDstVert = (D3DVECTOR*)(pVertData + ((uint32)m_pDupMapList[i].iDstVert * Vertex_Size));
+		D3DVECTOR* pSrcVert = (D3DVECTOR*)(pVertData + ((uint32)m_pDupMapList[i].iSrcVert * Vertex_Size));
+		pDstVert->x = pSrcVert->x; pDstVert->y = pSrcVert->y; pDstVert->z = pSrcVert->z;
+	}
+
+	if (!m_VBController.UnLock(VertexBufferController::eVERTSTREAM0))
+	{
+		assert(0);
+		return;
+	}
+}
+
+void CD3DVAMesh::Render(D3DMATRIX& WorldTransform, CD3DRenderStyle* pRenderStyle, uint32 iRenderPass)
+{
+	g_RenderStateMgr.SetTransform(D3DTS_WORLDMATRIX(0), &WorldTransform);
+
+	if (!m_VBController.getVertexFormat(0) || m_bNonFixPipeData)
+	{
+		// This is a non fixed function pipe VB - bail out...
+		return;
+	}
+	else if(FAILED(g_RenderStateMgr.SetVertexShader(m_VBController.getVertexFormat(0))))
+	{
+		return;
+	}
+
+	m_VBController.SetStreamSources();
+
+	m_VBController.Render(0,0,m_iVertCount,m_iPolyCount);
+
+	PD3DDEVICE->SetStreamSource(0, 0, 0);
+	PD3DDEVICE->SetIndices(0, 0);
+}
+
+void CD3DVAMesh::CalcUsedNodes( Model *pModel )
+{
+	CreateUsedNodeList(1);
+	m_pUsedNodeList[0] = 0;
+}
