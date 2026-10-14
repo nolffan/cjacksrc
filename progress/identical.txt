@@ -1,0 +1,3 @@
+# Every function the scoreboard has verified byte-identical to the retail binaries
+# (target<TAB>function). Written by tools/ratchet.py update; `make progress`
+# fails if one of them stops matching.

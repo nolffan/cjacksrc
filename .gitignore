@@ -1,0 +1,12 @@
+# Everything the build writes
+# (in any directory: a run started from the wrong directory makes one there)
+out/
+# build/build.mk's Wine prefix, generated rules and header dependencies
+/.wine/
+/.build/
+# the project files put every output in a built/ directory
+src/**/[Bb]uilt/
+
+__pycache__/
+*.log
+!src/**/*.log
