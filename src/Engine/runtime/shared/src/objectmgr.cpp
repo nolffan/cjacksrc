@@ -172,6 +172,7 @@ void LTObject::Clear()
     m_Radius = 0.0f;
     m_ObjectID = INVALID_OBJECTID;
     m_ObjectType = OT_NORMAL;
+    m_nUnguaranteedData = 0;	// RETAIL: server.dll 0x1002c297
     m_pUserData = LTNULL;
     m_Velocity.Init();
     m_Mass = 30; // Default mass is 30..

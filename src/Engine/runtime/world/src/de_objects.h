@@ -240,6 +240,12 @@ public:
 
 	uint8			m_nRenderGroup;	//the rendering group that this object belongs to. It defaults to the default group which can never be turned off. It can be overridden to specify a group which can then be turned on or off
 
+	// RETAIL: Contract J.A.C.K.'s objects carry a 32-bit value the server
+	// sends its clients unguaranteed (ILTServer::SetObjectUnguaranteedData,
+	// server.dll 0x1003a100, sets it and the 0x80000 change flag;
+	// ILTClient::GetObjectUnguaranteedData, Lithtech.exe 0x407ef0, reads
+	// it), before the user data (ci_GetObjectUserData 0x40a1e0 reads 0xb0)
+	uint32			m_nUnguaranteedData;
 	void			*m_pUserData;	// User data..
 	float			m_Radius;		// Radius approximation. Calculated from the dims of the object
 	LTVector		m_Dims;		// Dimensions of this object.
