@@ -1787,7 +1787,7 @@ uint32 CDx8SoundSys::Thread_Func()
 		uint32 nTheadedTickCounts;
 
 
-		if( WaitForSingleObject( m_cEvent_StreamingActive.GetEvent( ), 0 ) == WAIT_OBJECT_0 )
+		if( m_cEvent_StreamingActive.IsSet( ))
 		{
 			CWinSync_CSAuto cStreamProtection(m_cCS_SoundThread);
 
@@ -1811,7 +1811,7 @@ uint32 CDx8SoundSys::Thread_Func()
 				m_cEvent_StreamingActive.Clear();
 		}
 
-		if( WaitForSingleObject( m_cEvent_SampleLoopActive.GetEvent( ), 0 ) == WAIT_OBJECT_0 )
+		if( m_cEvent_SampleLoopActive.IsSet( ))
 		{
 			CWinSync_CSAuto cLoopProtection(m_cCS_SoundThread);
 

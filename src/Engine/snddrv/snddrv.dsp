@@ -46,7 +46,12 @@ CFG=snddrv - Win32 Final
 # header an object keeps the header constants (math_phys.h's PI and the
 # rest) in .bss in the order they are defined, as retail's parsewavefile and
 # s_dx8 objects have them (0x1000c1bc.., 0x1000c1e4..); compiled on its own,
-# as counter.obj, in the compiler's own order (0x1000c1a0..).
+# as counter.obj, in the compiler's own order (0x1000c1a0..). The link
+# names the libraries as a Visual Studio .NET 2003 project passes them, the
+# project's own (ltmem, winmm, msacm32, dxguid) ahead of the IDE's default
+# list (kernel32 .. odbccp32): the libraries the linker searches, and their
+# order, decide the order of each DLL's imports in the import table, which
+# this way is retail's.
 
 !IF  "$(CFG)" == "snddrv - Win32 Final"
 
@@ -72,7 +77,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib /nologo /subsystem:windows /dll /machine:I386
-# ADD LINK32 ltmem.lib kernel32.lib user32.lib ole32.lib winmm.lib msacm32.lib dxguid.lib /nologo /subsystem:windows /dll /machine:I386 /out:"..\built\Final\snddrv\SndDrv.dll" /libpath:"..\built\Final\ltmem"
+# ADD LINK32 ltmem.lib winmm.lib msacm32.lib dxguid.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /machine:I386 /out:"..\built\Final\snddrv\SndDrv.dll" /libpath:"..\built\Final\ltmem"
 !ENDIF 
 
 # Begin Target
