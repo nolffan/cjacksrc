@@ -123,10 +123,13 @@ TARGETS = [
     dict(label="SndDrv.dll", what="the sound driver", kind="image",
          shipped=REFERENCE + "/SndDrv.dll", stem="SndDrv",
          built="src/Engine/built/Final/snddrv/SndDrv.dll", optional=True,
-         # provisional: the import thunks from 0x100085f0 (17 of them), then
-         # msvcprt's operator new (0x1000868b) and msvcrt.lib from
-         # __aulldiv (0x100086b0)
-         app=[(0x10001000, 0x100085f0)]),
+         # src/Engine/snddrv/snddrv.dsw. As in our map: s_dx8.obj's code
+         # ends where the MSACM32 import thunks start (17 of them,
+         # 0x100085f0..0x10008656: the driver calls msacm.h's functions
+         # without dllimport), then ltmem.lib's ltmem.obj (LTMemAlloc,
+         # LTMemFree, 0x10008656..0x1000868b), msvcprt's operator new and
+         # msvcrt.lib from __aulldiv (0x100086b0)
+         app=[(0x10001000, 0x100085f0), (0x10008656, 0x1000868b)]),
     dict(label="GameSpy.dll", what="the GameSpy services", kind="image",
          shipped=REFERENCE + "/GameSpy.dll", stem="GameSpy",
          # Monolith's Game/Libs/GameSpy (its paths are in the image:

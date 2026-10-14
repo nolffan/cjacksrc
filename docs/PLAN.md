@@ -72,8 +72,8 @@ Every one is Visual C++ .NET 2003 (13.10.3077): `progress/COMPILERS.md`.
 | # | Package | Depends on | Status |
 |---|---|---|---|
 | 1 | `scaffold`: submodules (`rez`, `toolchains`, `tools`), the 1.1 install in rez, VC .NET 2003 in toolchains, the build image, `make retail`/`reference`/`progress`, `targets.py` | -- | done (below) |
-| 2 | `build`: `build/env.sh`, `build/build.mk` and `build/compile.sh` for VC .NET 2003 under Wine, the workspace `src/Game/TO2.dsw`, `build/all.sh` assembling a game directory, `build/variant.sh` (debug, modern) | 1 | |
-| 3 | `small`: `ltmsg.dll`, `CRes.dll`, `SRes.dll` (resource scripts from the retail resources; `tools/rsrcdiff.py`), `SndDrv.dll` (nolf2src's reconstruction, compiled with VC .NET 2003) | 2 | |
+| 2 | `build`: `build/env.sh`, `build/build.mk` and `build/compile.sh` for VC .NET 2003 under Wine, the workspace `src/Game/TO2.dsw`, `build/all.sh` assembling a game directory, `build/variant.sh` (debug, modern) | 1 | partly: everything but the game workspace and the variants (below) |
+| 3 | `small`: `ltmsg.dll`, `CRes.dll`, `SRes.dll` (resource scripts from the retail resources; `tools/rsrcdiff.py`), `SndDrv.dll` (nolf2src's reconstruction, compiled with VC .NET 2003) | 2 | `ltmsg.dll` done (retail's but for its time stamp); `SndDrv.dll` builds, 172/260 identical; CRes/SRes to do |
 | 4 | `game`: `CShell.dll`, `Object.lto`, `ClientFx.fxd` from NOLF2's source release toward Contract J.A.C.K. -- first the shared code (with Build 69's TO2/TRON as the later reference), then Contract J.A.C.K.'s own (its weapons, its missions' objects, its HUD and menus), placed by the scoreboard | 2 | |
 | 5 | `gamespy`: `GameSpy.dll`: Monolith's wrapper from the image, GameSpy's SDK rolled back to 2003 | 2 | |
 | 6 | `engine`: `Lithtech.exe` and `server.dll` from the Jupiter tree, trimmed to 2003, D3D8; the demos' engine for the SecuROM pages and the imports (a `demoimports.py` for these demos) | 2 | |
@@ -107,3 +107,30 @@ Done.
   the binary links, as nolf2src did.
 - Unknowns: the Rich header's 0x27/8491 objects in the launcher and the
   dedicated server, and the 0x69/2067 ones everywhere.
+
+### 2. build
+
+- `build/build.mk` takes its workspaces from a list (`WORKSPACES`), each
+  with the projects wanted from it, and skips one that is not in the tree
+  yet; `progress/targets.py` has every binary `optional` until its
+  workspace is here. `build/all.sh` assembles whatever is built and says
+  what is missing.
+- The tools environment (`build/env.sh`): `run_cl`, `run_link`, `run_lib`,
+  `run_rc` with `msvc-7.10-3077`; `CJACKSRC_CFLAGS` and friends for the
+  variants, `CJACK_MODERN`/`CJACK_DEBUG` resolved out of the release tree
+  (`tools/releasesrc.py`, `RELEASESRC_VARIANTS`).
+- To do: `src/Game/TO2.dsw` (package 4), `build/variant.sh`,
+  `build/package.sh`, the game's run scripts.
+
+### 3. small
+
+- `ltmsg.dll`: nolf2src's `ltmsg.rc` (the five resources are NOLF2's,
+  byte for byte) and an empty `DllMain`, `/MD /O2`, linked by VC .NET 2003:
+  the retail file but for the link time stamp (PE header offset 0xF0).
+- `SndDrv.dll`: nolf2src's reconstruction (NOLF2's driver), with the one
+  change VC .NET 2003's library needs (`push_back` takes an argument, as
+  the 2006 tree has it), and without STLport: Contract J.A.C.K.'s imports
+  MSVCP71 (`vector`'s length errors build a `std::string`). 172 of 260
+  functions identical as it stands; the 2006 tree's
+  `runtime/sound/src/sys/s_dx8` is the later version to compare the rest
+  against. Our image is 53,248 bytes against retail's 57,344.

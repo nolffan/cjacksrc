@@ -26,8 +26,9 @@ the legacy build keeps matching the retail one.
 
 Started. The retail game is installed from its discs and update (`rez/`),
 the compiler is in `toolchains/` (`msvc-7.10-3077`), and the scoreboard
-scores every retail binary against our build. `docs/PLAN.md` is the plan,
-package by package.
+scores every retail binary against our build. `ltmsg.dll` is built (the
+retail file but for its link time stamp) and `SndDrv.dll` builds; the rest
+is to come. `docs/PLAN.md` is the plan, package by package.
 
 ## Progress
 
@@ -44,17 +45,17 @@ those functions make up.
 |---|---|--:|--:|---|--:|--:|
 | `Lithtech.exe` | the engine | 0 / 7,402 | 0 / 1,120,615 bytes | `░░░░░░░░░░░░░░░░░░░░` 0.0% | 7,402 | 0 |
 | `server.dll` | the engine's server | 0 / 2,601 | 0 / 387,211 bytes | `░░░░░░░░░░░░░░░░░░░░` 0.0% | 2,601 | 0 |
-| `SndDrv.dll` | the sound driver | 0 / 231 | 0 / 28,543 bytes | `░░░░░░░░░░░░░░░░░░░░` 0.0% | 231 | 0 |
+| `SndDrv.dll` | the sound driver | 172 / 260 | 19,683 / 28,588 bytes | `█████████████░░░░░░░` 68.8% | 5 | 63 |
 | `GameSpy.dll` | the GameSpy services | 0 / 578 | 0 / 77,489 bytes | `░░░░░░░░░░░░░░░░░░░░` 0.0% | 578 | 0 |
 | `ContractJack.exe` | the launcher | 0 / 581 | 0 / 42,120 bytes | `░░░░░░░░░░░░░░░░░░░░` 0.0% | 581 | 0 |
 | `ContractJackServer.exe` | the dedicated server | 0 / 822 | 0 / 76,345 bytes | `░░░░░░░░░░░░░░░░░░░░` 0.0% | 822 | 0 |
 | `CShell.dll` | the game: client | 0 / 6,423 | 0 / 1,155,954 bytes | `░░░░░░░░░░░░░░░░░░░░` 0.0% | 6,423 | 0 |
 | `Object.lto` | the game: server objects | 0 / 9,199 | 0 / 1,459,050 bytes | `░░░░░░░░░░░░░░░░░░░░` 0.0% | 9,199 | 0 |
 | `ClientFx.fxd` | the game: client effects | 0 / 445 | 0 / 104,699 bytes | `░░░░░░░░░░░░░░░░░░░░` 0.0% | 445 | 0 |
-| `ltmsg.dll` | the engine's messages, not in the total | 0 / 5 resources | 0 / 2,054 bytes | `░░░░░░░░░░░░░░░░░░░░` 0.0% | 5 | -- |
+| `ltmsg.dll` | the engine's messages, not in the total | 5 / 5 resources | 2,054 / 2,054 bytes | `████████████████████` 100.0% | 0 | -- |
 | `CRes.dll` | the game's client resources, not in the total | 0 / 457 resources | 0 / 330,555 bytes | `░░░░░░░░░░░░░░░░░░░░` 0.0% | 457 | -- |
 | `SRes.dll` | the game's server resources, not in the total | no resources | -- | -- | -- | -- |
-| **All** | | **0 / 28,282** | **0 / 4,452,026 bytes** | `░░░░░░░░░░░░░░░░░░░░` **0.0%** | **28,282** | **0** |
+| **All** | | **172 / 28,311** | **19,683 / 4,452,071 bytes** | `░░░░░░░░░░░░░░░░░░░░` **0.4%** | **28,056** | **63** |
 <!-- progress:end -->
 
 Every function in that table is recorded in `progress/identical.txt`, and
@@ -71,7 +72,7 @@ archive.org and installs the game with its 1.1 update) and `tools/` (the
 reconstruction tools).
 
 ```sh
-make reference  # the retail binaries and their function tables, in out/reference/
-make progress   # score the build against them
+make            # out/cjack-legacy-release/: what is built so far, with the retail data
+make progress   # score the build against the retail binaries
 make help       # everything else
 ```
