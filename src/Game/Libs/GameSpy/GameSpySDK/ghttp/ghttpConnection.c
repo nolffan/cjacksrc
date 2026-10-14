@@ -116,7 +116,6 @@ GHIConnection * ghiNewConnection
 	connection->sendHeaders = NULL;
 	connection->saveFile = NULL;
 	connection->blocking = GHTTPFalse;
-	connection->persistConnection = GHTTPFalse;
 	connection->result = GHTTPSuccess;
 	connection->progressCallback = NULL;
 	connection->completedCallback = NULL;
@@ -139,23 +138,9 @@ GHIConnection * ghiNewConnection
 	connection->throttle = GHTTPFalse;
 	connection->lastThrottleRecv = 0;
 	connection->post = NULL;
-	connection->maxRecvTime = 500; // Prevent blocking in async mode with systems that never generate WSAEWOULDBLOCK
-	connection->proxyOverridePort = GHI_DEFAULT_PORT;	
-	connection->proxyOverrideServer = NULL;
-	connection->encryptor.mInterface = NULL;
-
-//handle used for asynch DNS lookups
-#if !defined(GSI_NO_THREADS)
-	connection->handle = NULL;
-#endif
-
 	bResult = ghiInitBuffer(connection, &connection->sendBuffer, SEND_BUFFER_INITIAL_SIZE, SEND_BUFFER_INCREMENT_SIZE);
 	if(bResult)
-		bResult = ghiInitBuffer(connection, &connection->encodeBuffer, ENCODE_BUFFER_INITIAL_SIZE, ENCODE_BUFFER_INCREMENT_SIZE);
-	if(bResult)
 		bResult = ghiInitBuffer(connection, &connection->recvBuffer, RECV_BUFFER_INITIAL_SIZE, RECV_BUFFER_INCREMENT_SIZE);
-	if (bResult)
-		bResult = ghiInitBuffer(connection, &connection->decodeBuffer, DECODE_BUFFER_INITIAL_SIZE, DECODE_BUFFER_INCREMENT_SIZE);
 	
 	if(!bResult)
 	{
@@ -203,7 +188,6 @@ GHTTPBool ghiFreeConnection
 	gsifree(connection->requestPath);
 	gsifree(connection->sendHeaders);
 	gsifree(connection->redirectURL);
-	gsifree(connection->proxyOverrideServer);
 #ifndef NOFILE
 	if(connection->saveFile)
 		fclose(connection->saveFile);
@@ -214,38 +198,17 @@ GHTTPBool ghiFreeConnection
 		closesocket(connection->socket);
 	}
 	ghiFreeBuffer(&connection->sendBuffer);
-	ghiFreeBuffer(&connection->encodeBuffer);
 	ghiFreeBuffer(&connection->recvBuffer);
-	ghiFreeBuffer(&connection->decodeBuffer);
 	ghiFreeBuffer(&connection->getFileBuffer);
 	if(connection->postingState.states)
 		ghiPostCleanupState(connection);
    
-#if !defined(GSI_NO_THREADS)
-    // Cancel and free asychronous lookup if it has not already been done
-    /////////////////////////////////////////////////////////////////////
-    if (connection->handle)
-    {
-        gsDebugFormat(GSIDebugCat_HTTP, GSIDebugType_State, GSIDebugLevel_Comment, 
-            "Cancelling Thread and freeing memory\n");
-        gsiCancelResolvingHostname(connection->handle);
-    }
-#endif
-
 	// Check for an auto-free post.
 	///////////////////////////////
 	if(connection->post && ghiIsPostAutoFree(connection->post))
 	{
 		ghiFreePost(connection->post);
 		connection->post = NULL;
-	}
-
-	// Check for an encryptor
-	if (connection->encryptor.mInitialized != GHTTPFalse)
-	{
-		if (connection->encryptor.mCleanupFunc)
-			(connection->encryptor.mCleanupFunc)(connection, &connection->encryptor);
-		connection->encryptor.mInitialized = GHTTPFalse;
 	}
 
 	// Free the slot.
@@ -326,17 +289,6 @@ void ghiRedirectConnection
 	///////////////
 	connection->state = GHTTPSocketInit;
 
-#if !defined(GSI_NO_THREADS)
-    // Cancel and free asychronous lookup if it has not already been done
-    /////////////////////////////////////////////////////////////////////
-    if (connection->handle)
-    {
-        gsDebugFormat(GSIDebugCat_HTTP, GSIDebugType_State, GSIDebugLevel_Comment, 
-            "Cancelling Thread and freeing memory\n");
-        gsiCancelResolvingHostname(connection->handle);
-    }
-#endif
-
 	// New URL.
 	///////////
 	gsifree(connection->URL);
@@ -361,9 +313,7 @@ void ghiRedirectConnection
 	// Reset buffers.
 	/////////////////
 	ghiResetBuffer(&connection->sendBuffer);
-	ghiResetBuffer(&connection->encodeBuffer);
 	ghiResetBuffer(&connection->recvBuffer);
-	ghiResetBuffer(&connection->decodeBuffer);
 
 	// Reset status.
 	////////////////
@@ -377,22 +327,6 @@ void ghiRedirectConnection
 	// The connection isn't closed.
 	///////////////////////////////
 	connection->connectionClosed = GHTTPFalse;
-
-	// Check for an encryptor
-	if (connection->encryptor.mInitialized != GHTTPFalse)
-	{
-		// cleanup the encryptor
-		if (connection->encryptor.mCleanupFunc)
-			(connection->encryptor.mCleanupFunc)(connection, &connection->encryptor);
-		connection->encryptor.mInitialized = GHTTPFalse;
-
-		// if the redirect isn't secure, clear it
-		if(strncmp("https://", connection->URL, 8) != 0)
-		{
-			connection->encryptor.mEngine = GHTTPEncryptionEngine_None;
-			connection->encryptor.mInterface = NULL;
-		}
-	}
 
 	// One more redirect.
 	/////////////////////

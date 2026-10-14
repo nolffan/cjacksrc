@@ -2,8 +2,7 @@
 #define _SB_INTERNAL_H_
 
 
-#include "../common/gsCommon.h"
-#include "../common/gsAvailable.h"
+#include "../nonport.h"
 
 #include "../darray.h"
 #include "../hashtable.h"
@@ -363,7 +362,7 @@ typedef struct _ICMPHeader
 
 
 //server list functions
-void SBServerListInit(SBServerList *slist, const char *queryForGamename, const char *queryFromGamename, const char *queryFromKey, int queryFromVersion, SBBool lanBrowse, SBListCallBackFn callback, void *instance);
+void SBServerListInit(SBServerList *slist, const char *queryForGamename, const char *queryFromGamename, const char *queryFromKey, int queryFromVersion, SBListCallBackFn callback, void *instance);
 SBError SBServerListConnectAndQuery(SBServerList *slist, const char *fieldList, const char *serverFilter, int options, int maxServers);
 SBError SBServerListGetLANList(SBServerList *slist, unsigned short startport, unsigned short endport, int queryversion);
 void SBServerListDisconnect(SBServerList *slist);
@@ -420,7 +419,7 @@ extern char *SBOverrideMasterServer;
 
 
 //query engine functions
-void SBQueryEngineInit(SBQueryEngine *engine, int maxupdates, int queryversion, SBBool lanBrowse, SBEngineCallbackFn callback, void *instance);
+void SBQueryEngineInit(SBQueryEngine *engine, int maxupdates, int queryversion, SBEngineCallbackFn callback, void *instance);
 void SBQueryEngineUpdateServer(SBQueryEngine *engine, SBServer server, int addfront, int querytype, SBBool usequerychallenge);
 void SBQueryEngineSetPublicIP(SBQueryEngine *engine, goa_uint32 mypublicip);
 SBServer SBQueryEngineUpdateServerByIP(SBQueryEngine *engine, const char *ip, unsigned short queryport, int addfront, int querytype, SBBool usequerychallenge);

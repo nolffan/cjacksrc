@@ -286,16 +286,9 @@ static void QEStartQuery(SBQueryEngine *engine, SBServer server)
 }
 
 
-void SBQueryEngineInit(SBQueryEngine *engine, int maxupdates, int queryversion, SBBool lanBrowse, SBEngineCallbackFn callback, void *instance)
+void SBQueryEngineInit(SBQueryEngine *engine, int maxupdates, int queryversion, SBEngineCallbackFn callback, void *instance)
 {
 	// 11-03-2004 : Added by Saad Nader
-	// fix for LANs and unnecessary availability check
-	///////////////////////////////////////////////////
-	if(lanBrowse == SBFalse)
-	{
-		if(__GSIACResult != GSIACAvailable)
-		return;
-	}
 		SocketStartUp();
 	engine->queryversion = queryversion;
 	engine->maxupdates = maxupdates;

@@ -19,7 +19,7 @@ devsupport@gamespy.com
 #ifndef _SB_ASCII_H
 #define _SB_ASCII_H
 
-#include "../common/gsCommon.h"
+#include "../nonport.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -39,7 +39,7 @@ maxConcUpdates - Max number of concurent updates (10-15 for modem users, 20-30 f
 queryVersion - Query protocol to use. Use QVERSION_GOA for DeveloperSpec/Query&Reporting1 games, and QVERSION_QR2 for games that use Query & Reporting 2
 callback - The function that will be called with list updates
 instance - User-defined instance data (e.g. structure or object pointer)  */
-ServerBrowser ServerBrowserNewA(const char *queryForGamename, const char *queryFromGamename, const char *queryFromKey, int queryFromVersion, int maxConcUpdates, int queryVersion, SBBool lanBrowse, ServerBrowserCallback callback, void *instance);
+ServerBrowser ServerBrowserNewA(const char *queryForGamename, const char *queryFromGamename, const char *queryFromKey, int queryFromVersion, int maxConcUpdates, int queryVersion, ServerBrowserCallback callback, void *instance);
 
 
 /* ServerBrowserUpdate

@@ -110,12 +110,8 @@ static GHTTPBool ghiProcessConnection
 		ghiDoSocketInit(connection);
 	if(connection->state == GHTTPHostLookup)
 		ghiDoHostLookup(connection);
-	if(connection->state == GHTTPLookupPending)
-		ghiDoLookupPending(connection);
 	if(connection->state == GHTTPConnecting)
 		ghiDoConnecting(connection);
-	if(connection->state == GHTTPSecuringSession)
-		ghiDoSecuringSession(connection);
 	if(connection->state == GHTTPSendingRequest)
 		ghiDoSendingRequest(connection);
 	if(connection->state == GHTTPPosting)
@@ -1143,15 +1139,6 @@ GHTTPBool ghttpSetProxy
 	return ghiSetProxy(server);
 }
 
-GHTTPBool ghttpSetRequestProxy
-(
-	GHTTPRequest request, 
-	const char * server 
-)
-{
-	return ghiSetRequestProxy(request, server);
-}
-
 
 void ghttpSetThrottle
 (
@@ -1183,98 +1170,6 @@ void ghttpThrottleSettings
 {
 	ghiThrottleSettings(bufferSize, timeDelay);
 }
-
-void ghttpSetMaxRecvTime
-(
-	GHTTPRequest request,
-	gsi_time maxRecvTime
-)
-{
-	GHIConnection* connection = ghiRequestToConnection(request);
-	if (connection == NULL)
-		return;
-
-	connection->maxRecvTime = maxRecvTime;
-}
-
-// Internal prototypes for persistent HTTP connections
-// Prevents warnings from strict compilers
-//////////////////////////////////////////////////////
-SOCKET ghttpGetSocket(GHTTPRequest request);
-GHTTPBool ghttpReuseSocket(GHTTPRequest request, SOCKET socket);
-
-// For use in persistent HTTP connections
-// Call this in the completed callback to obtain the socket, which can be used with 
-// ghttpReuseSocket to make a second request to the same host
-///////////////////////////////////////////////////////////////////
-SOCKET ghttpGetSocket
-(
-	GHTTPRequest request
-)
-{
-	GHIConnection * connection;
-	SOCKET ret;
-
-	// Get the connection object for this request.
-	//////////////////////////////////////////////
-	connection = ghiRequestToConnection(request);
-	if(!connection)
-		return INVALID_SOCKET;
-
-	// Only allow them to grab the socket during the competion callback (not while a request is in process)
-	/////////////////////////////////////////////////////////
-	if (!connection->completed)
-		return INVALID_SOCKET;
-
-	ret = connection->socket;
-	// Mark the connection as invalid so that it doesn't get closed
-	connection->socket = INVALID_SOCKET;
-	
-	return ret;
-}
-
-// For use in persistent HTTP connections
-// Call this after creating a request, but before calling think the first time in order to reuse
-// an existing connection to the same server
-// If the socket passed is INVALID_SOCKET, a new connection will be created and marked as persistent
-///////////////////////////////////////////////////////////////////
-GHTTPBool ghttpReuseSocket
-(
-	GHTTPRequest request,
-	SOCKET socket
-)
-{
-	GHIConnection * connection;
-
-	// Get the connection object for this request.
-	//////////////////////////////////////////////
-	connection = ghiRequestToConnection(request);
-	if(!connection)
-		return GHTTPFalse;
-	if (connection->state != GHTTPSocketInit)
-		return GHTTPFalse;
-	if (connection->socket != INVALID_SOCKET)
-		return GHTTPFalse;
-
-	connection->persistConnection = GHTTPTrue;
-	connection->socket = socket;
-
-
-	/*
-	if (socket == INVALID_SOCKET)
-	{
-		// The connection is marked as persistent, but we still need to lookup and connect, so don't advance the state
-		/////////////////////////////////////////////////////////////////////
-		return GHTTPTrue;
-	}
-
-	// Skip the host lookup & connect - send data once the socket is writable
-	//////////////////////////////////////////////
-	connection->state = GHTTPConnecting;	
-	*/
-	return GHTTPTrue;
-}
-
 
 GHTTPPost ghttpNewPost
 (
@@ -1454,18 +1349,6 @@ GHTTPBool ghttpPostAddFileFromMemoryW
 	GSI_UNUSED(contentType);
 }
 #endif
-
-GHTTPBool ghttpPostAddXml
-(
-	GHTTPPost post,
-	GSXmlStreamWriter soap
-)
-{
-	GS_ASSERT(post != NULL);
-	GS_ASSERT(soap != NULL);
-
-	return ghiPostAddXml(post, soap);
-}
 
 void ghttpPostSetCallback
 (

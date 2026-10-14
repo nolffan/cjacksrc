@@ -16,7 +16,7 @@ devsupport@gamespy.com
 #ifndef _SB_SERVERBROWSING_H
 #define _SB_SERVERBROWSING_H
 
-#include "../common/gsCommon.h"
+#include "../nonport.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -154,7 +154,7 @@ maxConcUpdates - Max number of concurent updates (10-15 for modem users, 20-30 f
 queryVersion - Query protocol to use. Use QVERSION_GOA for DeveloperSpec/Query&Reporting1 games, and QVERSION_QR2 for games that use Query & Reporting 2
 callback - The function that will be called with list updates
 instance - User-defined instance data (e.g. structure or object pointer)  */
-ServerBrowser ServerBrowserNew(const gsi_char *queryForGamename, const gsi_char *queryFromGamename, const gsi_char *queryFromKey, int queryFromVersion, int maxConcUpdates, int queryVersion, SBBool lanBrowse, ServerBrowserCallback callback, void *instance);
+ServerBrowser ServerBrowserNew(const gsi_char *queryForGamename, const gsi_char *queryFromGamename, const gsi_char *queryFromKey, int queryFromVersion, int maxConcUpdates, int queryVersion, ServerBrowserCallback callback, void *instance);
 
 /* 
 ServerBrowserFree
@@ -336,9 +336,6 @@ SBError ServerBrowserSendMessageToServer(ServerBrowser sb, const gsi_char *ip, u
 /* ServerBrowserConnectToServer
 ------------------
 Attempts to connect to the server, using natneg if necessary */
-SBError ServerBrowserConnectToServer(ServerBrowser sb, SBServer server, SBConnectToServerCallback callback);
-
-
 /* Comparision types for the ServerBrowserSort function
 int - assume the values are int and do an integer compare
 float - assume the values are float and do a flot compare

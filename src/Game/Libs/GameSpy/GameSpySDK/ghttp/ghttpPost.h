@@ -23,9 +23,7 @@ typedef enum
 {
 	GHIPostingError,
 	GHIPostingDone,
-	GHIPostingPosting,
-	GHIPostingWaitForContinue
-} GHIPostingResult;
+	GHIPostingPosting} GHIPostingResult;
 
 typedef struct GHIPostingState
 {
@@ -35,8 +33,6 @@ typedef struct GHIPostingState
 	int totalBytes;
 	ghttpPostCallback callback;
 	void * param;
-	GHTTPBool waitPostContinue; // does DIME need to wait for continue?
-	GHTTPBool completed; // prevent re-post in the event of a redirect.
 } GHIPostingState;
 
 GHTTPPost ghiNewPost
@@ -84,12 +80,6 @@ GHTTPBool ghiPostAddFileFromMemory
 	int bufferLen,
 	const char * reportFilename,
 	const char * contentType
-);
-
-GHTTPBool ghiPostAddXml
-(
-	GHTTPPost post,
-	GSXmlStreamWriter xmlSoap
 );
 
 void ghiPostSetCallback

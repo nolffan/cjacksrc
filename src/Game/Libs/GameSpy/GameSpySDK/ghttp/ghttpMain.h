@@ -13,7 +13,6 @@ devsupport@gamespy.com
 
 #include <stdio.h>
 #include "ghttp.h"
-#include "../common/gsCommon.h"
-#include "../common/gsStringUtil.h"
+#include "../nonport.h"
 
 #endif

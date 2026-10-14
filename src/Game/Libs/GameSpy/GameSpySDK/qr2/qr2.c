@@ -1,8 +1,7 @@
 /********
 INCLUDES
 ********/
-#include "../common/gsCommon.h"
-#include "../common/gsAvailable.h"
+#include "../nonport.h"
 #include "qr2.h"
 #include "qr2regkeys.h"
 #include "../natneg/natneg.h"
@@ -12,14 +11,6 @@ extern "C" {
 #endif	
 	
 #ifdef __MWERKS__ // Codewarrior requires function prototypes
-qr2_error_t qr2_initW(/*[out]*/qr2_t *qrec, const unsigned short *ip, int baseport, const unsigned short *gamename, 
-					 const unsigned short *secret_key, int ispublic, int natnegotiate, qr2_serverkeycallback_t server_key_callback, 
-					 qr2_playerteamkeycallback_t player_key_callback, qr2_playerteamkeycallback_t team_key_callback, qr2_keylistcallback_t key_list_callback, 
-					 qr2_countcallback_t playerteam_count_callback, qr2_adderrorcallback_t adderror_callback, void *userdata);
-qr2_error_t qr2_init_socketW(/*[out]*/qr2_t *qrec, SOCKET s, int boundport, const unsigned short *gamename, 
-					 const unsigned short *secret_key, int ispublic, int natnegotiate, qr2_serverkeycallback_t server_key_callback,
-					 qr2_playerteamkeycallback_t player_key_callback, qr2_playerteamkeycallback_t team_key_callback, qr2_keylistcallback_t key_list_callback, 
-					 qr2_countcallback_t playerteam_count_callback, qr2_adderrorcallback_t adderror_callback, void *userdata);
 qr2_error_t qr2_init_socketA(/*[out]*/qr2_t *qrec, SOCKET s, int boundport, const char *gamename, const char *secret_key,
 					 int ispublic, int natnegotiate, qr2_serverkeycallback_t server_key_callback,
 					 qr2_playerteamkeycallback_t player_key_callback, qr2_playerteamkeycallback_t team_key_callback,
@@ -228,30 +219,6 @@ qr2_error_t qr2_init_socketA(/*[out]*/qr2_t *qrec, SOCKET s, int boundport, cons
 
 }
 
-qr2_error_t qr2_init_socketW(/*[out]*/qr2_t *qrec, SOCKET s, int boundport, const unsigned short *gamename, const unsigned short *secret_key,
-					 int ispublic, int natnegotiate,
-					 qr2_serverkeycallback_t server_key_callback,
-					 qr2_playerteamkeycallback_t player_key_callback,
-					 qr2_playerteamkeycallback_t team_key_callback,
-					 qr2_keylistcallback_t key_list_callback,
-					 qr2_countcallback_t playerteam_count_callback,
-					 qr2_adderrorcallback_t adderror_callback,
-					 void *userdata)
-{
-	char gamename_A[255];
-	char secretkey_A[255];
-
-	gsDebugFormat(GSIDebugCat_QR2, GSIDebugType_Misc, GSIDebugLevel_StackTrace,
-		"qr2_init_socketW()\r\n");
-
-	UCS2ToAsciiString(gamename, gamename_A);
-	UCS2ToAsciiString(secret_key, secretkey_A);
-
-	return qr2_init_socketA(qrec, s, boundport, gamename_A, secretkey_A, ispublic, natnegotiate,
-							server_key_callback, player_key_callback, team_key_callback,
-							key_list_callback, playerteam_count_callback, adderror_callback, userdata);
-}
-
 qr2_error_t qr2_create_socket(/*[out]*/SOCKET *sock, const char *ip, /*[in/out]*/int * port)
 {
 	struct sockaddr_in saddr;	
@@ -352,31 +319,6 @@ qr2_error_t qr2_initA(/*[out]*/qr2_t *qrec, const char *ip, int baseport, const 
 	(*qrec)->read_socket = 1;
 	
 	return ret;
-}
-
-qr2_error_t qr2_initW(/*[out]*/qr2_t *qrec, const unsigned short *ip, int baseport, const unsigned short *gamename, const unsigned short *secret_key,
-					 int ispublic, int natnegotiate,
-					 qr2_serverkeycallback_t server_key_callback,
-					 qr2_playerteamkeycallback_t player_key_callback,
-					 qr2_playerteamkeycallback_t team_key_callback,
-					 qr2_keylistcallback_t key_list_callback,
-					 qr2_countcallback_t playerteam_count_callback,
-					 qr2_adderrorcallback_t adderror_callback,
-					 void *userdata)
-{
-	char ip_A[255];
-	char gamename_A[255];
-	char secretkey_A[255];
-
-	gsDebugFormat(GSIDebugCat_QR2, GSIDebugType_Misc, GSIDebugLevel_StackTrace,
-		"qr2_initW()\r\n");
-
-	if (ip != NULL) // NULL value is valid for IP
-		UCS2ToAsciiString(ip, ip_A);
-	UCS2ToAsciiString(gamename, gamename_A);
-	UCS2ToAsciiString(secret_key, secretkey_A);
-
-	return qr2_initA(qrec, (ip!=NULL)?ip_A:NULL, baseport, gamename_A, secretkey_A, ispublic, natnegotiate, server_key_callback, player_key_callback, team_key_callback, key_list_callback, playerteam_count_callback, adderror_callback,  userdata);
 }
 
 void qr2_register_natneg_callback(qr2_t qrec, qr2_natnegcallback_t nncallback)
@@ -633,12 +575,6 @@ gsi_bool qr2_buffer_addA(qr2_buffer_t outbuf, const char *value)
 	}
 }
 #if defined(GSI_UNICODE)
-gsi_bool qr2_buffer_addW(qr2_buffer_t outbuf, const unsigned short *value)
-{
-	char value_A[4096];
-	UCS2ToUTF8String(value, value_A);
-	return qr2_buffer_addA(outbuf, value_A);
-}
 #endif
 
 
@@ -1253,12 +1189,6 @@ static void qr_process_client_message(qr2_t qrec, char *buf, int len)
 		{
 			NegotiateError error;
 
-			if(__GSIACResult != GSIACAvailable)
-			{
-				// fake that we passed the availability check
-				__GSIACResult = GSIACAvailable;
-				strcpy(__GSIACGamename, qrec->gamename);
-			}
 
 			// do the negotiation
 			error = NNBeginNegotiationWithSocket(qrec->hbsock, cookie, 1, NatNegProgressCallback, NatNegCompletedCallback, qrec);
@@ -1640,12 +1570,6 @@ void qr2_parse_queryA(qr2_t qrec, char *query, int len, struct sockaddr *sender)
 
 /* NOT necessary since qr2_parse_query uses char not unsigned short
 #if defined(GSI_UNICODE)
-void qr2_parse_queryW(qr2_t qrec, unsigned short *query, int len, struct sockaddr *sender)
-{
-	char query_A[4096];
-	UCS2ToUTF8String(query, query_A);
-	qr2_parse_queryA(qrec, query_A, len, sender);
-}
 #endif*/
 
 

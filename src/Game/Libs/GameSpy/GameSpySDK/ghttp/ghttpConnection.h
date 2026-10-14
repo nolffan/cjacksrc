@@ -12,7 +12,6 @@ devsupport@gamespy.com
 #define _GHTTPCONNECTION_H_
 
 #include "ghttpMain.h"
-#include "ghttpEncryption.h"
 #include "ghttpBuffer.h"
 #include "ghttpPost.h"
 
@@ -34,16 +33,6 @@ extern "C" {
 /////////////////////////////////////////////////////////////
 #define GET_FILE_BUFFER_INITIAL_SIZE        (2 * 1024)
 #define GET_FILE_BUFFER_INCREMENT_SIZE      (2 * 1024)
-
-// Initial size and increment amount for the ssl encoding buffer.
-/////////////////////////////////////////////////////////////////
-#define ENCODE_BUFFER_INITIAL_SIZE          (2 * 1024)
-#define ENCODE_BUFFER_INCREMENT_SIZE        (1 * 1024)
-
-// Initial size and increment amount for the ssl decoding buffer.
-/////////////////////////////////////////////////////////////////
-#define DECODE_BUFFER_INITIAL_SIZE          (2 * 1024)
-#define DECODE_BUFFER_INCREMENT_SIZE        (1 * 1024)
 
 // The size of the buffer for chunk headers (NOT including the NUL).
 ////////////////////////////////////////////////////////////////////
@@ -103,8 +92,6 @@ typedef struct GHIConnection
 	FILE * saveFile;              // If saving to disk, the file being saved to.
 
 	GHTTPBool blocking;           // Blocking flag.
-	
-	GHTTPBool persistConnection;  // If TRUE, Connection: close will not be sent in the headers and the connection will be left open
 
 	GHTTPResult result;           // The result of the request.
 	ghttpProgressCallback progressCallback;    // Called periodically with progress updates.
@@ -115,9 +102,7 @@ typedef struct GHIConnection
 	int socketError;              // If there was a socket error, the last error code is stored here.
 
 	GHIBuffer sendBuffer;         // The buffer for outgoing data. 
-	GHIBuffer encodeBuffer;       // The buffer for outgoing data. (will be encrypted; only used with https)
 	GHIBuffer recvBuffer;         // The buffer for incoming data. (plain text)
-	GHIBuffer decodeBuffer;       // The buffer for incoming data. (encrypted)(only used with https)
 	
 	GHIBuffer getFileBuffer;      // ghttpGetFile[Ex] uses this buffer (which may be user-supplied).
 	GHTTPBool userBufferSupplied; // True if a user buffer was supplied.
@@ -151,16 +136,6 @@ typedef struct GHIConnection
 
 	GHTTPPost post;               // If not NULL, a reference to a post object to upload with the request.
 	GHIPostingState postingState; // If posting, the state of the upload.
-	
-	gsi_time maxRecvTime;         // Max time spent receiving per call to "Think" - Prevents blocking on ultrafast connections
-	char * proxyOverrideServer;	  // Allows use of a different proxy than the global proxy
-	unsigned short proxyOverridePort;
-
-	struct GHIEncryptor encryptor;
-
-#if !defined(GSI_NO_THREADS)
-	GSIResolveHostnameHandle handle; //handle used for asychronous DNS lookups
-#endif
 	
 } GHIConnection;
 

@@ -13,7 +13,7 @@ devsupport@gamespy.com
 #ifndef _GHTTPASCII_H_
 #define _GHTTPASCII_H_
 
-#include "../common/gsCommon.h"
+#include "../nonport.h"
 
 #ifdef __cplusplus
 extern "C" {

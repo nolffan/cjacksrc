@@ -1,7 +1,7 @@
 #ifndef _QR2_H_
 #define _QR2_H_
 
-#include "../common/gsCommon.h"
+#include "../nonport.h"
 
 
 /**********

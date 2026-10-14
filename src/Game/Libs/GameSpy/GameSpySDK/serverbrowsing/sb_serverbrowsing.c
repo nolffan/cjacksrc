@@ -101,14 +101,9 @@ static void EngineCallback(SBQueryEnginePtr engine, SBQueryEngineCallbackReason 
 
 
 
-ServerBrowser ServerBrowserNewA(const char *queryForGamename, const char *queryFromGamename, const char *queryFromKey, int queryFromVersion, int maxConcUpdates, int queryVersion, SBBool lanBrowse, ServerBrowserCallback callback, void *instance)
+ServerBrowser ServerBrowserNewA(const char *queryForGamename, const char *queryFromGamename, const char *queryFromKey, int queryFromVersion, int maxConcUpdates, int queryVersion, ServerBrowserCallback callback, void *instance)
 {
 	ServerBrowser sb;
-	if(lanBrowse == SBFalse)
-	{
-		if(__GSIACResult != GSIACAvailable)
-			return NULL;
-	}
 	
 	sb = (ServerBrowser)gsimalloc(sizeof(struct _ServerBrowser));
 	if (sb == NULL)
@@ -117,12 +112,12 @@ ServerBrowser ServerBrowserNewA(const char *queryForGamename, const char *queryF
 	sb->ConnectCallback = NULL;
 	sb->instance = instance;
 	sb->dontUpdate = SBFalse;
-	SBServerListInit(&sb->list, queryForGamename, queryFromGamename, queryFromKey, queryFromVersion, lanBrowse, ListCallback, sb);
-	SBQueryEngineInit(&sb->engine, maxConcUpdates, queryVersion, lanBrowse, EngineCallback, sb);
+	SBServerListInit(&sb->list, queryForGamename, queryFromGamename, queryFromKey, queryFromVersion, ListCallback, sb);
+	SBQueryEngineInit(&sb->engine, maxConcUpdates, queryVersion, EngineCallback, sb);
 	return sb;
 }
 #ifdef GSI_UNICODE
-ServerBrowser ServerBrowserNewW(const unsigned short *queryForGamename, const unsigned short *queryFromGamename, const unsigned short *queryFromKey, int queryFromVersion, int maxConcUpdates, int queryVersion, SBBool lanBrowse, ServerBrowserCallback callback, void *instance)
+ServerBrowser ServerBrowserNewW(const unsigned short *queryForGamename, const unsigned short *queryFromGamename, const unsigned short *queryFromKey, int queryFromVersion, int maxConcUpdates, int queryVersion, ServerBrowserCallback callback, void *instance)
 {
 	char forGameName_A[255];
 	char fromGameName_A[255];
@@ -135,7 +130,7 @@ ServerBrowser ServerBrowserNewW(const unsigned short *queryForGamename, const un
 	UCS2ToAsciiString(queryForGamename, forGameName_A);
 	UCS2ToAsciiString(queryFromGamename, fromGameName_A);
 	UCS2ToAsciiString(queryFromKey, fromGameKey_A);
-	return ServerBrowserNewA(forGameName_A, fromGameName_A, fromGameKey_A, queryFromVersion, maxConcUpdates, queryVersion, lanBrowse, callback, instance);
+	return ServerBrowserNewA(forGameName_A, fromGameName_A, fromGameKey_A, queryFromVersion, maxConcUpdates, queryVersion, callback, instance);
 }
 #endif
 
@@ -305,37 +300,6 @@ static void NatNegCompletedCallback(NegotiateResult result, SOCKET gamesocket, s
 	sb->ConnectCallback = NULL;
 
 	GSI_UNUSED(remoteaddr);
-}
-
-SBError ServerBrowserConnectToServer(ServerBrowser sb, SBServer server, SBConnectToServerCallback callback)
-{
-	SBError sbError;
-	NegotiateError nnError;
-	int cookie;
-
-	if((sb == NULL) || (server == NULL) || (callback == NULL))
-		return sbe_paramerror;
-
-	if(sb->ConnectCallback != NULL)
-		return sbe_connecterror;
-
-	// for now, always do natneg
-
-	// send a cookie to the server
-	Util_RandSeed((unsigned long)current_time());
-	cookie = Util_RandInt(GSI_MIN_I32, GSI_MAX_I32);
-	sbError = ServerBrowserSendNatNegotiateCookieToServerA(sb, SBServerGetPublicAddress(server), SBServerGetPublicQueryPort(server), cookie);
-	if(sbError != sbe_noerror)
-		return sbError;
-
-	// start the nn
-	nnError = NNBeginNegotiation(cookie, 0, NatNegProgressCallback, NatNegCompletedCallback, sb);
-	if(nnError != ne_noerror)
-		return sbe_connecterror;
-
-	sb->ConnectCallback = callback;
-
-	return sbe_noerror;
 }
 
 SBError ServerBrowserAuxUpdateIPA(ServerBrowser sb, const char *ip, unsigned short port, SBBool viaMaster, SBBool async, SBBool fullUpdate)

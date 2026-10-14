@@ -3,7 +3,7 @@
 #ifndef _QR2REGKEYS_H_
 #define _QR2REGKEYS_H_
 
-#include "../common/gsCommon.h"
+#include "../nonport.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -185,76 +185,65 @@ void ghiLogToFile(const char * buffer, int len, const char* fileName)
 }
 #endif
 
-// Reads encrypted data from decodeBuffer
-// Appends decrypted data to recvBuffer
-// Returns GHTTPFalse if there was a fatal error
-////////////////////////////////////////////////
-GHTTPBool ghiDecryptReceivedData(struct GHIConnection * connection)
+// Check a socket's state without blocking (2003: ghttp's own; the 2007 SDK
+// made it the common code's GSISocketSelect).
+//////////////////////////////////////////////////////////////////////////
+int ghiSocketSelect
+(
+	SOCKET socket,
+	int * readFlag,
+	int * writeFlag,
+	int * exceptFlag
+)
 {
-	// Decrypt data from decodeBuffer to recvBuffer
-	GHIEncryptionResult aResult = GHIEncryptionResult_None;
+	fd_set readSet;
+	fd_set writeSet;
+	fd_set exceptSet;
+	fd_set * readFds = NULL;
+	fd_set * writeFds = NULL;
+	fd_set * exceptFds = NULL;
+	struct timeval timeout = { 0, 0 };
+	int rcode;
 
-	// data to be decrypted
-	char* aReadPos  = NULL;
-	char* aWritePos = NULL;
-	int   aReadLen  = 0;
-	int   aWriteLen = 0;
+	assert(socket != INVALID_SOCKET);
 
-	do
+	// Setup the parameters.
+	////////////////////////
+	if(readFlag != NULL)
 	{
-		// Call the decryption func
-		do 
-		{
-			aReadPos  = connection->decodeBuffer.data + connection->decodeBuffer.pos;
-			aReadLen  = connection->decodeBuffer.len  - connection->decodeBuffer.pos; 
-			aWritePos = connection->recvBuffer.data + connection->recvBuffer.len;
-			aWriteLen = connection->recvBuffer.size - connection->recvBuffer.len;    // the amount of room in recvbuffer
-
-			aResult = (connection->encryptor.mDecryptFunc)(connection, &connection->encryptor, 
-				aReadPos, &aReadLen, aWritePos, &aWriteLen);
-			if (aResult == GHIEncryptionResult_BufferTooSmall)
-			{
-				// Make some more room
-				if (GHTTPFalse == ghiResizeBuffer(&connection->recvBuffer, connection->recvBuffer.sizeIncrement))
-					return GHTTPFalse; // error
-			}
-			else if(aResult == GHIEncryptionResult_Error)
-			{
-				return GHTTPFalse;
-			}
-		} while (aResult == GHIEncryptionResult_BufferTooSmall && aWriteLen == 0);
-
-		// Adjust GHIBuffer sizes so they account for transfered data
-		if(aReadLen > connection->decodeBuffer.len)
-		{
-			gsDebugFormat(GSIDebugCat_HTTP, GSIDebugType_Misc, GSIDebugLevel_HotError,
-				"ghiDecryptReceivedData read past the end of connection->decodeBuffer! (%d\\%d bytes)\r\n",
-				aReadLen, connection->decodeBuffer.len);										  
-			return GHTTPFalse;
-		}
-
-		connection->decodeBuffer.pos += aReadLen;
-		connection->recvBuffer.len   += aWriteLen;
-
-	} while(aWriteLen > 0);
-
-	// Discard data from the decodedBuffer in chunks
-	if (connection->decodeBuffer.pos > 0xFF)
+		FD_ZERO(&readSet);
+		FD_SET(socket, &readSet);
+		readFds = &readSet;
+	}
+	if(writeFlag != NULL)
 	{
-		int bytesToKeep = connection->decodeBuffer.len - connection->decodeBuffer.pos;
-		if (bytesToKeep == 0)
-			ghiResetBuffer(&connection->decodeBuffer);
-		else
-		{
-			memmove(connection->decodeBuffer.data,
-					connection->decodeBuffer.data + connection->decodeBuffer.pos,
-					(size_t)bytesToKeep);
-			connection->decodeBuffer.pos = 0;
-			connection->decodeBuffer.len = bytesToKeep;
-		}
+		FD_ZERO(&writeSet);
+		FD_SET(socket, &writeSet);
+		writeFds = &writeSet;
+	}
+	if(exceptFlag != NULL)
+	{
+		FD_ZERO(&exceptSet);
+		FD_SET(socket, &exceptSet);
+		exceptFds = &exceptSet;
 	}
 
-	return GHTTPTrue; 
+	// Do the select.
+	/////////////////
+	rcode = select(FD_SETSIZE, readFds, writeFds, exceptFds, &timeout);
+	if(gsiSocketIsError(rcode))
+		return -1;
+
+	// Check results.
+	/////////////////
+	if(readFlag != NULL)
+		*readFlag = ((rcode > 0) && FD_ISSET(socket, readFds));
+	if(writeFlag != NULL)
+		*writeFlag = ((rcode > 0) && FD_ISSET(socket, writeFds));
+	if(exceptFlag != NULL)
+		*exceptFlag = ((rcode > 0) && FD_ISSET(socket, exceptFds));
+
+	return rcode;
 }
 
 // Receive some data.
@@ -297,24 +286,7 @@ GHIRecvResult ghiDoReceive
 
 	// Receive some data.
 	/////////////////////
-	if (connection->encryptor.mEngine != GHTTPEncryptionEngine_None &&
-		connection->encryptor.mSessionEstablished == GHTTPTrue &&
-		connection->encryptor.mEncryptOnSend == GHTTPTrue )
-	{
-		GHIEncryptionResult result;
-		int recvLength = len;
-		
-		result = ghiEncryptorSslDecryptRecv(connection, &connection->encryptor, buffer, &recvLength);
-		if (result == GHIEncryptionResult_Success)
-			rcode = recvLength;
-		else
-			rcode = -1; // signal termination of connection
-	}
-	else
-	{
-		rcode = recv(connection->socket, buffer, len, 0);
-	}
-	
+	rcode = recv(connection->socket, buffer, len, 0);	
 
 	// There was an error.
 	//////////////////////
@@ -381,29 +353,7 @@ int ghiDoSend
 	
 	// Do the send.
 	///////////////
-	if (connection->encryptor.mEngine != GHTTPEncryptionEngine_None &&
-		connection->encryptor.mSessionEstablished == GHTTPTrue &&
-		connection->encryptor.mEncryptOnSend == GHTTPTrue)
-	{
-		int bytesSent = 0;
-		GHIEncryptionResult result;
-		
-		// send through encryption engine
-		result = ghiEncryptorSslEncryptSend(connection, &connection->encryptor, buffer, len, &bytesSent);
-	
-		// Check for an error.
-		//////////////////////
-		if(result != GHIEncryptionResult_Success)
-			rcode = -1; // signal termination of connection
-		else
-			rcode = bytesSent;
-	}
-	else
-	{
-		// send directly to socket
-		rcode = send(connection->socket, buffer, len, 0);
-	}
-
+	rcode = send(connection->socket, buffer, len, 0);
 	// Check for an error.
 	//////////////////////
 	if(gsiSocketIsError(rcode))
@@ -423,8 +373,7 @@ int ghiDoSend
 		return -1;
 	}
 
-	//do not add CRLF as part of bytes posted - make sure waitPostContinue is false
-	if(connection->state == GHTTPPosting && connection->postingState.waitPostContinue == GHTTPFalse)
+	if(connection->state == GHTTPPosting)
 	{
 		connection->postingState.bytesPosted += rcode;
 		ghiLogRequest(buffer, rcode);
@@ -441,27 +390,6 @@ GHITrySendResult ghiTrySendThenBuffer
 )
 {
 	int rcode = 0;
-
-	// **SSL pattern 1: buffer everything into an SSL record**
-	if (connection->encryptor.mEngine != GHTTPEncryptionEngine_None &&
-		connection->encryptor.mSessionEstablished == GHTTPTrue &&
-		connection->encryptor.mEncryptOnBuffer == GHTTPTrue)
-	{
-		if (!ghiEncryptDataToBuffer(&connection->sendBuffer, buffer + rcode, len - rcode))
-			return GHITrySendError;
-
-		// Try to send immediately
-		if (ghiSendBufferedData(connection) == GHTTPFalse)
-			return GHITrySendError;
-		if (connection->sendBuffer.pos >= connection->sendBuffer.len)
-		{
-			ghiResetBuffer(&connection->sendBuffer);
-			return GHITrySendSent; // everything sent
-		}
-		return GHITrySendBuffered;
-	}
-
-	// **Plain text or SSL encrypt on send**
 
 	// If we already have something buffered, don't send.
 	/////////////////////////////////////////////////////
@@ -547,34 +475,6 @@ GHTTPBool ghiSetProxy
 	if(server && *server)
 		return ghiParseProxyServer(server, &ghiProxyAddress, &ghiProxyPort);
 
-	// No server supplied results in proxy being cleared
-	return GHTTPTrue;
-}
-
-GHTTPBool ghiSetRequestProxy
-(
-	GHTTPRequest request,
-	const char * server
-)
-{
-	// Obtain the connection for this request
-	GHIConnection* connection = ghiRequestToConnection(request);
-	if (connection == NULL)
-		return GHTTPFalse;
-
-	// Free any existing proxy address.
-	///////////////////////////////////
-	if(connection->proxyOverrideServer)
-	{
-		gsifree(connection->proxyOverrideServer);
-		connection->proxyOverrideServer = NULL;
-		connection->proxyOverridePort = GHI_DEFAULT_PORT;
-	}
-
-	// If a server was supplied, try to parse it
-	if(server && *server)
-		return ghiParseProxyServer(server, &connection->proxyOverrideServer, &connection->proxyOverridePort);
-	
 	// No server supplied results in proxy being cleared
 	return GHTTPTrue;
 }

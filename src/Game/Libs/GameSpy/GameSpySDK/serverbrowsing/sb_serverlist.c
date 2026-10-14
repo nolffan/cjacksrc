@@ -353,17 +353,10 @@ int NTSLengthSB(char *buf, int len)
 
 
 
-void SBServerListInit(SBServerList *slist, const char *queryForGamename, const char *queryFromGamename, const char *queryFromKey, int queryFromVersion, SBBool lanBrowse, SBListCallBackFn callback, void *instance)
+void SBServerListInit(SBServerList *slist, const char *queryForGamename, const char *queryFromGamename, const char *queryFromKey, int queryFromVersion, SBListCallBackFn callback, void *instance)
 {
 	assert(slist != NULL);
 	// 11-03-2004 : Added by Saad Nader
-	// fix for LANs and unnecessary availability check
-	///////////////////////////////////////////////////
-	if (lanBrowse == SBFalse)
-	{
-		if(__GSIACResult != GSIACAvailable)
-			return;
-	}
 	
 #ifdef VENGINE_SUPPORT
 		SBServerListSetPointers(slist);
@@ -709,7 +702,7 @@ SBError SBServerListGetLANList(SBServerList *slist, unsigned short startport, un
 #endif
 
 	saddr.sin_family = AF_INET;
-	saddr.sin_addr.s_addr = gsiGetBroadcastIP(); //broadcast
+	saddr.sin_addr.s_addr = INADDR_BROADCAST; //broadcast
 
 	// Added for multihomed machines.  Allows the user to specify which adapter to use
 	if (slist->mLanAdapterOverride != NULL)

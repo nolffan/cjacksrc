@@ -12,7 +12,6 @@ devsupport@gamespy.com
 #define _GHTTPBUFFER_H_
 
 #include "ghttpMain.h"
-#include "ghttpEncryption.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -77,18 +76,6 @@ void ghiFreeBuffer
 // used for dataLen to use the length of the string.
 ////////////////////////////////////////////////////
 GHTTPBool ghiAppendDataToBuffer
-(
-	GHIBuffer * buffer,  // The buffer to append to.
-	const char * data,   // The data to append.
-	int dataLen          // The number of bytes of data to append, 0 for NUL-terminated string.
-);
-
-// Appends data to the buffer, wrapped in an SSL record
-// If data is a NUL-terminated string, 0 can be
-// used for dataLen to use the length of the string.
-// Encryption has some size overhead, so call this sparingly.
-////////////////////////////////////////////////////
-GHTTPBool ghiEncryptDataToBuffer
 (
 	GHIBuffer * buffer,  // The buffer to append to.
 	const char * data,   // The data to append.

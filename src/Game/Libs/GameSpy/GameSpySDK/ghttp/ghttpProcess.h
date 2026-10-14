@@ -20,9 +20,7 @@ extern "C" {
 
 void ghiDoSocketInit	  (GHIConnection * connection);
 void ghiDoHostLookup      (GHIConnection * connection);
-void ghiDoLookupPending   (GHIConnection * connection);
 void ghiDoConnecting      (GHIConnection * connection);
-void ghiDoSecuringSession (GHIConnection * connection);
 void ghiDoSendingRequest  (GHIConnection * connection);
 void ghiDoPosting         (GHIConnection * connection);
 void ghiDoWaiting         (GHIConnection * connection);

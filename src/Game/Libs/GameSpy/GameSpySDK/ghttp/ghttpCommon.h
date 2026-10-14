@@ -70,6 +70,16 @@ void ghiLogToFile
 #endif
 
 
+// Check a socket's state without blocking.
+///////////////////////////////////////////
+int ghiSocketSelect
+(
+	SOCKET socket,
+	int * readFlag,
+	int * writeFlag,
+	int * exceptFlag
+);
+
 // Possible results from ghiDoReceive.
 //////////////////////////////////////
 typedef enum
@@ -128,11 +138,6 @@ GHTTPBool ghiSetProxy
 
 // Set the proxy server for a specific request
 ////////////////////////
-GHTTPBool ghiSetRequestProxy
-(
-	GHTTPRequest request,
-	const char * server
-);
 
 // Set the throttle settings.
 /////////////////////////////
@@ -142,9 +147,6 @@ void ghiThrottleSettings
 	gsi_time timeDelay
 );
 
-// Decrypt data from the decode buffer into the receive buffer.
-///////////////////////////////////////////////////////////////
-GHTTPBool ghiDecryptReceivedData(struct GHIConnection * connection);
 
 
 #ifdef __cplusplus

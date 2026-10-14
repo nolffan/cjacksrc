@@ -10,21 +10,12 @@ Copyright 2000 GameSpy Industries, Inc
 #include <stdio.h>
 #include "pt.h"
 #include "../ghttp/ghttp.h"
-#include "../common/gsStringUtil.h"
-#include "../common/gsAvailable.h"
 
 /************
 ** DEFINES **
 ************/
-#define PTA_DEFAULT_VERCHECK_URL    "http://motd." GSI_DOMAIN_NAME "/motd/vercheck.asp"
-#define PTA_DEFAULT_MOTD_URL        "http://motd." GSI_DOMAIN_NAME "/motd/motd.asp"
-#define PTA_DEFAULT_FILEPLANET_URL  "http://www.fileplanet.com/dlfileraw.asp"
 #define MAX_MIRRORS         32
 #define PTA_MAX_STRING_SIZE 2048
-
-char gPTAVercheckURL[PTA_MAX_STRING_SIZE];
-char gPTAMOTDURL[PTA_MAX_STRING_SIZE];
-char gPTAFilePlanetURL[PTA_MAX_STRING_SIZE];
 
 /**********
 ** TYPES **
@@ -45,7 +36,7 @@ typedef struct ptaFilePlanetInfoData
 /************
 ** GLOBALS **
 ************/
-//static char URL[PTA_MAX_STRING_SIZE];
+static char URL[PTA_MAX_STRING_SIZE];
 
 /**************
 ** FUNCTIONS **
@@ -293,13 +284,7 @@ PTBool ptCheckForPatchA
 	void * param
 )
 {
-	int charsWritten;
-	char aURL[PTA_MAX_STRING_SIZE];
 	ptaPatchData * data;
-
-	// check if the backend is available
-	if(__GSIACResult != GSIACAvailable)
-		return PTFalse;
 
 	// Check the arguments.
 	///////////////////////
@@ -309,10 +294,6 @@ PTBool ptCheckForPatchA
 	assert(callback);
 	if(!callback)
 		return PTFalse;
-
-	// override hostname?
-	if (gPTAVercheckURL[0] == '\0')
-		sprintf(gPTAVercheckURL, PTA_DEFAULT_VERCHECK_URL);
 
 	// Store some data.
 	///////////////////
@@ -325,19 +306,12 @@ PTBool ptCheckForPatchA
 
 	// Build the URL.
 	/////////////////
-	charsWritten = 
-		snprintf(aURL, PTA_MAX_STRING_SIZE,
-		"%s?productid=%d&versionuniqueid=%s&distid=%d&gamename=%s",
-		gPTAVercheckURL, productID, versionUniqueID, distributionID,
-		__GSIACGamename);
-	
-	assert(charsWritten >= 0);
-	if (charsWritten < 0)
-		return PTFalse;
+	sprintf(URL, "http://motd.gamespy.com/motd/vercheck.asp?productid=%d&versionuniqueid=%s&distid=%d",
+		productID, versionUniqueID, distributionID);
 
 	// Send the request.
 	////////////////////
-	if((ghttpGetFileA(aURL, (GHTTPBool)blocking, ptaPatchCompletedCallback, data) == (unsigned char)(-1)) && !blocking)
+	if((ghttpGetFileA(URL, (GHTTPBool)blocking, ptaPatchCompletedCallback, data) == -1) && !blocking)
 		return PTFalse;
 
 	return PTTrue;
@@ -368,35 +342,20 @@ PTBool ptTrackUsageA
 	PTBool blocking
 )
 {
-	int charsWritten;
-	char aURL[PTA_MAX_STRING_SIZE];
-	
-	// check if the backend is available
-	if(__GSIACResult != GSIACAvailable)
-		return PTFalse;
-
 	// Check the arguments.
 	///////////////////////
 	assert(versionUniqueID);
 	if(!versionUniqueID)
 		return PTFalse;
 
-	// override hostname?
-	if (gPTAMOTDURL[0] == '\0')
-		sprintf(gPTAMOTDURL, PTA_DEFAULT_MOTD_URL);
-
 	// Build the URL.
 	/////////////////
-	charsWritten = snprintf(aURL, PTA_MAX_STRING_SIZE, 
-		"%s?userid=%d&productid=%d&versionuniqueid=%s&distid=%d&uniqueid=%s&gamename=%s",
-		gPTAMOTDURL, userID, productID, versionUniqueID,	distributionID,	GOAGetUniqueID(),
-		__GSIACGamename);
-	assert(charsWritten >= 0);
-	if (charsWritten < 0)
-		return PTFalse;
+	sprintf(URL, "http://motd.gamespy.com/motd/motd.asp?userid=%d&productid=%d&versionuniqueid=%s&distid=%d&uniqueid=%s",
+		userID, productID, versionUniqueID, distributionID, GOAGetUniqueID());
+
 	// Send the info.
 	/////////////////
-	if(ghttpGetFileA(aURL, (GHTTPBool)blocking, NULL, NULL) == -1)
+	if(ghttpGetFileA(URL, (GHTTPBool)blocking, NULL, NULL) == -1)
 		return PTFalse;
 
 	return PTTrue;
@@ -417,7 +376,7 @@ PTBool ptTrackUsageW
 }
 #endif
 
-PTBool ptCreateCheckPatchTrackUsageReqA
+PTBool ptCheckForPatchAndTrackUsageA
 (
 	int userID,
 	int productID,
@@ -425,17 +384,10 @@ PTBool ptCreateCheckPatchTrackUsageReqA
 	int distributionID,
 	ptPatchCallback callback,
 	PTBool blocking,
-	int *request,
 	void * param
 )
 {
-	int charsWritten;
-	char aURL[PTA_MAX_STRING_SIZE];
 	ptaPatchData * data;
-	
-	// check if the backend is available
-	if(__GSIACResult != GSIACAvailable)
-		return PTFalse;
 
 	// Check the arguments.
 	///////////////////////
@@ -455,65 +407,17 @@ PTBool ptCreateCheckPatchTrackUsageReqA
 	data->callback = callback;
 	data->param = param;
 
-	// override hostname?
-	if (gPTAVercheckURL[0] == '\0')
-		sprintf(gPTAVercheckURL, PTA_DEFAULT_VERCHECK_URL);
-
 	// Build the URL.
 	/////////////////
-	charsWritten = snprintf(aURL, PTA_MAX_STRING_SIZE,  
-		"%s?userid=%d&productid=%d&versionuniqueid=%s&distid=%d&uniqueid=%s&gamename=%s",
-		gPTAVercheckURL, userID, productID, versionUniqueID, distributionID,	GOAGetUniqueID(),
-		__GSIACGamename);
-
-	assert(charsWritten >= 0);
-	if (charsWritten < 0)
-		return PTFalse;
+	sprintf(URL, "http://motd.gamespy.com/motd/vercheck.asp?userid=%d&productid=%d&versionuniqueid=%s&distid=%d&uniqueid=%s",
+		userID, productID, versionUniqueID, distributionID, GOAGetUniqueID());
 
 	// Send the request.
 	////////////////////
-	*request = ghttpGetFileA(aURL, (GHTTPBool)blocking, ptaPatchCompletedCallback, data);
-	if (*request == -1)
+	if((ghttpGetFileA(URL, (GHTTPBool)blocking, ptaPatchCompletedCallback, data) == -1) && !blocking)
 		return PTFalse;
+
 	return PTTrue;
-}
-
-#ifdef GSI_UNICODE
-PTBool ptCreateCheckPatchTrackUsageReqW
-(
-	int userID,
-	int productID,
-	const unsigned short * versionUniqueID,
-	int distributionID,
-	ptPatchCallback callback,
-	PTBool blocking,
-	int *request,
-	void * param
- )
-{
-	char versionUniqueID_A[255];
-	UCS2ToUTF8String(versionUniqueID, versionUniqueID_A);
-	return ptCreateCheckPatchTrackUsageReqA(userID, productID, versionUniqueID_A, distributionID, callback, blocking, request, param);
-}
-#endif
-
-PTBool ptCheckForPatchAndTrackUsageA
-(
-	int userID,
-	int productID,
-	const char * versionUniqueID,
-	int distributionID,
-	ptPatchCallback callback,
-	PTBool blocking,
-	void * param
-)
-{
-	GHTTPRequest aRequest;
-	
-	// create the request and send it.
-	///////////////////////////////////
-	return ptCreateCheckPatchTrackUsageReqA(userID, productID, versionUniqueID, distributionID, callback, blocking, &aRequest, param);
-	
 }
 
 #ifdef GSI_UNICODE
@@ -551,10 +455,6 @@ static GHTTPBool ptaFilePlanetCompletedCallback
 	char * mirrorURLs[MAX_MIRRORS];
 	int i;
 	char * str;
-
-	// check if the backend is available
-	if(__GSIACResult != GSIACAvailable)
-		return GHTTPFalse;
 
 	GSI_UNUSED(request);
 	GSI_UNUSED(bufferLen);
@@ -639,7 +539,6 @@ PTBool ptLookupFilePlanetInfo
 	void * param
 )
 {
-	char aURL[PTA_MAX_STRING_SIZE];
 	ptaFilePlanetInfoData * data;
 
 	// Check the arguments.
@@ -647,10 +546,6 @@ PTBool ptLookupFilePlanetInfo
 	assert(callback);
 	if(!callback)
 		return PTFalse;
-
-	// override hostname?
-	if (gPTAFilePlanetURL[0] == '\0')
-		sprintf(gPTAFilePlanetURL, PTA_DEFAULT_FILEPLANET_URL);
 
 	// Store some data.
 	///////////////////
@@ -664,17 +559,12 @@ PTBool ptLookupFilePlanetInfo
 
 	// Build the URL.
 	/////////////////
-	// 11/24/2004 - Added By Saad Nader
-	// Now using string size as limit for printing
-	// also null terminate string automatically
-	///////////////////////////////////////////////
-	snprintf(aURL, PTA_MAX_STRING_SIZE, 
-		"%s?file=%d&gamename=%s", gPTAFilePlanetURL, fileID, __GSIACGamename);
+	sprintf(URL, "http://www.fileplanet.com/dlfileraw.asp?file=%d", fileID);
 	
 	
 	// Send the request.
 	////////////////////
-	if((ghttpGetFileA(aURL, (GHTTPBool)blocking, ptaFilePlanetCompletedCallback, data) == -1) && !blocking)
+	if((ghttpGetFileA(URL, (GHTTPBool)blocking, ptaFilePlanetCompletedCallback, data) == -1) && !blocking)
 		return PTFalse;
 
 	return PTTrue;

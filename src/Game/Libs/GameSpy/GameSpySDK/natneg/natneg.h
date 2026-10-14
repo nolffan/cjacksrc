@@ -16,8 +16,7 @@ devsupport@gamespy.com
 
 #ifndef _NATNEG_H_
 #define _NATNEG_H_
-#include "../common/gsCommon.h"
-#include "NATify.h"
+#include "../nonport.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -45,7 +44,7 @@ Possible states for the SDK. The two you will be notified for are:
 ns_initack - when the NAT Negotiation server acknowledges your connection request
 ns_connectping - when direct negotiation with the other client has started
 */
-typedef enum {ns_initsent, ns_initack, ns_connectping, ns_finished, ns_canceled, ns_reportsent, ns_reportack } NegotiateState;
+typedef enum {ns_initsent, ns_initack, ns_connectping, ns_finished, ns_canceled} NegotiateState;
 
 /*
 Possible reslts of the negotiation.
@@ -54,7 +53,7 @@ nr_deadbeatpartner: Partner did not register with the NAT Negotiation Server
 nr_inittimeout: Unable to communicate with NAT Negotiation Server
 nr_unknownerror: NAT Negotiation server indicated an unknown error condition
 */
-typedef enum {nr_success, nr_deadbeatpartner, nr_inittimeout, nr_pingtimeout, nr_unknownerror, nr_noresult } NegotiateResult;
+typedef enum {nr_success, nr_deadbeatpartner, nr_inittimeout, nr_unknownerror} NegotiateResult;
 
 /*
 Possible errors that can be returned when starting a negotiation
@@ -72,8 +71,6 @@ typedef void (*NegotiateProgressFunc)(NegotiateState state, void *userdata);
 //Callback prototype for your negotiation completed function
 typedef void (*NegotiateCompletedFunc)(NegotiateResult result, SOCKET gamesocket, struct sockaddr_in *remoteaddr, void *userdata);
 
-//Callback prototype for your NAT detection results function
-typedef void (*NatDetectionResultsFunc)(gsi_bool success, NAT nat);
 
 
 /*
@@ -132,13 +129,6 @@ If any negotiations are outstanding this will cancel them.
 */
 void NNFreeNegotiateList();
 
-
-/*
-NNStartNatDetection
--------------------
-Detects if there is network address translation going on between the machine and the Internet.
-*/
-NegotiateError NNStartNatDetection(NatDetectionResultsFunc resultscallback);
 
 
 //Used for over-riding the default negotiation hostnames. Should not be used normally.

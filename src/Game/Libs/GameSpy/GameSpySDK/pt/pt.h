@@ -14,7 +14,7 @@ Copyright 2000 GameSpy Industries, Inc
 #ifndef _PT_H_
 #define _PT_H_
 
-#include "../common/gsCommon.h"
+#include "../nonport.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -37,12 +37,10 @@ typedef int PTBool;
 #define ptCheckForPatch		ptCheckForPatchA
 #define ptTrackUsage		ptTrackUsageA
 #define ptCheckForPatchAndTrackUsage	ptCheckForPatchAndTrackUsageA
-#define ptCreateCheckPatchTrackUsageReq       ptCreateCheckPatchTrackUsageReqA
 #else
 #define ptCheckForPatch		ptCheckForPatchW
 #define ptTrackUsage		ptTrackUsageW
 #define ptCheckForPatchAndTrackUsage	ptCheckForPatchAndTrackUsageW
-#define ptCreateCheckPatchTrackUsageReq ptCreateCheckPatchTrackUsageReqW
 #endif
 
 // This callback gets called when a patch is being checked for
@@ -100,22 +98,6 @@ PTBool ptCheckForPatchAndTrackUsage
 	PTBool blocking,              // If PTTrue, don't return until after the callback is called.
 	void * param                  // User-data to pass to the callback.
 );
-
-// This function is similar to the function ptCheckForPatchAndTrackUsage
-// except that it returns a handle that can be used to call ghttpRequestThink
-// or a failure of -1
-//////////////////////////////////////////////////////
-PTBool ptCreateCheckPatchTrackUsageReq
-(
-	int userID,                   // The GP userID of the user who is using the product.  Can be 0.
-	int productID,                // The ID of this product.
-	const gsi_char * versionUniqueID, // A string uniquely identifying this version.
-	int distributionID,           // The distribution ID for this version.  Can be 0.
-	ptPatchCallback callback,     // The callback to call with the patch info.
-	PTBool blocking,              // If PTTrue, don't return until after the callback is called.
-	int *request,                 // The request that can be used for ghttpRequestThink
-	void * param                  // User-data to pass to the callback.
- );
 
 // This callback gets called when looking up info on a
 // FilePlanet file. If the file is found, it provides a

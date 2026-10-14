@@ -18,9 +18,7 @@ INCLUDES
 ********/
 
 #include "gcdkeys.h"
-#include "../common/gsCommon.h"
-#include "../common/gsAvailable.h"
-#include "../common/gsDebug.h"
+#include "../nonport.h"
 #include <time.h>
 
 #ifdef GUSE_ASSERTS
@@ -47,8 +45,6 @@ DEFINES
 #define MAX_PRODUCTS 4
 #define MAX_KEEP_ALIVE_INTERVAL 20000
 
-#define MAXPENDING_REAUTH 5    // prevent memory growth from spammed reauths.
-#define REAUTH_LIFESPAN 5000   // prevent memory growth from unanswered reauths.
 #define PROOF_TXT     'p','r','o','o','f'
 #define IGNORED_TXT   's','e','e','d'
 
@@ -74,20 +70,10 @@ typedef struct gsclient_s
 	gsclientstate_t state;
 	void *instance;
 	AuthCallBackFn authfn;
-	RefreshAuthCallBackFn refreshauthfn;
 	char *errmsg;
 	char *reqstr;
 	int reqlen;
-	gsnode_t reauthq;
 } gsclient_t;
-
-typedef struct gsreauth_s
-{
-	int sesskey;
-	char challenge[33];
-	struct sockaddr_in fromaddr;
-	gsi_time starttime;
-} gsreauth_t;
 
 typedef struct gsproduct_s
 {
@@ -112,7 +98,6 @@ static void cdkey_process_buf(char *buf, int len, struct sockaddr *fromaddr);
 static void process_oks(char *buf, int isok);
 static void process_ison(char *buf, struct sockaddr_in *fromaddr);
 static void process_ucount(char *buf, struct sockaddr_in *fromaddr);
-static void send_uon(int skey, const char* ignored, const char* proof, struct sockaddr_in *fromaddr);
 static void free_client_node(gsnode_t *node);
 
 static int get_sockaddrin(char *host, int port, struct sockaddr_in *saddr, struct hostent **savehent);
@@ -147,10 +132,6 @@ int gcd_init(int gameid)
 	int ret;
 	const char defaulthost[] =  {'k','e','y','.','g','a','m','e','s','p','y','.','c','o','m','\0'}; //key.gamespy.com
 
-	// check if the backend is available
-	if(__GSIACResult != GSIACAvailable)
-		return -1;
-
 	if (sock == INVALID_SOCKET) //hasn't been initialized yet
 	{
 		/* set up the UDP socket */
@@ -174,10 +155,6 @@ int gcd_init(int gameid)
 extern struct qr2_implementation_s static_qr2_rec;
 int gcd_init_qr2(qr2_t qrec, int gameid)
 {
-	// check if the backend is available
-	if(__GSIACResult != GSIACAvailable)
-		return -1;
-
 	if (qrec == NULL)
 		qrec = &static_qr2_rec;
 
@@ -214,7 +191,7 @@ void gcd_shutdown(void)
 
 
 void gcd_authenticate_user(int gameid, int localid, unsigned int userip, const char *challenge, 
-						   const char *response, AuthCallBackFn authfn, RefreshAuthCallBackFn refreshfn, void *instance)
+						   const char *response, AuthCallBackFn authfn, void *instance)
 {
 	gsnode_t *node;
 	gsclient_t *client;
@@ -261,10 +238,6 @@ void gcd_authenticate_user(int gameid, int localid, unsigned int userip, const c
 	client->errmsg = NULL;
 	client->reqstr = NULL;
 	client->authfn = authfn;
-	client->refreshauthfn = refreshfn;
-	client->reauthq.next = NULL;
-	client->reauthq.object = NULL;
-	client->reauthq.prev = NULL;
 	strcpy(client->hkey, hkey);
 	node = (gsnode_t *)gsimalloc(sizeof(gsnode_t));
 	gassert(node);
@@ -277,43 +250,6 @@ void gcd_authenticate_user(int gameid, int localid, unsigned int userip, const c
 		client->errmsg = errmsg;
 	} else 	/* They aren't on this server, lets check the validation server */
 		send_auth_req(prod, client,challenge, response);	
-}
-
-void gcd_process_reauth(int gameid, int localid, int skey, const char *response)
-{
-	// find the pending reauth attempt
-	gsnode_t *clientnode;
-	gsnode_t *reauthnode;
-	gsproduct_t *prod = find_product(gameid);
-	
-	gassert(prod);
-	if (prod == NULL)
-		return;
-
-	// find the client for this gameid
-	clientnode = &prod->clientq;
-	while ((clientnode = clientnode->next) != NULL)
-	{
-		gsclient_t *client = (gsclient_t*)clientnode->object;
-		if (client->localid == localid)
-		{
-			// find the reauth info for this client/skey
-			reauthnode = &client->reauthq;
-			while((reauthnode = reauthnode->next) != NULL)
-			{
-				gsreauth_t *reauth = (gsreauth_t*)reauthnode->object;
-				if (reauth->sesskey == skey)
-				{
-					// send the proof to the keymaster
-					send_uon(skey, "", response, &reauth->fromaddr);
-					remove_from_queue(reauthnode, &client->reauthq);
-					gsifree(reauthnode->object);
-					gsifree(reauthnode);
-					return;
-				}
-			}
-		}
-	}
 }
 
 // utility to free memory associated with a client node
@@ -329,13 +265,6 @@ static void free_client_node(gsnode_t *node)
 			if (client->errmsg != NULL)
 				gsifree(client->errmsg);
 
-			// free auth nodes
-			while (client->reauthq.next != NULL)
-			{
-				gsnode_t* authNode = remove_from_queue(client->reauthq.next, &client->reauthq);
-				gsifree(authNode->object);
-				gsifree(authNode);
-			}
 			gsifree(client);
 		}
 		gsifree(node);
@@ -488,33 +417,6 @@ void gcd_think(void)
 					client->errmsg == NULL ? "" : client->errmsg,
 					client->instance);
 				free_client_node(oldnode);
-				break;
-			case cs_done:
-				// check pending reauth timeouts 
-				if (client->reauthq.next != NULL)
-				{
-					// always look at "next" because we may remove nodes
-					gsnode_t* authnode = &client->reauthq;
-					while(authnode->next != NULL)
-					{
-						gsreauth_t* authdata = (gsreauth_t*)authnode->next->object;
-						gsi_time now = current_time();
-						if ((now - authdata->starttime)  > REAUTH_LIFESPAN)
-						{
-							gsDebugFormat(GSIDebugCat_CDKey, GSIDebugType_Misc, GSIDebugLevel_Notice,
-								"Removing timed out reauth request [localid: %d, from: %s\r\n", 
-								client->localid, inet_ntoa(authdata->fromaddr.sin_addr));
-
-							// timed out, delete it
-							remove_from_queue(authnode->next, &client->reauthq);
-							gsifree(authdata);
-							gsifree(authnode->next);
-							authnode->next = NULL;
-						}
-						else
-							authnode = authnode->next;
-					}
-				}
 				break;
 			default:
 				break;
@@ -694,98 +596,27 @@ static void process_ucount(char *buf, struct sockaddr_in *fromaddr)
 	sendto(sock, outbuf, len, 0, (struct sockaddr *)fromaddr, sizeof(struct sockaddr_in));
 }
 
-static void send_uon(int skey, const char* ignored, const char* proof, struct sockaddr_in *fromaddr)
-{
-	char outbuf[256];
-	int len;
-	const char uonformat[] = {'\\','u','o','n','\\','\\','s','k','e','y','\\','%','d','\\',IGNORED_TXT,'\\','%','s','\\',PROOF_TXT,'\\','%','s','\0'}; //\\uon\\\\skey\\%d\\seed\\%s\\proof\\%s
-/* \ison\\cd\fe6667736f0c8ed7ff5cd9c0e74f\skey\32423 */
-/* \uon\\skey\32423\seed\\proof\ OR \un\skey\32423\proof\fe6667736f0c8ed7ff5cd9c0e74f OR \uoff\\skey\32423 */
-
-	// seed is ignored by server
-	len = snprintf(outbuf, 255, uonformat,skey, ignored, proof);
-	outbuf[255] = '\0'; // snprintf doesn't null terminate in some cases
-	xcode_buf(outbuf, len);
-	sendto(sock, outbuf, len, 0, (struct sockaddr *)fromaddr, sizeof(struct sockaddr_in));
-
-	gsDebugFormat(GSIDebugCat_CDKey, GSIDebugType_Network, GSIDebugLevel_Notice,
-		"Sent uon response (ison) to %s. (proof: %s)\r\n", 
-		inet_ntoa(fromaddr->sin_addr), proof);
-}
-
-static void send_uoff(int skey, struct sockaddr_in *fromaddr)
-{
-	char outbuf[64];
-	int len;
-	const char uoffformat[] = {'\\','u','o','f','f','\\','\\','s','k','e','y','\\','%','d','\0'}; //\\uoff\\\\skey\\%d
-	len = sprintf(outbuf, uoffformat,skey);
-	xcode_buf(outbuf, len);
-	sendto(sock, outbuf, len, 0, (struct sockaddr *)fromaddr, sizeof(struct sockaddr_in));
-}
-
-static int get_queue_size(gsnode_t* node)
-{
-	int count = 0;
-	if (!node)
-		return 0;
-	if (node->object) // starting from a valid node
-		count++;
-	while (node->next != NULL)
-	{
-		count++;
-		node = node->next;
-	}
-	return count;
-}
-
 static void process_ison(char *buf, struct sockaddr_in *fromaddr)
 {
 	int sesskey;
 	int productid;
-	char* proofchallenge;
-
-	gsclient_t *client;
-
-	const char proofchallenge_t[] = {'p','c','h','\0'}; // proof challenge
+	char outbuf[64];
+	int len;
 	const char skey_t[] = {'s','k','e','y','\0'}; //skey
 	const char cd_t[] = {'c','d','\0'}; //cd
-	
+	const char uonformat[] = {'\\','u','o','n','\\','\\','s','k','e','y','\\','%','d','\0'}; //\\uon\\\\skey\\%d
+	const char uoffformat[] = {'\\','u','o','f','f','\\','\\','s','k','e','y','\\','%','d','\0'}; //\\uoff\\\\skey\\%d
+
+/* \ison\\cd\fe6667736f0c8ed7ff5cd9c0e74f\skey\32423 */
+/* \uon\\skey\32423 OR \uoff\\skey\32423 */
 	sesskey = atoi(value_for_key(buf,skey_t));
-	proofchallenge = value_for_key(buf,proofchallenge_t);
-	if ( (client = find_client(value_for_key(buf,cd_t), -1, &productid)) != NULL 
-		&& (client->state == cs_done)) /* If they are connected, return on */
-	{
-		// check the queue size to prevent memory growth (from malicious reauth requests)
-		int count = get_queue_size(&client->reauthq);
-		if (count < MAXPENDING_REAUTH)
-		{
-			// store the sesskey and fromaddr so we can respond with proof later
-			gsnode_t* node = (gsnode_t*)gsimalloc(sizeof(gsnode_t));
-			gsreauth_t* reauthdata = (gsreauth_t*)gsimalloc(sizeof(gsreauth_t));
-			gassert(node);
-			gassert(reauthdata);
-
-			memcpy(reauthdata->challenge, proofchallenge, 32);
-			memcpy(&reauthdata->fromaddr, fromaddr, sizeof(struct sockaddr_in));
-			reauthdata->sesskey = sesskey;
-			reauthdata->starttime = current_time();
-			node->object = (void*)reauthdata;
-			add_to_queue(node, &client->reauthq);
-		
-			// send normal ison right away, later we'll followup with proof
-			// owatagusiam is ignored by server
-			send_uon(sesskey, "owatagusiam", "0", fromaddr);
-			
-			// notify developer that we need proof of "ison"
-			client->refreshauthfn(productid, client->localid, sesskey, proofchallenge, client->instance);
-		}
-	}
+	if (find_client(value_for_key(buf,cd_t), -1, &productid) != NULL) /* If they are connected, return on */
+		len = sprintf(outbuf, uonformat, sesskey);
 	else
-	{
-		send_uoff(sesskey, fromaddr);
-	}
+		len = sprintf(outbuf, uoffformat, sesskey);
+	xcode_buf(outbuf, len);
+	sendto(sock, outbuf, len, 0, (struct sockaddr *)fromaddr, sizeof(struct sockaddr_in));
 }
-
 static void send_disconnect_req(gsproduct_t *prod, gsclient_t *client)
 {
 	char buf[BUFSIZE];

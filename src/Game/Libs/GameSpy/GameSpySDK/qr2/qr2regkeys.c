@@ -1,11 +1,8 @@
 
 #include "qr2regkeys.h"
 
-#include "../common/gsStringUtil.h"
-#include "../common/gsDebug.h"
 
 #ifdef __MWERKS__ // CodeWarrior requires prototypes
-void qr2_register_keyW(int keyid, const unsigned short *key);
 void qr2_register_keyA(int keyid, const char *key);
 #endif
 
@@ -138,20 +135,4 @@ void qr2_register_keyA(int keyid, const char *key)
 		"Registered key %d - %s\r\n", keyid, key);
 
 	qr2_registered_key_list[keyid] = key;
-}
-void qr2_register_keyW(int keyid, const unsigned short *key)
-{
-	char* key_A = NULL;
-
-	gsDebugFormat(GSIDebugCat_QR2, GSIDebugType_Misc, GSIDebugLevel_StackTrace,
-		"qr2_register_keyW()\r\n");
-
-	// Create UTF8 copy
-	key_A = UCS2ToUTF8StringAlloc(key);
-
-	// Register the ascii version
-	qr2_register_keyA(keyid, key_A);
-
-	// Keep track of the unicode version so we can delete it later
-	qr2_internal_key_list_append(key_A);
 }

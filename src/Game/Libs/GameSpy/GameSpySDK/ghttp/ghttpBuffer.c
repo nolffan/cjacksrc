@@ -12,8 +12,6 @@ devsupport@gamespy.com
 #include "ghttpConnection.h"
 #include "ghttpMain.h"
 #include "ghttpCommon.h"
-#include "../common/gsCrypt.h"
-#include "../common/gsSSL.h"
 
 
 // Resize the buffer.
@@ -275,80 +273,6 @@ GHTTPBool ghiAppendDataToBuffer
 }
 
 
-// Use sparingly. This function wraps the data in an SSL record.
-GHTTPBool ghiEncryptDataToBuffer
-(
-	GHIBuffer * buffer,
-	const char * data,
-	int dataLen
-)
-{
-	GHIEncryptionResult result;
-	int bufSpace = 0;
-	int pos = 0;
-
-	assert(buffer);
-	assert(data);
-	assert(dataLen >= 0);
-
-	// Check args.
-	//////////////
-	if(!buffer)
-		return GHTTPFalse;
-	if(!data)
-		return GHTTPFalse;
-	if(dataLen < 0)
-		return GHTTPFalse;
-	if (buffer->readOnly)
-		return GHTTPFalse;
-
-	// Switch to plain text append when not using SSL
-	if (buffer->connection->encryptor.mEngine == GHTTPEncryptionEngine_None ||
-		buffer->connection->encryptor.mSessionEstablished == GHTTPFalse)
-	{
-		return ghiAppendDataToBuffer(buffer, data, dataLen);
-	}
-
-	// Get the string length if needed.
-	///////////////////////////////////
-	if(dataLen == 0)
-		dataLen = (int)strlen(data);
-	if (dataLen == 0)
-		return GHTTPTrue; // no data and strlen == 0
-	bufSpace = buffer->size - buffer->len;
-
-	do 
-	{	
-		int fragmentLen = min(dataLen, GS_SSL_MAX_CONTENTLENGTH);
-		
-		// Call the encryptor function
-		//    bufSize is reduced by the number of bytes written
-		result = buffer->connection->encryptor.mEncryptFunc(buffer->connection, &buffer->connection->encryptor, 
-													&data[pos], dataLen,
-													&buffer->data[buffer->len], &bufSpace);
-		if (result == GHIEncryptionResult_BufferTooSmall)
-		{
-			if (ghiResizeBuffer(buffer, buffer->sizeIncrement) == GHTTPFalse)
-				return GHTTPFalse;
-			bufSpace = buffer->size - buffer->len;
-		}
-		else if (result == GHIEncryptionResult_Success)
-		{
-			// update data and buffer positions
-			pos += fragmentLen;
-			buffer->len = buffer->size - bufSpace;
-		}
-		else
-		{
-			gsDebugFormat(GSIDebugCat_HTTP, GSIDebugType_Misc, GSIDebugLevel_WarmError,
-				"ghiEncryptDataToBuffer encountered unhandled return code: %d\r\n", result);
-			return GHTTPFalse;
-		}
-	} while(pos < dataLen);
-
-	return GHTTPTrue;
-}
-
 GHTTPBool ghiAppendHeaderToBuffer
 (
 	GHIBuffer * buffer,
@@ -459,7 +383,7 @@ GHTTPBool ghiSendBufferedData
 	//////////////////////////
 	do
 	{
-		rcode = GSISocketSelect(connection->socket, NULL, &writeFlag, &exceptFlag);
+		rcode = ghiSocketSelect(connection->socket, NULL, &writeFlag, &exceptFlag);
 		if((gsiSocketIsError(rcode)) || ((rcode == 1) && exceptFlag))
 		{
 			connection->completed = GHTTPTrue;

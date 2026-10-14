@@ -13,8 +13,7 @@ devsupport@gamespy.com
 
 #include <stdlib.h>
 
-#include "../common/gsCommon.h"
-#include "../common/gsXML.h"
+#include "../nonport.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -71,10 +70,8 @@ typedef gsi_i32  GHTTPByteCount;
 typedef enum
 {
 	GHTTPSocketInit,			// Socket creation and initialization.
-	GHTTPHostLookup,            // Resolving hostname to IP (asynchronously if possible).
-	GHTTPLookupPending,			// Asychronous DNS lookup pending.
+	GHTTPHostLookup,            // Resolving hostname to IP.
 	GHTTPConnecting,            // Waiting for socket connect to complete.
-	GHTTPSecuringSession,		// Setup secure channel.
 	GHTTPSendingRequest,        // Sending the request.
 	GHTTPPosting,               // Positing data (skipped if not posting).
 	GHTTPWaiting,               // Waiting for a response.
@@ -104,21 +101,8 @@ typedef enum
 	GHTTPFileReadFailed,        // 14: There was an error reading from a local file (for posting files from disk).
 	GHTTPFileIncomplete,        // 15: Download started but was interrupted.  Only reported if file size is known.
 	GHTTPFileToBig,             // 16: The file is to big to be downloaded (size exceeds range of interal data types)
-	GHTTPEncryptionError,       // 17: Error with encryption engine.
 	GHTTPRequestCancelled       // 18: User requested cancel and/or graceful close.
 } GHTTPResult;
-
-// Encryption engines
-typedef enum
-{
-	GHTTPEncryptionEngine_None,
-	GHTTPEncryptionEngine_GameSpy,   // must add /common/gsSSL.h and /common/gsSSL.c to project
-	GHTTPEncryptionEngine_MatrixSsl, // must define MATRIXSSL and include matrixssl source files
-	GHTTPEncryptionEngine_RevoEx,    // must define REVOEXSSL and include RevoEX SSL source files
-	
-	GHTTPEncryptionEngine_Default    // Will use GameSpy unless another engine is defined
-	                                 //   using MATRIXSSL or REVOEXSSL
-} GHTTPEncryptionEngine;
 
 // Represents an http file request.
 ///////////////////////////////////
@@ -457,16 +441,6 @@ GHTTPBool ghttpSetProxy
 	const char * server
 );
 
-// Sets a proxy server for a specific request.  The address should be of the
-// form "<server>[:port]".  If port is omitted, 80 will be used.
-// If server is NULL or "", no proxy server will be used.
-//////////////////////////////////////////////////////////////////
-GHTTPBool ghttpSetRequestProxy
-(
-	GHTTPRequest request,
-	const char * server
-);
-
 // Used to start/stop throttling an existing connection.
 // This may not be as efficient as starting a request
 // with the desired setting.
@@ -483,15 +457,6 @@ void ghttpThrottleSettings
 (
 	int bufferSize,     // The number of bytes to get each receive.
 	gsi_time timeDelay  // How often to receive data, in milliseconds.
-);
-
-// Used to throttle based on time, not on bandwidth
-// Prevents recv-loop blocking on ultrafast connections without directly limiting transfer rate
-////////////////////////////////////////
-void ghttpSetMaxRecvTime
-(
-	GHTTPRequest request,
-	gsi_time maxRecvTime
 );
 
 // Creates a new post object, which is used to represent data to send to
@@ -575,16 +540,6 @@ GHTTPBool ghttpPostAddFileFromMemory
 	const gsi_char * contentType    // The MIME type for this file.
 );
 
-// Adds an XML SOAP object to the post object.
-// See ghttpNewSoap and other Soap related functions
-// Content-Type = text/xml
-// The most common use of this function is to add ghttpSoap data
-GHTTPBool ghttpPostAddXml
-(
-	GHTTPPost post,
-	GSXmlStreamWriter xmlSoap
-);
-
 // Called during requests to let the app know how much of the post
 // data has been uploaded.
 //////////////////////////////////////////////////////////////////
@@ -605,13 +560,6 @@ void ghttpPostSetCallback
 	GHTTPPost post,             // The post object to set the callback on.
 	ghttpPostCallback callback, // The callback to call when using this post object.
 	void * param                // User-data passed to the callback.
-);
-
-// Use ssl encryption engine
-GHTTPBool ghttpSetRequestEncryptionEngine
-(
-	GHTTPRequest request,
-	GHTTPEncryptionEngine engine
 );
 
 
