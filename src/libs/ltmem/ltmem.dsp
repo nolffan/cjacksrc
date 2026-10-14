@@ -65,10 +65,16 @@ LIB32=link.exe -lib
 # Begin Source File
 
 SOURCE=.\ltmem.cpp
+# ADD CPP /Yu"stdafx.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\ltmemstats.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\stdafx.cpp
+# ADD CPP /Yc"stdafx.h"
 # End Source File
 # End Group
 # End Target

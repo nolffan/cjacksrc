@@ -36,9 +36,9 @@ unsigned long cnt_EndCounterFinal(CounterFinal &cCounter);
 
 #ifdef _FINAL
 
-// Adds the time spent in a scope to a count: nothing in the Final build,
-// but still an object with a destructor where it is declared (Thread_Func's
-// exception states count them: 0x10003221).
+// Adds the time spent in a scope to a count: nothing in the Final build
+// (in NOLF2's driver, compiled /GX, still an object with a destructor where
+// it is declared: Thread_Func's exception states counted them).
 class CountAdder
 {
 public:

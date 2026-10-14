@@ -31,17 +31,22 @@ CFG=snddrv - Win32 Final
 # and template functions are COMDATs the linker may drop; /GF, the
 # literals read-only. No /GX: the scoped locks (CWinSync_CSAuto) and the
 # objects with destructors get no unwind frames, and the only exception
-# frames are the STL's own try blocks (warning C4530). No precompiled
-# header for s_dx8.cpp: compiled without one, the compiler emits the
-# header's inline virtual functions (ILTSoundSys's and logic_error's
-# deleting destructors, what() with basic_string::c_str inlined) ahead of
-# the file's own code and compiles the functions in the order retail lays
-# them out; through a /Yc header they come after it, c_str is imported and
-# a dozen functions move to a later pass. parsewavefile.cpp makes the
-# automatic precompiled header (/YX) a clean Developer Studio build makes,
-# which puts its header initializers after its code; spelled as the /Yc it
-# amounts to, with a header of its own, to give the same object from any
-# starting state.
+# frames are the STL's own try blocks (warning C4530). s_dx8.cpp's
+# precompiled header holds windows.h alone: compiled so, the compiler
+# emits the header's inline virtual functions (ILTSoundSys's and
+# logic_error's deleting destructors, what() with basic_string::c_str
+# inlined) ahead of the file's own code and compiles the functions in the
+# order retail lays them out; through one that takes in s_dx8.h and the
+# STL (a /YX header ending at counter.h, as nolf2src built it) they come
+# after it, c_str is imported and a dozen functions move to a later pass.
+# The project's precompiled header
+# is stdafx.h (windows.h), made by stdafx.cpp (/Yc) and used by
+# parsewavefile.cpp and s_dx8.cpp (/Yu), which include it first;
+# counter.cpp, from the engine's tree, uses none. Through the precompiled
+# header an object keeps the header constants (math_phys.h's PI and the
+# rest) in .bss in the order they are defined, as retail's parsewavefile and
+# s_dx8 objects have them (0x1000c1bc.., 0x1000c1e4..); compiled on its own,
+# as counter.obj, in the compiler's own order (0x1000c1a0..).
 
 !IF  "$(CFG)" == "snddrv - Win32 Final"
 
@@ -83,15 +88,17 @@ SOURCE=.\counter.cpp
 # Begin Source File
 
 SOURCE=.\parsewavefile.cpp
-# ADD CPP /Yc"s_dx8.h" /Fp"..\built\Final\snddrv\parsewavefile.pch"
+# ADD CPP /Yu"stdafx.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\s_dx8.cpp
+# ADD CPP /Yu"stdafx.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\stdafx.cpp
+# ADD CPP /Yc"stdafx.h"
 # End Source File
 # End Group
 # Begin Group "Header Files"

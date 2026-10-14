@@ -1,12 +1,11 @@
 // counter.cpp: the engine's performance-counter module, linked into the
-// sound driver. Only the global divisor's initializer is in the retail image
-// (0x10001120, data at 0x1000d0b0): the driver calls none of the counter
-// functions, so the linker (/OPT:REF) drops them. They were compiled all the
-// same -- the 64-bit division and multiplication helpers they call
-// (msvcrt.lib's ulldiv, lldiv and llmul, 0x1000a220..) stay in the image,
-// pulled in and kept though nothing calls them -- so they are written here,
-// as Monolith's later revision of this file has them; their code cannot be
-// checked against the retail image.
+// sound driver. The driver calls none of the counter functions, but
+// compiled /Ox (no /Gy, so no COMDATs to drop) they are all in the retail
+// image, at its start (0x10001000..0x100011ab), in the order the compiler
+// finished them -- the constructor, which calls functions defined after
+// it, last -- with the global divisor's initializer among the others
+// (0x10008db0). They pull in the 64-bit division and multiplication
+// helpers (msvcrt.lib's ulldiv, lldiv and llmul).
 
 #include <windows.h>
 #include "ltbasedefs.h"

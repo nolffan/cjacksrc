@@ -1,10 +1,14 @@
 // s_dx8.cpp: the LithTech sound driver for DirectSound 8 -- the engine's
 // SndDrv.dll -- reconstructed from the retail No One Lives Forever 2 1.3
-// binary. Its classes and code follow Monolith's later revision of the same
-// driver (the Jupiter EX engine's sound/src/sys/s_dx8), trimmed and corrected
-// function by function against the retail code: where the two differ, the
-// retail bytes decided. Retail addresses are cited as 0x1000xxxx.
+// binary, then brought to Contract J.A.C.K.'s (1.1, October 2003). Its
+// classes and code follow Monolith's later revision of the same driver (the
+// Jupiter EX engine's sound/src/sys/s_dx8), trimmed and corrected function
+// by function against the retail code: where the two differ, the retail
+// bytes decided. Retail addresses are cited as 0x1000xxxx, Contract
+// J.A.C.K.'s. The file includes stdafx.h first: it compiles through the
+// project's precompiled header (/Yu"stdafx.h", snddrv.dsp).
 
+#include "stdafx.h"
 #include "s_dx8.h"
 #include "eax.h"
 
@@ -1835,7 +1839,7 @@ uint32 CDx8SoundSys::Thread_Func()
 		}
 
 		// The thread's ticks are not counted in the Final build: the lock is
-		// taken and released with nothing between (0x100032a6), and
+		// taken and released with nothing between (0x10005222), and
 		// m_nThreadedTickCounts stays 0.
 		{
 			CWinSync_CSAuto cThreadTickCountsProtection(m_cCS_ThreadedTickCounts);
