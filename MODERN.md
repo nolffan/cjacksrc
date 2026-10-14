@@ -34,4 +34,8 @@ modes at any size; our Bink player on FFmpeg in place of RAD's
 
 ## Done
 
-(nothing yet)
+* **GS-1: GameSpy.dll's handles.** Each request thread's start event no
+  longer leaks the event its base class made, and the server browser's
+  constructor sets its thread and browser handles before anything can
+  fail (`RETAIL_BUGS.md`; src/Game/Libs/GameSpy/WinSync.h,
+  GameSpyBrowser.cpp).

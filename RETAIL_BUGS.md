@@ -57,6 +57,47 @@ where both operators free the block, so nothing shows in the game.
 Not fixed: it changes nothing at run time with the runtime the game ships
 with.
 
+### Every GameSpy request thread leaks an event handle
+
+GameSpy.dll 0x100021b0 (CGameSpyBrowser::CGameSpyBrowser), 0x10003550
+(CGameSpyPatchInfo::CGameSpyPatchInfo) and 0x10004630
+(CGameSpyServer::CGameSpyServer), src/Game/Libs/GameSpy/WinSync.h. Each
+object's thread-started event is a CWinSync_PulseEvent, whose constructor
+creates an auto-reset event over the handle its base class
+CWinSync_Event's constructor has just created (manual-reset): three
+CreateEventA calls for two events, and the first handle is never closed.
+One handle leaks per browser, patch request and server created -- a few
+per game session; nothing shows.
+
+Fixed in the modern build: src/Game/Libs/GameSpy/WinSync.h, MODERN.md
+GS-1.
+
+### The server browser's destructor can use uninitialised handles
+
+GameSpy.dll 0x100021b0 (CGameSpyBrowser::CGameSpyBrowser,
+src/Game/Libs/GameSpy/GameSpyBrowser.cpp). The constructor sets the
+thread handle and the SDK's ServerBrowser only at its end; if the game
+type has no GameSpy names (CGameSpyCommon::GetQueryGameName and friends
+fail), it returns with both uninitialised, and the destructor (0x100020e0)
+then signals, waits on, terminates and closes whatever the thread handle
+holds and frees whatever the browser pointer holds. The retail game
+always passes type 1, so it never happens.
+
+Fixed in the modern build: src/Game/Libs/GameSpy/GameSpyBrowser.cpp,
+MODERN.md GS-1.
+
+### The server's CD key challenge is one byte longer than it says
+
+GameSpy.dll 0x10003a90 (CGameSpyServer::GetCDKeyChallenge,
+src/Game/Libs/GameSpy/GameSpyServer.cpp). It reports a length of 8 and
+accepts a buffer of 8, then writes 8 letters and a terminating zero: a
+caller that sizes its buffer from the reported length gets a byte written
+past it.
+
+Not fixed: the right fix depends on how Object.lto sizes the buffer
+(package 4, the game, will show it); a buffer of 8 would make a stricter
+check refuse every challenge.
+
 ## NOLF2's bugs Contract J.A.C.K. no longer has
 
 (none checked yet)
