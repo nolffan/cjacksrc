@@ -1648,7 +1648,8 @@ void CClientMgr::RunCommandLine(uint32 flags)
 			const char* pszCurrArgParam = command_line_args->Argv(nCurrArg + 1);
             LTSNPrintF(fullCmd, sizeof(fullCmd), "(%s) (%s)", &pszCurrArg[1], pszCurrArgParam);
 
-            cc_HandleCommand2(&g_ClientConsoleState, fullCmd, flags);
+            // RETAIL: as command-line variables (Lithtech.exe 0x40df19)
+            cc_HandleCommand3(&g_ClientConsoleState, fullCmd, flags, VARFLAG_COMMANDLINE);
         }
     }
 }

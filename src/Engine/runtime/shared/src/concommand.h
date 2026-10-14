@@ -18,16 +18,26 @@ class HHashTable;
 #define CC_NOCOMMANDS	(1<<1)	// Don't run commands.
 
 #define VARFLAG_SAVE	(1<<0)	// Save in cc_SaveConfigFile.
+// RETAIL: Contract J.A.C.K. sets this for the variables of the engine's
+// command line (CClientMgr::RunCommandLine), where an engine variable
+// marked bNoCommandLine is not taken (cc_HandleCommand3, server.dll
+// 0x1000986f)
+#define VARFLAG_COMMANDLINE	(1<<1)
 
 
 #define VARBUF_LEN		16
 
 
 // Helpers to define engine variable tables.
-#define EV_FLOAT(name, addr) { name, addr, NULL, NULL, NULL }
-#define EV_LONG(name, addr) { name, NULL, (int32*)(addr), NULL, NULL }
-#define EV_CVAR(name, addr) { name, NULL, NULL, addr, NULL }
-#define EV_STRING(name, addr) { name, NULL, NULL, NULL, addr }
+#define EV_FLOAT(name, addr) { name, addr, NULL, NULL, NULL, false }
+#define EV_LONG(name, addr) { name, NULL, (int32*)(addr), NULL, NULL, false }
+#define EV_CVAR(name, addr) { name, NULL, NULL, addr, NULL, false }
+#define EV_STRING(name, addr) { name, NULL, NULL, NULL, addr, false }
+// RETAIL: the same, not to be set from the command line; and a name alone,
+// for a variable that is not the engine's (the renderer's) but is not to be
+// set from the command line either (the tables' entries are 24 bytes)
+#define EV_LONG_NOCMDLINE(name, addr) { name, NULL, (int32*)(addr), NULL, NULL, true }
+#define EV_NOCMDLINE(name) { name, NULL, NULL, NULL, NULL, true }
 
 
 
@@ -56,6 +66,7 @@ struct LTEngineVar
 	int32	*pValueAddressLong;
 	LTCommandVar **pCommandVarAddress;
 	char	**pValueAddressString;
+	bool	bNoCommandLine;		// RETAIL: VARFLAG_COMMANDLINE does not set it
 };
 
 

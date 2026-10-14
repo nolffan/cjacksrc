@@ -233,6 +233,12 @@ void cc_HandleCommand3(ConsoleState *pState, const char *pCommand, uint32 flags,
 				}
 
 
+				// RETAIL: an engine variable marked so is not set from the
+				// command line (server.dll 0x1000985b)
+				LTEngineVar *pEngineVar = cc_FindEngineVar(pState, pVarName);
+				if (pEngineVar && (varFlags & VARFLAG_COMMANDLINE) && pEngineVar->bNoCommandLine)
+					continue;
+
 				// Add the variable if not already there.
 				pVar = cc_FindConsoleVar(pState, pVarName);
 				if(!pVar)
