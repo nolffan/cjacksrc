@@ -42,7 +42,8 @@ help:
 	@echo "make progress-update  record the score in progress/ and README.md"
 	@echo "make reference  extract the retail binaries and their function tables into out/reference/"
 	@echo "make retail     fetch the two disc images and install the retail game and its"
-	@echo "                1.1 update from them (rez/, once; every build runs it); check it"
+	@echo "                1.1 update from them, and fetch the USA release's two too, for"
+	@echo "                the public archive (rez/, once; every build runs it); check it"
 	@echo "make shell      a shell in the build container (build/*.sh, tools/ work there)"
 	@echo "make image      (re)build the docker image $(IMAGE)"
 	@echo "make clean      remove out/ and every build output in the source tree"
@@ -73,9 +74,11 @@ endif
 	@echo "== docker image $(IMAGE) ready"
 
 # The retail game the build takes its data from (build/retail.sh): installed
-# by rez/ the first time, checked against rez/games.sha256 every time.
+# by rez/ the first time, checked against rez/games.sha256 every time; and
+# the USA release's disc images, which the public archive's install scripts
+# read too.
 retail: check-rez check-tools image
-	@$(DOCKER_RUN) bash -c 'source build/retail.sh && retail_install && retail_verify'
+	@$(DOCKER_RUN) bash -c 'source build/retail.sh && retail_install && retail_discs && retail_verify'
 
 reference: retail
 	$(DOCKER_RUN) bash build/reference.sh

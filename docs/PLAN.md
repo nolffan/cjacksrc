@@ -81,7 +81,7 @@ Every one is Visual C++ .NET 2003 (13.10.3077): `progress/COMPILERS.md`.
 | 8 | `boot`: the built binaries in the game under Wine, to the menu, a level, saving and loading (`make test`, tools/playtest.sh) | 3-7 | |
 | 9 | `match`: byte-matching, module by module, ratcheted by `make progress` | 3-7 | |
 | 10 | `modern`: the modern build (`CJACK_MODERN`): fixes (`RETAIL_BUGS.md`), widescreen, our Bink player on FFmpeg, as nolf2src's | 8 | |
-| 11 | `release`: `-private`/`-public` archives, install scripts from the player's own discs and 1.1 update (`tools/mkinstall.py`), and the GitHub Actions workflow building the four public archives with `make progress` on the legacy release | 8, 10 | |
+| 11 | `release`: `-private`/`-public` archives, install scripts from the player's own discs and 1.1 update (`tools/mkinstall.py`), and the GitHub Actions workflow building the four public archives with `make progress` on the legacy release | 8, 10 | the machinery is done (below); the run scripts (`linux-run.sh`) wait for the game to run |
 
 ## Notes per package
 
@@ -134,3 +134,19 @@ Done.
   functions identical as it stands; the 2006 tree's
   `runtime/sound/src/sys/s_dx8` is the later version to compare the rest
   against. Our image is 53,248 bytes against retail's 57,344.
+
+### 11. release
+
+- `build/package.sh` makes `<dir>-private.tar.gz` and `-public.tar.gz` for
+  every variant (`build/variant.sh`: debug, modern, modern-debug, with
+  `CJACK_DEBUG`/`CJACK_MODERN`). `tools/mkinstall.py` reads CJ's discs and
+  update from `build/retail.py` (`INSTALL_*`): the public archive's
+  `linux-install.sh` was checked to rebuild the private directory byte for
+  byte from the European discs (`.iso`) and from the USA discs (disc 1 as
+  redump's `.zip`), each with the 1.1 update.
+- `.github/workflows/public-archives.yml`: nolf2src's, for CJ (the redump
+  zips of both releases cached; four builds; `make progress` on the legacy
+  release). Lints clean (actionlint); not yet run on GitHub (nothing is
+  pushed). It needs the submodules' commits pushed before the superproject.
+- To do: `linux-run.sh` (and a launcher script) in the game directory once
+  the engine runs, and the Windows install script tested under PowerShell.
