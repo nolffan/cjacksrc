@@ -339,7 +339,7 @@ static void sm_SaveObjectData(LTObject *pObj, ILTStream *pStream, uint32 dwParam
 
 	// Make sure our buffer is large enough.
 	s_cTempBuffer.resize((LTMAX(nSpecialEffectLen, nObjectMsgLen) + 7) / 8);
-	uint8 *pTempBuffer = s_cTempBuffer.begin();
+	uint8 *pTempBuffer = &s_cTempBuffer[0];
 
 	if ((nSpecialEffectLen + nObjectMsgLen) > k_nSuspiciousObjectSize)
 	{
@@ -710,7 +710,7 @@ static LTRESULT sm_CreateNextObject(ILTStream *pStream,
 
 		// Make sure our buffer is large enough.
 		s_cTempBuffer.resize(nMessageBytes);
-		uint8 *pTempBuffer = s_cTempBuffer.begin();
+		uint8 *pTempBuffer = &s_cTempBuffer[0];
 
 		pStream->Read(pTempBuffer, nMessageBytes);
 		CPacket_Write cTempMsg;
@@ -865,7 +865,7 @@ static LTRESULT sm_RestoreNextObject(ILTStream *pStream, LTObject *pObj, uint32 
 
 	// Make sure our buffer is large enough.
 	s_cTempBuffer.resize(nObjectMsgBytes);
-	uint8 *pTempBuffer = s_cTempBuffer.begin();
+	uint8 *pTempBuffer = &s_cTempBuffer[0];
 
 	pStream->Read(pTempBuffer, nObjectMsgBytes);
 	CPacket_Write cTempMsg;

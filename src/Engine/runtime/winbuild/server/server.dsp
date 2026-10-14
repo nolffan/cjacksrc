@@ -20,12 +20,12 @@ CFG=server - Win32 Final
 !MESSAGE "server - Win32 Final" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE 
 
-# nolf2src: server.dll, the engine's server, from the LithTech Jupiter
-# runtime (Engine.dsw): Jupiter's DLL_Server list, in the retail link order
-# (alphabetically, then the interface implementations), at /O1 without /GX
-# (retail's own objects have no EH frame: only rezmgr and stdlith do). Files marked
-# Exclude_From_Build do not compile yet (docs/engine/PLAN.md);
-# runtime/*/nolf2src_*_stubs.cpp stands in for what of them the link needs.
+# cjacksrc: server.dll, the engine's server (Engine.dsw), from nolf2src's
+# back-port of the LithTech Jupiter runtime, brought forward to Contract
+# J.A.C.K.'s (docs/PLAN.md, package 6): the server-side files of the exe,
+# with server_interface and the loader thread, alphabetically, then the
+# interface implementations. /O2 without /GX, /GS or /GR: NOLF2's was /O1,
+# Contract J.A.C.K.'s is not (progress/COMPILERS.md).
 # Begin Project
 # PROP AllowPerConfigDependencies 0
 # PROP Scc_ProjName ""
@@ -48,7 +48,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /O1 /I "..\..\..\..\libs\STLPort-4.0\stlport" /I "..\..\client\src" /I "..\..\shared\src" /I "..\..\kernel\src" /I "..\..\kernel\mem\src" /I "..\..\world\src" /I "..\..\kernel\io\src" /I "..\..\kernel\net\src" /I "..\..\model\src" /I "..\..\sound\src" /I "..\..\shared\src\sys\win" /I "..\..\lithtemplate" /I "..\..\physics\src" /I "..\..\render_b\src" /I "..\..\ui\src" /I "..\..\controlfilemgr" /I "..\..\server\src" /I "..\..\kernel\src\sys\win" /I "..\..\kernel\io\src\sys\win" /I "..\..\kernel\mem\src\sys\win" /I "..\..\kernel\net\src\sys\win" /I "..\..\client\src\sys\win" /I "..\..\render_a\src\sys\d3d" /I "..\..\..\sdk\inc" /I "..\..\..\sdk\inc\physics" /I "..\..\..\..\libs\stdlith" /I "..\..\..\..\libs\lith" /I "..\..\..\libs\rezmgr" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_FINAL" /D "__D3D" /D "__D3DREND" /D "_USRDLL" /D "DE_SERVER_COMPILE" /D "DIRECTENGINE_COMPILE" /D "STDLITH_ALLOC_OVERRIDE" /D "LT15_COMPAT" /D "NO_PRAGMA_LIBS" /FD /c
+# ADD CPP /nologo /MD /W3 /O2 /I "..\..\client\src" /I "..\..\shared\src" /I "..\..\kernel\src" /I "..\..\kernel\mem\src" /I "..\..\world\src" /I "..\..\kernel\io\src" /I "..\..\kernel\net\src" /I "..\..\model\src" /I "..\..\sound\src" /I "..\..\shared\src\sys\win" /I "..\..\lithtemplate" /I "..\..\physics\src" /I "..\..\render_b\src" /I "..\..\ui\src" /I "..\..\controlfilemgr" /I "..\..\server\src" /I "..\..\kernel\src\sys\win" /I "..\..\kernel\io\src\sys\win" /I "..\..\kernel\mem\src\sys\win" /I "..\..\kernel\net\src\sys\win" /I "..\..\client\src\sys\win" /I "..\..\render_a\src\sys\d3d" /I "..\..\..\sdk\inc" /I "..\..\..\sdk\inc\physics" /I "..\..\..\..\libs\stdlith" /I "..\..\..\..\libs\lith" /I "..\..\..\libs\rezmgr" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_FINAL" /D "__D3D" /D "__D3DREND" /D "_USRDLL" /D "DE_SERVER_COMPILE" /D "DIRECTENGINE_COMPILE" /D "STDLITH_ALLOC_OVERRIDE" /D "LT15_COMPAT" /D "NO_PRAGMA_LIBS" /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "NDEBUG"

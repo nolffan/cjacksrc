@@ -894,7 +894,7 @@ static bool input_SetupDeviceFormats( DeviceDef *pDevice )
 	prop.diph.dwObj = 0;
 	prop.diph.dwHow = DIPH_DEVICE;
 	prop.dwData = INPUT_BUFFER_SIZE;
-#ifdef NOLF2SRC_MODERN
+#ifdef CJACK_MODERN
 	// MODERN.md M-E3: a mouse of today reports up to 1000 times a second,
 	// two events each (x and y), and the buffer is read once a frame: 64
 	// events overflowed ("Input buffer overflow") and lost motion at low
@@ -1392,7 +1392,7 @@ bool input_EnableDevice( InputMgr *pMgr, const char *pDeviceName )
 	return true;
 }
 
-#ifdef NOLF2SRC_MODERN
+#ifdef CJACK_MODERN
 // MODERN.md M-E3: the mouse's look axes (x and y), whose motion
 // input_ReadInput adds up over a frame. Not the wheel (z), whose bindings
 // are ranges one notch at a time.
@@ -1461,7 +1461,7 @@ void input_ReadInput( InputMgr *pMgr, BYTE *pActionsOn, float axisOffsets[3] )
 
 			memset (data, 0, sizeof(data));
 			
-#ifdef NOLF2SRC_MODERN
+#ifdef CJACK_MODERN
 			// MODERN.md M-E3: the mouse's buffer is read whole, like any
 			// other device's (see below)
 			nEvents = INPUT_BUFFER_SIZE;
@@ -1541,7 +1541,7 @@ void input_ReadInput( InputMgr *pMgr, BYTE *pActionsOn, float axisOffsets[3] )
 					continue;
 				}
 
-#ifdef NOLF2SRC_MODERN
+#ifdef CJACK_MODERN
 				// MODERN.md M-E3: mouse look. Retail took the mouse's events
 				// one at a time, ran every trigger after each, and smoothed
 				// each axis over its last three samples, so an axis with no
@@ -1583,7 +1583,7 @@ void input_ReadInput( InputMgr *pMgr, BYTE *pActionsOn, float axisOffsets[3] )
 				{
 					float fCurTriggerState = pTrigger->m_State;
 
-#ifdef NOLF2SRC_MODERN
+#ifdef CJACK_MODERN
 					// M-E3: a mouse axis: this frame's motion, as it is
 					if( input_IsMouseLookAxis( pDevice, pTrigger ) )
 					{
@@ -1736,7 +1736,7 @@ void input_ReadInput( InputMgr *pMgr, BYTE *pActionsOn, float axisOffsets[3] )
 				
 				// Clear this..
 				pTrigger->m_bJustWentDown = false;
-#ifdef NOLF2SRC_MODERN
+#ifdef CJACK_MODERN
 				// M-E3: a mouse axis's motion is used once
 				if( input_IsMouseLookAxis( pDevice, pTrigger ) )
 				{

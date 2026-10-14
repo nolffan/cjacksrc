@@ -20,10 +20,9 @@ CFG=Lib_ILTSound - Win32 Final
 !MESSAGE "Lib_ILTSound - Win32 Final" (based on "Win32 (x86) Static Library")
 !MESSAGE 
 
-# nolf2src: the sound driver loader (Lib_ILTSound: iltsound.cpp, which
-# loads SndDrv.dll), a static library of Lithtech.exe (Engine.dsw).
-# /Ob2, as retail's: DisplaySoundSysError and the first step of
-# soundSysNode_t::Find are inlined into MakeSoundSystem (0x553ea0).
+# cjacksrc: the sound driver loader (Lib_ILTSound: iltsound.cpp, which
+# loads SndDrv.dll), a static library of Lithtech.exe (Engine.dsw), as
+# nolf2src had it, /O2 /Ob2.
 # Begin Project
 # PROP AllowPerConfigDependencies 0
 # PROP Scc_ProjName ""
@@ -44,7 +43,7 @@ RSC=rc.exe
 # PROP Intermediate_Dir "..\..\built\Final\Lib_ILTSound"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GX /O2 /Ob2 /I "..\..\..\libs\STLPort-4.0\stlport" /I "src" /I "..\..\sdk\inc" /I "..\..\sdk\inc\physics" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_FINAL" /D "__D3D" /D "__D3DREND" /D "_LIB" /FD /c
+# ADD CPP /nologo /MD /W3 /GX /O2 /Ob2 /I "src" /I "..\..\sdk\inc" /I "..\..\sdk\inc\physics" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_FINAL" /D "__D3D" /D "__D3DREND" /D "_LIB" /FD /c
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo

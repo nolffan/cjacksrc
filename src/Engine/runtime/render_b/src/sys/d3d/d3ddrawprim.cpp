@@ -28,7 +28,7 @@
 extern uint32 g_ScreenWidth;
 extern uint32 g_ScreenHeight;
 
-#ifdef NOLF2SRC_MODERN
+#ifdef CJACK_MODERN
 // MODERN.md M-E13, the Modernizer's known issue K1: screen-space primitives
 // are placed at whole pixel coordinates, which in Direct3D are pixel
 // centres, so a quad's edge cuts its edge pixels in half. Without
@@ -122,7 +122,7 @@ LTRESULT CD3DDrawPrim::BeginDrawPrim()
 		return LT_OK;
 
 	PushRenderStates(r_GetRenderStruct()->GetD3DDevice());
-#ifdef NOLF2SRC_MODERN
+#ifdef CJACK_MODERN
 	ModernCheckHalfPixel(r_GetRenderStruct()->GetD3DDevice());
 #endif
 
@@ -404,7 +404,7 @@ void CD3DDrawPrim::SetTransformMode(LPDIRECT3DDEVICE8 pDevice)
 			fFOV = r_GetParameterValueFloat(hVar);
 		if ((hVar = r_GetParameter("PVModelAspect")) != NULL)
 			fAspect = r_GetParameterValueFloat(hVar);
-#ifdef NOLF2SRC_MODERN
+#ifdef CJACK_MODERN
 		// MODERN.md M-E15: the player-view effects' aspect (PVModelAspect,
 		// which the game never sets) is the one they were made with at
 		// 4:3; on a wider screen they would stretch with it. Widen it by

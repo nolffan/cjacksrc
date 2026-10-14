@@ -897,10 +897,13 @@ private:
 
 		// Go through the starting points...
 		TRenderBlockPreviewList::iterator iCurPreviewRB = m_aPreviewRenderBlocks.begin();
+		// cjacksrc: Visual C++ .NET 2003's vector has no push_back(); the
+		// 2006 tree's local, as that compiler's code had it
+		CRenderBlockData rbd;
 		for (; iCurPreviewRB != m_aPreviewRenderBlocks.end(); ++iCurPreviewRB)
 		{
-			// Add a new renderblock (retail: the default push_back, no local)
-			m_aRenderBlocks.push_back();
+			// Add a new renderblock
+			m_aRenderBlocks.push_back(rbd);
 			CRenderBlockData &cRB = m_aRenderBlocks.back();
 
 			// Figure out how many sections are in this block
@@ -962,10 +965,13 @@ private:
 
 		// Put them in order
 		TIndexList::iterator iCurIndex = aSortIndices.begin();
+		// cjacksrc: the 2006 tree's local (no push_back() in Visual C++ .NET
+		// 2003's vector)
+		CInternalSection is;
 		for (; iCurIndex != aSortIndices.end(); ++iCurIndex)
 		{
-			// Move the section (retail: the default-constructing push_back)
-			aSortedSections.push_back();
+			// Move the section
+			aSortedSections.push_back(is);
 			aSortedSections.back() = m_aSections[iCurIndex->m_nSection];
 
 			// Adjust the RB section index

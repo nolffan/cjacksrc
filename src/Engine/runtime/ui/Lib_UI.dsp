@@ -20,12 +20,10 @@ CFG=Lib_UI - Win32 Final
 !MESSAGE "Lib_UI - Win32 Final" (based on "Win32 (x86) Static Library")
 !MESSAGE 
 
-# nolf2src: the UI library (Lib_UI: the CUI widgets, the bitmap and GDI
-# vector fonts), a static library of Lithtech.exe (Engine.dsw). Retail's
-# shows two differences from the engine's flags: /Ob2 (no `jmp _$E1`
-# initializer thunks, which /O2's /Ob1 leaves in every object) and no
-# STLport (cuivectorfont.cpp's std::string calls MSVCP60.dll, the only
-# code in Lithtech.exe that does).
+# cjacksrc: the UI library (Lib_UI: the CUI widgets, the bitmap and GDI
+# vector fonts), a static library of Lithtech.exe (Engine.dsw), as
+# nolf2src had it, /O2 /Ob2; cuivectorfont.cpp's std::string calls
+# MSVCP71.dll in retail.
 # Begin Project
 # PROP AllowPerConfigDependencies 0
 # PROP Scc_ProjName ""

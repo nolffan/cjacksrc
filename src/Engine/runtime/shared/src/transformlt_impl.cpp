@@ -91,7 +91,7 @@ LTRESULT CLTTransform::Inverse(LTransform &inverse, LTransform &transform)
 
 	_TransformToMatrix(transform, mTransform);
 	Mat_InverseTransformation(&mTransform, &mInverse);
-#ifdef NOLF2SRC_MODERN
+#ifdef CJACK_MODERN
 	_TransformFromMatrix(inverse, mInverse);
 #else
 	// Retail bug (server.dll 0x10047cb3): converts the transform it was

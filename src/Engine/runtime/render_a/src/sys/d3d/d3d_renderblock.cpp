@@ -644,10 +644,12 @@ bool CD3D_RenderBlock::Load(ILTStream *pStream)
 	uint32 nLightGroupCount;
 	*pStream >> nLightGroupCount;
 	LT_MEM_TRACK_ALLOC(m_aLightGroups.reserve(nLightGroupCount), LT_MEM_TYPE_RENDER_LIGHTGROUP);
+	// cjacksrc: no push_back() in Visual C++ .NET 2003's vector: the 2006
+	// tree's local
+	SRBLightGroup LightGroup;
 	for (; nLightGroupCount; --nLightGroupCount)
 	{
-		// (retail 0x520eb0: the default-constructing push_back, no local)
-		m_aLightGroups.push_back();
+		m_aLightGroups.push_back(LightGroup);
 		*pStream >> m_aLightGroups.back();
 	}
 

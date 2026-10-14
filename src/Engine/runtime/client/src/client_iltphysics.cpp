@@ -127,7 +127,7 @@ LTRESULT CLTPhysicsClient::SetObjectDims(HOBJECT hObj, LTVector *pNewDims, uint3
     WorldTree *pWorldTree;
 
 
-#ifdef NOLF2SRC_MODERN
+#ifdef CJACK_MODERN
 	// MODERN.md M-E11: the check names its own function
     CHECK_PARAMS(hObj && pNewDims, CLTPhysicsClient::SetObjectDims);
 #else

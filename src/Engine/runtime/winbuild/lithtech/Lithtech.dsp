@@ -20,15 +20,16 @@ CFG=Lithtech - Win32 Final
 !MESSAGE "Lithtech - Win32 Final" (based on "Win32 (x86) Application")
 !MESSAGE 
 
-# nolf2src: Lithtech.exe, the engine, from the LithTech Jupiter runtime
-# (Engine.dsw). The files are those of Jupiter's EXE_Lithtech list that the
-# retail image has, in the retail link order (docs/engine/anatomy.md):
-# controlfilemgr, the rest alphabetically, then the interface
-# implementations; the libraries after them in the order the retail image
-# has them (d3dx8, ltmem, the renderer, the sound loader, RezMgr, the UI).
-# Files marked Exclude_From_Build do not compile yet: they are each module
-# package's worklist (docs/engine/PLAN.md); runtime/*/nolf2src_*_stubs.cpp
-# stands in for what of them the link needs.
+# cjacksrc: Lithtech.exe, the engine (Engine.dsw), from nolf2src's back-port
+# of the LithTech Jupiter runtime to NOLF2's 2002 engine, brought forward to
+# Contract J.A.C.K.'s (October 2003; docs/PLAN.md, package 6). The files in
+# the retail link order: controlfilemgr, the rest alphabetically, then the
+# interface implementations. /O2 (/Ob2) without /GX, /GS or /GR, as
+# retail's own objects (progress/COMPILERS.md). The libraries are named on
+# the link line, in the order retail has their code: ltmem, StdLith,
+# RezMgr, the renderer, the sound loader, the UI, Lith, then D3DX.
+# d3dx8.lib asks for VC6's old iostream library, libci.lib, which VC .NET
+# 2003 does not have: /nodefaultlib:libci.lib.
 # Begin Project
 # PROP AllowPerConfigDependencies 0
 # PROP Scc_ProjName ""
@@ -50,7 +51,7 @@ RSC=rc.exe
 # PROP Intermediate_Dir "..\..\..\built\Final\Lithtech"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /O2 /Ob2 /I "..\..\..\..\libs\STLPort-4.0\stlport" /I "..\..\client\src" /I "..\..\shared\src" /I "..\..\kernel\src" /I "..\..\kernel\mem\src" /I "..\..\world\src" /I "..\..\kernel\io\src" /I "..\..\kernel\net\src" /I "..\..\model\src" /I "..\..\sound\src" /I "..\..\shared\src\sys\win" /I "..\..\lithtemplate" /I "..\..\physics\src" /I "..\..\render_b\src" /I "..\..\ui\src" /I "..\..\controlfilemgr" /I "..\..\server\src" /I "..\..\kernel\src\sys\win" /I "..\..\kernel\io\src\sys\win" /I "..\..\kernel\mem\src\sys\win" /I "..\..\kernel\net\src\sys\win" /I "..\..\client\src\sys\win" /I "..\..\render_a\src\sys\d3d" /I "..\..\..\sdk\inc" /I "..\..\..\sdk\inc\physics" /I "..\..\..\..\libs\stdlith" /I "..\..\..\..\libs\lith" /I "..\..\..\libs\rezmgr" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_FINAL" /D "__D3D" /D "__D3DREND" /D "DE_CLIENT_COMPILE" /D "DE_LOCAL_SERVERBIND" /D "DIRECTENGINE_COMPILE" /D "DSNDMGR_NO_MFC" /D "MODEL_SUPPORT_ABC" /FD /c
+# ADD CPP /nologo /MD /W3 /O2 /Ob2 /I "..\..\client\src" /I "..\..\shared\src" /I "..\..\kernel\src" /I "..\..\kernel\mem\src" /I "..\..\world\src" /I "..\..\kernel\io\src" /I "..\..\kernel\net\src" /I "..\..\model\src" /I "..\..\sound\src" /I "..\..\shared\src\sys\win" /I "..\..\lithtemplate" /I "..\..\physics\src" /I "..\..\render_b\src" /I "..\..\ui\src" /I "..\..\controlfilemgr" /I "..\..\server\src" /I "..\..\kernel\src\sys\win" /I "..\..\kernel\io\src\sys\win" /I "..\..\kernel\mem\src\sys\win" /I "..\..\kernel\net\src\sys\win" /I "..\..\client\src\sys\win" /I "..\..\render_a\src\sys\d3d" /I "..\..\..\sdk\inc" /I "..\..\..\sdk\inc\physics" /I "..\..\..\..\libs\stdlith" /I "..\..\..\..\libs\lith" /I "..\..\..\libs\rezmgr" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_FINAL" /D "__D3D" /D "__D3DREND" /D "DE_CLIENT_COMPILE" /D "DE_LOCAL_SERVERBIND" /D "DIRECTENGINE_COMPILE" /D "DSNDMGR_NO_MFC" /D "MODEL_SUPPORT_ABC" /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
@@ -60,7 +61,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib /nologo /subsystem:windows /machine:I386
-# ADD LINK32 d3dx8.lib kernel32.lib user32.lib gdi32.lib advapi32.lib ole32.lib winmm.lib wsock32.lib dinput8.lib dxguid.lib d3d8.lib /nologo /subsystem:windows /machine:I386 /out:"..\..\..\built\Final\Lithtech\Lithtech.exe"
+# ADD LINK32 ltmem.lib Lib_StdLith.lib Lib_RezMgr.lib D3DRender.lib Lib_ILTSound.lib Lib_UI.lib Lib_Lith.lib d3dx8.lib kernel32.lib user32.lib gdi32.lib advapi32.lib ole32.lib winmm.lib wsock32.lib dinput8.lib dxguid.lib d3d8.lib /nologo /subsystem:windows /machine:I386 /nodefaultlib:"libci.lib" /libpath:"..\..\..\built\Final\ltmem" /libpath:"..\..\..\..\libs\built\Final\Lib_StdLith" /libpath:"..\..\..\built\Final\Lib_RezMgr" /libpath:"..\..\..\built\Final\D3DRender" /libpath:"..\..\..\built\Final\Lib_ILTSound" /libpath:"..\..\..\built\Final\Lib_UI" /libpath:"..\..\..\..\libs\built\Final\Lib_Lith" /out:"..\..\..\built\Final\Lithtech\Lithtech.exe"
 !ENDIF 
 
 # Begin Target

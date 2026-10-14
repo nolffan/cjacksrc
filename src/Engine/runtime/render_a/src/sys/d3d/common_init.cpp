@@ -221,7 +221,7 @@ int d3d_Init(RenderStructInit *pInit)
 	// Finish initializing...
 	AddDebugMessage(0, "Using Direct3D Device %s", pDeviceInfo->strDesc);
 
-#ifdef NOLF2SRC_MODERN
+#ifdef CJACK_MODERN
 	// MODERN.md M-G42: the window. Retail sized a window for a framed
 	// window's borders without ever giving it that frame (the engine makes
 	// it captioned only, the game later resizes it whole to the mode, so

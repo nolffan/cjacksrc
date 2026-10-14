@@ -725,7 +725,7 @@ void cm_HandleMaxFPS(uint32 frameTicks)
 
 
 
-#ifdef NOLF2SRC_MODERN
+#ifdef CJACK_MODERN
 // MODERN.md M-E4: the frame limiter. MaxFPS limits the frame rate only
 // outside the final build (cm_HandleMaxFPS above), so the game has always
 // run as fast as it could. Parts of NOLF2 go wrong at high frame rates
@@ -939,7 +939,7 @@ LTRESULT CClientMgr::Update()
     cm_HandleMaxFPS(frameTicks);                    // Lock framerate if they want.
 
 #endif
-#ifdef NOLF2SRC_MODERN
+#ifdef CJACK_MODERN
     cm_ModernFrameLimit();                          // M-E4
 #endif
 
@@ -1782,7 +1782,7 @@ void CClientMgr::RemoveClientObject(LTObject *pObj)
 	}
 }
 
-#ifdef NOLF2SRC_MODERN
+#ifdef CJACK_MODERN
 // MODERN.md M-E1: widescreen field of view (Hor+). The game sets one pair
 // of angles for every screen (FovX 90, FovY 78: a 4:3 view), so a wider
 // screen showed the same view stretched sideways. A view of the world
@@ -1810,7 +1810,7 @@ static float cm_WidescreenFovX(float xFov, int drawMode, const LTRect &rect, uin
     return 2.0f * ltatanf(lttanf(xFov * 0.5f) * fWiden);
 }
 
-#endif // NOLF2SRC_MODERN
+#endif // CJACK_MODERN
 ///////////////////////////////////////////////////////////////////////////////
 // BSP world rep functionality
 bool CClientMgr::Render(CameraInstance *pCamera, int drawMode, LTObject **pObjects, int nObjects, float fFrameTime)
@@ -1859,7 +1859,7 @@ bool CClientMgr::Render(CameraInstance *pCamera, int drawMode, LTObject **pObjec
         pDesc->m_Rect.right = pCamera->m_Right;
         pDesc->m_Rect.bottom = pCamera->m_Bottom;
     }
-#ifdef NOLF2SRC_MODERN
+#ifdef CJACK_MODERN
     // M-E1: widescreen field of view (Hor+)
     pDesc->m_xFov = cm_WidescreenFovX(pDesc->m_xFov, drawMode, pDesc->m_Rect, width, height);
 #endif

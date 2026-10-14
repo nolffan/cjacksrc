@@ -57,7 +57,7 @@ void d3d_ReadExtraConsoleVariables()
 	//setup dither on the device
 	PD3DDEVICE->SetRenderState(D3DRS_DITHERENABLE, (uint32)g_CV_Dither);
 
-#ifdef NOLF2SRC_MODERN
+#ifdef CJACK_MODERN
 	// MODERN.md M-G45: Anisotropic is the degree (the Performance screen's
 	// 2x to 16x), held to what the card can do
 	uint32 nModernAniso = (uint32)g_CV_Anisotropic.m_Val;
@@ -70,7 +70,7 @@ void d3d_ReadExtraConsoleVariables()
 		{
 			D3D_CALL(PD3DDEVICE->SetTextureStageState(nCurrStage, D3DTSS_MINFILTER, D3DTEXF_ANISOTROPIC));
 			D3D_CALL(PD3DDEVICE->SetTextureStageState(nCurrStage, D3DTSS_MAGFILTER, D3DTEXF_ANISOTROPIC));
-#ifdef NOLF2SRC_MODERN
+#ifdef CJACK_MODERN
 			D3D_CALL(PD3DDEVICE->SetTextureStageState(nCurrStage, D3DTSS_MAXANISOTROPY, nModernAniso));
 #else
 			D3D_CALL(PD3DDEVICE->SetTextureStageState(nCurrStage, D3DTSS_MAXANISOTROPY, g_CV_Anisotropic.m_Val));

@@ -45,7 +45,7 @@ int32	g_CV_IPDebug = LTFALSE;
 int32	g_CV_UDPDebug = LTFALSE;
 
 float	g_CV_IPQueryTimeout = 30.0f;
-#ifdef NOLF2SRC_MODERN
+#ifdef CJACK_MODERN
 float	g_CV_MaxFPS = 60.0f;	// MODERN.md M-E4: limited by default
 #else
 float	g_CV_MaxFPS = 0.0f;
