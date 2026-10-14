@@ -2317,14 +2317,14 @@ void GetACMDriverListDetails( const TACMDriverList &aDriverList, TACMDriverDetai
 	aDriverDetails.reserve( aDriverList.size() );
 
 	TACMDriverList::const_iterator iCurDriver = aDriverList.begin();
-	// cjacksrc: Visual C++ .NET 2003's vector has no push_back() without an
-	// argument, an STLport extension NOLF2's driver used (as the 2006
-	// Jupiter tree has it)
-	ACMDRIVERDETAILS acmdd;
 
 	for( ; iCurDriver != aDriverList.end(); ++iCurDriver )
 	{
-		aDriverDetails.push_back(acmdd);
+		// RETAIL: 0x10007190. Visual C++ .NET 2003's vector has no
+		// push_back() without an argument, the STLport extension NOLF2's
+		// driver used: Contract J.A.C.K.'s passes the value-initialised
+		// element that call stood for (zeroed on every pass).
+		aDriverDetails.push_back(ACMDRIVERDETAILS());
 		memset( &aDriverDetails.back(), 0, sizeof( aDriverDetails.back() ) );
 		aDriverDetails.back().cbStruct = sizeof( aDriverDetails.back() );
 		acmDriverDetails( *iCurDriver, &aDriverDetails.back(), 0 );
@@ -3277,6 +3277,14 @@ LH3DSAMPLE CDx8SoundSys::Allocate3DSampleHandle( LHPROVIDER hLib )
 
 	p3DSample->Init( m_hResult, m_pDirectSound, m_waveFormat.nSamplesPerSec, &pSample->m_waveFormat, NULL );
 
+	// RETAIL: 0x100053fd. Contract J.A.C.K.'s driver gives up on a buffer
+	// it could not create (NOLF2's and the later revision's go on).
+	if( FAILED( m_hResult ))
+	{
+		delete p3DSample;
+		return NULL;
+	}
+
 #ifdef USE_EAX20_HARDWARE_FILTERS
 	if( m_bSupportsEAX20Filtering && !m_pKSPropertySet )
 #else
@@ -3700,6 +3708,13 @@ LHSAMPLE CDx8SoundSys::AllocateSampleHandle( LHDIGDRIVER hDig )
 		pSample->m_dsbDesc.dwFlags |= DSBCAPS_LOCSOFTWARE;
 
 	pSample->Init( m_hResult, m_pDirectSound, m_waveFormat.nSamplesPerSec, false );
+
+	// RETAIL: 0x10005e01, as in Allocate3DSampleHandle.
+	if( FAILED( m_hResult ))
+	{
+		delete pSample;
+		return NULL;
+	}
 
 	SetSampleNotify( pSample, true );
 

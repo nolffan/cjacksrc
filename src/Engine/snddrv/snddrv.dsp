@@ -31,14 +31,16 @@ CFG=snddrv - Win32 Final
 # and template functions are COMDATs the linker may drop; /GF, the
 # literals read-only. No /GX: the scoped locks (CWinSync_CSAuto) and the
 # objects with destructors get no unwind frames, and the only exception
-# frames are the STL's own try blocks (warning C4530). The objects are
-# what a clean build with Developer Studio's automatic precompiled header
-# (/YX) makes, which decides where each object's header initializers go:
-# parsewavefile.cpp, compiled first, makes the header (stdafx.h, s_dx8.h)
-# and gets its initializers after its code; s_dx8.cpp cannot use that one
-# and makes its own; counter.cpp and stdafx.cpp use none. /YX depends on
-# what the previous compile left, so each of the two is spelled here as the
-# /Yc it amounts to, with a header of its own: the same objects, from any
+# frames are the STL's own try blocks (warning C4530). No precompiled
+# header for s_dx8.cpp: compiled without one, the compiler emits the
+# header's inline virtual functions (ILTSoundSys's and logic_error's
+# deleting destructors, what() with basic_string::c_str inlined) ahead of
+# the file's own code and compiles the functions in the order retail lays
+# them out; through a /Yc header they come after it, c_str is imported and
+# a dozen functions move to a later pass. parsewavefile.cpp makes the
+# automatic precompiled header (/YX) a clean Developer Studio build makes,
+# which puts its header initializers after its code; spelled as the /Yc it
+# amounts to, with a header of its own, to give the same object from any
 # starting state.
 
 !IF  "$(CFG)" == "snddrv - Win32 Final"
@@ -86,7 +88,6 @@ SOURCE=.\parsewavefile.cpp
 # Begin Source File
 
 SOURCE=.\s_dx8.cpp
-# ADD CPP /Yc"counter.h" /Fp"..\built\Final\snddrv\s_dx8.pch"
 # End Source File
 # Begin Source File
 
