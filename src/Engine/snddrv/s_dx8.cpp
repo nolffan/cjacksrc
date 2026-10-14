@@ -1,10 +1,14 @@
 // s_dx8.cpp: the LithTech sound driver for DirectSound 8 -- the engine's
 // SndDrv.dll -- reconstructed from the retail No One Lives Forever 2 1.3
-// binary. Its classes and code follow Monolith's later revision of the same
-// driver (the Jupiter EX engine's sound/src/sys/s_dx8), trimmed and corrected
-// function by function against the retail code: where the two differ, the
-// retail bytes decided. Retail addresses are cited as 0x1000xxxx.
+// binary, then brought to Contract J.A.C.K.'s (1.1, October 2003). Its
+// classes and code follow Monolith's later revision of the same driver (the
+// Jupiter EX engine's sound/src/sys/s_dx8), trimmed and corrected function
+// by function against the retail code: where the two differ, the retail
+// bytes decided. Retail addresses are cited as 0x1000xxxx, Contract
+// J.A.C.K.'s. The file includes stdafx.h first: it compiles through the
+// project's precompiled header (/Yu"stdafx.h", snddrv.dsp).
 
+#include "stdafx.h"
 #include "s_dx8.h"
 #include "eax.h"
 
@@ -654,10 +658,8 @@ UINT WaveFile::SeekFromStartCompressed( uint32 nBytes )
     return (uiReadSize);
 }
 
-// Not in the retail image: nothing calls it, so the linker drops it, and its
-// code cannot be checked. It is kept from the later revision because the
-// compiler's layout of the image comes closer to retail's with the four
-// uncalled functions in the file than without them.
+// RETAIL: 0x10001650. Nothing calls it, but without /Gy an out-of-line function
+// is no COMDAT and the linker keeps it.
 BYTE WaveFile::GetSilenceData (void)
 {
     BYTE bSilenceData = 0;
@@ -808,10 +810,8 @@ CSample::~CSample( )
 	Term( );
 }
 
-// Not in the retail image: nothing calls it, so the linker drops it, and its
-// code cannot be checked. It is kept from the later revision because the
-// compiler's layout of the image comes closer to retail's with the four
-// uncalled functions in the file than without them.
+// RETAIL: 0x10001670. Nothing calls it, but without /Gy an out-of-line function
+// is no COMDAT and the linker keeps it.
 void CheckLinkList( )
 {
 	LTLink* pLink = CSample::m_lstSampleLoopHead.m_pNext;
@@ -1787,7 +1787,7 @@ uint32 CDx8SoundSys::Thread_Func()
 		uint32 nTheadedTickCounts;
 
 
-		if( WaitForSingleObject( m_cEvent_StreamingActive.GetEvent( ), 0 ) == WAIT_OBJECT_0 )
+		if( m_cEvent_StreamingActive.IsSet( ))
 		{
 			CWinSync_CSAuto cStreamProtection(m_cCS_SoundThread);
 
@@ -1811,7 +1811,7 @@ uint32 CDx8SoundSys::Thread_Func()
 				m_cEvent_StreamingActive.Clear();
 		}
 
-		if( WaitForSingleObject( m_cEvent_SampleLoopActive.GetEvent( ), 0 ) == WAIT_OBJECT_0 )
+		if( m_cEvent_SampleLoopActive.IsSet( ))
 		{
 			CWinSync_CSAuto cLoopProtection(m_cCS_SoundThread);
 
@@ -1839,7 +1839,7 @@ uint32 CDx8SoundSys::Thread_Func()
 		}
 
 		// The thread's ticks are not counted in the Final build: the lock is
-		// taken and released with nothing between (0x100032a6), and
+		// taken and released with nothing between (0x10005222), and
 		// m_nThreadedTickCounts stays 0.
 		{
 			CWinSync_CSAuto cThreadTickCountsProtection(m_cCS_ThreadedTickCounts);
@@ -1858,10 +1858,8 @@ uint32 CDx8SoundSys::Thread_Func()
 
 #define DECOMPRESSION_BUFFER_PAD	16384
 
-// Not in the retail image: nothing calls it, so the linker drops it, and its
-// code cannot be checked. It is kept from the later revision because the
-// compiler's layout of the image comes closer to retail's with the four
-// uncalled functions in the file than without them.
+// RETAIL: 0x10005270. Nothing calls it, but without /Gy an out-of-line function
+// is no COMDAT and the linker keeps it.
 CSample* CDx8SoundSys::CreateBuffer( WAVEFORMATEX* pWaveFormat, DWORD dwBufferSize, DWORD dwFlags )
 {
 	CSample* pSample;
@@ -1874,10 +1872,8 @@ CSample* CDx8SoundSys::CreateBuffer( WAVEFORMATEX* pWaveFormat, DWORD dwBufferSi
 	return NULL;
 }
 
-// Not in the retail image: nothing calls it, so the linker drops it, and its
-// code cannot be checked. It is kept from the later revision because the
-// compiler's layout of the image comes closer to retail's with the four
-// uncalled functions in the file than without them.
+// RETAIL: 0x10003f30. Nothing calls it, but without /Gy an out-of-line function
+// is no COMDAT and the linker keeps it.
 void CDx8SoundSys::DestroyBuffer( CSample* pSoundBuffer )
 {
 	if( pSoundBuffer == NULL )
@@ -2279,7 +2275,9 @@ static bool HasFormat( HACMDRIVERID hDriverId, WORD nFormatTag )
     bool bResult = ( acmFormatEnum( hDriver, &fd, FormatEnumProc, ( DWORD )&formatEnumProcData, ACM_FORMATENUMF_WFORMATTAG ) == 0 );
 	acmDriverClose( hDriver, 0 );
 
-	delete [] pwf;
+	// RETAIL: 0x10002040, operator delete on what new[] allocated
+	// (RETAIL_BUGS.md)
+	delete pwf;
 	pwf = NULL;
 
 	return ( bResult && formatEnumProcData.m_bUseDriver );
@@ -2325,14 +2323,14 @@ void GetACMDriverListDetails( const TACMDriverList &aDriverList, TACMDriverDetai
 	aDriverDetails.reserve( aDriverList.size() );
 
 	TACMDriverList::const_iterator iCurDriver = aDriverList.begin();
-	// cjacksrc: Visual C++ .NET 2003's vector has no push_back() without an
-	// argument, an STLport extension NOLF2's driver used (as the 2006
-	// Jupiter tree has it)
-	ACMDRIVERDETAILS acmdd;
 
 	for( ; iCurDriver != aDriverList.end(); ++iCurDriver )
 	{
-		aDriverDetails.push_back(acmdd);
+		// RETAIL: 0x10007190. Visual C++ .NET 2003's vector has no
+		// push_back() without an argument, the STLport extension NOLF2's
+		// driver used: Contract J.A.C.K.'s passes the value-initialised
+		// element that call stood for (zeroed on every pass).
+		aDriverDetails.push_back(ACMDRIVERDETAILS());
 		memset( &aDriverDetails.back(), 0, sizeof( aDriverDetails.back() ) );
 		aDriverDetails.back().cbStruct = sizeof( aDriverDetails.back() );
 		acmDriverDetails( *iCurDriver, &aDriverDetails.back(), 0 );
@@ -3285,6 +3283,14 @@ LH3DSAMPLE CDx8SoundSys::Allocate3DSampleHandle( LHPROVIDER hLib )
 
 	p3DSample->Init( m_hResult, m_pDirectSound, m_waveFormat.nSamplesPerSec, &pSample->m_waveFormat, NULL );
 
+	// RETAIL: 0x100053fd. Contract J.A.C.K.'s driver gives up on a buffer
+	// it could not create (NOLF2's and the later revision's go on).
+	if( FAILED( m_hResult ))
+	{
+		delete p3DSample;
+		return NULL;
+	}
+
 #ifdef USE_EAX20_HARDWARE_FILTERS
 	if( m_bSupportsEAX20Filtering && !m_pKSPropertySet )
 #else
@@ -3533,7 +3539,9 @@ S32	CDx8SoundSys::Init3DSampleFromFile( LH3DSAMPLE hS, void* pFile_image, S32 si
 
 		if ( !Init3DSampleFromAddress( hS, pSampleData, uiSampleDataSize, &pcmWaveFormat, siPlaybackRate, pFilterData ) )
 		{
-			delete [] pSampleData;
+			// RETAIL: 0x10005a71, operator delete on what new[] allocated
+			// (RETAIL_BUGS.md; InitSampleFromFile has delete[])
+			delete pSampleData;
 			return LTFALSE;
 		}
 		pSample->m_bAllocatedSoundData = true;
@@ -3708,6 +3716,13 @@ LHSAMPLE CDx8SoundSys::AllocateSampleHandle( LHDIGDRIVER hDig )
 		pSample->m_dsbDesc.dwFlags |= DSBCAPS_LOCSOFTWARE;
 
 	pSample->Init( m_hResult, m_pDirectSound, m_waveFormat.nSamplesPerSec, false );
+
+	// RETAIL: 0x10005e01, as in Allocate3DSampleHandle.
+	if( FAILED( m_hResult ))
+	{
+		delete pSample;
+		return NULL;
+	}
 
 	SetSampleNotify( pSample, true );
 

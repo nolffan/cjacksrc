@@ -73,9 +73,11 @@ is the whole game's code, the engine's included.
   * `Lithtech.exe`'s **D3DX**, statically linked from the DirectX 8.1
     SDK's `d3dx8.lib` (Microsoft's, `COMPILERS.md`), as NOLF2's was. Its
     main block follows the engine's own code, so it is outside `app`;
-  * `GameSpy.dll`'s **GameSpy SDK** (server browsing, peer, HTTP, CD key:
-    the image names its files), around Monolith's own `Game/Libs/GameSpy`
-    code. Its block is to be placed (`targets.py`).
+  * `GameSpy.dll`'s **GameSpy SDK** (server browsing, query reporting 2,
+    NAT negotiation, HTTP, patching and tracking, CD key: the image names
+    its files) and the part of **WONAPI** its CD key check links
+    (`WONAPI::CDKey`), one block from 0x10006390 after Monolith's own
+    `Game/Libs/GameSpy` code (`targets.py`).
   STLport and MS STL templates instantiated in the game's own objects are
   compiled from headers here, like any inline function, and are counted.
 * **SecuROM.** `Lithtech.exe`'s code at 0x536000..0x53b000 (five pages) is

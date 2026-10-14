@@ -73,15 +73,15 @@ Every one is Visual C++ .NET 2003 (13.10.3077): `progress/COMPILERS.md`.
 |---|---|---|---|
 | 1 | `scaffold`: submodules (`rez`, `toolchains`, `tools`), the 1.1 install in rez, VC .NET 2003 in toolchains, the build image, `make retail`/`reference`/`progress`, `targets.py` | -- | done (below) |
 | 2 | `build`: `build/env.sh`, `build/build.mk` and `build/compile.sh` for VC .NET 2003 under Wine, the workspace `src/Game/TO2.dsw`, `build/all.sh` assembling a game directory, `build/variant.sh` (debug, modern) | 1 | partly: everything but the game workspace and the variants (below) |
-| 3 | `small`: `ltmsg.dll`, `CRes.dll`, `SRes.dll` (resource scripts from the retail resources; `tools/rsrcdiff.py`), `SndDrv.dll` (nolf2src's reconstruction, compiled with VC .NET 2003) | 2 | `ltmsg.dll` done (retail's but for its time stamp); `SndDrv.dll` builds, 172/260 identical; CRes/SRes to do |
+| 3 | `small`: `ltmsg.dll`, `CRes.dll`, `SRes.dll` (resource scripts from the retail resources; `tools/rsrcdiff.py`), `SndDrv.dll` (nolf2src's reconstruction, compiled with VC .NET 2003) | 2 | `ltmsg.dll` done (retail's but for its time stamp); `SndDrv.dll` every scored function identical (225, the other 30 too small to score), the file retail's but for its template tail's order (below); CRes/SRes to do |
 | 4 | `game`: `CShell.dll`, `Object.lto`, `ClientFx.fxd` from NOLF2's source release toward Contract J.A.C.K. -- first the shared code (with Build 69's TO2/TRON as the later reference), then Contract J.A.C.K.'s own (its weapons, its missions' objects, its HUD and menus), placed by the scoreboard | 2 | |
-| 5 | `gamespy`: `GameSpy.dll`: Monolith's wrapper from the image, GameSpy's SDK rolled back to 2003 | 2 | |
+| 5 | `gamespy`: `GameSpy.dll`: Monolith's wrapper from the image, GameSpy's SDK rolled back to 2003 | 2 | builds, retail's exports and behaviour (`build/gamespytest.sh`); 163/181 of Monolith's functions identical (below) |
 | 6 | `engine`: `Lithtech.exe` and `server.dll` from the Jupiter tree, trimmed to 2003, D3D8; the demos' engine for the SecuROM pages and the imports (a `demoimports.py` for these demos) | 2 | |
 | 7 | `apps`: the launcher `ContractJack.exe` and the dedicated server `ContractJackServer.exe` from NOLF2's Launcher and ServerApp | 2 | |
 | 8 | `boot`: the built binaries in the game under Wine, to the menu, a level, saving and loading (`make test`, tools/playtest.sh) | 3-7 | |
 | 9 | `match`: byte-matching, module by module, ratcheted by `make progress` | 3-7 | |
 | 10 | `modern`: the modern build (`CJACK_MODERN`): fixes (`RETAIL_BUGS.md`), widescreen, our Bink player on FFmpeg, as nolf2src's | 8 | |
-| 11 | `release`: `-private`/`-public` archives, install scripts from the player's own discs and 1.1 update (`tools/mkinstall.py`), and the GitHub Actions workflow building the four public archives with `make progress` on the legacy release | 8, 10 | |
+| 11 | `release`: `-private`/`-public` archives, install scripts from the player's own discs and 1.1 update (`tools/mkinstall.py`), and the GitHub Actions workflow building the four public archives with `make progress` on the legacy release | 8, 10 | the machinery is done (below); the run scripts (`linux-run.sh`) wait for the game to run |
 
 ## Notes per package
 
@@ -127,10 +127,152 @@ Done.
 - `ltmsg.dll`: nolf2src's `ltmsg.rc` (the five resources are NOLF2's,
   byte for byte) and an empty `DllMain`, `/MD /O2`, linked by VC .NET 2003:
   the retail file but for the link time stamp (PE header offset 0xF0).
-- `SndDrv.dll`: nolf2src's reconstruction (NOLF2's driver), with the one
-  change VC .NET 2003's library needs (`push_back` takes an argument, as
-  the 2006 tree has it), and without STLport: Contract J.A.C.K.'s imports
-  MSVCP71 (`vector`'s length errors build a `std::string`). 172 of 260
-  functions identical as it stands; the 2006 tree's
-  `runtime/sound/src/sys/s_dx8` is the later version to compare the rest
-  against. Our image is 53,248 bytes against retail's 57,344.
+- `SndDrv.dll`: nolf2src's reconstruction of NOLF2's driver, brought to
+  Contract J.A.C.K.'s. Every function the scorer can check is identical
+  (225; the other 30 are a few bytes each), and the file has retail's
+  size, sections, imports and .data byte for byte. What decided it:
+  - Flags: `/Ox /GF`, no `/GX` (snddrv.dsp). `/Ox` has no `/Gy`: each
+    object's out-of-line functions stay in one .text in the order the
+    compiler finished them, uncalled ones included (counter.obj's at the
+    image's start). Without `/GX` the scoped locks get no unwind frames.
+  - Precompiled header: stdafx.h (windows.h alone) made by stdafx.cpp and
+    used by parsewavefile.cpp and s_dx8.cpp (which includes it first);
+    counter.cpp none. Through one that takes in s_dx8.h and the STL, the
+    compiler emits the header's inline functions after the file's code and
+    defers a dozen functions; through none, the header constants' .bss
+    order is the compiler's own rather than definition order.
+  - Visual C++ .NET 2003 compiles a function only once every function it
+    calls that is defined later in the file is compiled: what defers a
+    function is a call forward, not inlining. The template instantiations
+    come at the end, by call depth.
+  - Source: three functions differ from NOLF2's (Allocate3DSampleHandle and
+    AllocateSampleHandle give up when Init fails; GetACMDriverListDetails
+    pushes a value-initialised element), two frees are scalar `delete`
+    (RETAIL_BUGS.md), Thread_Func uses `CWinSync_Event::IsSet`, and
+    winsync.h is the 2006 file. ltmem.cpp is the 2006 file without
+    USELTMEM (LTMemInit and LTMemTerm empty, the initializer first, its
+    critical section defined), compiled through ltmem's own stdafx.h.
+  - Link: the libraries as a VS.NET 2003 project passes them, the
+    project's own (ltmem, winmm, msacm32, dxguid, eaxguid) and then the
+    IDE's default list: that gives each DLL's imports retail's order.
+  - Scoring: `progress/extent-splits.csv` names six starts the enumerator
+    misses (the uncalled counter and ltmem functions).
+- Where it stops: the template tail (0x10007af0..0x1000834f) has two
+  pairs of identical instantiations the linker folds (/OPT:ICF), and it
+  keeps the other copy of each than retail does: `_Uninit_copy` for
+  `vector<ACMDRIVERDETAILS>` (pointer and iterator versions) and
+  `vector::_Ucopy` (the same two). That moves code inside the tail, and
+  the vtable slots and relocations that point there. What we know of the
+  rule (out/exp experiments, not kept): for functions with an exception
+  handler the linker keeps the copy that comes first in the object (the
+  .sxdata order), for the others the copy its reference walk reaches
+  first. Retail's choices mean its object emitted the iterator
+  `_Uninit_copy` before the pointer one; ours compiles the iterator one a
+  round later (it waits on `const_iterator::operator!=`). Not found yet:
+  the source shape that changes that order. Besides that, the image
+  differs only in its time stamps (header and export directory).
+
+### 5. gamespy
+
+`src/Game/Libs/GameSpy/GameSpy.dsw` builds `GameSpy.dll` (and
+`GameSpy.lib`) into `src/Game/built/Final/libs/GameSpy/`, with the retail
+exports exactly (names and ordinals 1-16) and the retail imports in
+retail's order.
+
+- **The header for the game**: `src/Game/Libs/GameSpy/IGameSpy.h`
+  (`IGameSpyBrowser`, `IGameSpyPatchInfo`, `IGameSpyServer`, their
+  `StartupInfo`s and enums, and `IsCDKeyValid`), with `GAMESPY_EXPORTS`
+  defined only when building the DLL. The virtual functions are in the
+  retail vtables' order, their argument lists from the retail code; names
+  follow FEAR's later use of these interfaces where one exists. Retail's
+  game DLLs pass game type 1 (`eGameSpyGameType_Retail`). The `game`
+  package links CShell.dll and Object.lto against a stopgap import library
+  made from the retail export table; at merge it switches to
+  `src/Game/built/Final/libs/GameSpy/GameSpy.lib` and this header (add
+  `Game/Libs/GameSpy` to its include path; the header needs only
+  `<string>`; the import library's names are the retail ones).
+- **Layout of the image**: Monolith's code 0x10001000..0x10006390
+  (GameSpyBrowser, GameSpyCommon -- each build's gamenames, secret keys
+  and product ids --, GameSpyPatchInfo, GameSpyServer, Ping), then the
+  GameSpy SDK (darray.c .. sb_serverlist.c, alphabetical), then WONAPI's
+  CD key check (0x10014740: RTTI names `WONAPI::CDKey`), then the runtime
+  from msvcprt's operator new (0x10014e5e). `targets.py` counts only the
+  first part: the SDK and WONAPI are `middleware`.
+- **Score**: 163 of the 181 functions of Monolith's code identical (95% of
+  its bytes); 12 are `small` (the interfaces' inline constructors and the
+  like, all relocations). The six nears, and what was tried:
+  - `SBCallback` (0x10001910): retail materialises the game-name match as
+    a bool and stores it to the stack (`mov %al,0xf(%esp)`) before testing
+    it; no local, temporary or inline helper tried reproduces the store.
+  - `GetSecretKey` (0x10002fd0): only the order of `lea 0xc(%esp),%ecx`
+    and `add $0xc,%esp` after strncpy differs.
+  - `IsValidKeyName` (0x100031e0): the merged `return false`/`return true`
+    blocks sit at their first use in retail, at their last in ours; early
+    returns, nested ifs, a switch and a result variable all keep ours.
+  - `ToWideString`/`FromWideString` (0x10003300, 0x10003390, never
+    called): retail computes the `_alloca` size and the end pointer with
+    scaled addressing where ours shares `len*2`.
+  - 0x10003c50: the function table merges two empty callbacks
+    (0x10003c50, 0x10003c60); both are ours, one byte each.
+- **What decided the matches** (as in the commits): Monolith writes each
+  check as its own `if (...) return` (the failure block then sits after
+  the first test); LTMIN/LTMAX are the macro kind; the StartupInfo
+  structures assign their members in the constructor body; named locals
+  where retail keeps a value (the sender's address before htonl, the CD
+  key's product string, the ICMP ping); client ids are unsigned; the
+  property table is a `stdext::hash_map` whose traits derive from
+  `hash_compare` with a comparator that has a constructor; WinSync.h is
+  the Jupiter tree's (CWinSync_PulseEvent explains the double
+  CreateEvent); Ping.cpp's helpers are not static (static ones get a
+  register calling convention) and its assert is on line 225 (`#line`).
+- **The SDK** (`GameSpySDK/`, BSD, from the 2007 snapshot of
+  github.com/nitrocaster/GameSpy) is rolled back toward the July-October
+  2003 versions: a 2003-style `nonport.h`/`nonport.c` (written from the
+  retail functions) instead of `common/`; ghttp without SSL/XML/DIME;
+  natneg protocol 2 with two servers; pt's 2003 URLs; gcdkey without
+  re-authentication; ServerBrowserNew without `lanBrowse`; no query
+  challenges and no split-packet flag in the browser's queries (2003 qr2
+  answers neither). Still 2007 code inside most functions (sb, qr2, ghttp
+  internals); the API the wrapper calls is the 2003 one (argument counts
+  checked against the retail calls).
+- **Behaviour** (`build/gamespytest.sh`, under Wine in the build
+  container): the exports exercised offline print exactly what retail's
+  do (IsCDKeyValid on 40,000 random keys included), and a server and a
+  browser find each other on the loopback in all four pairings of
+  retail's DLL and ours. The internet side (master server list,
+  heartbeats, NAT negotiation, CD key server, patch check) cannot be
+  tried: GameSpy's servers are gone (a modern-build item: OpenSpy).
+- **WONAPI**: `src/Game/Libs/WONAPI/` is the part of WON's library the
+  image links (CDKey, CRC16, ByteBuffer), written from the image (the
+  Jupiter SDK's WONAPI is not public), built as `WONAPI.lib` with `/GX
+  /GR`.
+- **Flags** (`progress/COMPILERS.md`): the wrapper `/MD /Ox /GF`, no
+  `/Gy`, no `/GX`, no `NDEBUG`; `wsock32.lib` through a pragma in
+  nonport.c (it puts WSOCK32 last among the imports, as retail).
+- **Retail bugs** (`RETAIL_BUGS.md`): the request threads' start events
+  leak a handle each, the browser's destructor can use handles its
+  constructor never set (both fixed in the modern build, MODERN.md GS-1),
+  and the server's CD key challenge is a byte longer than it reports.
+- **Next**: the six nears above; the SDK's roll back function by function
+  against the retail block (0x10006390..0x10014740), module by module,
+  re-running `build/gamespytest.sh` after each (sb and qr2 first: they
+  are what other players' retail games talk to); the Rich header has 18
+  C++ objects to our 12, so Monolith's project had more files than the
+  five that carry code; the internet services through OpenSpy in the
+  modern build.
+
+### 11. release
+
+- `build/package.sh` makes `<dir>-private.tar.gz` and `-public.tar.gz` for
+  every variant (`build/variant.sh`: debug, modern, modern-debug, with
+  `CJACK_DEBUG`/`CJACK_MODERN`). `tools/mkinstall.py` reads CJ's discs and
+  update from `build/retail.py` (`INSTALL_*`): the public archive's
+  `linux-install.sh` was checked to rebuild the private directory byte for
+  byte from the European discs (`.iso`) and from the USA discs (disc 1 as
+  redump's `.zip`), each with the 1.1 update.
+- `.github/workflows/public-archives.yml`: nolf2src's, for CJ (the redump
+  zips of both releases cached; four builds; `make progress` on the legacy
+  release). Lints clean (actionlint); not yet run on GitHub (nothing is
+  pushed). It needs the submodules' commits pushed before the superproject.
+- To do: `linux-run.sh` (and a launcher script) in the game directory once
+  the engine runs, and the Windows install script tested under PowerShell.

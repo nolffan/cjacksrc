@@ -1,7 +1,7 @@
 // iltsound.h: ILTSoundSys, the engine's interface to a sound driver, as the
 // NOLF2 engine (Lithtech.exe) calls it and SndDrv.dll implements it. The
-// slot order is the retail driver's vtable's (0x1000b194, 104 slots; the
-// abstract table at 0x1000b334 has 103): Monolith's later revision of this
+// slot order is the retail driver's vtable's (Contract J.A.C.K. 1.1: 0x1000a578, 104 slots; the
+// abstract table at 0x1000a188 has 103): Monolith's later revision of this
 // header less CommitDeferred.
 
 #ifndef __ILTSOUND_H__
