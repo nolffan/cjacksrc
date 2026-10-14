@@ -654,10 +654,8 @@ UINT WaveFile::SeekFromStartCompressed( uint32 nBytes )
     return (uiReadSize);
 }
 
-// Not in the retail image: nothing calls it, so the linker drops it, and its
-// code cannot be checked. It is kept from the later revision because the
-// compiler's layout of the image comes closer to retail's with the four
-// uncalled functions in the file than without them.
+// RETAIL: 0x10001650. Nothing calls it, but without /Gy an out-of-line function
+// is no COMDAT and the linker keeps it.
 BYTE WaveFile::GetSilenceData (void)
 {
     BYTE bSilenceData = 0;
@@ -808,10 +806,8 @@ CSample::~CSample( )
 	Term( );
 }
 
-// Not in the retail image: nothing calls it, so the linker drops it, and its
-// code cannot be checked. It is kept from the later revision because the
-// compiler's layout of the image comes closer to retail's with the four
-// uncalled functions in the file than without them.
+// RETAIL: 0x10001670. Nothing calls it, but without /Gy an out-of-line function
+// is no COMDAT and the linker keeps it.
 void CheckLinkList( )
 {
 	LTLink* pLink = CSample::m_lstSampleLoopHead.m_pNext;
@@ -1858,10 +1854,8 @@ uint32 CDx8SoundSys::Thread_Func()
 
 #define DECOMPRESSION_BUFFER_PAD	16384
 
-// Not in the retail image: nothing calls it, so the linker drops it, and its
-// code cannot be checked. It is kept from the later revision because the
-// compiler's layout of the image comes closer to retail's with the four
-// uncalled functions in the file than without them.
+// RETAIL: 0x10005270. Nothing calls it, but without /Gy an out-of-line function
+// is no COMDAT and the linker keeps it.
 CSample* CDx8SoundSys::CreateBuffer( WAVEFORMATEX* pWaveFormat, DWORD dwBufferSize, DWORD dwFlags )
 {
 	CSample* pSample;
@@ -1874,10 +1868,8 @@ CSample* CDx8SoundSys::CreateBuffer( WAVEFORMATEX* pWaveFormat, DWORD dwBufferSi
 	return NULL;
 }
 
-// Not in the retail image: nothing calls it, so the linker drops it, and its
-// code cannot be checked. It is kept from the later revision because the
-// compiler's layout of the image comes closer to retail's with the four
-// uncalled functions in the file than without them.
+// RETAIL: 0x10003f30. Nothing calls it, but without /Gy an out-of-line function
+// is no COMDAT and the linker keeps it.
 void CDx8SoundSys::DestroyBuffer( CSample* pSoundBuffer )
 {
 	if( pSoundBuffer == NULL )

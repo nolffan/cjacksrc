@@ -23,17 +23,20 @@ CFG=snddrv - Win32 Final
 # cjacksrc: SndDrv.dll, the engine's sound driver (DirectSound 8), which the
 # engine loads and asks for its ILTSoundSys through the exports SoundSysMake
 # and SoundSysDesc. Monolith's release has none of its source: written for
-# this project, reconstructed from the retail 1.3 binary (snddrv.dsw). The
-# flags are the ones the retail code shows: /O2 with /Ob2 (initializers
-# expanded in place, no jump thunks; functions laid out as auto-inlining
-# defers them), /GX (the C++ exception frames of the constructors and
-# destructors). The objects are what a clean build with Developer Studio's
-# automatic precompiled header (/YX) makes, which decides where each
-# object's header initializers go: parsewavefile.cpp, compiled first, makes
-# the header (stdafx.h, s_dx8.h) and gets its initializers after its code;
-# s_dx8.cpp cannot use that one and makes its own, which puts its
-# initializers among the EAX functions; counter.cpp and stdafx.cpp use none
-# (counter.obj has its initializers first, in source order). /YX depends on
+# this project, reconstructed from the retail binary (snddrv.dsw). The
+# flags are the ones Contract J.A.C.K.'s retail code shows: /Ox, not /O2:
+# no /Gy, so every out-of-line function of an object stays in its one
+# .text section in the order the compiler finished them (the counter
+# functions nothing calls are in the image, at its start), and only inline
+# and template functions are COMDATs the linker may drop; /GF, the
+# literals read-only. No /GX: the scoped locks (CWinSync_CSAuto) and the
+# objects with destructors get no unwind frames, and the only exception
+# frames are the STL's own try blocks (warning C4530). The objects are
+# what a clean build with Developer Studio's automatic precompiled header
+# (/YX) makes, which decides where each object's header initializers go:
+# parsewavefile.cpp, compiled first, makes the header (stdafx.h, s_dx8.h)
+# and gets its initializers after its code; s_dx8.cpp cannot use that one
+# and makes its own; counter.cpp and stdafx.cpp use none. /YX depends on
 # what the previous compile left, so each of the two is spelled here as the
 # /Yc it amounts to, with a header of its own: the same objects, from any
 # starting state.
@@ -52,7 +55,7 @@ CFG=snddrv - Win32 Final
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "_FINAL" /FD /c
-# ADD CPP /nologo /MD /W3 /GX /O2 /Ob2 /I "." /I "..\sdk\inc" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "_FINAL" /FD /c
+# ADD CPP /nologo /MD /W3 /Ox /GF /I "." /I "..\sdk\inc" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "_FINAL" /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
