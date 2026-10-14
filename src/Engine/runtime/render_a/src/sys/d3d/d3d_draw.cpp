@@ -586,6 +586,7 @@ bool d3d_RenderWorldWithAggregate(uint32 nNumFrustumPlanes, const LTPlane* pFrus
 			if (pWorldModel)
 			{
 				d3d_SetD3DMat(D3DTS_WORLD, &pInstance->m_Transform);
+				WMViewParams.m_mWorld = pInstance->m_Transform;	// RETAIL: 0x4d9356
 				WMViewParams.m_mInvWorld = pInstance->m_BackTransform;
 				
 				//we need to tell the aggregate shader to setup its transform

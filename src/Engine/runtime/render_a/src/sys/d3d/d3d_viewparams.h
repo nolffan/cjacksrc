@@ -68,6 +68,12 @@ public:
 	// Identity matrix.
 	LTMatrix	m_mIdentity;
 
+	// RETAIL: the world transform of what is drawn, beside its inverse
+	// (d3d_InitFrustum2 sets both to the identity, Lithtech.exe 0x4f832b;
+	// d3d_RenderWorldWithAggregate copies a world model's m_Transform in,
+	// 0x4d9356)
+	LTMatrix	m_mWorld;
+
 	// Current inverse world transform
 	LTMatrix	m_mInvWorld;
 

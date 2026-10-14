@@ -379,6 +379,7 @@ bool d3d_InitFrustum2(ViewParams *pParams,
 
 	// Default the world transform to identity
 	pParams->m_mInvWorld.Identity();
+	pParams->m_mWorld.Identity();	// RETAIL: 0x4f832b
 
 	//setup the environment mapping info
 	pParams->m_mWorldEnvMap.SetBasisVectors(&pParams->m_Right, &pParams->m_Up, &pParams->m_Forward);
