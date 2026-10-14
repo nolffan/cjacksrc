@@ -172,6 +172,47 @@ Done.
   the source shape that changes that order. Besides that, the image
   differs only in its time stamps (header and export directory).
 
+### 4. game
+
+The game DLLs build (`src/Game/TO2.dsw`); the launcher and the dedicated
+server are not in the workspace yet (their resources first).
+
+- **Tree.** nolf2src's `src/Game` as its release build compiles it, with
+  `src/libs` (ButeMgr, CryptMgr, RegMgr, RegMgr32, lith, stdlith, MFCStub,
+  zlib's headers). Not taken: ServerDir/WON (but `IServerDir.h`, kept as a
+  header until the game's GameSpy code is written), AutoRun, STLport,
+  NOLF2's launcher art, the other languages' scripts.
+- **Port.** The 2006 tree's ("Build 69") changes to the shared game code,
+  merged three ways (base: NOLF2's release; about 1,000 lines in 109
+  files; nolf2src's RETAIL reconstructions of 1.3 are among them), and
+  FEAR's VC7 ButeMgr, CryptMgr, MFCStub, dprintf.cpp. The SDK's function
+  pointers lose their default arguments (as the engine's do) and
+  `CLTReference::operator=` compares its pointer directly. Not taken from
+  the 2006 tree: `kInputSprintfFriendly` (CJ's LTGUIMgr edit control has
+  no `%` or `\` test).
+- **Flags** (evidence in `progress/COMPILERS.md`): NOLF2's `/MD /O2 /GX`,
+  with `/GR` in the TO2 projects as well as the shared ones, `/GS` in
+  LTGUIMgr only.
+- **Resources.** CRes.dll's strings, credits and intro are retail's
+  (the string tables read from the retail image by a one-off script,
+  written into NOLF2's three scripts under NOLF2's names, 45 new ids as
+  `IDS_CJ_<id>`; the shared script is read before ClientRes.rc's strings,
+  which is the order of the retail string tables): the file is retail's
+  but for its time stamp, and so is SRes.dll (no resources at all).
+- **Scores** (first record): CShell.dll 3,552 identical of 6,567 (36.0%
+  of bytes), Object.lto 5,375 of 9,787 (44.0%), ClientFx.fxd 285 of 452
+  (52.0%). The runtime boundaries are pinned from our maps.
+- **Stubbed.** Multiplayer: the two places NOLF2 creates its WON server
+  directory create none. CJ's servers and browser use GameSpy.dll's
+  `IGameSpyServer`/`IGameSpyBrowser`/`IGameSpyPatchInfo`
+  (`src/Game/Libs/GameSpy/IGameSpy.h`), still to be written, with
+  CShell.dll and Object.lto linking GameSpy.lib.
+- **Found.** CJ's Object.lto names `C:\proj\to2\source\Game\ObjectDLL\Attachments.cpp`
+  where NOLF2's names `...\ObjectDLL\ObjectShared\Attachments.cpp`: CJ's
+  ObjectShared files sit in ObjectDLL itself (perhaps one project, which
+  would change the link order). Under Wine, VC 7.1's compiler spins
+  instead of exiting after a fatal error (a missing #include, C1020, ...).
+
 ### 5. gamespy
 
 `src/Game/Libs/GameSpy/GameSpy.dsw` builds `GameSpy.dll` (and

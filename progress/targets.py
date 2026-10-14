@@ -179,27 +179,33 @@ TARGETS = [
     # ---- the game ------------------------------------------------------
     dict(label="CShell.dll", what="the game: client", kind="image",
          shipped=REFERENCE + "/CShell.dll", stem="CShell",
-         built="src/Game/built/Final/ClientShellDLL/TO2/CShell.dll", optional=True,
-         # provisional: msvcprt's operator new at 0x10126185, msvcrt.lib from
-         # 0x101261fe
+         built="src/Game/built/Final/ClientShellDLL/TO2/CShell.dll",
+         # src/Game/TO2.dsw. As in our map: the game's code (ButeMgr's last)
+         # ends where msvcprt's newop_s.obj (operator new, 0x10126185)
+         # starts, then newaop_s.obj, the import thunks and msvcrt.lib
+         # (from 0x101261fe)
          app=[(0x10001000, 0x10126185)]),
     dict(label="Object.lto", what="the game: server objects", kind="image",
          shipped=REFERENCE + "/Object.lto", stem="Object",
-         built="src/Game/built/Final/ObjectDLL/TO2/Object.lto", optional=True,
-         # provisional: an import thunk at 0x10174d35, msvcprt's operator new
-         # (0x10174d3a), msvcrt.lib from 0x10174dae
+         built="src/Game/built/Final/ObjectDLL/TO2/Object.lto",
+         # src/Game/TO2.dsw. As in our map: the game's code (RegMgr's
+         # CRegMgr::Init last) ends where msvcprt's runtime starts: here
+         # newaop_s.obj first (operator new[], a 5-byte jmp at 0x10174d35),
+         # then newop_s.obj (0x10174d3a) and msvcrt.lib from 0x10174dae
          app=[(0x10001000, 0x10174d35)]),
     dict(label="ClientFx.fxd", what="the game: client effects", kind="image",
          shipped=REFERENCE + "/ClientFx.fxd", stem="ClientFx",
-         built="src/Game/built/Final/ClientFxDLL/ClientFx.fxd", optional=True,
-         # links libcmt.lib statically; provisional: a 5-byte jmp at
-         # 0x1001b46b, then libcpmt.lib's operator new (0x1001b470) and
-         # libcmt.lib from 0x1001b5f3
+         built="src/Game/built/Final/ClientFxDLL/ClientFx.fxd",
+         # links libcmt.lib statically. src/Game/TO2.dsw; as in our map:
+         # the effects' code (spritesystemfx.obj last in ours) ends where libcpmt.lib
+         # starts, with newaop.obj (operator new[], a 5-byte jmp at
+         # 0x1001b46b), newop.obj (0x1001b470), and libcmt.lib from
+         # 0x1001b5f3
          app=[(0x10001000, 0x1001b46b)]),
     dict(label="CRes.dll", what="the game's client resources",
          kind="resources", shipped=REFERENCE + "/CRes.dll", stem="CRes",
-         built="src/Game/built/Final/ClientRes/TO2/CRes.dll", optional=True),
+         built="src/Game/built/Final/ClientRes/TO2/CRes.dll"),
     dict(label="SRes.dll", what="the game's server resources",
          kind="resources", shipped=REFERENCE + "/SRes.dll", stem="SRes",
-         built="src/Game/built/Final/ServerRes/TO2/SRes.dll", optional=True),
+         built="src/Game/built/Final/ServerRes/TO2/SRes.dll"),
 ]
