@@ -213,12 +213,22 @@ paired exactly, 31 by context, 18 weakly); `demoimports.py extract && map
 0x538534. First recorded score: `Lithtech.exe` 5,102 identical (55.3%
 of its bytes), `server.dll` 2,223 (66.6%).
 
-**Where it stands / next** (breadth first, per module, with
-`tools/fndiff.py`, `o2gap.py`, `vtabcheck.py`, `uncovered.py`):
-- the renderer's flags (`/GX` kept from nolf2src; measure as for the
-  exe);
-- the 24-byte engine variables and the anti-cheat flag; the
-  unguaranteed-data API (client and server); the console variables
-  above; ltmem's tracking; the UDP driver (`OpenSocket`, no `SendPing`);
-- then module by module through the nears.
+**Converging** (each in its commit, with the retail addresses): the
+libraries without /GX; LTObject's unguaranteed-data field; the 24-byte
+engine variables and the command-line lock; ViewParams' m_mWorld;
+CClientMgr's 2006-tree members and resource-tree vector. Score so far:
+`Lithtech.exe` 6,020 identical (71.8%), `server.dll` 2,492 (79.1%).
 
+**Where it stands / next** (breadth first, per module, with
+`tools/fndiff.py`, `o2gap.py`, `vtabcheck.py`, `uncovered.py`;
+`tools/layoutscan.py --image=<target>` finds the layout shifts):
+- the UDP driver: CJ's is between nolf2src's 2002 form and the 2006
+  tree's: four listen-thread events (the 2006 pause events), a fifth
+  CStaticFIFO<float,100> in CUDPConn (+0x2a8: the share of unguaranteed
+  packets dropped as too old, averaged by a new CBaseConn virtual, slot
+  9), a new CBaseDriver virtual (slot 27, before UpdateGUID), OpenSocket;
+- the unguaranteed-data API (ILTServer/ILTClient Get/SetObjectUnguaranteed-
+  Data, the 0x80000 change flag on the wire, CLTServer::FinishClientConnect);
+- the renderer's layouts: CRenderShader_Base (+8), CInternalSection (+4),
+  CD3D_RenderWorld, CD3D_Device;
+- then module by module through the nears (`progress.py --nears=<target>`).
