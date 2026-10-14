@@ -22,6 +22,7 @@ GameSpy.dll	sub_10001770
 GameSpy.dll	sub_100017d0
 GameSpy.dll	sub_10001a30
 GameSpy.dll	sub_10001ab0
+GameSpy.dll	sub_10001b20
 GameSpy.dll	sub_10001bb0
 GameSpy.dll	sub_10001ca0
 GameSpy.dll	sub_10001d40
@@ -93,6 +94,7 @@ GameSpy.dll	sub_10003970
 GameSpy.dll	sub_100039d0
 GameSpy.dll	sub_10003a30
 GameSpy.dll	sub_10003a90
+GameSpy.dll	sub_10003af0
 GameSpy.dll	sub_10003be0
 GameSpy.dll	sub_10003c30
 GameSpy.dll	sub_10003c70
@@ -158,6 +160,10 @@ GameSpy.dll	sub_10005bf0
 GameSpy.dll	sub_10005c60
 GameSpy.dll	sub_10005fc0
 GameSpy.dll	sub_10006050
+GameSpy.dll	sub_10006070
+GameSpy.dll	sub_100060e0
+GameSpy.dll	sub_10006140
+GameSpy.dll	sub_10006190
 SndDrv.dll	sub_10001000
 SndDrv.dll	sub_10001040
 SndDrv.dll	sub_100010c0
