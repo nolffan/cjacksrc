@@ -58,7 +58,10 @@ bool CGameSpyBrowser::RequestServerList( bool bInternet, unsigned short nPort, c
 
 	m_eBrowserStatus = eBrowserStatus_Error;
 
-	if( !m_hServerBrowser || !HaltRequest( ))
+	if( !m_hServerBrowser )
+		return false;
+
+	if( !HaltRequest( ))
 		return false;
 
 	ServerBrowserClear( m_hServerBrowser );
@@ -77,14 +80,10 @@ bool CGameSpyBrowser::RequestServerList( bool bInternet, unsigned short nPort, c
 	}
 	else
 	{
-		int nStartPort = nPort - LAN_SEARCH_PORTS_BELOW;
-		if( nStartPort <= 0 )
-			nStartPort = 0;
-		int nEndPort = ( unsigned short )nStartPort + LAN_SEARCH_PORTS_ABOVE;
-		if( nEndPort >= 0xffff )
-			nEndPort = 0xffff;
+		unsigned short nStartPort = ( unsigned short )LTMAX( nPort - LAN_SEARCH_PORTS_BELOW, 0 );
+		unsigned short nEndPort = ( unsigned short )LTMIN( nStartPort + LAN_SEARCH_PORTS_ABOVE, 0xffff );
 
-		if( ServerBrowserLANUpdate( m_hServerBrowser, SBTrue, ( unsigned short )nStartPort, ( unsigned short )nEndPort ) != sbe_noerror )
+		if( ServerBrowserLANUpdate( m_hServerBrowser, SBTrue, nStartPort, nEndPort ) != sbe_noerror )
 			return false;
 	}
 
@@ -112,8 +111,8 @@ bool CGameSpyBrowser::RequestServerDetails( char const* pszIP, unsigned short nP
 
 	ServerBrowserClear( m_hServerBrowser );
 
-	m_pUserData = pUserData;
 	m_cbServerInfo = cbServerInfo;
+	m_pUserData = pUserData;
 	m_eRequestType = eRequestType_ServerDetails;
 
 	if( ServerBrowserAuxUpdateIP( m_hServerBrowser, pszIP, nPort, ( SBBool )!bDirectConnect, SBFalse, SBTrue ) != sbe_noerror )
@@ -161,7 +160,10 @@ int CGameSpyBrowser::RequestServerCount( bool bInternet, unsigned short nPort )
 
 	m_eBrowserStatus = eBrowserStatus_Error;
 
-	if( !m_hServerBrowser || !HaltRequest( ))
+	if( !m_hServerBrowser )
+		return -1;
+
+	if( !HaltRequest( ))
 		return -1;
 
 	m_cbServerInfo = NULL;
@@ -175,14 +177,10 @@ int CGameSpyBrowser::RequestServerCount( bool bInternet, unsigned short nPort )
 	}
 	else
 	{
-		int nStartPort = nPort - LAN_SEARCH_PORTS_BELOW;
-		if( nStartPort <= 0 )
-			nStartPort = 0;
-		int nEndPort = ( unsigned short )nStartPort + LAN_SEARCH_PORTS_ABOVE;
-		if( nEndPort >= 0xffff )
-			nEndPort = 0xffff;
+		unsigned short nStartPort = ( unsigned short )LTMAX( nPort - LAN_SEARCH_PORTS_BELOW, 0 );
+		unsigned short nEndPort = ( unsigned short )LTMIN( nStartPort + LAN_SEARCH_PORTS_ABOVE, 0xffff );
 
-		if( ServerBrowserLANUpdate( m_hServerBrowser, SBFalse, ( unsigned short )nStartPort, ( unsigned short )nEndPort ) != sbe_noerror )
+		if( ServerBrowserLANUpdate( m_hServerBrowser, SBFalse, nStartPort, nEndPort ) != sbe_noerror )
 			return -1;
 	}
 
@@ -193,8 +191,11 @@ int CGameSpyBrowser::RequestServerCount( bool bInternet, unsigned short nPort )
 // RETAIL: 0x10001580
 int CGameSpyBrowser::GetNumPlayers( HGAMESERVER hGameServer )
 {
+	if( !m_hServerBrowser )
+		return 0;
+
 	char szValue[256];
-	if( !m_hServerBrowser || !GetServerProperty( hGameServer, "numplayers", szValue, sizeof( szValue )))
+	if( !GetServerProperty( hGameServer, "numplayers", szValue, sizeof( szValue )))
 		return 0;
 
 	return atoi( szValue );
@@ -203,8 +204,11 @@ int CGameSpyBrowser::GetNumPlayers( HGAMESERVER hGameServer )
 // RETAIL: 0x100015d0
 int CGameSpyBrowser::GetNumTeams( HGAMESERVER hGameServer )
 {
+	if( !m_hServerBrowser )
+		return 0;
+
 	char szValue[256];
-	if( !m_hServerBrowser || !GetServerProperty( hGameServer, "numteams", szValue, sizeof( szValue )))
+	if( !GetServerProperty( hGameServer, "numteams", szValue, sizeof( szValue )))
 		return 0;
 
 	return atoi( szValue );
@@ -241,16 +245,21 @@ unsigned short CGameSpyBrowser::GetServerPing( HGAMESERVER hGameServer )
 	char szAddress[16];
 	strcpy( szAddress, SBServerGetPublicAddress(( SBServer )hGameServer ));
 
-	unsigned short nPing = Ping( szAddress );
-	if( nPing == 0xffff )
+	unsigned short nPing;
+	unsigned short nICMPPing = Ping( szAddress );
+	if( nICMPPing != 0xffff )
+	{
+		nPing = nICMPPing;
+	}
+	else
 	{
 		int nServerPing = SBServerGetPing(( SBServer )hGameServer );
 		if( !nServerPing )
 			nPing = 0xffff;
-		else if( nServerPing >= 0xfffe )
-			nPing = 0xfffe;
-		else
+		else if( nServerPing < 0xfffe )
 			nPing = nServerPing;
+		else
+			nPing = 0xfffe;
 	}
 
 	return nPing;
@@ -259,7 +268,10 @@ unsigned short CGameSpyBrowser::GetServerPing( HGAMESERVER hGameServer )
 // RETAIL: 0x10001770
 bool CGameSpyBrowser::HasServerDetails( HGAMESERVER hGameServer )
 {
-	if( !m_hServerBrowser || !hGameServer )
+	if( !m_hServerBrowser )
+		return false;
+
+	if( !hGameServer )
 		return false;
 
 	CWinSync_CSAuto lockServerBrowser( m_csServerBrowser );
@@ -281,10 +293,12 @@ bool CGameSpyBrowser::GetServerConnectInfo( HGAMESERVER hGameServer,
 	*pbUsePublicAddress = true;
 	*pbDirectConnect = true;
 
-	if( !m_hServerBrowser || !hGameServer )
+	if( !m_hServerBrowser )
 		return false;
 
 	SBServer server = ( SBServer )hGameServer;
+	if( !server )
+		return false;
 
 	strcpy( pszPublicIP, SBServerGetPublicAddress( server ));
 	*pnPublicPort = SBServerGetPublicQueryPort( server );
@@ -318,6 +332,8 @@ bool CGameSpyBrowser::GetServerConnectInfo( HGAMESERVER hGameServer,
 void CGameSpyBrowser::SBCallback( ServerBrowser sb, SBCallbackReason reason, SBServer server, void* pInstance )
 {
 	CGameSpyBrowser* pGameSpyBrowser = ( CGameSpyBrowser* )pInstance;
+	bool bOurGame = false;
+	char szGameName[256];
 
 	CWinSync_CSAuto lockData( pGameSpyBrowser->m_csData );
 
@@ -327,28 +343,25 @@ void CGameSpyBrowser::SBCallback( ServerBrowser sb, SBCallbackReason reason, SBS
 	{
 		case sbc_serveradded:
 		case sbc_serverupdated:
-		{
 			// Only report servers of our game.
-			char szGameName[256];
 			if( !pGameSpyBrowser->GetServerProperty( server, "gsgamename", szGameName, sizeof( szGameName )))
 				break;
-			bool bOurGame = ( _stricmp( szGameName, pGameSpyBrowser->m_sGameName.c_str( )) == 0 );
+			bOurGame = ( _stricmp( szGameName, pGameSpyBrowser->m_sGameName.c_str( )) == 0 );
 			if( !bOurGame )
 				break;
 
 			if( pGameSpyBrowser->m_cbServerInfo )
 				pGameSpyBrowser->m_cbServerInfo( *pGameSpyBrowser, server, pGameSpyBrowser->m_pUserData );
 			break;
-		}
+		case sbc_updatecomplete:
+			if( pGameSpyBrowser->m_eBrowserStatus == eBrowserStatus_Processing )
+				pGameSpyBrowser->m_eBrowserStatus = eBrowserStatus_Complete;
+			break;
 		case sbc_serverupdatefailed:
 		case sbc_queryerror:
 			pGameSpyBrowser->m_eBrowserStatus = eBrowserStatus_Error;
 			break;
 		case sbc_serverdeleted:
-			break;
-		case sbc_updatecomplete:
-			if( pGameSpyBrowser->m_eBrowserStatus == eBrowserStatus_Processing )
-				pGameSpyBrowser->m_eBrowserStatus = eBrowserStatus_Complete;
 			break;
 	}
 }
@@ -486,7 +499,8 @@ bool IsCDKeyValid( char const* pszCDKey, int nGameType )
 
 	// The key's checksum covers the product.
 	WONAPI::CDKey cdKey;
-	cdKey.SetProductString( std::string( szGameName ));
+	std::string sGameName = szGameName;
+	cdKey.SetProductString( sGameName );
 	std::string sCDKey = pszCDKey;
 	bool bValid = cdKey.Init( pszCDKey );
 
@@ -535,7 +549,7 @@ DWORD CGameSpyBrowser::ThreadMain( )
 		if( m_bStartListUpdate )
 		{
 			m_bStartListUpdate = false;
-			if( ServerBrowserUpdate( m_hServerBrowser, SBTrue, SBFalse, m_lstSummaryKeys.empty( ) ? NULL : &m_lstSummaryKeys[0],
+			if( ServerBrowserUpdate( m_hServerBrowser, SBTrue, SBFalse, &m_lstSummaryKeys[0],
 				m_lstSummaryKeys.size( ), m_sFilter.c_str( )) != sbe_noerror )
 			{
 				m_eBrowserStatus = eBrowserStatus_Error;

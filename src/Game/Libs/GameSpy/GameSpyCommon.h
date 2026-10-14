@@ -20,6 +20,9 @@ typedef unsigned char uint8;
 typedef unsigned short uint16;
 typedef unsigned int uint32;
 
+#define LTMIN(a,b) (((a) < (b)) ? (a) : (b))
+#define LTMAX(a,b) (((a) > (b)) ? (a) : (b))
+
 // No key id: the reserved key list's and the key registry's failure.
 #define GAMESPY_INVALID_KEYID	0xff
 // The ids of the keys that are not qr2's reserved ones start here
