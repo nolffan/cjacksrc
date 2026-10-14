@@ -430,7 +430,8 @@ bool CGameSpyBrowser::HandleNetMessage( unsigned char const* pData, unsigned int
 	sockaddr_in senderAddr;
 	memset( &senderAddr, 0, sizeof( senderAddr ));
 	senderAddr.sin_family = AF_INET;
-	senderAddr.sin_addr.s_addr = htonl(( pSenderAddr[0] << 24 ) | ( pSenderAddr[1] << 16 ) | ( pSenderAddr[2] << 8 ) | pSenderAddr[3] );
+	unsigned long nSenderAddr = ( pSenderAddr[0] << 24 ) | ( pSenderAddr[1] << 16 ) | ( pSenderAddr[2] << 8 ) | pSenderAddr[3];
+	senderAddr.sin_addr.s_addr = htonl( nSenderAddr );
 	senderAddr.sin_port = htons( nSenderPort );
 
 	NNProcessData(( char* )pData, nDataLen, &senderAddr );

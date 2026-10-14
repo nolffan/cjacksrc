@@ -55,13 +55,15 @@ struct IcmpHeader
 #define PING_ERROR			0xffff
 
 // RETAIL: 0x10006070
-static unsigned short DecodeResponse( char* buf, int bytes, sockaddr_in* from )
+unsigned short DecodeResponse( char* buf, int bytes, sockaddr_in* from )
 {
 	IpHeader* iphdr = ( IpHeader* )buf;
 	unsigned short iphdrlen = iphdr->h_len * 4; // number of 32-bit words *4 = bytes
 
 	if( bytes < iphdrlen + ICMP_MIN )
 	{
+		// RETAIL: the assert is on line 225 of Monolith's Ping.cpp.
+#line 225
 		assert( false );
 	}
 
@@ -81,7 +83,7 @@ static unsigned short DecodeResponse( char* buf, int bytes, sockaddr_in* from )
 }
 
 // RETAIL: 0x100060e0
-static USHORT Checksum( USHORT* buffer, int size )
+USHORT Checksum( USHORT* buffer, int size )
 {
 	unsigned long cksum = 0;
 
@@ -102,7 +104,7 @@ static USHORT Checksum( USHORT* buffer, int size )
 }
 
 // RETAIL: 0x10006140
-static void FillICMPData( char* icmp_data, int datasize )
+void FillICMPData( char* icmp_data, int datasize )
 {
 	IcmpHeader* icmp_hdr = ( IcmpHeader* )icmp_data;
 
@@ -125,9 +127,9 @@ unsigned short Ping( char const* pszAddress )
 	sockaddr_in dest, from;
 	int fromlen = sizeof( from );
 	int timeout = PING_TIMEOUT;
-	unsigned short nPing = PING_ERROR;
 	char* icmp_data = NULL;
 	char* recvbuf = NULL;
+	unsigned short nPing = PING_ERROR;
 	unsigned short seq_no = 0;
 
 	if( WSAStartup( MAKEWORD( 2, 1 ), &wsaData ) != 0 )
@@ -143,23 +145,24 @@ unsigned short Ping( char const* pszAddress )
 			{
 				memset( &dest, 0, sizeof( dest ));
 
-				bool bResolved = false;
+				unsigned int addr = 0;
 				hostent* hp = gethostbyname( pszAddress );
-				if( hp )
+				if( !hp )
 				{
-					memcpy( &( dest.sin_addr ), hp->h_addr, hp->h_length );
-					dest.sin_family = hp->h_addrtype;
-					bResolved = true;
+					addr = inet_addr( pszAddress );
 				}
-				else
+
+				bool bResolved = ( hp || addr != INADDR_NONE );
+				if( bResolved )
 				{
-					unsigned int addr = inet_addr( pszAddress );
-					if( addr != INADDR_NONE )
-					{
+					if( hp != NULL )
+						memcpy( &( dest.sin_addr ), hp->h_addr, hp->h_length );
+					else
 						dest.sin_addr.s_addr = addr;
+					if( hp )
+						dest.sin_family = hp->h_addrtype;
+					else
 						dest.sin_family = AF_INET;
-						bResolved = true;
-					}
 				}
 
 				if( bResolved )

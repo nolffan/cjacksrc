@@ -101,6 +101,7 @@ class CGameSpyServer : public IGameSpyServer
 		static void NatNegProgressCallback( NegotiateState state, void* pUserData );
 		static void NatNegCompletedCallback( NegotiateResult result, SOCKET gameSocket,
 			sockaddr_in* pRemoteAddr, void* pUserData );
+		static void PublicAddressCallback( unsigned int nIP, unsigned short nPort, void* pUserData );
 		static void NatNegCallback( int nCookie, void* pUserData );
 		static void AuthCallback( int nGameId, int nLocalId, int bAuthenticated, char* pszErrMsg, void* pInstance );
 
