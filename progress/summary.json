@@ -132,8 +132,8 @@
       "unwritten_bytes": 76345
     },
     "GameSpy.dll": {
-      "attempted": 2,
-      "bytes_identical": 13963,
+      "attempted": 0,
+      "bytes_identical": 18104,
       "bytes_total": 20255,
       "crt": 81,
       "crt_bytes": 1569,
@@ -141,21 +141,21 @@
       "driver_bytes": 0,
       "encrypted": 0,
       "encrypted_bytes": 0,
-      "funcs": 187,
-      "identical": 134,
+      "funcs": 181,
+      "identical": 157,
       "kind": "image",
       "middleware": 387,
       "middleware_bytes": 57229,
-      "near": 37,
+      "near": 12,
       "small": 12,
       "started": true,
-      "todo": 2,
-      "unlinked": 377,
-      "unlinked_bytes": 23693,
-      "unplaced": 10,
-      "unplaced_bytes": 142,
-      "unwritten": 4,
-      "unwritten_bytes": 207
+      "todo": 0,
+      "unlinked": 378,
+      "unlinked_bytes": 23732,
+      "unplaced": 12,
+      "unplaced_bytes": 111,
+      "unwritten": 0,
+      "unwritten_bytes": 0
     },
     "Lithtech.exe": {
       "attempted": 0,
@@ -315,17 +315,17 @@
     }
   },
   "total": {
-    "attempted": 2,
-    "bytes_identical": 33646,
+    "attempted": 0,
+    "bytes_identical": 37787,
     "bytes_total": 4394837,
-    "funcs": 27920,
-    "identical": 306,
-    "near": 99,
+    "funcs": 27914,
+    "identical": 329,
+    "near": 74,
     "small": 33,
-    "todo": 27480,
-    "unplaced": 73,
-    "unplaced_bytes": 2582,
-    "unwritten": 27482,
-    "unwritten_bytes": 4346482
+    "todo": 27478,
+    "unplaced": 75,
+    "unplaced_bytes": 2551,
+    "unwritten": 27478,
+    "unwritten_bytes": 4346275
   }
 }
