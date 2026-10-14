@@ -37,12 +37,12 @@ DWORD CGameSpyPatchInfo::ThreadMain( )
 {
 	m_ThreadStartedEvent.Set( );
 
-	do
+	ghttpThink( );
+	while( m_eStatus == eBrowserStatus_Processing &&
+		WaitForSingleObject( m_ThreadEndEvent.GetEvent( ), THREAD_THINK_PERIOD ) == WAIT_TIMEOUT )
 	{
 		ghttpThink( );
 	}
-	while( m_eStatus == eBrowserStatus_Processing &&
-		WaitForSingleObject( m_ThreadEndEvent.GetEvent( ), THREAD_THINK_PERIOD ) == WAIT_TIMEOUT );
 
 	return 0;
 }

@@ -175,9 +175,12 @@ bool CGameSpyCommon::GetKeyBaseName( char const* pszKeyName, char* pszBaseName, 
 	pszBaseName[0] = '\0';
 
 	// Skip the index at the end.
-	uint32 nLen = strlen( pszKeyName ) - 1;
-	while( nLen && pszKeyName[nLen] && isdigit( pszKeyName[nLen] ))
-		nLen--;
+	uint32 nLen = strlen( pszKeyName );
+	while( --nLen )
+	{
+		if( !pszKeyName[nLen] || !isdigit( pszKeyName[nLen] ))
+			break;
+	}
 	nLen++;
 
 	if( nBaseNameLen < nLen )
@@ -194,6 +197,7 @@ bool CGameSpyCommon::IsValidKeyName( char const* pszKeyName )
 	if( !pszKeyName )
 		return false;
 
+	// Only "_" and "_t" may end a key name.
 	char const* pszSuffix = strchr( pszKeyName, '_' );
 	if( !pszSuffix )
 		return true;
@@ -205,7 +209,8 @@ bool CGameSpyCommon::IsValidKeyName( char const* pszKeyName )
 	if( pszSuffix[0] != 't' && pszSuffix[0] != 'T' )
 		return false;
 
-	return ( pszSuffix[1] == '\0' );
+	bool bValid = ( pszSuffix[1] == '\0' );
+	return bValid;
 }
 
 // RETAIL: 0x10003220
@@ -219,10 +224,10 @@ uint8 CGameSpyCommon::GetReservedKeyId( char const* pszKeyName )
 	while( isdigit( pszKeyName[nLen-1] ))
 		nLen--;
 
-	for( uint8 nKey = 0; nKey < s_nNumReservedKeys; nKey++ )
+	for( uint32 nKey = 0; nKey < s_nNumReservedKeys; nKey++ )
 	{
 		if( !_strnicmp( s_aszReservedKeys[nKey], pszKeyName, nLen ))
-			return nKey;
+			return ( uint8 )nKey;
 	}
 
 	return GAMESPY_INVALID_KEYID;
@@ -238,13 +243,15 @@ uint8 CGameSpyCommon::GetKeyId( char const* pszKeyName, uint8* pnNextKeyId )
 		return 0;
 
 	uint8 nKeyId = GetReservedKeyId( pszKeyName );
-	if( nKeyId != GAMESPY_INVALID_KEYID )
-		return nKeyId;
+	if( nKeyId == GAMESPY_INVALID_KEYID )
+	{
+		if( *pnNextKeyId >= GAMESPY_MAX_KEYS )
+			return 0;
 
-	if( *pnNextKeyId >= GAMESPY_MAX_KEYS )
-		return 0;
+		nKeyId = ( *pnNextKeyId )++;
+	}
 
-	return ( *pnNextKeyId )++;
+	return nKeyId;
 }
 
 // RETAIL: 0x10003300 (not called in the retail image)

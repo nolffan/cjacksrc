@@ -52,7 +52,10 @@ class GAMESPY_API IGameSpyBrowser
 
 		struct StartupInfo
 		{
-			StartupInfo( ) : m_nGameType( 0 ) { }
+			StartupInfo( )
+			{
+				m_nGameType = 0;
+			}
 			int		m_nGameType;
 		};
 
@@ -140,7 +143,11 @@ class GAMESPY_API IGameSpyPatchInfo
 
 		struct StartupInfo
 		{
-			StartupInfo( ) : m_nGameType( 0 ), m_nDistributionId( 0 ) { }
+			StartupInfo( )
+			{
+				m_nGameType = 0;
+				m_nDistributionId = 0;
+			}
 			int				m_nGameType;
 			std::string		m_sVersion;
 			int				m_nDistributionId;
@@ -156,7 +163,6 @@ class GAMESPY_API IGameSpyPatchInfo
 
 		struct PatchInfoResults
 		{
-			PatchInfoResults( ) : m_bNewVersion( false ), m_bMandatory( false ) { }
 			bool			m_bNewVersion;
 			bool			m_bMandatory;
 			std::string		m_sVersionName;
@@ -190,7 +196,13 @@ class GAMESPY_API IGameSpyServer
 
 		struct StartupInfo
 		{
-			StartupInfo( ) : m_nGameType( 0 ), m_nPort( 0 ), m_hSocket( 0 ), m_bPublic( true ) { }
+			StartupInfo( )
+			{
+				m_nGameType = 0;
+				m_nPort = 0;
+				m_hSocket = 0;
+				m_bPublic = true;
+			}
 			int				m_nGameType;
 			std::string		m_sIP;			// to bind, when there is no socket
 			unsigned short	m_nPort;
@@ -234,10 +246,10 @@ class GAMESPY_API IGameSpyServer
 
 		// CD key checks of the clients.
 		virtual bool GetCDKeyChallenge( char* pszChallenge, unsigned int* pnChallengeLen ) = 0;
-		virtual bool ProcessCDKeyChallengeResponse( int nClientId, char const* pszClientIP,
+		virtual bool ProcessCDKeyChallengeResponse( unsigned int nClientId, char const* pszClientIP,
 			char const* pszChallenge, char const* pszResponse ) = 0;
-		virtual EChallengeResponse GetChallengeResponse( int nClientId ) = 0;
-		virtual bool ReleaseCDKey( int nClientId ) = 0;
+		virtual EChallengeResponse GetChallengeResponse( unsigned int nClientId ) = 0;
+		virtual bool ReleaseCDKey( unsigned int nClientId ) = 0;
 
 		// A packet the game's socket received that may be GameSpy's.
 		virtual bool HandleNetMessage( unsigned char const* pData, unsigned int nDataLen,

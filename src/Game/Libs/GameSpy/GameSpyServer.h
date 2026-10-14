@@ -23,16 +23,21 @@
 #include "GameSpySDK/qr2/qr2.h"
 #include "GameSpySDK/natneg/natneg.h"
 
-// Hashes and orders the server's property names without regard to case.
-class CPropertyNameHashCompare
+// Orders the server's property names without regard to case.
+struct CPropertyNameLess
+{
+	CPropertyNameLess( ) { }
+
+	bool operator()( std::string const& sKey1, std::string const& sKey2 ) const
+	{
+		return ( _stricmp( sKey1.c_str( ), sKey2.c_str( )) < 0 );
+	}
+};
+
+// Hashes the server's property names without regard to case.
+class CPropertyNameHashCompare : public stdext::hash_compare< std::string, CPropertyNameLess >
 {
 	public:
-
-		enum
-		{
-			bucket_size = 4,
-			min_buckets = 8,
-		};
 
 		// RETAIL: 0x10003890
 		size_t operator()( std::string const& sKey ) const
@@ -45,7 +50,7 @@ class CPropertyNameHashCompare
 
 		bool operator()( std::string const& sKey1, std::string const& sKey2 ) const
 		{
-			return ( _stricmp( sKey1.c_str( ), sKey2.c_str( )) < 0 );
+			return comp( sKey1, sKey2 );
 		}
 };
 
@@ -67,10 +72,10 @@ class CGameSpyServer : public IGameSpyServer
 		virtual void SetNumTeams( int nNumTeams );
 
 		virtual bool GetCDKeyChallenge( char* pszChallenge, unsigned int* pnChallengeLen );
-		virtual bool ProcessCDKeyChallengeResponse( int nClientId, char const* pszClientIP,
+		virtual bool ProcessCDKeyChallengeResponse( unsigned int nClientId, char const* pszClientIP,
 			char const* pszChallenge, char const* pszResponse );
-		virtual EChallengeResponse GetChallengeResponse( int nClientId );
-		virtual bool ReleaseCDKey( int nClientId );
+		virtual EChallengeResponse GetChallengeResponse( unsigned int nClientId );
+		virtual bool ReleaseCDKey( unsigned int nClientId );
 
 		virtual bool HandleNetMessage( unsigned char const* pData, unsigned int nDataLen,
 			unsigned char const* pSenderAddr, unsigned short nSenderPort );
@@ -78,7 +83,7 @@ class CGameSpyServer : public IGameSpyServer
 	private:
 
 		typedef stdext::hash_map< std::string, std::string, CPropertyNameHashCompare > PropertyMap;
-		typedef std::map< int, EChallengeResponse > ChallengeResponseMap;
+		typedef std::map< unsigned int, EChallengeResponse > ChallengeResponseMap;
 
 		// The key id of a registered key name, or GAMESPY_INVALID_KEYID.
 		uint8 FindKey( char const* pszKeyName );

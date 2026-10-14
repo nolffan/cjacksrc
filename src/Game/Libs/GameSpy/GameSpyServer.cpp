@@ -366,7 +366,7 @@ bool CGameSpyServer::Publish( )
 }
 
 // RETAIL: 0x100041f0
-IGameSpyServer::EChallengeResponse CGameSpyServer::GetChallengeResponse( int nClientId )
+IGameSpyServer::EChallengeResponse CGameSpyServer::GetChallengeResponse( unsigned int nClientId )
 {
 	if( !m_bCDKeyChecks )
 		return eChallengeResponse_Invalid;
@@ -391,12 +391,14 @@ void CGameSpyServer::AuthCallback( int nGameId, int nLocalId, int bAuthenticated
 	CWinSync_CSAuto lockData( pGameSpyServer->m_csData );
 
 	ChallengeResponseMap::iterator iter = pGameSpyServer->m_mapChallengeResponses.find( nLocalId );
-	if( iter != pGameSpyServer->m_mapChallengeResponses.end( ))
-		iter->second = bAuthenticated ? eChallengeResponse_Accepted : eChallengeResponse_Rejected;
+	if( iter == pGameSpyServer->m_mapChallengeResponses.end( ))
+		return;
+
+	iter->second = bAuthenticated ? eChallengeResponse_Accepted : eChallengeResponse_Rejected;
 }
 
 // RETAIL: 0x100042c0
-bool CGameSpyServer::ReleaseCDKey( int nClientId )
+bool CGameSpyServer::ReleaseCDKey( unsigned int nClientId )
 {
 	if( !m_bCDKeyChecks )
 		return false;
@@ -427,7 +429,7 @@ bool CGameSpyServer::GetServerProperty( char const* pszKeyName, char* pszValue, 
 
 	CWinSync_CSAuto lockData( m_csData );
 
-	PropertyMap::iterator iter = m_mapProperties.find( std::string( pszKeyName ));
+	PropertyMap::iterator iter = m_mapProperties.find( pszKeyName );
 	if( iter == m_mapProperties.end( ))
 		return false;
 
@@ -437,7 +439,7 @@ bool CGameSpyServer::GetServerProperty( char const* pszKeyName, char* pszValue, 
 }
 
 // RETAIL: 0x10004430
-bool CGameSpyServer::ProcessCDKeyChallengeResponse( int nClientId, char const* pszClientIP,
+bool CGameSpyServer::ProcessCDKeyChallengeResponse( unsigned int nClientId, char const* pszClientIP,
 	char const* pszChallenge, char const* pszResponse )
 {
 	if( !m_bCDKeyChecks || !pszClientIP || !pszClientIP[0] || !pszChallenge || !pszResponse )
@@ -471,7 +473,7 @@ bool CGameSpyServer::SetServerProperty( char const* pszKeyName, char const* pszV
 
 	CWinSync_CSAuto lockData( m_csData );
 
-	m_mapProperties[std::string( pszKeyName )] = pszValue;
+	m_mapProperties[pszKeyName] = pszValue;
 	return true;
 }
 
