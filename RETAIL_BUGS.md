@@ -43,7 +43,19 @@ Fixed in the modern build: <file>, MODERN.md <id>. (Or: not fixed, because ...)
 
 ## The bugs
 
-(none listed yet)
+### The sound driver frees two arrays with `delete` instead of `delete[]`
+
+SndDrv.dll 0x10002040 (HasFormat, src/Engine/snddrv/s_dx8.cpp) and
+0x10005a71 (CDx8SoundSys::Init3DSampleFromFile, the same file). HasFormat
+allocates its WAVEFORMATEX with `new BYTE[dwSize]` and
+Init3DSampleFromFile its decompressed sample with `new uint8[...]`, and
+both free them with scalar `delete` (operator delete, 0x1000881c) rather
+than `delete[]` (0x10008822, which every other such buffer in the driver
+gets). Undefined behaviour in C++; harmless with Visual C++'s runtime,
+where both operators free the block, so nothing shows in the game.
+
+Not fixed: it changes nothing at run time with the runtime the game ships
+with.
 
 ## NOLF2's bugs Contract J.A.C.K. no longer has
 

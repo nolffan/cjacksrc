@@ -2275,7 +2275,9 @@ static bool HasFormat( HACMDRIVERID hDriverId, WORD nFormatTag )
     bool bResult = ( acmFormatEnum( hDriver, &fd, FormatEnumProc, ( DWORD )&formatEnumProcData, ACM_FORMATENUMF_WFORMATTAG ) == 0 );
 	acmDriverClose( hDriver, 0 );
 
-	delete [] pwf;
+	// RETAIL: 0x10002040, operator delete on what new[] allocated
+	// (RETAIL_BUGS.md)
+	delete pwf;
 	pwf = NULL;
 
 	return ( bResult && formatEnumProcData.m_bUseDriver );
@@ -3537,7 +3539,9 @@ S32	CDx8SoundSys::Init3DSampleFromFile( LH3DSAMPLE hS, void* pFile_image, S32 si
 
 		if ( !Init3DSampleFromAddress( hS, pSampleData, uiSampleDataSize, &pcmWaveFormat, siPlaybackRate, pFilterData ) )
 		{
-			delete [] pSampleData;
+			// RETAIL: 0x10005a71, operator delete on what new[] allocated
+			// (RETAIL_BUGS.md; InitSampleFromFile has delete[])
+			delete pSampleData;
 			return LTFALSE;
 		}
 		pSample->m_bAllocatedSoundData = true;
