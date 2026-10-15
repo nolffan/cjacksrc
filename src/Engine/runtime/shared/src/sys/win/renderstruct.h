@@ -128,7 +128,7 @@ public:
 		m_pSrcRect = NULL;
 		m_pDestRect = NULL;
 		m_Alpha = 1.0f;
-		m_bUseOld = false;
+		// RETAIL: no m_bUseOld: one 3D blit (Lithtech.exe 0x4856ab)
 	}
 
 
@@ -143,7 +143,6 @@ public:
 
 	LTWarpPt       *m_pWarpPts;
 	int            m_nWarpPts;
-	bool				m_bUseOld;
 };
 
 

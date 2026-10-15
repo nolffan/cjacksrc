@@ -56,3 +56,10 @@ modes at any size; our Bink player on FFmpeg in place of RAD's
   GetPerformanceInfo are set, and the console command tests the first
   before calling it (`RETAIL_BUGS.md`; src/Engine/runtime/client/src/
   clientde_impl.cpp, consolecommands.cpp).
+* **EN-4: the music thread's handle.** CLTDirectMusicMgr::Term closes the
+  notification thread's handle (`RETAIL_BUGS.md`; src/Engine/runtime/
+  kernel/src/sys/win/ltdirectmusic_impl.cpp).
+* **EN-5: a failed transition segment.** CLTDirectMusicMgr::ChangeIntensity
+  tests the transition's segment state before using it, as NOLF2's does
+  (`RETAIL_BUGS.md`; src/Engine/runtime/kernel/src/sys/win/
+  ltdirectmusic_impl.cpp).
