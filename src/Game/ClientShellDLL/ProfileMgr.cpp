@@ -74,55 +74,51 @@ namespace
 	char s_aTagName[30];
 	char s_aAttName[30];
 
+// RETAIL: 0x1014dcc8 Contract J.A.C.K. names each action in the table itself;
+// it drops NOLF2's holster, flashlight, inventory, keys, intel and status
+// commands and adds manual aim.
 CommandData g_CommandArray[] =
 {
-	{ IDS_CONTROL_FORWARD,			COMMAND_ID_FORWARD,			IDS_ACTIONSTRING_FORWARD,			COM_MOVE },
-	{ IDS_CONTROL_BACKWARD,			COMMAND_ID_REVERSE,			IDS_ACTIONSTRING_BACKWARD,			COM_MOVE },
-	{ IDS_CONTROL_STRAFELEFT,		COMMAND_ID_STRAFE_LEFT,		IDS_ACTIONSTRING_STRAFELEFT,		COM_MOVE },
-	{ IDS_CONTROL_STRAFERIGHT,		COMMAND_ID_STRAFE_RIGHT,	IDS_ACTIONSTRING_STRAFERIGHT,		COM_MOVE },
-	{ IDS_CONTROL_TURNLEFT,			COMMAND_ID_LEFT,			IDS_ACTIONSTRING_TURNLEFT,			COM_MOVE },
-	{ IDS_CONTROL_TURNRIGHT,		COMMAND_ID_RIGHT,			IDS_ACTIONSTRING_TURNRIGHT,			COM_MOVE },
-	{ IDS_CONTROL_STRAFE,			COMMAND_ID_STRAFE,			IDS_ACTIONSTRING_STRAFE,			COM_MOVE },
-	{ IDS_CONTROL_RUN,				COMMAND_ID_RUN,				IDS_ACTIONSTRING_RUN,				COM_MOVE },
-	{ IDS_CONTROL_JUMP,				COMMAND_ID_JUMP,			IDS_ACTIONSTRING_JUMP,				COM_MOVE },
-	{ IDS_CONTROL_DUCK,				COMMAND_ID_DUCK,			IDS_ACTIONSTRING_DUCK,				COM_MOVE },
-	{ IDS_CONTROL_TURNAROUND,		COMMAND_ID_TURNAROUND,		IDS_ACTIONSTRING_TURNAROUND,		COM_MOVE },
-	{ IDS_CONTROL_LEANLEFT,			COMMAND_ID_LEAN_LEFT,		IDS_ACTIONSTRING_LEANLEFT,			COM_MOVE },
-	{ IDS_CONTROL_LEANRIGHT,		COMMAND_ID_LEAN_RIGHT,		IDS_ACTIONSTRING_LEANRIGHT,			COM_MOVE },
-	{ IDS_CONTROL_RUNLOCKTOGGLE,	COMMAND_ID_RUNLOCK,			IDS_ACTIONSTRING_RUNLOCKTOGGLE,		COM_MOVE },
-	{ IDS_CONTROL_CROUCHTOGGLE,		COMMAND_ID_DUCKLOCK,		IDS_ACTIONSTRING_CROUCHTOGGLE,		COM_MOVE },
+	{ IDS_CONTROL_FORWARD,					COMMAND_ID_FORWARD,			"Forward",				COM_MOVE },
+	{ IDS_CONTROL_BACKWARD,				COMMAND_ID_REVERSE,			"Backward",			COM_MOVE },
+	{ IDS_CONTROL_STRAFELEFT,				COMMAND_ID_STRAFE_LEFT,		"StrafeLeft",			COM_MOVE },
+	{ IDS_CONTROL_STRAFERIGHT,				COMMAND_ID_STRAFE_RIGHT,		"StrafeRight",			COM_MOVE },
+	{ IDS_CONTROL_TURNLEFT,				COMMAND_ID_LEFT,				"Left",				COM_MOVE },
+	{ IDS_CONTROL_TURNRIGHT,				COMMAND_ID_RIGHT,			"Right",				COM_MOVE },
+	{ IDS_CONTROL_STRAFE,					COMMAND_ID_STRAFE,			"Strafe",				COM_MOVE },
+	{ IDS_CONTROL_RUN,						COMMAND_ID_RUN,				"Speed",				COM_MOVE },
+	{ IDS_CONTROL_JUMP,					COMMAND_ID_JUMP,				"Jump",				COM_MOVE },
+	{ IDS_CONTROL_DUCK,					COMMAND_ID_DUCK,				"Duck",				COM_MOVE },
+	{ IDS_CONTROL_TURNAROUND,				COMMAND_ID_TURNAROUND,		"TurnAround",			COM_MOVE },
+	{ IDS_CONTROL_LEANLEFT,				COMMAND_ID_LEAN_LEFT,		"LeanLeft",			COM_MOVE },
+	{ IDS_CONTROL_LEANRIGHT,				COMMAND_ID_LEAN_RIGHT,		"LeanRight",			COM_MOVE },
+	{ IDS_CONTROL_RUNLOCKTOGGLE,			COMMAND_ID_RUNLOCK,			"RunLock",				COM_MOVE },
+	{ IDS_CONTROL_CROUCHTOGGLE,			COMMAND_ID_DUCKLOCK,			"DuckLock",			COM_MOVE },
 
-	{ IDS_CONTROL_FIRE,				COMMAND_ID_FIRING,			IDS_ACTIONSTRING_FIRE,				COM_INV },
-	{ IDS_CONTROL_ACTIVATE,			COMMAND_ID_ACTIVATE,		IDS_ACTIONSTRING_ACTIVATE,			COM_INV },
-	{ IDS_CONTROL_RELOAD,			COMMAND_ID_RELOAD,			IDS_ACTIONSTRING_RELOAD,			COM_INV },
-	{ IDS_CONTROL_NEXT_AMMO,		COMMAND_ID_NEXT_AMMO,		IDS_ACTIONSTRING_NEXTAMMO,			COM_INV },
-	{ IDS_CONTROL_NEXTWEAPON,		COMMAND_ID_NEXT_WEAPON,		IDS_ACTIONSTRING_NEXTWEAPON,		COM_INV },
-	{ IDS_CONTROL_PREVIOUSWEAPON,	COMMAND_ID_PREV_WEAPON,		IDS_ACTIONSTRING_PREVIOUSWEAPON,	COM_INV },
-	{ IDS_CONTROL_HOLSTERWEAPON,	COMMAND_ID_HOLSTER,			IDS_ACTIONSTRING_HOLSTERWEAPON,		COM_INV },
-	{ IDS_CONTROL_LASTWEAPON,		COMMAND_ID_LASTWEAPON,		IDS_ACTIONSTRING_LASTWEAPON,		COM_INV },
-	{ IDS_CONTROL_MOVE_BODY,		COMMAND_ID_MOVE_BODY,		IDS_ACTIONSTRING_MOVE_BODY,			COM_INV },
-	{ IDS_CONTROL_FLASHLIGHT,		COMMAND_ID_FLASHLIGHT,		IDS_ACTIONSTRING_FLASHLIGHT,		COM_INV },
+	{ IDS_CONTROL_FIRE,					COMMAND_ID_FIRING,			"Fire",				COM_INV },
+	{ IDS_CONTROL_ACTIVATE,				COMMAND_ID_ACTIVATE,			"Activate",			COM_INV },
+	{ IDS_CONTROL_RELOAD,					COMMAND_ID_RELOAD,			"Reload",				COM_INV },
+	{ IDS_CONTROL_NEXT_AMMO,				COMMAND_ID_NEXT_AMMO,		"NextAmmo",			COM_INV },
+	{ IDS_CONTROL_NEXTWEAPON,				COMMAND_ID_NEXT_WEAPON,		"NextWeapon",			COM_INV },
+	{ IDS_CONTROL_PREVIOUSWEAPON,			COMMAND_ID_PREV_WEAPON,		"PrevWeapon",			COM_INV },
+	{ IDS_CONTROL_LASTWEAPON,				COMMAND_ID_LASTWEAPON,		"LastWeapon",			COM_INV },
+	{ IDS_CONTROL_MOVE_BODY,				COMMAND_ID_MOVE_BODY,		"MoveBody",			COM_INV },
+	{ IDS_CONTROL_MANUALAIM,				COMMAND_ID_MANUALAIM,		"ManualAim",			COM_INV },
 
+	{ IDS_CONTROL_LOOKUP,					COMMAND_ID_LOOKUP,			"LookUp",				COM_VIEW },
+	{ IDS_CONTROL_LOOKDOWN,				COMMAND_ID_LOOKDOWN,			"LookDown",			COM_VIEW },
+	{ IDS_CONTROL_CENTERVIEW,				COMMAND_ID_CENTERVIEW,		"CenterView",			COM_VIEW },
+	{ IDS_CONTROL_ZOOM_IN,					COMMAND_ID_ZOOM_IN,			"ZoomIn",				COM_VIEW },
 
-	{ IDS_CONTROL_LOOKUP,			COMMAND_ID_LOOKUP,			IDS_ACTIONSTRING_LOOKUP,			COM_VIEW },
-	{ IDS_CONTROL_LOOKDOWN,			COMMAND_ID_LOOKDOWN,		IDS_ACTIONSTRING_LOOKDOWN,			COM_VIEW },
-	{ IDS_CONTROL_CENTERVIEW,		COMMAND_ID_CENTERVIEW,		IDS_ACTIONSTRING_CENTERVIEW,		COM_VIEW },
-	{ IDS_CONTROL_ZOOM_IN,			COMMAND_ID_ZOOM_IN,			IDS_ACTIONSTRING_ZOOMIN,			COM_VIEW },
+	{ IDS_CONTROL_MISSION,					COMMAND_ID_MISSION,			"Mission",				COM_MISC },
+	{ IDS_CONTROL_COMPASS,					COMMAND_ID_COMPASS,			"CompassToggle",		COM_MISC },
+	{ IDS_CONTROL_RADIO,					COMMAND_ID_RADIO,			"Radio",				COM_MISC },
 
-	{ IDS_CONTROL_INVENTORY,		COMMAND_ID_INVENTORY,		IDS_ACTIONSTRING_INVENTORY,			COM_MISC },
-	{ IDS_CONTROL_KEYS,				COMMAND_ID_KEYS,			IDS_ACTIONSTRING_KEYS,				COM_MISC },
-	{ IDS_CONTROL_INTEL,			COMMAND_ID_INTEL,			IDS_ACTIONSTRING_INTEL,				COM_MISC },
-	{ IDS_CONTROL_STATUS,			COMMAND_ID_STATUS,			IDS_ACTIONSTRING_STATUS,			COM_MISC },
-	{ IDS_CONTROL_MISSION,			COMMAND_ID_MISSION,			IDS_ACTIONSTRING_MISSION,			COM_MISC },
-
-	{ IDS_CONTROL_COMPASS,			COMMAND_ID_COMPASS,			IDS_ACTIONSTRING_COMPASS,			COM_MISC },
-	{ IDS_CONTROL_RADIO,			COMMAND_ID_RADIO,			IDS_ACTIONSTRING_RADIO,				COM_MISC },
-
-	{ IDS_CONTROL_SAY,				COMMAND_ID_MESSAGE,			IDS_ACTIONSTRING_SAY,				COM_MISC },
-	{ IDS_CONTROL_TEAM_SAY,			COMMAND_ID_TEAM_MESSAGE,	IDS_ACTIONSTRING_TEAM_SAY,			COM_MISC },
+	{ IDS_CONTROL_SAY,						COMMAND_ID_MESSAGE,			"SendMessage",			COM_MISC },
+	{ IDS_CONTROL_TEAM_SAY,				COMMAND_ID_TEAM_MESSAGE,		"TeamMessage",			COM_MISC },
 
 	// This control must always remain as the last one in the array
-	{ IDS_CONTROL_UNASSIGNED,		COMMAND_ID_UNASSIGNED,		IDS_ACTIONSTRING_UNASSIGNED,		COM_MISC }
+	{ IDS_CONTROL_UNASSIGNED,		COMMAND_ID_UNASSIGNED,		"unassigned",		COM_MISC }
 };
 
 const int g_kNumCommands = sizeof(g_CommandArray) / sizeof(g_CommandArray[0]) - 1;
@@ -160,25 +156,20 @@ char* GetCommandName(int nCommand)
 {
 	static char buffer[128];
 
-    uint32 nStringID = 0;
-
 	for (int i=0; i < g_kNumCommands; i++)
 	{
 		if (g_CommandArray[i].nCommandID == nCommand)
 		{
-			nStringID = g_CommandArray[i].nActionStringID;
-			break;
+			SAFE_STRCPY(buffer, g_CommandArray[i].szAction);
+#ifdef CJACK_MODERN
+			return buffer;
+#endif
 		}
 	}
 
-	if (nStringID)
-	{
-		LoadString(nStringID,buffer,sizeof(buffer));
-	}
-	else
-	{
-		SAFE_STRCPY(buffer, "Error in CommandName()!");
-	}
+	// RETAIL: 0x100aa8d0 the loop neither breaks nor returns, so this always
+	// overwrites the name it found (RETAIL_BUGS.md)
+	SAFE_STRCPY(buffer, "Error in CommandName()!");
 
 	return buffer;
 }
@@ -238,8 +229,6 @@ CUserProfile::CUserProfile()
 	//sound
 	m_nSoundVolume=SOUND_DEFAULT_VOL;
 	m_nMusicVolume=MUSIC_DEFAULT_VOL;
-    m_bSoundQuality=LTFALSE;
-    m_bMusicQuality=LTFALSE;
 
 
 	//display
@@ -400,7 +389,7 @@ void CUserProfile::LoadControls()
 		m_nNumBindings++;
 
 		m_bindings[n].nStringID = g_CommandArray[c].nStringID;
-		m_bindings[n].nAction = g_CommandArray[c].nActionStringID;
+		SAFE_STRCPY(m_bindings[n].strAction, g_CommandArray[c].szAction);
 
 		for( int nDev = 0; nDev < NUM_DEVICES; nDev++ )
 		{
@@ -415,8 +404,7 @@ void CUserProfile::LoadControls()
 		}
 		else
 		{
-			LoadString(m_bindings[n].nAction,s_aAttName,sizeof(s_aAttName));
-			m_buteMgr.GetString(s_aTagName, s_aAttName,temp,sizeof(temp));
+			m_buteMgr.GetString(s_aTagName, m_bindings[n].strAction,temp,sizeof(temp));
 
 			char *pTok = strtok(temp,"@");
 			if (pTok)
@@ -604,9 +592,6 @@ void CUserProfile::LoadSound(bool bApply)
 	m_fSpeechSoundMultiplier = m_buteMgr.GetFloat( s_aTagName, "speechsoundmultiplier", SPEECH_DEFAULT_MULTIPLIER );
 	m_fDefaultSoundMultiplier = m_buteMgr.GetFloat( s_aTagName, "defaultsoundmultiplier", DEFAULT_DEFAULT_MULTIPLIER );
 
-	m_bSoundQuality = (LTBOOL)m_buteMgr.GetInt(s_aTagName,"sound16bit",0);
-	m_bMusicQuality = (LTBOOL)m_buteMgr.GetInt(s_aTagName,"MusicQuality",0);
-
 	uint32 dwAdvancedOptions = g_pInterfaceMgr->GetAdvancedOptions();
 	if (!(dwAdvancedOptions & AO_MUSIC))
 		m_nMusicVolume = MUSIC_MIN_VOL;
@@ -662,8 +647,6 @@ void CUserProfile::SaveControls()
 		CBindingData *pData = FindBinding(c);
 		if (pData)
 		{
-			LoadString(pData->nAction,s_aAttName,sizeof(s_aAttName));
-			
 			char szStr[128] = "";
 			for (int d = 0; d < 3; d++)
 			{
@@ -679,7 +662,7 @@ void CUserProfile::SaveControls()
 					strcat(szStr,"@");
 			}
 	
-			m_buteMgr.SetString(s_aTagName, s_aAttName, szStr);
+			m_buteMgr.SetString(s_aTagName, pData->strAction, szStr);
 
 		}
 	}
@@ -773,9 +756,6 @@ void CUserProfile::SaveSound()
 	m_buteMgr.SetFloat(s_aTagName,"defaultsoundmultiplier",m_fDefaultSoundMultiplier);
 	m_buteMgr.SetFloat(s_aTagName,"weaponssoundmultiplier", m_fWeaponsSoundMultiplier);
 	m_buteMgr.SetFloat(s_aTagName,"speechsoundmultiplier", m_fSpeechSoundMultiplier);
-	
-	m_buteMgr.SetInt(s_aTagName,"sound16bit",(int)m_bSoundQuality);
-	m_buteMgr.SetInt(s_aTagName,"MusicQuality",(int)m_bMusicQuality);
 }
 
 void CUserProfile::SavePerformance()
@@ -792,7 +772,7 @@ void CUserProfile::Term()
 CBindingData* CUserProfile::FindBinding(int commandIndex)
 {
 	int n = 0;
-	while (n < m_nNumBindings && m_bindings[n].nAction != g_CommandArray[commandIndex].nActionStringID)
+	while (n < m_nNumBindings && stricmp(m_bindings[n].strAction, g_CommandArray[commandIndex].szAction) != 0)
 		n++;
 
 	if (n >= m_nNumBindings)
@@ -838,11 +818,8 @@ void CUserProfile::ApplyBindings()
 				}
 				else if (pData->strRealName[d][0] && pData->strRealName[d][0] != ' ')
 				{
-					char tempStr[64];
-					LoadString(pData->nAction,tempStr,sizeof(tempStr));
-
 					// Set the binding
-					g_pLTClient->AddBinding(strDeviceName[d], pData->strRealName[d],tempStr,0.0f,0.0f);
+					g_pLTClient->AddBinding(strDeviceName[d], pData->strRealName[d],pData->strAction,0.0f,0.0f);
 
 				}
 			}
@@ -855,15 +832,15 @@ void CUserProfile::ApplyBindings()
 			if (pWheelUp || pWheelDown)
 			{
 				// Set the mouse wheel binding
-				char upStr[64] = "";
+				char upStr[32] = "";
 				if (pWheelUp)
 				{
-					LoadString(pWheelUp->nAction,upStr,sizeof(upStr));
+					SAFE_STRCPY(upStr, pWheelUp->strAction);
 				}
-				char downStr[64] = "";
+				char downStr[32] = "";
 				if (pWheelDown)
 				{
-					LoadString(pWheelDown->nAction,downStr,sizeof(downStr));
+					SAFE_STRCPY(downStr, pWheelDown->strAction);
 				}
 
 				g_pLTClient->AddBinding(strDeviceName[d],"##z-axis",upStr,0.10f,255.0f);
@@ -971,17 +948,13 @@ void CUserProfile::ApplySound()
 	WriteConsoleFloat( "speechsoundmultiplier", m_fSpeechSoundMultiplier );
 	ImplementSoundVolume();
 
-	LTBOOL bOldSoundQuality = GetConsoleInt("sound16bit",0);
-	WriteConsoleInt("sound16bit",(int)m_bSoundQuality);
-	if (m_bSoundQuality != bOldSoundQuality)
-	{
-		g_pGameClientShell->InitSound();
-	}
-
 	// Set the music quality...
+	// RETAIL: 0x100ac8a2 the sound and music quality are performance
+	// settings in Contract J.A.C.K., not the profile's own
 
-	WriteConsoleInt("MusicQuality",(int)m_bMusicQuality);
-	g_pGameClientShell->GetMusic()->SetQuality(!!m_bMusicQuality);	
+	uint8 bMusicQuality = (m_sPerformance.nSettings[kPerform_MusicQuality] > 0);
+	WriteConsoleInt("MusicQuality",(int)bMusicQuality);
+	g_pGameClientShell->GetMusic()->SetQuality(!!bMusicQuality);	
 
 	//if we haven't gotten to the menus yet, don't start the music yet...
 	if (g_pInterfaceMgr->HasEnteredScreenState())
@@ -1491,13 +1464,8 @@ void CUserProfile::SetSound()
 	m_fSpeechSoundMultiplier = GetConsoleFloat("speechsoundmultiplier",SPEECH_DEFAULT_MULTIPLIER);
 	m_fDefaultSoundMultiplier = GetConsoleFloat("defaultsoundmultiplier", DEFAULT_DEFAULT_MULTIPLIER);
 
-	m_bSoundQuality = (LTBOOL)GetConsoleInt("sound16bit",0);
-	m_bMusicQuality = (LTBOOL)GetConsoleInt("MusicQuality",0);
-
 	if (!GetConsoleInt("MusicEnable",0) || !GetConsoleInt("MusicActive",0))
 		m_nMusicVolume = MUSIC_MIN_VOL;
-
-	//TODO: deal with m_bMusicQuality
 }
 
 void CUserProfile::SetDisplay()
@@ -1523,7 +1491,6 @@ void CUserProfile::SetDisplay()
 void CUserProfile::SetPerformance()
 {
 	g_pPerformanceMgr->GetPerformanceOptions(&m_sPerformance);
-	m_bMusicQuality = (LTBOOL)GetConsoleInt("MusicQuality",0);
 }
 
 LTBOOL CProfileMgr::Init()

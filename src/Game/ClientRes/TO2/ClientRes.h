@@ -8701,7 +8701,6 @@
 #define IDS_CJ_1434                             1434
 #define IDS_CJ_1435                             1435
 #define IDS_CJ_1436                             1436
-#define IDS_CJ_1437                             1437
 #define IDS_CJ_1439                             1439
 #define IDS_CJ_1440                             1440
 #define IDS_CJ_1441                             1441

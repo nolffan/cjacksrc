@@ -83,7 +83,7 @@ struct CommandData
 {
 	int		nStringID;
 	int		nCommandID;
-	int		nActionStringID;
+	char	szAction[32];		// RETAIL: the action's name, where NOLF2 had a string id
 	int		nCommandType;
 };
 
@@ -101,11 +101,11 @@ inline bool IsValidBandwidth(uint16 nBandwidth)
 class CBindingData
 {
 public:
-	CBindingData()	{ nStringID = 0; nAction = 0; memset(strRealName, 0, sizeof(strRealName));
+	CBindingData()	{ nStringID = 0; strAction[0] = 0; memset(strRealName, 0, sizeof(strRealName));
 						memset(strTriggerName, 0, sizeof(strTriggerName));	}
 
     uint32      nStringID;
-	int			nAction;
+	char		strAction[32];
 	char		strTriggerName[NUM_DEVICES][64];
 	char		strRealName[NUM_DEVICES][64];
 	uint32		nDeviceObjectId[NUM_DEVICES];
@@ -259,8 +259,6 @@ public:
 	//****************** sound
 	int		m_nSoundVolume;
 	int		m_nMusicVolume;
-    LTBOOL  m_bSoundQuality;
-    LTBOOL  m_bMusicQuality;
 	float	m_fDefaultSoundMultiplier;
 	float	m_fWeaponsSoundMultiplier;
 	float	m_fSpeechSoundMultiplier;

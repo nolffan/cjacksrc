@@ -165,14 +165,15 @@ void CScreenAudio::OnFocus(LTBOOL bFocus)
 		m_nSoundVolume = pProfile->m_nSoundVolume;
 		m_nMusicVolume = pProfile->m_nMusicVolume;
 		m_nSpeechVolume = (int)(100.0f * pProfile->m_fSpeechSoundMultiplier);
-		m_bSoundQuality = pProfile->m_bSoundQuality;
+		// RETAIL: 0x100bb25e the sound and music quality are performance settings
+		m_bSoundQuality = (pProfile->m_sPerformance.nSettings[kPerform_SoundQuality] > 0);
 
 		LTBOOL bSoundOn = (LTBOOL)GetConsoleInt("soundenable",1);
         m_pSoundVolumeCtrl->Enable(bSoundOn);
 		m_pSpeechVolumeCtrl->Enable(bSoundOn);
         m_pSoundQualityCtrl->Enable(bSoundOn);
 
-		m_bMusicQuality = pProfile->m_bMusicQuality;
+		m_bMusicQuality = (pProfile->m_sPerformance.nSettings[kPerform_MusicQuality] > 0);
 
 		if (!GetConsoleInt("MusicActive",0))
 			m_nMusicVolume = MUSIC_MIN_VOL;
@@ -240,12 +241,18 @@ void CScreenAudio::SaveSoundSettings()
 	pProfile->m_nSoundVolume = m_nSoundVolume;
 	pProfile->m_nMusicVolume = m_nMusicVolume;
 
-	WriteConsoleInt("MusicActive", (m_nMusicVolume > MUSIC_MIN_VOL) && m_bMusicEnabled);
+	uint8 nMusicActive = (m_nMusicVolume > MUSIC_MIN_VOL) && m_bMusicEnabled;
+	WriteConsoleInt("MusicActive", nMusicActive != 0);
 	pProfile->m_fSpeechSoundMultiplier = m_nSpeechVolume / 100.0f;
-	pProfile->m_bSoundQuality = m_bSoundQuality;
-	pProfile->m_bMusicQuality = m_bMusicQuality;
+
+	// RETAIL: 0x100bb12d the qualities and the music go to the profile's
+	// performance settings
+	pProfile->m_sPerformance.nSettings[kPerform_MusicQuality] = (uint8)m_bMusicQuality;
+	pProfile->m_sPerformance.nSettings[kPerform_SoundQuality] = (uint8)m_bSoundQuality;
+	pProfile->m_sPerformance.nSettings[kPerform_MusicActive] = nMusicActive;
 
 	pProfile->ApplySound();
+	pProfile->ApplyPerformance(false);
 }
 
 

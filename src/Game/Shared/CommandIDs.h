@@ -78,6 +78,7 @@
 #define COMMAND_ID_DUCKLOCK			92
 #define COMMAND_ID_LASTWEAPON		93
 #define COMMAND_ID_TEAM_MESSAGE		94
+#define COMMAND_ID_MANUALAIM		95	// RETAIL: Contract J.A.C.K.'s manual aim (CShell 0x1014e0c0)
 
 // TO2-specific commands should be moved to the 101-150 range of ID numbers
 #define FIRST_TO2_COMMAND			101

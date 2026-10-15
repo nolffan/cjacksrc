@@ -180,7 +180,7 @@ BEGIN
     IDS_CJ_1434             "Toggle whether or not weapons stay after picking them up."
     IDS_CJ_1435             "Set filtering of servers based on game type."
     IDS_CJ_1436             "Unknown"
-    IDS_CJ_1437             "Manual Aim"
+    IDS_CONTROL_MANUALAIM   "Manual Aim"
     IDS_CJ_1439             "LAN Network port:"
     IDS_ABORT               "Leave game"
     IDS_DECODEMSG_CHARSET   "AaBbCcDdFfGgHhJjKkLlMmNnPpQqRrSsTtVvWwXxYyZz"
