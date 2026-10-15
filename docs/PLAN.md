@@ -581,27 +581,69 @@ ILTMath.Default, which retail does not have (CLTClient::Math, still to be
 looked at). Note: out/exp/try.sh compiling kernel's de_file.cpp alone
 makes cl.exe spin (the full build is fine).
 
+**Round 4** (on round 3's b0c77a8): **ILTClient has a slot the SDK
+lacked.** Retail's CLTClient vtable (0x54b728, 94 entries) has a virtual
+between AddParticle and StartQuery (0x409070: the "internet" driver's
+UDP socket into `*phSocket`, LT_OK or LT_NOTFOUND), and no Math(); there
+is no ILTMath.Default holder either. `iltclient.h` gains
+`GetUDPSocket(uint32 *phSocket)` there (our name), and clientde_impl.cpp
+drops CLTClient::Math and its ILTMath holder. **For the game package:**
+every ILTClient virtual after AddParticle (IsLocalToServer,
+Get/SetLightGroupColor, SetOccluderEnabled, SetTextureEffectVar,
+GetSpriteControl, SetCanvasFn/Radius, GetMaxRadiusInPoly and the query
+calls) sat 4 bytes short in the game's calls until now (retail CShell
+calls SetLightGroupColor through +0x150); a rebuild picks the new
+offsets up. The game does not ask for ILTMath and should not: CJ's
+engine has no such interface. Also matched: CPixelShaderMgr's
+InstallPixelShader/FreeShader/destructor (indexing the array each
+time), COccludee::SplitPlane/SplitPlane2D (every outline is split, the
+fear tree's goto left after the first) and COccluder::Occlude/Occlude2D
+(resize(0), the 2D AABB early-out), d3d_OptimizeSurface (every tile but
+the first loses a pixel), CClientMgr::Render (retail 0x40f080; no
+DrawPrim camera around RenderScene), CD3DDrawPrim::DrawPrim for POLYG4
+and POLYF4 (only the last draw's result checked),
+CServerEvent::DecrementRefCount (dl_RemoveAt per node), and
+BuildDeviceList's Intel rule (an Intel adapter whose caps deny hardware
+T&L still gets it unless it is one of eight listed parts), which leaves
+BuildDeviceList size-exact with four stack slots swapped. Then, from the
+size-exact and near list: StartGameRequest's constructor sets m_hSocket
+last (an SDK change the game's inline copies pick up), StartupLocal
+transfers the net driver before the resources, StartShell's ConnectTCP
+flag goes through a local, WriteUnguaranteedDataWithAttachments takes
+WriteUnguaranteedInfo's argument order, UpdateSendTimeWithAttachments
+indexes the object info per store, WriteObjectRemoves keeps 32
+change-flag bits, dalloc returns NULL for size 0 again (CJ kept the check
+the fear tree dropped), CollideWithPoly, SetStreamSources (streams, then
+the unchecked indices) and DrawAggregateShader (resize(0)). The nears
+list paired UpdateSendTimeWithAttachments with heap code at 0x4a03b0 and
+0x1005e930; its real homes are 0x45fe20 and 0x10030640.
+
 **Where it stands / next** (stopped here: score recorded at
-`Lithtech.exe` 6,796 identical, 93.6%; `server.dll` 2,718, 95.6%;
+`Lithtech.exe` 6,824 identical, 94.3%; `server.dll` 2,728, 95.9%;
 SndDrv.dll 225) (breadth first, per module, with `tools/fndiff.py`,
 `o2gap.py`, `vtabcheck.py`, `uncovered.py`; `progress.py --nears=<target>`
 pairs some rows wrongly where a function's CSV extent is split, so check
-each with fndiff against the retail address first; fndiff on
+each with fndiff against the retail address first, and pass `--end` in
+hex: fndiff reads a decimal end as hex; fndiff on
 `--image=out/spdemo/Lithtech-readable.exe` reads SecuROM's calls put
 back):
-- structural nears not yet done: BuildDeviceList, DrawDynamicParticles
-  (block order), COccludee::SplitPlane, d3d_OptimizeSurface,
-  CClientMgr::Render (its CSV row is split), CD3DDrawPrim::DrawPrim
-  (POLYF4), CModelMgr::ForEach, UpdateSendTimeWithAttachments,
-  CServerEvent::DecrementRefCount, LTMemHeapInit (inlining), CLTClient::Math
-  and the ILTMath holder retail lacks;
-- nears left as register allocation only (tried, no source shape found):
-  CD3D_RenderWorld::Draw, CPlayerMover::Collide/_Poly/StairStep,
-  MoveObject, RotateWorldModel, QueueShadows, LoadLightGroup,
-  SSubLM::Load, the light-group stream operator, CPixelShaderMgr::
-  FreeShader, ps_UpdateParticleBoundingBox (x operand order),
-  SendAllObjectsUnguaranteed, CD3DDrawPrim::SetCamera, the DrawPolyGrid
-  imul order;
+- structural nears not yet done: DrawDynamicParticles (block order and
+  pEffect kept in a register), CModelMgr::ForEach (retail calls the set
+  iterator's _Inc out of line; ours inlines it whatever the iterator
+  form), MarkSectionBreaks for Lightmap_Texture (retail inlines != into a
+  call of ==; ours calls != out of line, and writing == inlines it
+  whole), LTMemHeapInit (inlining), CLilFixedHeapGroup::Init and
+  CGeneralHeapGroup::Term, GetBlockersInAABB, MoveObject and
+  RotateWorldModel;
+- nears left as register allocation or scheduling only (tried, no source
+  shape found): BuildDeviceList (four stack slots), CreateDevice (esi and
+  edi swapped), CUIBitmapFont::BuildFontTable (three stack slots),
+  MoveAttachment (the MoveState zeroing interleaved), CD3D_RenderWorld::
+  Draw, CPlayerMover::Collide/_Poly/StairStep, QueueShadows,
+  LoadLightGroup, SSubLM::Load, the light-group stream operator,
+  ps_UpdateParticleBoundingBox (x operand order),
+  SendAllObjectsUnguaranteed, CD3DDrawPrim::SetCamera and
+  SetTransformMode, the DrawPolyGrid imul order;
 - the textured lightmap sections have no constructors now (round 2);
   watch the modern build for code that relied on them.
 
