@@ -295,6 +295,13 @@ LTRESULT CClientShell::StartupLocal(StartGameRequest *pRequest,
     }
 
 
+    // Give the server the CBaseDriver we have setup.
+    // RETAIL: before the resources (Lithtech.exe 0x411d6e)
+    if (pServerDriver)
+    {
+        g_pServerMgr->TransferNetDriver(pServerDriver);
+    }
+
     // Add the resources to it and listen locally by default.
     // RETAIL: from the vector (Lithtech.exe 0x411d85)
     if (!g_pServerMgr->AddResources(&g_pClientMgr->m_ResTrees[0], g_pClientMgr->m_ResTrees.size()))
@@ -318,12 +325,6 @@ LTRESULT CClientShell::StartupLocal(StartGameRequest *pRequest,
     }
 
     m_bLocal = true;
-
-    // Give the server the CBaseDriver we have setup.
-    if (pServerDriver)
-    {
-        g_pServerMgr->TransferNetDriver(pServerDriver);
-    }
 
     if (bSelfConnect)
     {

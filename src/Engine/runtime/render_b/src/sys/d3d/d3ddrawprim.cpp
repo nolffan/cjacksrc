@@ -1119,9 +1119,10 @@ LTRESULT CD3DDrawPrim::DrawPrim(LT_POLYG4 *pPrim, uint32 nCount) {
 		while (nCount) 
 		{	// Note: Not checking return everytime for speed...
 			hRes = pDevice->DrawPrimitiveUP(D3DPT_TRIANGLEFAN, 2, pPrimPtr, sizeof(LT_VERTG));
-			if (hRes != D3D_OK)
-				return LT_ERROR; 
 			--nCount; ++pPrimPtr; }
+		// RETAIL: only the last draw's result is checked (Lithtech.exe 0x41dd90)
+		if (hRes != D3D_OK)
+			return LT_ERROR; 
 		}
 	else {	// Use Transform and Lit verts...
 		HRESULT hRes = pDevice->SetVertexShader(DRAWPRIM_D3DTRANS_FLAGS);
@@ -1133,9 +1134,10 @@ LTRESULT CD3DDrawPrim::DrawPrim(LT_POLYG4 *pPrim, uint32 nCount) {
 				m_VertTransBuf[i].x	= pPrimPtr->verts[i].x; m_VertTransBuf[i].y = pPrimPtr->verts[i].y; m_VertTransBuf[i].z = pPrimPtr->verts[i].z; m_VertTransBuf[i].rhw = 1.0f;
 				m_VertTransBuf[i].rgba = RGBA_MAKE(pPrimPtr->verts[i].rgba.r,pPrimPtr->verts[i].rgba.g,pPrimPtr->verts[i].rgba.b,pPrimPtr->verts[i].rgba.a); }
 			MODERN_PIXEL_ALIGN(m_VertTransBuf, m_VertTransBuf + 4); hRes = pDevice->DrawPrimitiveUP(D3DPT_TRIANGLEFAN, 2, m_VertTransBuf, sizeof(DRAWPRIM_D3DTRANS));
-			if (hRes != D3D_OK)
-				return LT_ERROR; 
 			--nCount; ++pPrimPtr; }
+		// RETAIL: only the last draw's result is checked (Lithtech.exe 0x41dd90)
+		if (hRes != D3D_OK)
+			return LT_ERROR; 
 		}
 
 	return LT_OK;
@@ -1156,9 +1158,10 @@ LTRESULT CD3DDrawPrim::DrawPrim(LT_POLYF4 *pPrim, uint32 nCount) {
 				m_VertBufG[i].x	= pPrimPtr->verts[i].x; m_VertBufG[i].y = pPrimPtr->verts[i].y; m_VertBufG[i].z = pPrimPtr->verts[i].z;
 				m_VertBufG[i].rgba = pPrimPtr->rgba; }
 			hRes = pDevice->DrawPrimitiveUP(D3DPT_TRIANGLEFAN, 2, m_VertBufG, sizeof(LT_VERTG));
-			if (hRes != D3D_OK)
-				return LT_ERROR; 
 			--nCount; ++pPrimPtr; }
+		// RETAIL: only the last draw's result is checked (Lithtech.exe 0x41dfee)
+		if (hRes != D3D_OK)
+			return LT_ERROR; 
 		}
 	else {	// Use Transform and Lit verts...
 		HRESULT hRes = pDevice->SetVertexShader(DRAWPRIM_D3DTRANS_FLAGS);
@@ -1170,9 +1173,10 @@ LTRESULT CD3DDrawPrim::DrawPrim(LT_POLYF4 *pPrim, uint32 nCount) {
 				m_VertTransBuf[i].x	= pPrimPtr->verts[i].x; m_VertTransBuf[i].y = pPrimPtr->verts[i].y; m_VertTransBuf[i].z = pPrimPtr->verts[i].z; m_VertTransBuf[i].rhw = 1.0f;
 				m_VertTransBuf[i].rgba = RGBA_MAKE(pPrimPtr->rgba.r,pPrimPtr->rgba.g,pPrimPtr->rgba.b,pPrimPtr->rgba.a); }
 			MODERN_PIXEL_ALIGN(m_VertTransBuf, m_VertTransBuf + 4); hRes = pDevice->DrawPrimitiveUP(D3DPT_TRIANGLEFAN, 2, m_VertTransBuf, sizeof(DRAWPRIM_D3DTRANS));
-			if (hRes != D3D_OK)
-				return LT_ERROR; 
 			--nCount; ++pPrimPtr; }
+		// RETAIL: only the last draw's result is checked (Lithtech.exe 0x41e0a9)
+		if (hRes != D3D_OK)
+			return LT_ERROR; 
 		}
 
 	return LT_OK;

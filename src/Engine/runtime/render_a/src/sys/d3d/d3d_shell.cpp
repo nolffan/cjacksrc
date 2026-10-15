@@ -156,7 +156,23 @@ bool CD3D_Shell::BuildDeviceList()
 				{
 					bConfirmed = true;
 					// Confirm the device for HW vertex processing...
-					bHWTnL = (Device.d3dCaps.DevCaps & D3DDEVCAPS_HWTRANSFORMANDLIGHT) ? true : false;
+					// RETAIL: an Intel adapter whose caps deny hardware T&L is
+					// still given it unless it is one of these eight parts
+					// (Lithtech.exe 0x4cbe38)
+					if (Device.d3dCaps.DevCaps & D3DDEVCAPS_HWTRANSFORMANDLIGHT)
+						bHWTnL = true;
+					else if (AdapterInfo.AdapterID.VendorId == 0x8086 &&
+						AdapterInfo.AdapterID.DeviceId != 0x2562 &&
+						AdapterInfo.AdapterID.DeviceId != 0x1132 &&
+						AdapterInfo.AdapterID.DeviceId != 0x7121 &&
+						AdapterInfo.AdapterID.DeviceId != 0x7123 &&
+						AdapterInfo.AdapterID.DeviceId != 0x7125 &&
+						AdapterInfo.AdapterID.DeviceId != 0x7127 &&
+						AdapterInfo.AdapterID.DeviceId != 0x3577 &&
+						AdapterInfo.AdapterID.DeviceId != 0x3582)
+						bHWTnL = true;
+					else
+						bHWTnL = false;
 				}
 
 				LT_MEM_TRACK_ALLOC(bConfirmedFormats.push_back(bConfirmed), LT_MEM_TYPE_RENDERER);
