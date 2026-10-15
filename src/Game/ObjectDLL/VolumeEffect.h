@@ -14,10 +14,14 @@
 #ifndef __VOLUMEEFFECT_H__
 #define __VOLUMEEFFECT_H__
 
+#include "GameBase.h"
+
 LINKTO_MODULE( VolumeEffect );
 
 
-class VolumeEffect : public BaseClass
+// RETAIL: a GameBase in Contract J.A.C.K. (Object.lto vtable 0x101caea4, 27
+// slots), saving its dims through two virtuals of its own.
+class VolumeEffect : public GameBase
 {
 public:
 	VolumeEffect();
@@ -27,6 +31,9 @@ protected:
 	LTVector m_vDims;
 
 	uint32 EngineMessageFn( uint32 messageID, void* pData, LTFLOAT fData );
+
+	virtual void Save( ILTMessage_Write *pMsg );
+	virtual void Load( ILTMessage_Read *pMsg );
 
 private:
 	void InitialUpdate();

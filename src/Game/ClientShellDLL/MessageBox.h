@@ -30,6 +30,9 @@ typedef void (*MBCallBackFn)(LTBOOL bReturn, void *pData);
 
 
 
+// MBCreate::nFlags
+#define MBF_NOESCAPE	0x1		// escape does not close the box
+
 typedef struct MBCreate_t
 {
 	MBCreate_t() 
@@ -42,7 +45,7 @@ typedef struct MBCreate_t
 		nMaxChars = CLTGUIEditCtrl::kMaxLength; 
 		eInput = CLTGUIEditCtrl::kInputAll;
 		pEditFilter = LTNULL;
-		bNoEscape = LTFALSE;
+		nFlags = 0;
 	};
 
 	eMBType						eType;
@@ -55,10 +58,10 @@ typedef struct MBCreate_t
 	CLTGUIEditCtrl::eInputMode	eInput;
 
 	// RETAIL: Contract J.A.C.K.'s (CShell 0x1004c340): a filter for the
-	// edit control's characters (its member 0x184, not yet in our
-	// LTGUIMgr), and a box escape does not close.
-	void*						pEditFilter;
-	LTBOOL						bNoEscape;
+	// edit control's characters (its member 0x184, CLTGUIEditCtrl::SetFilter),
+	// and a box escape does not close.
+	CLTGUIEditCtrl::FilterFn	pEditFilter;
+	uint32						nFlags;					// MBF_ flags
 
 } MBCreate;
 
