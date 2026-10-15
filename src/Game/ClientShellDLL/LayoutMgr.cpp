@@ -176,6 +176,16 @@
 #define LO_HUD_DISPLAYMETER_SCALE		"DisplayMeterScale"
 #define LO_HUD_DISPLAYMETER_TEX			"DisplayMeterTexture"
 
+// RETAIL: Contract J.A.C.K.'s weapon heat bar (CShell 0x10072d00..0x100762d4)
+#define LO_HUD_WEAPONHEAT_TEX			"WeaponHeatTex"
+#define LO_HUD_WEAPONHEAT_HEIGHT		"WeaponHeatBarHeight"
+#define LO_HUD_WEAPONHEAT_SCALE			"WeaponHeatBarScale"
+#define LO_HUD_WEAPONHEAT_POS			"WeaponHeatBasePos"
+#define LO_HUD_WEAPONHEAT_COOL			"WeaponHeatCool"
+#define LO_HUD_WEAPONHEAT_WARM			"WeaponHeatWarm"
+#define LO_HUD_WEAPONHEAT_HOT			"WeaponHeatHot"
+#define LO_HUD_WEAPONHEAT_OVERHEAT		"WeaponHeatOverheat"
+
 #define	LO_HUD_MODE_TEXTPOS				"ModeTextPos"
 
 
@@ -2608,4 +2618,59 @@ LTVector CLayoutMgr::GetVector(char *pTag,char *pAttribute)
 {
 	CAVector vRet(0.0,0.0,0.0);
 	return m_buteMgr.GetVector(pTag, pAttribute, vRet);
+}
+
+// ----------------------------------------------------------------------- //
+//
+//	The weapon heat bar's layout (RETAIL: Contract J.A.C.K.'s)
+//
+// ----------------------------------------------------------------------- //
+
+void CLayoutMgr::GetWeaponHeatTex( int nLayout, char *pBuf, int nBufLen )
+{
+	sprintf(s_aTagName, "%s%d", LO_HUD_TAG, nLayout);
+	if (!m_buteMgr.Exist(s_aTagName,LO_HUD_WEAPONHEAT_TEX))
+		sprintf(s_aTagName, "%s0", LO_HUD_TAG);
+
+	GetString( s_aTagName, LO_HUD_WEAPONHEAT_TEX, pBuf, nBufLen );
+}
+
+int CLayoutMgr::GetWeaponHeatBarHeight(int nLayout)
+{
+	sprintf(s_aTagName, "%s%d", LO_HUD_TAG, nLayout);
+	if (!m_buteMgr.Exist(s_aTagName,LO_HUD_WEAPONHEAT_HEIGHT))
+		sprintf(s_aTagName, "%s0", LO_HUD_TAG);
+
+	return GetInt(s_aTagName, LO_HUD_WEAPONHEAT_HEIGHT);
+}
+
+float CLayoutMgr::GetWeaponHeatBarScale( int nLayout )
+{
+	sprintf(s_aTagName, "%s%d", LO_HUD_TAG, nLayout);
+	if (!m_buteMgr.Exist(s_aTagName,LO_HUD_WEAPONHEAT_SCALE))
+		sprintf(s_aTagName, "%s0", LO_HUD_TAG);
+
+	return (float)GetFloat(s_aTagName, LO_HUD_WEAPONHEAT_SCALE);
+}
+
+LTIntPt CLayoutMgr::GetWeaponHeatBasePos(int nLayout)
+{
+	sprintf(s_aTagName, "%s%d", LO_HUD_TAG, nLayout);
+	if (!m_buteMgr.Exist(s_aTagName,LO_HUD_WEAPONHEAT_POS))
+		sprintf(s_aTagName, "%s0", LO_HUD_TAG);
+
+	return GetPoint(s_aTagName, LO_HUD_WEAPONHEAT_POS);
+}
+
+void CLayoutMgr::GetWeaponHeatColors( int nLayout, LTVector* pvCool, LTVector* pvWarm, LTVector* pvHot,
+									  LTVector* pvOverheat )
+{
+	sprintf(s_aTagName, "%s%d", LO_HUD_TAG, nLayout);
+	if (!m_buteMgr.Exist(s_aTagName,LO_HUD_WEAPONHEAT_COOL))
+		sprintf(s_aTagName, "%s0", LO_HUD_TAG);
+
+	*pvCool		= m_buteMgr.GetVector(s_aTagName, LO_HUD_WEAPONHEAT_COOL);
+	*pvWarm		= m_buteMgr.GetVector(s_aTagName, LO_HUD_WEAPONHEAT_WARM);
+	*pvHot		= m_buteMgr.GetVector(s_aTagName, LO_HUD_WEAPONHEAT_HOT);
+	*pvOverheat	= m_buteMgr.GetVector(s_aTagName, LO_HUD_WEAPONHEAT_OVERHEAT);
 }

@@ -26,6 +26,9 @@
 #include "HUDRadar.h"
 #include "HUDDisplayMeter.h"
 #include "HUDScores.h"
+#include "HUDBombTarget.h"
+#include "HUDCarrying.h"
+#include "HUDWeaponHeat.h"
 
 enum eHUDUpdateFlag
 {
@@ -52,6 +55,8 @@ enum eHUDUpdateFlag
 	kHUDRespawn     = 0x00080000,
 	kHUDScores		= 0x00100000,
 	kHUDDoomsday	= 0x00200000,
+	kHUDBombTarget	= 0x00400000,	// CJ
+	kHUDWeaponHeat	= 0x00800000,	// CJ
 	kHUDAll			= 0xFFFFFFFF,
 };
 
@@ -111,6 +116,12 @@ protected:
 	CHUDDisplayMeter	m_DisplayMeter;
 	CHUDScores			m_Scores;
 
+	// RETAIL: Contract J.A.C.K.'s (CHUDMgr 0x3a04..0x3d64): the bombs'
+	// timers, the carried object (TO2HUDMgr's in NOLF2) and the weapon's heat
+	CHUDBombTarget		m_BombTarget;
+	CHUDCarrying		m_Carrying;
+	CHUDWeaponHeat		m_WeaponHeat;
+
 	//items
 	typedef std::vector<CHUDItem *> ItemArray;
 	ItemArray m_itemArray;			// Pointer to each screen
@@ -131,5 +142,7 @@ extern CHUDRewardMsgQueue*	g_pRewardMsgs;
 extern CHUDPaused*			g_pPaused;
 extern CHUDDisplayMeter*	g_pDisplayMeter;
 extern CHUDScores*			g_pScores;
+extern CHUDBombTarget*		g_pHUDBombTarget;
+extern CHUDCarrying*		g_pHUDCarrying;
 
 #endif

@@ -336,6 +336,10 @@ SOURCE=.\HUDBar.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\HUDBombTarget.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\HUDCarrying.cpp
 # End Source File
 # Begin Source File
@@ -449,6 +453,10 @@ SOURCE=.\HUDSubtitles.cpp
 # Begin Source File
 
 SOURCE=.\HUDTransmission.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\HUDWeaponHeat.cpp
 # End Source File
 # Begin Source File
 
@@ -1402,6 +1410,10 @@ SOURCE=.\HUDBar.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\HUDBombTarget.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\HUDCarrying.h
 # End Source File
 # Begin Source File
@@ -1519,6 +1531,10 @@ SOURCE=.\HUDSubtitles.h
 # Begin Source File
 
 SOURCE=.\HUDTransmission.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\HUDWeaponHeat.h
 # End Source File
 # Begin Source File
 

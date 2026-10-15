@@ -761,6 +761,9 @@ void CInterfaceMgr::OnExitWorld()
 	m_InterfaceTimer.SetTime(0.0f,false);
 	m_BlueInterfaceTimer.SetTime(0.0f,false);
 	m_RedInterfaceTimer.SetTime(0.0f,false);
+	g_pHUDBombTarget->SetTimer(0,0.0f,false);
+	g_pHUDBombTarget->SetTimer(1,0.0f,false);
+	g_pHUDBombTarget->SetTimer(2,0.0f,false);
 	m_FullScreenTint.TurnOn(false);
 	
 	g_pDisplayMeter->SetValue( 0 );
@@ -6236,7 +6239,7 @@ bool CInterfaceMgr::HandleDisplayTimerMsg( ILTMessage_Read& msg )
 
 	// Calculate time to the end.
 	// RETAIL: 0x100653d0 0 is the game's timer, 1 and 2 the teams',
-	// 3 and up the demolition bombs' (CHUDBombTarget, still to be written).
+	// 3 and up the demolition bombs'.
 	switch( nTeamId )
 	{
 		case 0:
@@ -6247,6 +6250,9 @@ bool CInterfaceMgr::HandleDisplayTimerMsg( ILTMessage_Read& msg )
 			break;
 		case 2:
 			m_RedInterfaceTimer.SetTime( fGameTimeEnd, bPaused );
+			break;
+		default:
+			g_pHUDBombTarget->SetTimer( nTeamId - 3, fGameTimeEnd, bPaused );
 			break;
 	}
     return LTTRUE;
