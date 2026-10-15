@@ -98,6 +98,18 @@ Not fixed: the right fix depends on how Object.lto sizes the buffer
 (package 4, the game, will show it); a buffer of 8 would make a stricter
 check refuse every challenge.
 
+### GetCommandName always answers "Error in CommandName()!"
+
+CShell.dll 0x100aa8d0 (GetCommandName,
+src/Game/ClientShellDLL/ProfileMgr.cpp). The loop over the command table
+copies the matching action's name into its buffer but neither breaks nor
+returns, and the error string is then copied over it unconditionally, so
+every command gets the error string. Nothing in the retail CShell.dll
+calls it, so nothing shows in the game.
+
+Fixed in the modern build: src/Game/ClientShellDLL/ProfileMgr.cpp,
+MODERN.md GAME-1.
+
 ### Two console variables take a float's value as an integer's bits
 
 Lithtech.exe and server.dll's engine-variable tables (the entries for

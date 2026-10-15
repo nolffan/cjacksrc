@@ -39,3 +39,6 @@ modes at any size; our Bink player on FFmpeg in place of RAD's
   constructor sets its thread and browser handles before anything can
   fail (`RETAIL_BUGS.md`; src/Game/Libs/GameSpy/WinSync.h,
   GameSpyBrowser.cpp).
+* **GAME-1: GetCommandName.** Returns the name it finds instead of always
+  its error string (`RETAIL_BUGS.md`;
+  src/Game/ClientShellDLL/ProfileMgr.cpp).

@@ -172,6 +172,170 @@ Done.
   the source shape that changes that order. Besides that, the image
   differs only in its time stamps (header and export directory).
 
+### 4. game
+
+The game DLLs build (`src/Game/TO2.dsw`); the launcher and the dedicated
+server are not in the workspace yet (their resources first).
+
+- **Tree.** nolf2src's `src/Game` as its release build compiles it, with
+  `src/libs` (ButeMgr, CryptMgr, RegMgr, RegMgr32, lith, stdlith, MFCStub,
+  zlib's headers). Not taken: ServerDir/WON (but `IServerDir.h`, kept as a
+  header until the game's GameSpy code is written), AutoRun, STLport,
+  NOLF2's launcher art, the other languages' scripts.
+- **One project per DLL.** Both retail game DLLs have their code in the
+  alphabetical order of all their sources, the TO2 project's and the
+  shared library's mixed, then the libraries in the alphabetical order of
+  their projects; Object.lto's assert names
+  `C:\proj\to2\source\Game\ObjectDLL\Attachments.cpp` (NOLF2's:
+  `...\ObjectDLL\ObjectShared\...`). So `src/Game/ObjectDLL` and
+  `src/Game/ClientShellDLL` hold both projects' files, and `Object.dsp`
+  and `ClientShellDLL.dsp` (Final only, written for this project) list
+  them in that order with one precompiled header each.
+- **Port.** The 2006 tree's ("Build 69") changes to the shared game code,
+  merged three ways (base: NOLF2's release; about 1,000 lines in 109
+  files; nolf2src's RETAIL reconstructions of 1.3 are among them), and
+  FEAR's VC7 ButeMgr, CryptMgr, MFCStub, dprintf.cpp. The SDK's function
+  pointers lose their default arguments (as the engine's do) and
+  `CLTReference::operator=` compares its pointer directly. Not taken from
+  the 2006 tree: `kInputSprintfFriendly` (CJ's LTGUIMgr edit control has
+  no `%` or `\` test).
+- **Flags** (evidence in `progress/COMPILERS.md`): `/MD /O2` with `/GR`
+  in the TO2 projects as well as the shared ones, `/GS` in LTGUIMgr only,
+  and **no `/GX`** anywhere (game DLLs and their libraries: the retail
+  images have the STL's try blocks and nothing else; dropping it was
+  worth 950 functions in CShell.dll and 1,760 in Object.lto).
+- **Resources.** CRes.dll's strings, credits and intro are retail's
+  (the string tables read from the retail image by a one-off script,
+  written into NOLF2's three scripts under NOLF2's names, 45 new ids as
+  `IDS_CJ_<id>`; the shared script is read before ClientRes.rc's strings,
+  which is the order of the retail string tables): the file is retail's
+  but for its time stamp, and so is SRes.dll (no resources at all).
+- **Method that pays.** RTTI gives every retail vtable with its class
+  name (complete object locators; LTGUIMgr alone has none): comparing slot
+  counts with ours shows which classes gained or lost virtual functions,
+  and the slots' targets (placed through the scoreboard) say where.
+  Constructors give the member layout (store offsets aligned on
+  instruction shapes). One header change then closes every function of
+  the class: KeyFramer's object name became a `std::string` (+24 bytes),
+  GameBaseLite gained `IsRegistered()`, CCharacter `SetMoveToFloor()` with
+  `m_bMoveToFloor` a `bool`, CAI a hit box lying-down setter
+  (`SetLyingDown`, our name) and its `bool`, CAttachments::HideAttachments
+  is virtual, the save macro LOAD_STDSTRING reads through a buffer:
+  Object.lto 5,375 -> 5,705 identical. Every Object.lto class's vtable now
+  has retail's slot count except DoomsDayDevice (+2), DoomsDayPiece (+3)
+  and VolumeEffect (derives from GameBase, +2 of its own; ScatterVolume,
+  SnowVolume follow). In CShell.dll: the weapon interface's crosshair
+  query comes before the shell eject position and it ends with a float
+  (`GetHeat`, our name; CClientWeapon returns its member at 0x158),
+  CPlayerMgr::DoActivate is not virtual, CLTGUITextCtrl has `GetFontSize`
+  after SetFont.
+- **Game options** (`Shared/ProfileUtils`): Contract J.A.C.K.'s are one
+  polymorphic BaseGameOptions (every option of every game type, 0x94 bytes;
+  GetName, Clear, Write, Read virtual) with a subclass per game type giving
+  its name and defaults, and ServerGameOptions holds six (single player
+  and Demolition too: `eGameTypeDemolition` is 5) and a status the server
+  sets for its host (0xac). Weapons stay is new, the tag score is gone
+  (from the mission settings and the scoring too). Reconstructed from
+  Object.lto's ProfileUtils.obj (0x1011a900..0x1011c490). The host
+  screens (ScreenHost*Options) still show NOLF2's controls.
+- **Version manager and server shell**: one non-virtual CVersionMgr (no
+  CTO2VersionMgr; CD key in the registry, "CJ v1.1", build 193, CJ's
+  game GUID), CGameServerShell is the server shell (no
+  CTO2GameServerShell), with GameSpy's server: created and published at
+  the end of OnServerInitialized, fed packets in ProcessPacket, deleted in
+  OnServerTerm. Not yet: the rest of OnServerInitialized's changes (it
+  takes the host's options in InitGameType), the republishing
+  (0x100dbcb0), the socket the engine hands GameSpy (now
+  ILTServer::GetUDPSocket, vtable 0x118), CDemolitionMissionMgr, and the
+  server browser (IGameSpyBrowser in ClientMultiplayerMgr and the join
+  screens); the client still has NOLF2's WON code, with no directory
+  created. Done on the client: GameSpy's new-version check
+  (IGameSpyPatchInfo from CInterfaceMgr::Init, polled by the screen
+  state, FPUpdate.exe launched with the patch's address).
+- **Connecting** (with the engine's SDK, merged from master): the engine
+  waits for ILTServer::FinishClientConnect before a client enters the
+  world. CJ calls it once the client passed the handshake and, on a
+  published server, GameSpy's CD key check: its handshake runs on the
+  server shell's client records (ClientData, 0x2c bytes: state 2 waiting
+  for the CD key, 3 connected; unique name; team), before there is a
+  player (ProcessHandshake 0x100de370, FinishClientConnect at 0x100de85a
+  and in the GameSpy callbacks 0x100dd48f, 0x100dd530, 0x100e097f). Ours
+  still has NOLF2's handshake after the client enters the world and lets
+  every client in from OnAddClient: a stopgap, to be replaced by CJ's
+  flow. The client asks the engine for a new socket (m_hSocket -1)
+  wherever it clears its StartGameRequest; CJ sets it from the NAT
+  negotiation (SetupClient 0x1001f190).
+- **Done this round** (one header or source change closing a class's
+  functions): the in-game menus are System and Mission only, the menu bar
+  right-aligned (CMenuMgr::Init 0x100844c0); the system menu shows the
+  server's name and address on two lines; the controls table names its
+  actions (44-byte entries, 0x1014dcc8; CBindingData keeps the name),
+  drops holster/flashlight/inventory/keys/intel/status and adds manual
+  aim (COMMAND_ID_MANUALAIM 95); sound and music quality are performance
+  settings, not the profile's; CInterfaceTimer takes its look from Init
+  and keeps the time left; MBCreate is 0x20 bytes (edit filter,
+  no-escape flag at CMessageBox 0x518); CClientFXMgr has one disable
+  distance; CAnimatorPlayer has a motorcycle main ("LRdM"); the unique
+  player name is the server shell's (GenerateUniqueName 0x100dc160), not
+  CPlayerObj's. RETAIL_BUGS.md: GetCommandName always answers its error
+  string (fixed in the modern build, GAME-1).
+- **Scores** (recorded): CShell.dll 4,916 identical of 6,555, Object.lto
+  8,112 of 9,770 (1.28 MB), ClientFx.fxd 429 of 451. The runtime
+  boundaries are pinned from our maps. Also done since the first record:
+  Body has no animator (CJ has no server CAnimatorBody; the client's
+  CBodyFX twitches the body when the server's damage message says so).
+- **Chassis.** CHARCREATESTRUCT carries a chassis piece (0x5c, sent as
+  its id, 0xff for none, looked up in the ChassisButeMgr at 0x100ae430),
+  a dword (0x60) and a byte (0x64, 0xff); CCharacter::SetCarrying takes
+  the piece too (0xc84, saved by name). Waits for ChassisButeMgr
+  ("attributes\chassis.txt").
+- **Classes still to change** (RTTI, retail vs ours). Object.lto has
+  AINodeSniper, AimMagnet (+plugin), BaseGameOptions and its
+  Singleplayer/DM/TeamDM/Coop/Demolition/Doomsday subclasses,
+  CAIHumanStrategyCover, CBodyState (a base), CDemolitionMissionMgr,
+  CVehicleButeMgr, Chassis/ChassisPiece/ChassisButeMgr (+plugins),
+  GunMount (+plugin); it has no CAnimatorBody, CHierarchicalButeMgr,
+  CTO2GameServerShell (merged into CGameServerShell), CTO2VersionMgr or
+  CVersionMgr. CShell.dll has CAnimator/CAnimatorBody, CMPButeMgr, the
+  CRagDoll*Constraint family, CHUDBombTarget, CHUDWeaponHeat,
+  CScreenHostDemolitionOptions, CSoundFX, CVehicleButeMgr,
+  CVehicleWeapon, ChassisFX/ChassisPieceFX (Doomsday's pieces renamed),
+  CAimMagnetFX and the game options classes; it has none of CAmmoMenu,
+  CDMButeMgr, CDoomsdayPieceFX, CHierarchicalButeMgr, CMenuIntel,
+  CMenuInventory, CMenuKeys, CMenuPlayer, CScreenJoinLAN,
+  CScreenPlayerSkills, CSkillCtrl, CSkillPopup, CTO2VersionMgr,
+  CVersionMgr. CClientWeapon has 79 virtual functions to our 66 (many of
+  NOLF2's non-virtual ones made virtual, for CVehicleWeapon).
+  DoomsDayDevice and DoomsDayPiece derive from PropType and add 2 and 3
+  virtuals (carrying? 0x100c7b90, 0x100c7840; 0x100c8c80, 0x100c8df0,
+  0x100c8f30); VolumeEffect is a GameBase with two virtuals of its own
+  (0x1015e880, 0x1015e8a0). CHUDBombTarget keeps a timer per bomb
+  (0x8c-byte entries; SetTimer 0x10051740 takes an index one past the end
+  too: a candidate retail bug), fed by the display-timer message's types
+  3 and up.
+- **Layouts still to change**: CInterfaceMgr is right but for a few
+  members in the middle; CPlayerMgr (+8), CGameClientShell (+8/+24),
+  CCharacterFX (+8 from 0x90), CVehicleMgr (+4), CHUDMgr (+868 at
+  0x3a04), StartGameRequest-like copies in the join screens; LTGUIMgr's
+  edit control has two members more (0x180 from Create, 0x184 a
+  character filter called from HandleChar, 0x101243c0); KeyFramer's
+  other HSTRINGs are still HSTRINGs in retail.
+- **Where it stopped / next**: breadth first by near count (CShell:
+  InterfaceMgr, PlayerMgr, GameClientShell, VehicleMgr, ScreenJoin,
+  CharacterFX, ClientWeapon; Object: PlayerObj, Character, AI states,
+  GameServerShell): the layouts above, CClientWeapon's virtuals, the
+  DoomsDay/VolumeEffect virtuals, then CJ's connection flow and GameSpy
+  browser, CHUDBombTarget and Demolition; the launcher and the dedicated
+  server (ContractJack.exe, ContractJackServer.exe) are not started.
+- **Tools** (not committed, one-offs under out/): rtti.py (vtables by
+  RTTI), vtcmp.py (a class's vtable, retail beside ours), ctorcmp.py
+  (constructor store offsets aligned), place.py (the scoreboard's
+  placements with our symbol per shipped address), layout2.py
+  (displacement-only nears by class).
+- **Found.** Under Wine, VC 7.1's compiler spins instead of exiting after
+  a fatal error (a missing #include, C1020, ...): out-of-tree runs use a
+  watchdog that kills a compile after ten minutes.
+
 ### 5. gamespy
 
 `src/Game/Libs/GameSpy/GameSpy.dsw` builds `GameSpy.dll` (and

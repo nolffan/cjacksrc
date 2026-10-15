@@ -214,13 +214,19 @@ ifneq ($$(DSP_OK),ok)
 $$(error tools/dsp2mk.py failed on $(1): $$(file <$(DEPDIR)/dsp2mk-$(basename $(notdir $(1))).log))
 endif
 include $(DEPDIR)/$(basename $(notdir $(1))).mk
-WANTED += $(subst $(comma), ,$(2))
+# (a wanted project the workspace does not have yet is skipped, as
+# dsp2mk.py skips it: the launcher and the dedicated server come later)
+WANTED += $$(filter $$(PROJECTS),$(subst $(comma), ,$(2)))
 endif
 endef
 $(foreach w,$(WORKSPACES),$(eval $(call workspace,$(firstword $(subst :, ,$(w))),$(lastword $(subst :, ,$(w))))))
 
 .PHONY: all game
 all game: $(WANTED)
+
+# A DLL's import library is written by the DLL's link; a project that
+# links it (CShell.dll and Object.lto link GameSpy.lib) depends on the DLL.
+src/Game/built/Final/libs/GameSpy/GameSpy.lib: src/Game/built/Final/libs/GameSpy/GameSpy.dll ;
 
 # ---------------------------------------------------------------------------
 # The rules all compiles and tools share
