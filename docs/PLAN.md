@@ -76,7 +76,7 @@ Every one is Visual C++ .NET 2003 (13.10.3077): `progress/COMPILERS.md`.
 | 3 | `small`: `ltmsg.dll`, `CRes.dll`, `SRes.dll` (resource scripts from the retail resources; `tools/rsrcdiff.py`), `SndDrv.dll` (nolf2src's reconstruction, compiled with VC .NET 2003) | 2 | `ltmsg.dll` done (retail's but for its time stamp); `SndDrv.dll` builds, 172/260 identical; CRes/SRes to do |
 | 4 | `game`: `CShell.dll`, `Object.lto`, `ClientFx.fxd` from NOLF2's source release toward Contract J.A.C.K. -- first the shared code (with Build 69's TO2/TRON as the later reference), then Contract J.A.C.K.'s own (its weapons, its missions' objects, its HUD and menus), placed by the scoreboard | 2 | |
 | 5 | `gamespy`: `GameSpy.dll`: Monolith's wrapper from the image, GameSpy's SDK rolled back to 2003 | 2 | |
-| 6 | `engine`: `Lithtech.exe` and `server.dll` from the Jupiter tree, trimmed to 2003, D3D8; the demos' engine for the SecuROM pages and the imports (a `demoimports.py` for these demos) | 2 | in progress: both build and are scored; converging (below) |
+| 6 | `engine`: `Lithtech.exe` and `server.dll` from the Jupiter tree, trimmed to 2003, D3D8; the demos' engine for the SecuROM pages and the imports (a `demoimports.py` for these demos) | 2 | in progress: both build; `Lithtech.exe` 83.3%, `server.dll` 93.1% identical; converging (below) |
 | 7 | `apps`: the launcher `ContractJack.exe` and the dedicated server `ContractJackServer.exe` from NOLF2's Launcher and ServerApp | 2 | |
 | 8 | `boot`: the built binaries in the game under Wine, to the menu, a level, saving and loading (`make test`, tools/playtest.sh) | 3-7 | |
 | 9 | `match`: byte-matching, module by module, ratcheted by `make progress` | 3-7 | |
@@ -240,8 +240,11 @@ package 4; not additive, because CJ's own SDK had them):
   towards the world by itself**: the game calls FinishClientConnect
   (and is told of the client, OnAddClient, on its hello packet), as
   CJ's Object.lto does.
+- `ltbasedefs.h`: StartGameRequest has `uint32 m_hSocket` before
+  m_TCPAddress (the client joins on that socket unless it is -1; our
+  constructor sets -1, which the game's inline copy should check).
 
-**Where it stands / next** (breadth first, per module, with
+**Where it stands / next** (stopped here: score recorded at `Lithtech.exe` 6,508 identical, 83.3%; `server.dll` 2,675, 93.1%) (breadth first, per module, with
 `tools/fndiff.py`, `o2gap.py`, `vtabcheck.py`, `uncovered.py`;
 `tools/layoutscan.py --image=<target>` finds the layout shifts; the
 near lists of `progress.py --nears=<target>` pair some rows wrongly,
@@ -256,9 +259,12 @@ check with exematch):
   out/physics analysis, not applied); the client side of the
   unguaranteed data reads bytes in the other order than the server
   writes them (both as retail: a retail bug if confirmed by matching);
-- the renderer's console variables (CJ's list and order differ from
-  NOLF2's: DebugRBOccludeWorld, Use0WeightsForDisable,
-  MultiPassLightMatch, LockableBackBuffer, DisablePSGP);
+- CD3D_RenderWorld::Draw (retail 0x4a9ea0, 256 bytes more than ours):
+  the DebugRBOccludeWorld/OccludeEarlyVisible paths ("World Blocks
+  Early-out Visible"), and the flush-on-draw ending; the shader Flush
+  instances (1,228 bytes against our 1,102: the shared range's static
+  guard and the loop shapes);
+- MultiPassLightMatch and DisablePSGP are strings of CJ's not yet placed;
 - ltmem's tracking categories and full `mem` command (2006 tree's);
 - Lib_StdLith/Lith/ltmem flags (shared with the game and SndDrv.dll:
   StdLith is marginally better without /GX);
