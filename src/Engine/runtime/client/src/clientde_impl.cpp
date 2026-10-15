@@ -336,12 +336,14 @@ class CLTClient : public ILTClient {
 	virtual LTRESULT CopyFile(const char *pszSourceFile, const char *pszDestFile);
 
 	virtual LTRESULT GetObjectPos(HLOCALOBJ hObj, LTVector *pPos);
+	virtual LTRESULT GetObjectUnguaranteedData(HLOCALOBJ hObj, uint32 *pData);	// RETAIL
 	virtual LTRESULT GetObjectRotation(HLOCALOBJ hObj, LTRotation *pRot);
 
 	virtual LTRESULT SendTo(ILTMessage_Read *pMsg, const char *sAddr, uint16 port);
 	virtual LTRESULT StartPing(const char *pAddr, uint16 nPort, uint32 *pPingID);
 	virtual LTRESULT GetPingStatus(uint32 nPingID, uint32 *pStatus, uint32 *pLatency);
 	virtual LTRESULT RemovePing(uint32 nPingID);
+	virtual LTRESULT OpenSocket(uint32 *phSocket);	// RETAIL
 
 	virtual uint32 GetModelAnimation(HLOCALOBJ hObj);
 	virtual void SetModelAnimation(HLOCALOBJ hObj, uint32 iAnim);
@@ -606,6 +608,17 @@ LTRESULT CLTClient::GetObjectPos(HLOCALOBJ hObj, LTVector *pPos)
 	return LT_OK;
 }
 
+// RETAIL: Lithtech.exe 0x407ef0
+LTRESULT CLTClient::GetObjectUnguaranteedData(HLOCALOBJ hObj, uint32 *pData)
+{
+	FN_NAME(CLTClient::GetObjectUnguaranteedData);
+	CHECK_PARAMS2(hObj && pData)
+
+	*pData = hObj->m_nUnguaranteedData;
+
+	return LT_OK;
+}
+
 LTRESULT CLTClient::GetObjectRotation(HLOCALOBJ hObj, LTRotation *pRotation)
 {
 	FN_NAME(CLTClient::GetObjectRotation);
@@ -802,6 +815,22 @@ LTRESULT CLTClient::GetPingStatus(uint32 nPingID, uint32 *pStatus, uint32 *pLate
 		if (pDriver->m_DriverFlags & NETDRIVER_TCPIP)
 		{
 			return pDriver->GetPingStatus(nPingID, pStatus, pLatency);
+		}
+	}
+
+	return LT_NOTINITIALIZED;
+}
+
+// RETAIL: the internet driver's OpenSocket, as the server's (0x1003cc70)
+LTRESULT CLTClient::OpenSocket(uint32 *phSocket)
+{
+	for (uint32 i=0; i < g_pClientMgr->m_NetMgr.m_Drivers; i++)
+	{
+		CBaseDriver *pDriver = g_pClientMgr->m_NetMgr.m_Drivers[i];
+
+		if (pDriver->m_DriverFlags & NETDRIVER_TCPIP)
+		{
+			return pDriver->OpenSocket((SOCKET*)phSocket);
 		}
 	}
 

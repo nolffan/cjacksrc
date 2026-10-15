@@ -43,6 +43,9 @@ class CBaseConn;
 // updates on all the objects..
 #define CLIENT_INWORLD				3
 
+// RETAIL: being removed (sm_RemoveClient, server.dll 0x10032143)
+#define CLIENT_DISCONNECTED			4
+
 
 // Different stages while in CLIENT_PUTTINGINWORLD.
 #define PUTTINGINTOWORLD_LOADINGWORLD		0	// Waiting for ack.
@@ -83,7 +86,9 @@ struct ObjInfo
 {
 	// The change flags -- controls what will be sent to the client on each update.
 	// Change flags are defined in serverobj.h.
-	uint16			m_ChangeFlags;
+	// RETAIL: 32 bits, the unguaranteed change flags are above 16 (20-byte
+	// ObjInfo, server.dll 0x10031515)
+	uint32			m_ChangeFlags;
 	
 	// Used for soundtracks...
 	uint8			m_nSoundFlags;
@@ -91,6 +96,8 @@ struct ObjInfo
 	// Used for timing of networking updates
 	uint32			m_nLastSentG;
 	uint32			m_nLastSentU;
+	// RETAIL: the last complete unguaranteed send (SendAllObjectsUnguaranteed)
+	uint32			m_nLastSentUFull;
 };
 
 #define OBJINFOSOUNDF_CLIENTDONE	(1<<0)		// Sound track has completed on this client

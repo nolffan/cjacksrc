@@ -216,19 +216,50 @@ of its bytes), `server.dll` 2,223 (66.6%).
 **Converging** (each in its commit, with the retail addresses): the
 libraries without /GX; LTObject's unguaranteed-data field; the 24-byte
 engine variables and the command-line lock; ViewParams' m_mWorld;
-CClientMgr's 2006-tree members and resource-tree vector. Score so far:
-`Lithtech.exe` 6,020 identical (71.8%), `server.dll` 2,492 (79.1%).
+CClientMgr's 2006-tree members and resource-tree vector; the world
+shaders' shared draw range and per-world sections; the collision,
+attachment and binding changes; the UDP driver (the 2006 one on the 2002
+locks: pause handshake, OpenSocket, bandwidth periods, the unguaranteed
+drop rate); the unguaranteed-data protocol (below). Helper agents read
+the retail code module by module and wrote the analyses these came from;
+the reports' open questions are listed below.
+
+**SDK changes the game must follow** (`src/Engine/sdk/inc`, shared with
+package 4; not additive, because CJ's own SDK had them):
+- `iltclient.h`: no default arguments on GetSoundOffset, ClearScreen,
+  End3D (VC .NET 2003 refuses them).
+- `ltbasedefs.h`: LTStrCat copies after the string's end, when there is
+  room (CJ's, server.dll 0x1000a97a).
+- `iltcsbase.h`: two new virtuals, `OpenSocket(uint32*)` after
+  RemovePing and `GetObjectUnguaranteedData(HLOCALOBJ, uint32*)` after
+  GetObjectPos; `iltserver.h`: `FinishClientConnect(HCLIENT)` after
+  GetClientAddr, `SetObjectUnguaranteedData(HOBJECT, uint32)` after
+  SetNetFlags, `GetUDPSocket(uint32*)` after GetSaveFileVersion (retail
+  CLTServer vtable 0x1006d430: 78 slots, NOLF2's 73). OpenSocket and
+  GetUDPSocket are our names. **The server no longer moves a new client
+  towards the world by itself**: the game calls FinishClientConnect
+  (and is told of the client, OnAddClient, on its hello packet), as
+  CJ's Object.lto does.
 
 **Where it stands / next** (breadth first, per module, with
 `tools/fndiff.py`, `o2gap.py`, `vtabcheck.py`, `uncovered.py`;
-`tools/layoutscan.py --image=<target>` finds the layout shifts):
-- the UDP driver: CJ's is between nolf2src's 2002 form and the 2006
-  tree's: four listen-thread events (the 2006 pause events), a fifth
-  CStaticFIFO<float,100> in CUDPConn (+0x2a8: the share of unguaranteed
-  packets dropped as too old, averaged by a new CBaseConn virtual, slot
-  9), a new CBaseDriver virtual (slot 27, before UpdateGUID), OpenSocket;
-- the unguaranteed-data API (ILTServer/ILTClient Get/SetObjectUnguaranteed-
-  Data, the 0x80000 change flag on the wire, CLTServer::FinishClientConnect);
-- the renderer's layouts: CRenderShader_Base (+8), CInternalSection (+4),
-  CD3D_RenderWorld, CD3D_Device;
-- then module by module through the nears (`progress.py --nears=<target>`).
+`tools/layoutscan.py --image=<target>` finds the layout shifts; the
+near lists of `progress.py --nears=<target>` pair some rows wrongly,
+check with exematch):
+- open from the analyses: where the main world's shaders flush when
+  CD3D_RenderWorld::m_bFlushOnDraw is clear (the flag is not set yet;
+  the world's Draw still flushes, so the game draws); each shader's
+  PostFlushBlock body, DrawAggregateShader, DrawFogPass; the
+  StartGameRequest field ConnectTCP's first argument comes from
+  (+0x68); moveplayer.cpp and world_blocker_data.cpp (CJ's blocker
+  Intersect takes the player mover and collides through WorldPolys:
+  out/physics analysis, not applied); the client side of the
+  unguaranteed data reads bytes in the other order than the server
+  writes them (both as retail: a retail bug if confirmed by matching);
+- the renderer's console variables (CJ's list and order differ from
+  NOLF2's: DebugRBOccludeWorld, Use0WeightsForDisable,
+  MultiPassLightMatch, LockableBackBuffer, DisablePSGP);
+- ltmem's tracking categories and full `mem` command (2006 tree's);
+- Lib_StdLith/Lith/ltmem flags (shared with the game and SndDrv.dll:
+  StdLith is marginally better without /GX);
+- then module by module through the nears.

@@ -202,6 +202,9 @@ LTRESULT OnHelloPacket(CPacket_Read &cPacket, Client *pClient)
     }
 
     pClient->m_ClientFlags |= CFLAG_GOT_HELLO;
+
+    // RETAIL: the server shell hears of the client now (0x100345af)
+    i_server_shell->OnAddClient((HCLIENT)pClient);
     return LT_OK;
 }
 
@@ -474,7 +477,8 @@ void WriteAnimInfo(ModelInstance *pInst, CPacket_Write &cPacket)
 bool FillPacketFromInfo(Client *pClient, LTObject *pObj, ObjInfo *pInfo, CPacket_Write &cPacket)
 {
     // Does the client's object want its rotations sent?
-    uint16 changeFlags = pInfo->m_ChangeFlags;
+    // RETAIL: the low 16 bits, without CF_OTHER and CF_SENTINFO (0x10035430)
+    uint32 changeFlags = pInfo->m_ChangeFlags & 0xFFFF & ~(CF_OTHER|CF_SENTINFO);
     if (!(pClient->m_ClientFlags & CFLAG_SENDCOBJROTATION) && pClient->m_pObject == pObj)
         changeFlags &= ~(CF_ROTATION|CF_SNAPROTATION);
 
@@ -486,7 +490,7 @@ bool FillPacketFromInfo(Client *pClient, LTObject *pObj, ObjInfo *pInfo, CPacket
 
     if (pObj->sd->m_NetFlags & NETFLAG_ROTUNGUARANTEED)
     {
-        changeFlags &= ~CF_ROTATION;
+        changeFlags &= ~(CF_ROTATION|CF_SNAPROTATION);	// RETAIL
     }
 
     if (pObj->m_ObjectType == OT_MODEL && pObj->sd->m_NetFlags & NETFLAG_ANIMUNGUARANTEED)

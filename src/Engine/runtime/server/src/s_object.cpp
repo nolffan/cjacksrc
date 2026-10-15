@@ -783,6 +783,14 @@ LTRESULT SetObjectChangeFlags(LTObject *pObj, uint32 flags)
         AddObjectToChangeList(pObj);
     }
 
+    // RETAIL: the unguaranteed flags follow the guaranteed ones (0x10036990)
+    if (flags & (CF_POSITION|CF_TELEPORT))
+        flags |= CF_UNGUARANTEED_POS;
+    if (flags & (CF_ROTATION|CF_SNAPROTATION))
+        flags |= CF_UNGUARANTEED_ROT;
+    if (flags & (CF_MODELINFO|CF_FILENAMES|CF_FORCEMODELINFO))
+        flags |= CF_UNGUARANTEED_ANIM;
+
     pObj->sd->m_ChangeFlags |= flags;
     ASSERT(pObj->sd->m_ChangeFlags);
 

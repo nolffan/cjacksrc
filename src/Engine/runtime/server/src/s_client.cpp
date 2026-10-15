@@ -59,6 +59,7 @@ struct UpdateInfo {
 	CPacket_Write	m_cUnguaranteed;
 	uint32			m_nTargetUpdateSize;
 	uint32			m_nUpdateTime;
+	uint32			m_nFrameTimeMS;	// RETAIL: the server's frame, in ms (0x10032cf5)
 };
 
 SentList *g_pCurSentList;
@@ -71,6 +72,7 @@ extern int32 g_CV_MeasurePackets;
 extern int32 g_bForceRemote;
 extern int32 g_CV_ConnTroubleCount;
 extern int32 g_CV_BandwidthTargetServer;
+extern int32 g_CV_NetMinUnguaranteedPeriod, g_CV_NetMaxUnguaranteedPeriod;	// RETAIL
 
 ILTStream* sm_FTOpenFn(FTServ *hServ, char *pFilename) 
 {
@@ -123,7 +125,9 @@ bool Client::Init( CBaseConn *pBaseConn, bool bIsLocal )
 	m_ClientFlags |= CFLAG_WANTALLFILES | CFLAG_SENDGLOBALLIGHT;
 
 	m_ClientFlags |= CFLAG_SENDCOBJROTATION;
-	m_State = CLIENT_WAITINGTOENTERWORLD;
+	// RETAIL: connected only; the game moves the client on with
+	// ILTServer::FinishClientConnect (0x10030c89)
+	m_State = CLIENT_CONNECTED;
 	LT_MEM_TRACK_ALLOC(m_Name = (char*)dalloc(1),LT_MEM_TYPE_MISC);
 	m_Name[0] = 0;
 	m_AttachmentLink.m_pData = this;
@@ -192,8 +196,7 @@ bool Client::Init( CBaseConn *pBaseConn, bool bIsLocal )
 	// Add us to the list of clients.
 	dl_AddHead(&g_pServerMgr->m_Clients, &m_Link, this);
 	
-	// Tell the server shell they're in.
-	i_server_shell->OnAddClient((HCLIENT)this);
+	// RETAIL: the server shell is told on the client's hello (OnHelloPacket)
 
 	// Don't let them send anything yet..
 	pBaseConn->SetBandwidth(0);
@@ -224,9 +227,7 @@ bool Client::Init( CBaseConn *pBaseConn, bool bIsLocal )
 	}
 	fts_FlushAddedFiles(m_hFTServ); 
 	
-	// Now set them up to try to get into the world, after their file transfer
-	// has completed.
-	sm_SetClientState(this, CLIENT_WAITINGTOENTERWORLD);
+	// RETAIL: not yet in the world's queue: FinishClientConnect puts them there
 
 	dsi_ConsolePrint("New client, id %d, for a total of %d.", m_ClientID, g_pServerMgr->m_Clients.m_nElements);
 
@@ -487,7 +488,7 @@ LTRESULT sm_UpdatePuttingInWorld(Client *pClient)
 			LTObject *pObj = (LTObject*)pCur->m_pData;
 			
 			ObjInfo *pInfo = &pClient->m_ObjInfos[pObj->m_ObjectID];
-			pInfo->m_ChangeFlags = (uint16)sm_GetNewObjectChangeFlags(pObj);
+			pInfo->m_ChangeFlags = sm_GetNewObjectChangeFlags(pObj);
 		}
 
 
@@ -498,7 +499,7 @@ LTRESULT sm_UpdatePuttingInWorld(Client *pClient)
 			CSoundTrack *pSoundTrack = (CSoundTrack *)pCur->m_pData;
 			
 			ObjInfo *pInfo = &pClient->m_ObjInfos[GetLinkID(pSoundTrack->m_pIDLink)];
-			pInfo->m_ChangeFlags = (uint16)sm_GetNewSoundTrackChangeFlags(pSoundTrack);
+			pInfo->m_ChangeFlags = sm_GetNewSoundTrackChangeFlags(pSoundTrack);
 			pInfo->m_nSoundFlags = 0;
 		}
 
@@ -705,8 +706,8 @@ void sm_RemoveClient(Client *pClient)
 		g_pServerMgr->m_InternalFlags &= ~SFLAG_LOCAL;
 	}
 
-	// Get them out of the world..
-	sm_SetClientState(pClient, CLIENT_CONNECTED);
+	// Get them out of the world.. (RETAIL: disconnected, 0x10032143)
+	sm_SetClientState(pClient, CLIENT_DISCONNECTED);
 
 	// Notify the shell.
 	i_server_shell->OnRemoveClient((HCLIENT)pClient);
@@ -819,7 +820,9 @@ bool sm_FlushUpdate(UpdateInfo *pInfo, const CPacket_Read &cPacket, uint32 nPack
 }
 
 
-void WriteUnguaranteedInfo(LTObject *pObject, CPacket_Write &cPacket) 
+// RETAIL: only what is still to be sent unless forced, and the object's
+// unguaranteed data always; 0 nothing written, 1 part, 2 all (0x10030a20)
+int WriteUnguaranteedInfo(LTObject *pObject, ObjInfo *pObjInfo, bool bForce, CPacket_Write &cPacket) 
 {
 	uint32 flags = 0;
 
@@ -842,12 +845,36 @@ void WriteUnguaranteedInfo(LTObject *pObject, CPacket_Write &cPacket)
 
 	if (pObject->sd->m_NetFlags & NETFLAG_ANIMUNGUARANTEED) 
 	{
-		// They shouldn't be able to set this flag unless it's a model.
-		ASSERT(pObject->m_ObjectType == OT_MODEL);
 		flags |= UUF_ANIMINFO;
 	}
 
-	ASSERT(flags); // You shouldn't get into this function without being unguaranteed-info friendly
+	int nResult = 2;
+	if (!bForce)
+	{
+		if (!(pObjInfo->m_ChangeFlags & CF_UNGUARANTEED_POS))
+		{
+			nResult = 1;
+			flags &= ~UUF_POS;
+		}
+		if (!(pObjInfo->m_ChangeFlags & CF_UNGUARANTEED_ROT))
+		{
+			nResult = 1;
+			flags &= ~(UUF_ROT|UUF_YROTATION);
+		}
+		if (!(pObjInfo->m_ChangeFlags & CF_UNGUARANTEED_ANIM))
+		{
+			nResult = 1;
+			flags &= ~UUF_ANIMINFO;
+		}
+		if (pObjInfo->m_ChangeFlags & CF_UNGUARANTEED_DATA)
+		{
+			nResult = 1;
+			flags |= UUF_UNGUARANTEEDDATA;
+		}
+	}
+
+	if (!flags)
+		return 0;
 
  	cPacket.Writeuint16(pObject->m_ObjectID);
 	cPacket.WriteBits(flags, UUF_FLAGCOUNT);
@@ -860,22 +887,37 @@ void WriteUnguaranteedInfo(LTObject *pObject, CPacket_Write &cPacket)
 		cPacket.Writebool(bWriteVelocity);
 		if (bWriteVelocity)
 			CLTMessage_Write_Server::WriteCompLTVector(cPacket, pObject->m_Velocity);
+		pObjInfo->m_ChangeFlags &= ~CF_UNGUARANTEED_POS;
 	}
 
 	if (flags & UUF_YROTATION) 
 	{
 		CLTMessage_Write_Server::WriteYRotation(cPacket, pObject->m_Rotation);
+		pObjInfo->m_ChangeFlags &= ~CF_UNGUARANTEED_ROT;
 	}
 	else if (flags & UUF_ROT) 
 	{
 		CLTMessage_Write_Server::WriteCompLTRotation(cPacket, pObject->m_Rotation);
+		pObjInfo->m_ChangeFlags &= ~CF_UNGUARANTEED_ROT;
 	}
 
 	// Write anim info.
 	if (flags & UUF_ANIMINFO) 
 	{
 		WriteAnimInfo(ToModel(pObject), cPacket);
+		pObjInfo->m_ChangeFlags &= ~CF_UNGUARANTEED_ANIM;
 	}
+
+	// The unguaranteed data, a byte at a time (0x10030bba)
+	for (uint32 nData = pObject->m_nUnguaranteedData; nData; nData >>= 8)
+	{
+		cPacket.WriteBits(1, 1);
+		cPacket.WriteBits(nData, 8);
+	}
+	cPacket.WriteBits(0, 1);
+	pObjInfo->m_ChangeFlags &= ~CF_UNGUARANTEED_DATA;
+
+	return nResult;
 }
 
 void ExpandObjectIdList(SentList *pSentList)
@@ -933,7 +975,7 @@ void sm_AddObjectChangeInfo(UpdateInfo *pInfo, LTObject *pObject, ObjInfo *pObjI
 
 	// Clear 'em.
 	ASSERT(!(pObjInfo->m_ChangeFlags & CF_SENTINFO));
-	pObjInfo->m_ChangeFlags = (uint16)((pObjInfo->m_ChangeFlags & CF_CLEARMASK) | CF_SENTINFO);
+	pObjInfo->m_ChangeFlags = (pObjInfo->m_ChangeFlags & CF_CLEARMASK) | CF_SENTINFO;
 }
 
 inline bool ShouldSendToClient(const Client *pClient, LTObject *pObject) 
@@ -1254,10 +1296,12 @@ void SendAllObjectsGuaranteed(ObjectMgr *pObjectMgr, UpdateInfo *pInfo)
 }
 
 //Handles writing out the unguaranteed data of an object as well as all of its attachments
-static void WriteUnguaranteedDataWithAttachments(LTObject* pObject, CPacket_Write& cUnguaranteed, const uint32 k_nUnguaranteedMask)
+// RETAIL: the least complete of their results (0x10030c00); the attachments
+// are written with the parent's ObjInfo, as retail does
+static int WriteUnguaranteedDataWithAttachments(LTObject* pObject, CPacket_Write& cUnguaranteed, ObjInfo* pObjInfo, bool bForce, const uint32 k_nUnguaranteedMask)
 {
 	//write out the unguaranteed data for the object itself
-	WriteUnguaranteedInfo(pObject, cUnguaranteed);
+	int nResult = WriteUnguaranteedInfo(pObject, pObjInfo, bForce, cUnguaranteed);
 
 	//now do the same for all the attached objects
 	for (Attachment *pAttachment = pObject->m_Attachments; pAttachment; pAttachment = pAttachment->m_pNext) 
@@ -1269,15 +1313,22 @@ static void WriteUnguaranteedDataWithAttachments(LTObject* pObject, CPacket_Writ
 		if ((pAttachedObj->sd->m_NetFlags & k_nUnguaranteedMask) == 0)
 			continue;
 
-		WriteUnguaranteedInfo(pAttachedObj, cUnguaranteed);
+		int nAttachResult = WriteUnguaranteedInfo(pAttachedObj, pObjInfo, bForce, cUnguaranteed);
+		nResult = LTMIN(nResult, nAttachResult);
 	}
+
+	return nResult;
 }
 
 //Handles updating the send time of the specified object and all of its attachments
-static void UpdateSendTimeWithAttachments(LTObject* pObject, UpdateInfo *pInfo, const uint32 k_nUnguaranteedMask)
+// RETAIL: and the time of the last complete send (0x10030640)
+static void UpdateSendTimeWithAttachments(LTObject* pObject, UpdateInfo *pInfo, bool bFull, const uint32 k_nUnguaranteedMask)
 {
 	// Update the send time
-	pInfo->m_pClient->m_ObjInfos[pObject->m_ObjectID].m_nLastSentU = pInfo->m_nUpdateTime;
+	ObjInfo &cObjInfo = pInfo->m_pClient->m_ObjInfos[pObject->m_ObjectID];
+	cObjInfo.m_nLastSentU = pInfo->m_nUpdateTime;
+	if (bFull)
+		cObjInfo.m_nLastSentUFull = pInfo->m_nUpdateTime;
 
 	// Update the send time of the attachments
 	for (Attachment *pAttachment = pObject->m_Attachments; pAttachment; pAttachment = pAttachment->m_pNext) 
@@ -1289,7 +1340,10 @@ static void UpdateSendTimeWithAttachments(LTObject* pObject, UpdateInfo *pInfo, 
 		if ((pAttachedObj->sd->m_NetFlags & k_nUnguaranteedMask) == 0)
 			continue;
 
-		pInfo->m_pClient->m_ObjInfos[pAttachedObj->m_ObjectID].m_nLastSentU = pInfo->m_nUpdateTime;
+		ObjInfo &cAttachInfo = pInfo->m_pClient->m_ObjInfos[pAttachedObj->m_ObjectID];
+		cAttachInfo.m_nLastSentU = pInfo->m_nUpdateTime;
+		if (bFull)
+			cAttachInfo.m_nLastSentUFull = pInfo->m_nUpdateTime;
 	}
 }
 
@@ -1326,10 +1380,11 @@ void SendAllObjectsUnguaranteed(ObjectMgr *pObjectMgr, UpdateInfo *pInfo)
 					continue;
 
 				//write out all the unguaranteed data
-				WriteUnguaranteedDataWithAttachments(pObject, pInfo->m_cUnguaranteed, k_nUnguaranteedMask);
+				ObjInfo *pObjInfo = &pInfo->m_pClient->m_ObjInfos[pObject->m_ObjectID];
+				WriteUnguaranteedDataWithAttachments(pObject, pInfo->m_cUnguaranteed, pObjInfo, true, k_nUnguaranteedMask);
 
 				// Update the send time
-				UpdateSendTimeWithAttachments(pObject, pInfo, k_nUnguaranteedMask);				
+				UpdateSendTimeWithAttachments(pObject, pInfo, true, k_nUnguaranteedMask);				
 			}
 		}
 	}
@@ -1348,6 +1403,12 @@ void SendAllObjectsUnguaranteed(ObjectMgr *pObjectMgr, UpdateInfo *pInfo)
 
 		uint32 nUnguaranteedLength = 0;
 
+		// RETAIL: each object no more often than NetMinUnguaranteedPeriod (with
+		// a jitter of up to a frame), in full at least every
+		// NetMaxUnguaranteedPeriod (0x10032817)
+		uint32 nJitter = pInfo->m_nUpdateTime % (pInfo->m_nFrameTimeMS + 2);
+		uint32 nMinPeriod = g_CV_NetMinUnguaranteedPeriod + nJitter;
+
 		const float k_fDistPriorityScale = 1.0f / 128.0f;
 
 		for (uint32 i = 0; i < NUM_OBJECTTYPES; i++)
@@ -1360,12 +1421,26 @@ void SendAllObjectsUnguaranteed(ObjectMgr *pObjectMgr, UpdateInfo *pInfo)
 				if ((pObject->sd->m_NetFlags & k_nUnguaranteedMask) == 0)
 					continue;
 
+				// RETAIL: 0x10032876
+				if (!(pObject->m_Flags & FLAG_VISIBLE))
+					continue;
+
+				ObjInfo* pObjInfo = &pInfo->m_pClient->m_ObjInfos[pObject->m_ObjectID];
+				if (pInfo->m_pClient->m_pObject == pObject)
+					pObjInfo->m_ChangeFlags &= ~(CF_UNGUARANTEED_POS|CF_UNGUARANTEED_ROT|CF_UNGUARANTEED_DATA);
+
+				uint32 nTimeSinceSent = pInfo->m_nUpdateTime - pObjInfo->m_nLastSentU;
+				if (nTimeSinceSent < nMinPeriod)
+				{
+					if (nTimeSinceSent >= (uint32)g_CV_NetMinUnguaranteedPeriod)
+						nMinPeriod = g_CV_NetMinUnguaranteedPeriod;
+					continue;
+				}
 
 				CUnguaranteedObjTrack cCurObj;
 				cCurObj.m_pObject = pObject;
 
 				//Determine the weight of this message based upon some rules
-				ObjInfo* pObjInfo = &pInfo->m_pClient->m_ObjInfos[pObject->m_ObjectID];
 
 				float fDistToClient = LTMAX(pObject->m_Pos.Dist(pInfo->m_pClient->m_ViewPos) * k_fDistPriorityScale, 1.0f);
 				float fTime = (float)(pInfo->m_nUpdateTime - pObjInfo->m_nLastSentU) + 1.0f;
@@ -1377,12 +1452,19 @@ void SendAllObjectsUnguaranteed(ObjectMgr *pObjectMgr, UpdateInfo *pInfo)
 			}
 		}
 
+		// RETAIL: everything in full on a connection dropping data (0x10032a16)
+		CBaseConn *pConn = pInfo->m_pClient->m_ConnectionID;
+		bool bLossy = (pConn->GetPacketLoss() != 0.0f) && (pConn->GetUnguaranteedDropRate() != 0.0f);
+
 		while (!aObjects.empty())
 		{
 			const CUnguaranteedObjTrack &cCurObj = aObjects.top();
+			LTObject *pObject = cCurObj.m_pObject;
+			ObjInfo *pObjInfo = &pInfo->m_pClient->m_ObjInfos[pObject->m_ObjectID];
+			bool bForce = bLossy | ((pInfo->m_nUpdateTime + nJitter - pObjInfo->m_nLastSentUFull) > (uint32)g_CV_NetMaxUnguaranteedPeriod);
 
 			//write out all the unguaranteed data
-			WriteUnguaranteedDataWithAttachments(cCurObj.m_pObject, pInfo->m_cUnguaranteed, k_nUnguaranteedMask);
+			int nResult = WriteUnguaranteedDataWithAttachments(pObject, pInfo->m_cUnguaranteed, pObjInfo, bForce, k_nUnguaranteedMask);
 
 			// Jump out if we're sending too much...
 			if (pInfo->m_cUnguaranteed.Size() >= nUpdateSizeRemaining)
@@ -1393,7 +1475,8 @@ void SendAllObjectsUnguaranteed(ObjectMgr *pObjectMgr, UpdateInfo *pInfo)
 				nUnguaranteedLength = pInfo->m_cUnguaranteed.Size();
 
 			// Update the send time
-			UpdateSendTimeWithAttachments(cCurObj.m_pObject, pInfo, k_nUnguaranteedMask);
+			if (nResult)
+				UpdateSendTimeWithAttachments(pObject, pInfo, nResult == 2, k_nUnguaranteedMask);
 
 			// Next!
 			aObjects.pop();
@@ -1430,6 +1513,7 @@ void sm_UpdateClientInWorld(Client *pClient)
 	updateInfo.m_cPacket.Writeuint8(SMSG_UPDATE);
 	updateInfo.m_cUnguaranteed.Writeuint8(SMSG_UNGUARANTEEDUPDATE);
 	updateInfo.m_pClient = pClient;
+	updateInfo.m_nFrameTimeMS = (uint32)(g_pServerMgr->m_FrameTime * 1000.0f);	// RETAIL: 0x10032cf5
 
 	// Keep track of time
 	updateInfo.m_nUpdateTime = timeGetTime();
@@ -1500,8 +1584,9 @@ void sm_UpdateClientInWorld(Client *pClient)
 	// Write unguaranteed stuff. 
 	SendAllObjectsUnguaranteed(&g_pServerMgr->m_ObjectMgr, &updateInfo);
 
-	// Mark the end of the unguaranteed info
-	WriteEndUpdateInfo(pClient, updateInfo.m_cUnguaranteed);
+	// Mark the end of the unguaranteed info (RETAIL: when there is any, 0x10032e84)
+	if (updateInfo.m_cUnguaranteed.Size() > 8)
+		WriteEndUpdateInfo(pClient, updateInfo.m_cUnguaranteed);
 
 	// Send them..
 	sm_FlushUpdate(&updateInfo, CPacket_Read(updateInfo.m_cPacket), MESSAGE_GUARANTEED);

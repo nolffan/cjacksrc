@@ -2138,7 +2138,8 @@ void sm_RemoveAllUnusedSoundTracks()
 		if (pSoundInstance->m_dwFlags & PLAYSOUND_GETHANDLE) {
 			if (g_DebugLevel >= 3) {
 				if (pSoundInstance->m_pFile) {
-					dsi_ConsolePrint("Unfreed sound file (server) %s", server_filemgr->GetUsedFilename(pSoundInstance->m_pFile));
+					// RETAIL: 0x1003f5b4
+					DEBUG_PRINT(1, ("Unfreed sound file (server) %s", server_filemgr->GetUsedFilename(pSoundInstance->m_pFile)));
 				}
 			}
 		}

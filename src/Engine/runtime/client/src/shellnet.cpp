@@ -1290,6 +1290,18 @@ static LTRESULT OnUnguaranteedUpdatePacket(CClientShell *pShell, CPacket_Read &c
 				}
 				ReadAnimInfo(pShell, pObject ? ToModel(pObject) : NULL, cPacket, true, false);
             }
+
+			// RETAIL: the object's unguaranteed data, a byte at a time, always
+			// there (Lithtech.exe 0x472a47)
+			uint32 nUnguaranteedData = 0;
+			while (cPacket.ReadBits(1))
+			{
+				nUnguaranteedData = (nUnguaranteedData << 8) | cPacket.ReadBits(8);
+			}
+			if (pObject)
+			{
+				pObject->m_nUnguaranteedData = nUnguaranteedData;
+			}
         }
     }
 

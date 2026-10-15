@@ -84,7 +84,7 @@ public:
 
 	LTLink			m_ChangedNode;	// Used in the linked list of changed objects..
 
-	uint16			m_ChangeFlags;		// Stored during updates.
+	uint32			m_ChangeFlags;		// Stored during updates. RETAIL: 32 bits (sd+0x15c)
 	uint16			m_NetFlags;			// Net flags (combination of NETFLAG_ defines).
 };
 

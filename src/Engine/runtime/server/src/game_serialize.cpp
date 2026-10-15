@@ -502,6 +502,9 @@ static void sm_SaveObjectData(LTObject *pObj, ILTStream *pStream, uint32 dwParam
 			GS_STREAM_WRITE(pTracker->m_TimeRef.m_Cur.m_iFrame);
 			GS_STREAM_WRITE(pTracker->m_TimeRef.m_Cur.m_Time);
 		}
+
+		// RETAIL: the hidden pieces are saved too (server.dll 0x1000fe6c)
+		GS_STREAM_WRITE(pInst->m_HiddenPieces);
 	}
 
     GS_STREAM_WRITE(pObj->m_ColorR);
@@ -760,6 +763,9 @@ static LTRESULT sm_CreateNextObject(ILTStream *pStream,
 			GS_STREAM_READ(pTracker->m_TimeRef.m_Cur.m_iFrame);
 			GS_STREAM_READ(pTracker->m_TimeRef.m_Cur.m_Time);
 		}
+
+		// RETAIL: and restored (server.dll 0x100107a3)
+		GS_STREAM_READ(pInst->m_HiddenPieces);
 	}
 
     GS_STREAM_READ(pObj->m_ColorR);

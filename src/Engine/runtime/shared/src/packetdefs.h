@@ -51,6 +51,7 @@
 #define UUF_ROT			0x2
 #define UUF_ANIMINFO	0x1 // Includes animation info (1 byte).
 #define UUF_FLAGCOUNT	4 // Number of UUF flags
+#define UUF_UNGUARANTEEDDATA	0x10 // RETAIL: set, never on the wire (beyond UUF_FLAGCOUNT)
 // Maximum object ID
 #define ID_MAX				0xFFFE
 // ID indicating a timestamp
@@ -218,7 +219,13 @@
 // Used by the server to see if any of the CF_OTHER-relevant flags are set.
 #define CF_OTHERFLAGMASK	(CF_ATTACHMENTS | CF_TELEPORT | CF_SNAPROTATION | CF_FILENAMES | CF_DIMS )
 
-#define CF_CLEARMASK	(CF_POSITION_PREDICTIONCAP) // Use this mask to "clear" the client flags to avoid clearing frame-coherent flags
+// RETAIL: what is still to be sent unguaranteed, per client (set with the
+// guaranteed change flags they follow, SetObjectChangeFlags 0x10036990)
+#define CF_UNGUARANTEED_POS		(1<<16)
+#define CF_UNGUARANTEED_ROT		(1<<17)
+#define CF_UNGUARANTEED_ANIM	(1<<18)
+#define CF_UNGUARANTEED_DATA	(1<<19)	// ILTServer::SetObjectUnguaranteedData
+#define CF_CLEARMASK	(CF_POSITION_PREDICTIONCAP|CF_UNGUARANTEED_POS|CF_UNGUARANTEED_ROT|CF_UNGUARANTEED_ANIM|CF_UNGUARANTEED_DATA) // Use this mask to "clear" the client flags to avoid clearing frame-coherent flags
 
 // Tells what file specific info is sent in a message.
 struct FileIDInfo

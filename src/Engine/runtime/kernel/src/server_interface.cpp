@@ -126,7 +126,7 @@ public:
 
 LTRESULT    CLTServerInterface::RunConsoleString(char *pStr)
 {
-	CSEntry entry(&g_ServerInterface);
+	CSEntry entry(this);
 
     if (!g_pServerMgr)
     {
@@ -141,7 +141,7 @@ LTRESULT CLTServerInterface::GetConsoleVar(char *pName, HCONSOLEVAR *hVar, char 
     LTCommandVar *pVar;
     char temp[256];
 
-	CSEntry entry(&g_ServerInterface);
+	CSEntry entry(this);
 
     if (!hVar)
     {
@@ -183,7 +183,7 @@ LTRESULT CLTServerInterface::GetVarValueFloat(HCONSOLEVAR hVar, float *val)
 {
     LTCommandVar *pVar;
 
-	CSEntry entry(&g_ServerInterface);
+	CSEntry entry(this);
 
     if (!hVar || !val)
     {
@@ -199,7 +199,7 @@ LTRESULT CLTServerInterface::GetVarValueString(HCONSOLEVAR hVar, char *pStr, uin
 {
     LTCommandVar *pVar;
 
-	CSEntry entry(&g_ServerInterface);
+	CSEntry entry(this);
 
     if (!hVar || !pStr || maxStringBytes == 0)
     {
@@ -214,7 +214,7 @@ LTRESULT CLTServerInterface::GetVarValueString(HCONSOLEVAR hVar, char *pStr, uin
 
 LTRESULT CLTServerInterface::LoadConfigFile(char *pFilename)
 {
-	CSEntry entry(&g_ServerInterface);
+	CSEntry entry(this);
 
     if (!g_pServerMgr)
     {
@@ -226,7 +226,7 @@ LTRESULT CLTServerInterface::LoadConfigFile(char *pFilename)
 
 LTRESULT CLTServerInterface::SaveConfigFile(char *pFilename)
 {
-	CSEntry entry(&g_ServerInterface);
+	CSEntry entry(this);
 
     if (!g_pServerMgr)
     {
@@ -238,7 +238,7 @@ LTRESULT CLTServerInterface::SaveConfigFile(char *pFilename)
 
 LTRESULT CLTServerInterface::SetAppHandler(ServerAppHandler *pHandler)
 {
-	CSEntry entry(&g_ServerInterface);
+	CSEntry entry(this);
 
     if (!g_pServerMgr)
     {
@@ -251,7 +251,7 @@ LTRESULT CLTServerInterface::SetAppHandler(ServerAppHandler *pHandler)
 
 LTRESULT    CLTServerInterface::SendToServerShell( ILTMessage_Read& msg )
 {
-	CSEntry entry(&g_ServerInterface);
+	CSEntry entry(this);
 
     if (!g_pServerMgr)
     {
@@ -270,7 +270,7 @@ LTRESULT    CLTServerInterface::SendToServerShell( ILTMessage_Read& msg )
 
 bool CLTServerInterface::AddResources(const char **pResources, uint32 nResources)
 {
-	CSEntry entry(&g_ServerInterface);
+	CSEntry entry(this);
 
     if (!g_pServerMgr)
         return false;
@@ -280,7 +280,7 @@ bool CLTServerInterface::AddResources(const char **pResources, uint32 nResources
 
 bool CLTServerInterface::SetGameInfo( void *pGameInfo, uint32 nGameInfoLen )
 {
-	CSEntry entry(&g_ServerInterface);
+	CSEntry entry(this);
 
     if (!g_pServerMgr)
         return false;
@@ -293,7 +293,7 @@ bool CLTServerInterface::SetGameInfo( void *pGameInfo, uint32 nGameInfoLen )
 
 bool CLTServerInterface::LoadBinaries( )
 {
-	CSEntry entry(&g_ServerInterface);
+	CSEntry entry(this);
 
 	if(!g_pServerMgr)
 		return false;
@@ -303,7 +303,7 @@ bool CLTServerInterface::LoadBinaries( )
 
 FileEntry*  CLTServerInterface::GetFileList(char *pDirName)
 {
-	CSEntry entry(&g_ServerInterface);
+	CSEntry entry(this);
 
     if (!g_pServerMgr)
         return LTFALSE;
@@ -313,14 +313,14 @@ FileEntry*  CLTServerInterface::GetFileList(char *pDirName)
 
 void CLTServerInterface::FreeFileList(FileEntry *pList)
 {
-	CSEntry entry(&g_ServerInterface);
+	CSEntry entry(this);
 
     ic_FreeFileList(pList);
 }
 
 bool CLTServerInterface::StartWorld(StartGameRequest *pRequest)
 {
-	CSEntry entry(&g_ServerInterface);
+	CSEntry entry(this);
 
     if (!g_pServerMgr)
         return LTFALSE;
@@ -335,7 +335,7 @@ bool CLTServerInterface::HostGame(NetHost* pHostInfo)
 {
     CBaseDriver* pDriver;
 
-	CSEntry entry(&g_ServerInterface);
+	CSEntry entry(this);
 
     if (!g_pServerMgr)
         return LTFALSE;
@@ -355,7 +355,7 @@ bool CLTServerInterface::HostGame(NetHost* pHostInfo)
 
 int CLTServerInterface::GetNumClients()
 {
-	CSEntry entry(&g_ServerInterface);
+	CSEntry entry(this);
 
     if (!g_pServerMgr)
         return 0;
@@ -365,7 +365,7 @@ int CLTServerInterface::GetNumClients()
 
 bool CLTServerInterface::GetClientName(int index, char *pName, int maxChars)
 {
-	CSEntry entry(&g_ServerInterface);
+	CSEntry entry(this);
 
     if (!g_pServerMgr)
         return LTFALSE;
@@ -375,7 +375,7 @@ bool CLTServerInterface::GetClientName(int index, char *pName, int maxChars)
 
 bool CLTServerInterface::SetClientName(int index, char *pName, int maxChars)
 {
-	CSEntry entry(&g_ServerInterface);
+	CSEntry entry(this);
 
     if (!g_pServerMgr)
         return LTFALSE;
@@ -385,7 +385,7 @@ bool CLTServerInterface::SetClientName(int index, char *pName, int maxChars)
 
 bool CLTServerInterface::GetClientInfo(int index, ClientInfo* pInfo)
 {
-	CSEntry entry(&g_ServerInterface);
+	CSEntry entry(this);
 
     if (!g_pServerMgr)
         return LTFALSE;
@@ -395,7 +395,7 @@ bool CLTServerInterface::GetClientInfo(int index, ClientInfo* pInfo)
 
 bool CLTServerInterface::BootClient(uint32 dwClientID)
 {
-	CSEntry entry(&g_ServerInterface);
+	CSEntry entry(this);
 
     if (!g_pServerMgr)
         return LTFALSE;
@@ -442,7 +442,7 @@ bool CLTServerInterface::GetClientAddr( uint32 nClientId, uint8 pAddr[4], uint16
 
 bool CLTServerInterface::GetTcpIpAddress(char* sAddress, uint32 dwBufferSize, unsigned short &hostPort)
 {
-	CSEntry entry(&g_ServerInterface);
+	CSEntry entry(this);
 
     if (!g_pServerMgr)
         return LTFALSE;
@@ -452,7 +452,7 @@ bool CLTServerInterface::GetTcpIpAddress(char* sAddress, uint32 dwBufferSize, un
 
 int CLTServerInterface::GetErrorCode()
 {
-	CSEntry entry(&g_ServerInterface);
+	CSEntry entry(this);
 
     if (!g_pServerMgr)
         return -1;
@@ -462,7 +462,7 @@ int CLTServerInterface::GetErrorCode()
 
 void CLTServerInterface::GetErrorString(char *pString, int maxLen)
 {
-	CSEntry entry(&g_ServerInterface);
+	CSEntry entry(this);
 
     if (!g_pServerMgr)
     {
@@ -477,7 +477,7 @@ bool CLTServerInterface::Update(long flags)
 {
     bool bRet;
 
-    //CSEntry entry(&g_ServerInterface);
+    //CSEntry entry(this);
 
     ASSERT(!m_bUpdating);
     if (!g_pServerMgr)
@@ -492,7 +492,7 @@ bool CLTServerInterface::Update(long flags)
 
 bool CLTServerInterface::InitNetworking(char *sDriver, uint32 dwFlags)
 {
-	CSEntry entry(&g_ServerInterface);
+	CSEntry entry(this);
 
     // Sanity checks...
     if (!g_pServerMgr)
@@ -507,28 +507,28 @@ bool CLTServerInterface::InitNetworking(char *sDriver, uint32 dwFlags)
 
 bool CLTServerInterface::GetServiceList(NetService*&pListHead)
 {
-	CSEntry entry(&g_ServerInterface);
+	CSEntry entry(this);
 
     return g_pServerMgr->m_NetMgr.GetServiceList(pListHead) == LT_OK;
 }
 
 bool CLTServerInterface::FreeServiceList(NetService *pListHead)
 {
-	CSEntry entry(&g_ServerInterface);
+	CSEntry entry(this);
 
     return g_pServerMgr->m_NetMgr.FreeServiceList(pListHead) == LT_OK;
 }
 
 bool CLTServerInterface::SelectService(HNETSERVICE hNetService)
 {
-	CSEntry entry(&g_ServerInterface);
+	CSEntry entry(this);
 
     return g_pServerMgr->m_NetMgr.SelectService(hNetService) == LT_OK;
 }
 
 bool CLTServerInterface::UpdateSessionName(const char* sName)
 {
-	CSEntry entry(&g_ServerInterface);
+	CSEntry entry(this);
 
     return g_pServerMgr->m_NetMgr.SetSessionName(sName) == LT_OK;
 }
@@ -538,7 +538,7 @@ LTRESULT    CLTServerInterface::SendTo(ILTMessage_Read *pMsg, const char *sAddr,
     uint32 i;
     CBaseDriver *pDriver;
 
-	CSEntry entry(&g_ServerInterface);
+	CSEntry entry(this);
 
     for (i=0; i < g_pServerMgr->m_NetMgr.m_Drivers; i++)
     {

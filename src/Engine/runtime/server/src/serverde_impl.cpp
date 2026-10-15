@@ -51,6 +51,7 @@ define_holder(IServerFileMgr, server_filemgr);
 //server console state
 #include "server_consolestate.h"
 #include "concommand.h"
+#include "sysudpdriver.h"	// RETAIL: GetUDPSocket
 static IServerConsoleState *console_state;
 define_holder(IServerConsoleState, console_state);
 
@@ -259,6 +260,7 @@ public:
 	virtual LTRESULT StartPing(const char *pAddr, uint16 nPort, uint32 *pPingID);
 	virtual LTRESULT GetPingStatus(uint32 nPingID, uint32 *pStatus, uint32 *pLatency);
 	virtual LTRESULT RemovePing(uint32 nPingID);
+	virtual LTRESULT OpenSocket(uint32 *phSocket);	// RETAIL
 
 	virtual LTRESULT GetTextureEffectVarID(const char *pName, uint32 nStage, uint32 *pResult) const;
 
@@ -286,8 +288,10 @@ public:
 	virtual LTRESULT RemoveObject(const HCLASS hClass, LPBASECLASS pObject);
 	virtual LTRESULT GetClientPing(HCLIENT hClient, float &ping);
 	virtual LTRESULT GetClientAddr(HCLIENT hClient, uint8 pAddr[4], uint16 *pPort);
+	virtual LTRESULT FinishClientConnect(HCLIENT hClient);	// RETAIL
 	virtual LTRESULT GetNetFlags(HOBJECT hObj, uint32 &flags);
 	virtual LTRESULT SetNetFlags(HOBJECT pObj, uint32 flags);
+	virtual LTRESULT SetObjectUnguaranteedData(HOBJECT hObj, uint32 nData);	// RETAIL
 	virtual LTRESULT GetHPolyObject(const HPOLY hPoly, HOBJECT &hObject);
 	virtual bool GetClientData(HCLIENT hClient, uint8* pData, int& maxLen);
 	virtual bool SetClientData(HCLIENT hClient, uint8 const* pData, int len);
@@ -304,6 +308,7 @@ public:
 	virtual LTRESULT GetStandingOn(HOBJECT hObj, CollisionInfo *pInfo);
 
 	virtual LTRESULT GetObjectPos(HOBJECT hObj, LTVector* pPos);
+	virtual LTRESULT GetObjectUnguaranteedData(HOBJECT hObj, uint32 *pData);	// RETAIL
 	virtual LTRESULT GetObjectRotation(HOBJECT hObj, LTRotation* pRot);
 	virtual LTRESULT GetObjectName(HOBJECT pObj, char *pBuf, uint32 bufSize);
 
@@ -313,6 +318,7 @@ public:
 	virtual LTRESULT SendSFXMessage(ILTMessage_Read *pMsg, const LTVector &pos, uint32 flags);
 	virtual LTRESULT SendToServer(ILTMessage_Read *pMsg, HOBJECT hSender, uint32 flags);
     virtual LTRESULT GetSaveFileVersion( uint32& nSaveFileVersion ) { nSaveFileVersion = g_dwSaveFileVersion; return LT_OK; }
+	virtual LTRESULT GetUDPSocket(uint32 *phSocket);	// RETAIL
 
 
 // Internal.
@@ -538,6 +544,20 @@ bool CLTServer::SetClientData( HCLIENT hClient, uint8 const* pData, int len)
 	pClient->m_ClientDataLen = len;
 
 	return true;
+}
+
+// RETAIL: server.dll 0x100397f0
+LTRESULT CLTServer::FinishClientConnect(HCLIENT hClient)
+{
+	Client *pClient = (Client*)hClient;
+	if (!pClient)
+		RETURN_ERROR(1, CLTServer::FinishClientConnect, LT_INVALIDPARAMS);
+
+	if (pClient->m_State != CLIENT_CONNECTED)
+		return LT_ERROR;
+
+	sm_SetClientState(pClient, CLIENT_WAITINGTOENTERWORLD);
+	return LT_OK;
 }
 
 LTRESULT CLTServer::GetNetFlags(HOBJECT hObj, uint32 &flags)
@@ -1098,6 +1118,22 @@ LTRESULT CLTServer::GetPingStatus(uint32 nPingID, uint32 *pStatus, uint32 *pLate
 	return LT_NOTINITIALIZED;
 }
 
+// RETAIL: the internet driver's OpenSocket (server.dll 0x1003cc70)
+LTRESULT CLTServer::OpenSocket(uint32 *phSocket)
+{
+	for (uint32 i=0; i < g_pServerMgr->m_NetMgr.m_Drivers; i++)
+	{
+		CBaseDriver *pDriver = g_pServerMgr->m_NetMgr.m_Drivers[i];
+
+		if (pDriver->m_DriverFlags & NETDRIVER_TCPIP)
+		{
+			return pDriver->OpenSocket((SOCKET*)phSocket);
+		}
+	}
+
+	return LT_NOTINITIALIZED;
+}
+
 LTRESULT CLTServer::RemovePing(uint32 nPingID)
 {
 	for (uint32 i=0; i < g_pServerMgr->m_NetMgr.m_Drivers; i++)
@@ -1208,6 +1244,29 @@ LTRESULT CLTServer::GetObjectName(HOBJECT pObj, char *pBuf, uint32 bufSize)
 		pBuf[0] = 0;
 	}
 
+	return LT_OK;
+}
+
+// RETAIL: server.dll 0x1003a0a0
+LTRESULT CLTServer::GetObjectUnguaranteedData(HOBJECT hObj, uint32 *pData)
+{
+	FN_NAME(CLTServer::GetObjectUnguaranteedData);
+	CHECK_PARAMS2(hObj && pData);
+
+	*pData = hObj->m_nUnguaranteedData;
+	return LT_OK;
+}
+
+// RETAIL: server.dll 0x1003a100
+LTRESULT CLTServer::SetObjectUnguaranteedData(HOBJECT hObj, uint32 nData)
+{
+	FN_NAME(CLTServer::SetObjectUnguaranteedData);
+	CHECK_PARAMS2(hObj);
+
+	uint32 nOld = hObj->m_nUnguaranteedData;
+	hObj->m_nUnguaranteedData = nData;
+	if (nOld != nData)
+		SetObjectChangeFlags(hObj, CF_UNGUARANTEED_DATA);
 	return LT_OK;
 }
 
@@ -3017,6 +3076,17 @@ FileEntry* si_GetFileList(const char *pDirName)
 		return LTNULL;
 
 	return server_filemgr->GetFileList(pDirName);
+}
+
+// RETAIL: the internet driver's socket (server.dll 0x1003bc10)
+LTRESULT CLTServer::GetUDPSocket(uint32 *phSocket)
+{
+	CBaseDriver *pDriver = g_pServerMgr->m_NetMgr.GetDriver("internet");
+	if (!pDriver)
+		return LT_NOTFOUND;
+
+	*phSocket = (uint32)((CUDPDriver*)pDriver)->m_Socket;
+	return LT_OK;
 }
 
 void CLTServer::SetupFunctionPointers() 
