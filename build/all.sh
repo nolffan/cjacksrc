@@ -62,8 +62,8 @@ step() { echo; echo "######## $* ($(( $(date +%s) - T0 ))s)"; }
 B=src/Game/built/Final
 E=src/Engine/built/Final
 BUILT=(
-    "$B/ClientShellDLL/TO2/CShell.dll"  custom/cshell.dll
-    "$B/ObjectDLL/TO2/Object.lto"       custom/object.lto
+    "$B/ClientShellDLL/CShell.dll"      custom/cshell.dll
+    "$B/ObjectDLL/Object.lto"           custom/object.lto
     "$B/ClientFxDLL/ClientFx.fxd"       custom/clientfx.fxd
     "$B/ClientRes/TO2/CRes.dll"         custom/cres.dll
     "$B/ServerRes/TO2/SRes.dll"         custom/sres.dll

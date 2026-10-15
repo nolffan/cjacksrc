@@ -179,7 +179,7 @@ TARGETS = [
     # ---- the game ------------------------------------------------------
     dict(label="CShell.dll", what="the game: client", kind="image",
          shipped=REFERENCE + "/CShell.dll", stem="CShell",
-         built="src/Game/built/Final/ClientShellDLL/TO2/CShell.dll",
+         built="src/Game/built/Final/ClientShellDLL/CShell.dll",
          # src/Game/TO2.dsw. As in our map: the game's code (ButeMgr's last)
          # ends where msvcprt's newop_s.obj (operator new, 0x10126185)
          # starts, then newaop_s.obj, the import thunks and msvcrt.lib
@@ -187,7 +187,7 @@ TARGETS = [
          app=[(0x10001000, 0x10126185)]),
     dict(label="Object.lto", what="the game: server objects", kind="image",
          shipped=REFERENCE + "/Object.lto", stem="Object",
-         built="src/Game/built/Final/ObjectDLL/TO2/Object.lto",
+         built="src/Game/built/Final/ObjectDLL/Object.lto",
          # src/Game/TO2.dsw. As in our map: the game's code (RegMgr's
          # CRegMgr::Init last) ends where msvcprt's runtime starts: here
          # newaop_s.obj first (operator new[], a 5-byte jmp at 0x10174d35),

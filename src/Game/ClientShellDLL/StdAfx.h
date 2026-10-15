@@ -26,23 +26,26 @@
 #include "DebugNew.h"
 
 #include "clientheaders.h"
+#include "iltclient.h"
+#include "iltserver.h"
 #include "iltmessage.h"
-#include "iltsoundmgr.h"
-
 #include "globals.h"
 
 #include "iltmodel.h"
 #include "ilttransform.h"
 #include "iltphysics.h"
 #include "iltmath.h"
-
+#include "iltsoundmgr.h"
 #include "ltobjref.h"
 #include "ltobjectcreate.h"
+#include "ltbasetypes.h"
 
 #include "Factory.h"
 
+#include "iclientshell.h"
 #include "ClientUtilities.h"
 #include "CommonUtilities.h"
+#include "GameClientShell.h"
 #include "AutoMessage.h"
 
 #endif // __STDAFX_H__

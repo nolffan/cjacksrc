@@ -63,7 +63,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "ClientShellDLL"=.\ClientShellDLL\TO2\ClientShellDLL.dsp - Package Owner=<4>
+Project: "ClientShellDLL"=.\ClientShellDLL\ClientShellDLL.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -93,28 +93,10 @@ Package=<4>
     Project_Dep_Name RegMgr
     End Project Dependency
     Begin Project Dependency
-    Project_Dep_Name ClientShellShared
-    End Project Dependency
-    Begin Project Dependency
     Project_Dep_Name ClientRes
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name ltmem
-    End Project Dependency
-}}}
-
-###############################################################################
-
-Project: "ClientShellShared"=.\CLIENTSHELLDLL\ClientShellShared\ClientShellShared.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-    Begin Project Dependency
-    Project_Dep_Name ClientRes
     End Project Dependency
 }}}
 
@@ -195,7 +177,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "Object"=.\ObjectDLL\TO2\Object.dsp - Package Owner=<4>
+Project: "Object"=.\ObjectDLL\Object.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -220,24 +202,6 @@ Package=<4>
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name RegMgr
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name ObjectShared
-    End Project Dependency
-}}}
-
-###############################################################################
-
-Project: "ObjectShared"=.\ObjectDLL\ObjectShared\ObjectShared.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-    Begin Project Dependency
-    Project_Dep_Name ltmem
     End Project Dependency
 }}}
 

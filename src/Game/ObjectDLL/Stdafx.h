@@ -35,6 +35,7 @@
 #include "iltmath.h"
 #include "iltsoundmgr.h"
 #include "ltobjectcreate.h"
+#include "ltbasetypes.h"
 
 #include "ltobjref.h"
 
