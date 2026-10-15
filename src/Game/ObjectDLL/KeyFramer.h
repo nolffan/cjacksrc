@@ -116,7 +116,9 @@ class KeyFramer : public GameBase
 
 		KFDirection m_eDirection;
 
-		HSTRING		m_hstrObjectName;
+		// RETAIL: Contract J.A.C.K. keeps the object names in a std::string (its
+		// constructor, Object.lto 0x100ea800, builds one at the first member).
+		std::string	m_sObjectName;
 		HSTRING		m_hstrTargetName;
 		HSTRING		m_hstrBaseKeyName;
 		HSTRING		m_hstrActiveSnd;

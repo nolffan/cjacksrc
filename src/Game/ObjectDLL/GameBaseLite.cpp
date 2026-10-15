@@ -127,7 +127,8 @@ void GameBaseLite::Deactivate()
 
 void GameBaseLite::SetName(const char *pName)
 {
-	if (m_bRegistered)
+	// RETAIL: through the virtual accessor (Object.lto 0x100d9180)
+	if (IsRegistered())
 	{
 		m_bRegistered = false;
 		g_pGameServerShell->GetLiteObjectMgr()->RenameObject(this, pName);

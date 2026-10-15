@@ -325,7 +325,6 @@ inline void SubtractRotationValues(
 
 KeyFramer::KeyFramer() : GameBase(OT_NORMAL)
 {
-	m_hstrObjectName	= LTNULL;
 	m_hstrTargetName	= LTNULL;
 	m_hstrBaseKeyName	= LTNULL;
 	m_hstrActiveSnd		= LTNULL;
@@ -394,11 +393,6 @@ KeyFramer::KeyFramer() : GameBase(OT_NORMAL)
 
 KeyFramer::~KeyFramer()
 {
-	if (m_hstrObjectName)
-	{
-        g_pLTServer->FreeString(m_hstrObjectName);
-	}
-
 	if (m_hstrTargetName)
 	{
         g_pLTServer->FreeString(m_hstrTargetName);
@@ -535,12 +529,12 @@ LTBOOL KeyFramer::CreateKeyList()
 	int numObjects;
 	HOBJECT hObject;
 
-	if (!m_hstrObjectName || !m_hstrBaseKeyName || m_pObjectList)
+	if (m_sObjectName.empty() || !m_hstrBaseKeyName || m_pObjectList)
 		return LTFALSE;
 
 	// Make sure our object and key index are valid...
 
-    const char* pNames = g_pLTServer->GetStringData(m_hstrObjectName);
+    const char* pNames = m_sObjectName.c_str();
 	if (!pNames || !pNames[0])
 		return LTFALSE;
 
@@ -1258,12 +1252,7 @@ void KeyFramer::SetObjectName(char* pName)
 {
 	if (!pName || !pName[0]) return;
 
-	if (m_hstrObjectName)
-	{
-        g_pLTServer->FreeString(m_hstrObjectName);
-	}
-
-     m_hstrObjectName = g_pLTServer->CreateString(pName);
+	m_sObjectName = pName;
 }
 
 
@@ -2235,7 +2224,7 @@ void KeyFramer::Save(ILTMessage_Write *pMsg, uint32 dwSaveFlags)
     SAVE_FLOAT(m_fEndTime);
     SAVE_FLOAT(m_fSoundRadius);
     SAVE_FLOAT(m_fKeyPercent);
-    SAVE_HSTRING(m_hstrObjectName);
+    SAVE_STDSTRING(m_sObjectName);
     SAVE_HSTRING(m_hstrTargetName);
     SAVE_HSTRING(m_hstrBaseKeyName);
     SAVE_HSTRING(m_hstrActiveSnd);
@@ -2368,7 +2357,7 @@ void KeyFramer::Load(ILTMessage_Read *pMsg, uint32 dwLoadFlags)
     LOAD_FLOAT(m_fEndTime);
     LOAD_FLOAT(m_fSoundRadius);
     LOAD_FLOAT(m_fKeyPercent);
-    LOAD_HSTRING(m_hstrObjectName);
+    LOAD_STDSTRING(m_sObjectName);
     LOAD_HSTRING(m_hstrTargetName);
     LOAD_HSTRING(m_hstrBaseKeyName);
     LOAD_HSTRING(m_hstrActiveSnd);

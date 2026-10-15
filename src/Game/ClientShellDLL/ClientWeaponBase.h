@@ -129,8 +129,10 @@ public:
 	// misc functions
 	virtual bool          IsMeleeWeapon() const { return false; }
 	virtual bool          IsFireButtonDown() const { return false; }
-	virtual void          GetShellEjectPos( LTVector *vOriginalPos ) { vOriginalPos->Init( 0.0f, 0.0f, 0.0f ); }
+	// RETAIL: Contract J.A.C.K.'s interface asks for the crosshair before the
+	// shell eject position (CShell.dll's vtables, slots 35 and 36)
 	virtual bool          WeaponNeedsCrosshair() const { return false; }
+	virtual void          GetShellEjectPos( LTVector *vOriginalPos ) { vOriginalPos->Init( 0.0f, 0.0f, 0.0f ); }
 
 	// used with the cheat codes to adjust the proper position of the weapon
 	virtual LTVector      GetMuzzleOffset() const { return LTVector( 0.0f, 0.0f, 0.0f ); }
@@ -167,6 +169,10 @@ public:
 	virtual void		SetPaused( bool bPaused ) {}
 	
 	virtual void		ClearFiring() {}
+
+	// RETAIL: Contract J.A.C.K.'s last slot, a float of 0.0 by default (CShell.dll
+	// 0x10023130, slot 50); the weapon's heat, for CHUDWeaponHeat. Named here.
+	virtual LTFLOAT		GetHeat() const { return 0.0f; }
 };
 
 

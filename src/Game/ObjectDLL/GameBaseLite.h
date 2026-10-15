@@ -43,6 +43,9 @@ public :
 	virtual bool IsActive() const { return m_bActive; }
 	virtual void Activate();
 	virtual void Deactivate();
+	// RETAIL: Contract J.A.C.K.'s GameBaseLite asks whether it is registered
+	// through a virtual function (its vtable's slot 23, Object.lto 0x1007d270)
+	virtual bool IsRegistered() const { return m_bRegistered; }
 
 	// Class access
 	virtual void SetClass(HCLASS hClass) { m_hClass = hClass; }

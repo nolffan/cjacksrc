@@ -302,7 +302,8 @@ class CAttachments : public IAggregate
 
 		void AddToObjectList( ObjectList *pObjList, eObjListControl eControl = eObjListNODuplicates );
 
-		void HideAttachments(LTBOOL bHide);
+		// RETAIL: virtual in Contract J.A.C.K. (slot 9 of Object.lto's vtables)
+		virtual void HideAttachments(LTBOOL bHide);
 		
 		// This will remove all attachments associated with the model and reattach them.  Useful when switching filenames on a character.
 		virtual void RemoveAndRecreateAttachments();

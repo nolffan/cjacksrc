@@ -182,6 +182,15 @@ server are not in the workspace yet (their resources first).
   zlib's headers). Not taken: ServerDir/WON (but `IServerDir.h`, kept as a
   header until the game's GameSpy code is written), AutoRun, STLport,
   NOLF2's launcher art, the other languages' scripts.
+- **One project per DLL.** Both retail game DLLs have their code in the
+  alphabetical order of all their sources, the TO2 project's and the
+  shared library's mixed, then the libraries in the alphabetical order of
+  their projects; Object.lto's assert names
+  `C:\proj\to2\source\Game\ObjectDLL\Attachments.cpp` (NOLF2's:
+  `...\ObjectDLL\ObjectShared\...`). So `src/Game/ObjectDLL` and
+  `src/Game/ClientShellDLL` hold both projects' files, and `Object.dsp`
+  and `ClientShellDLL.dsp` (Final only, written for this project) list
+  them in that order with one precompiled header each.
 - **Port.** The 2006 tree's ("Build 69") changes to the shared game code,
   merged three ways (base: NOLF2's release; about 1,000 lines in 109
   files; nolf2src's RETAIL reconstructions of 1.3 are among them), and
@@ -199,19 +208,64 @@ server are not in the workspace yet (their resources first).
   `IDS_CJ_<id>`; the shared script is read before ClientRes.rc's strings,
   which is the order of the retail string tables): the file is retail's
   but for its time stamp, and so is SRes.dll (no resources at all).
-- **Scores** (first record): CShell.dll 3,552 identical of 6,567 (36.0%
-  of bytes), Object.lto 5,375 of 9,787 (44.0%), ClientFx.fxd 285 of 452
-  (52.0%). The runtime boundaries are pinned from our maps.
+- **Method that pays.** RTTI gives every retail vtable with its class
+  name (complete object locators; LTGUIMgr alone has none): comparing slot
+  counts with ours shows which classes gained or lost virtual functions,
+  and the slots' targets (placed through the scoreboard) say where.
+  Constructors give the member layout (store offsets aligned on
+  instruction shapes). One header change then closes every function of
+  the class: KeyFramer's object name became a `std::string` (+24 bytes),
+  GameBaseLite gained `IsRegistered()`, CCharacter `SetMoveToFloor()` with
+  `m_bMoveToFloor` a `bool`, CAI a hit box lying-down setter
+  (`SetLyingDown`, our name) and its `bool`, CAttachments::HideAttachments
+  is virtual, the save macro LOAD_STDSTRING reads through a buffer:
+  Object.lto 5,375 -> 5,705 identical. Every Object.lto class's vtable now
+  has retail's slot count except DoomsDayDevice (+2), DoomsDayPiece (+3)
+  and VolumeEffect (derives from GameBase, +2 of its own; ScatterVolume,
+  SnowVolume follow). In CShell.dll: the weapon interface's crosshair
+  query comes before the shell eject position and it ends with a float
+  (`GetHeat`, our name; CClientWeapon returns its member at 0x158),
+  CPlayerMgr::DoActivate is not virtual, CLTGUITextCtrl has `GetFontSize`
+  after SetFont.
+- **Scores**: CShell.dll 3,556 identical of 6,567, Object.lto 5,705 of
+  9,787, ClientFx.fxd 285 of 452. The runtime boundaries are pinned from
+  our maps.
 - **Stubbed.** Multiplayer: the two places NOLF2 creates its WON server
   directory create none. CJ's servers and browser use GameSpy.dll's
   `IGameSpyServer`/`IGameSpyBrowser`/`IGameSpyPatchInfo`
   (`src/Game/Libs/GameSpy/IGameSpy.h`), still to be written, with
-  CShell.dll and Object.lto linking GameSpy.lib.
-- **Found.** CJ's Object.lto names `C:\proj\to2\source\Game\ObjectDLL\Attachments.cpp`
-  where NOLF2's names `...\ObjectDLL\ObjectShared\Attachments.cpp`: CJ's
-  ObjectShared files sit in ObjectDLL itself (perhaps one project, which
-  would change the link order). Under Wine, VC 7.1's compiler spins
-  instead of exiting after a fatal error (a missing #include, C1020, ...).
+  CShell.dll and Object.lto linking GameSpy.lib. Retail does it in
+  CGameServerShell::OnServerInitialized itself (0x100df380, after
+  `srand`; the server pointer at 0x194f4 of CGameServerShell).
+- **Classes still to change** (RTTI, retail vs ours). Object.lto has
+  AINodeSniper, AimMagnet (+plugin), BaseGameOptions and its
+  Singleplayer/DM/TeamDM/Coop/Demolition/Doomsday subclasses,
+  CAIHumanStrategyCover, CBodyState (a base), CDemolitionMissionMgr,
+  CVehicleButeMgr, Chassis/ChassisPiece/ChassisButeMgr (+plugins),
+  GunMount (+plugin); it has no CAnimatorBody, CHierarchicalButeMgr,
+  CTO2GameServerShell (merged into CGameServerShell), CTO2VersionMgr or
+  CVersionMgr. CShell.dll has CAnimator/CAnimatorBody, CMPButeMgr, the
+  CRagDoll*Constraint family, CHUDBombTarget, CHUDWeaponHeat,
+  CScreenHostDemolitionOptions, CSoundFX, CVehicleButeMgr,
+  CVehicleWeapon, ChassisFX/ChassisPieceFX (Doomsday's pieces renamed),
+  CAimMagnetFX and the game options classes; it has none of CAmmoMenu,
+  CDMButeMgr, CDoomsdayPieceFX, CHierarchicalButeMgr, CMenuIntel,
+  CMenuInventory, CMenuKeys, CMenuPlayer, CScreenJoinLAN,
+  CScreenPlayerSkills, CSkillCtrl, CSkillPopup, CTO2VersionMgr,
+  CVersionMgr. CClientWeapon has 79 virtual functions to our 66 (many of
+  NOLF2's non-virtual ones made virtual, for CVehicleWeapon).
+- **Layouts still to change** (from the constructors): CAnimatorPlayer
+  (+4 from about 0xc28, 28 bytes in all: more animation players, it
+  seems), which moves CPlayerObj's members from 0x2638 by 28; KeyFramer's
+  other HSTRINGs are still HSTRINGs in retail.
+- **Tools** (not committed, one-offs under out/): rtti.py (vtables by
+  RTTI), vtcmp.py (a class's vtable, retail beside ours), ctorcmp.py
+  (constructor store offsets aligned), place.py (the scoreboard's
+  placements with our symbol per shipped address), layout2.py
+  (displacement-only nears by class).
+- **Found.** Under Wine, VC 7.1's compiler spins instead of exiting after
+  a fatal error (a missing #include, C1020, ...): out-of-tree runs use a
+  watchdog that kills a compile after ten minutes.
 
 ### 5. gamespy
 

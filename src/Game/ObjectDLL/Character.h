@@ -291,6 +291,17 @@ class CCharacter : public GameBase, public IHitBoxUser, public IPlayerTrackerRec
 
 		virtual void	PushCharacter(const LTVector &vPos, LTFLOAT fRadius, LTFLOAT fStartDelay, LTFLOAT fDuration, LTFLOAT fStrength);
 
+		// RETAIL: Contract J.A.C.K.'s, the slot after PushCharacter (Object.lto 0x1009fa20)
+		virtual void	SetMoveToFloor( bool bMoveToFloor )
+		{
+			if( bMoveToFloor == m_bMoveToFloor )
+				return;
+
+			m_bMoveToFloor = bMoveToFloor;
+			if( m_bMoveToFloor )
+				MoveObjectToFloor( m_hObject );
+		}
+
 		uint8			GetPermissionSet() const {return m_iPermissionSet;}
 
 		// General inventory accessor
@@ -458,7 +469,8 @@ class CCharacter : public GameBase, public IHitBoxUser, public IPlayerTrackerRec
 		SurfaceType			m_eStandingOnSurface;			// What surface we're currently standing on.
         bool				m_bMakeBody;					// Make body when dead.
 		bool				m_bPermanentBody;				// Dead body is permanent.
-        LTBOOL				m_bMoveToFloor;					// Move character to floor
+        // RETAIL: a bool in Contract J.A.C.K. (Object.lto 0x1009fa20 reads it at 0x42)
+        bool				m_bMoveToFloor;					// Move character to floor
 		CharacterDeath		m_eDeathType;					// How did we die
         LTBOOL              m_bStartedDeath;                // Did I start death ani?
         LTBOOL				m_bRolling;						// Are we in the process of rolling

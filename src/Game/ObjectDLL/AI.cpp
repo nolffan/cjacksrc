@@ -752,6 +752,7 @@ CAI::CAI() : CCharacter()
 	m_bCanTalk = true;
 
 	m_bUnconscious = false;
+	m_bLyingDown = false;
 
 	m_fFOVBias = 0.0f;
 
@@ -2125,6 +2126,74 @@ void CAI::UpdateUserFlagCanActivate()
 //	PURPOSE:	Updates flags for sleeping/waking AI
 //
 // ----------------------------------------------------------------------- //
+
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	CAI::SetLyingDown
+//
+//	PURPOSE:	Lay the hit box down, or stand it up again
+//
+//	RETAIL: reconstructed from Contract J.A.C.K.'s Object.lto (0x10009ad0)
+//
+// ----------------------------------------------------------------------- //
+
+void CAI::SetLyingDown(bool bLyingDown)
+{
+	if (bLyingDown == m_bLyingDown) return;
+
+	m_bLyingDown = bLyingDown;
+
+	if (bLyingDown)
+	{
+		if (m_hHitBox)
+		{
+			CCharacterHitBox* pHitBox = (CCharacterHitBox*) g_pLTServer->HandleToObject(m_hHitBox);
+			if ( pHitBox )
+			{
+				LTVector vNewDims,vDims;
+				pHitBox->GetDefaultModelDims( vDims );
+
+				vNewDims = vDims;
+				if (GetAnimationContext()->IsPropSet(kAPG_Posture,kAP_Stand))
+				{
+					//if we were standing, adjust our hitbox to cover us lying down
+
+					vNewDims.x *= 2.0f;
+					vNewDims.z *= 2.0f;
+					vNewDims.y = 15.0f;
+					g_pPhysicsLT->SetObjectDims(m_hHitBox, &vNewDims, 0);
+				}
+
+				LTVector vOffset(0, vNewDims.y - vDims.y, 0);
+				pHitBox->SetOffset(vOffset);
+				pHitBox->Update();
+			}
+
+			UpdateClientHitBox();
+		}
+	}
+	else
+	{
+		if (m_hHitBox)
+		{
+			CCharacterHitBox* pHitBox = (CCharacterHitBox*) g_pLTServer->HandleToObject(m_hHitBox);
+			if ( pHitBox )
+			{
+				LTVector vDims;
+				pHitBox->GetDefaultModelDims( vDims );
+
+				LTVector vHitDims = vDims;
+				vHitDims *= 1.2f;
+				g_pPhysicsLT->SetObjectDims(m_hHitBox, &vHitDims, 0);
+
+				pHitBox->SetOffset( LTVector( 0.0f, 0.0f, 0.0f ) );
+				pHitBox->Update();
+			}
+
+			UpdateClientHitBox();
+		}
+	}
+}
 
 void CAI::SetUnconscious(bool bUnconscious)
 {
@@ -4674,6 +4743,7 @@ void CAI::Save(ILTMessage_Write *pMsg, uint32 dwSaveFlags)
 	SAVE_bool(m_bCanTalk);
 
 	SAVE_bool(m_bUnconscious);
+	SAVE_bool(m_bLyingDown);
 
 	SAVE_BOOL(m_bFirstUpdate);
 
@@ -4876,6 +4946,7 @@ void CAI::Load(ILTMessage_Read *pMsg, uint32 dwLoadFlags)
 	LOAD_bool(m_bCanTalk);
 
 	LOAD_bool(m_bUnconscious);
+	LOAD_bool(m_bLyingDown);
 
 	LOAD_BOOL(m_bFirstUpdate);
 

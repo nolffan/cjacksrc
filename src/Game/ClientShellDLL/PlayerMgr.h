@@ -187,7 +187,9 @@ public:
 	void        ToggleHolster(bool bPlayDeselect);
 	void		LastWeapon();
 
-    virtual void DoActivate();
+    // RETAIL: not virtual in Contract J.A.C.K. (CPlayerMgr's vtable, CShell.dll,
+    // ends with InitTargetMgr)
+    void DoActivate();
 
 	void		Teleport(const LTVector & vPos);
 

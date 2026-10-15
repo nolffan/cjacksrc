@@ -435,6 +435,10 @@ class CAI : public CCharacter, public IAISensing
 		virtual void StartDeath();
 
 		virtual void SetUnconscious(bool bUnconscious);
+		// RETAIL: Contract J.A.C.K.'s, the slot after SetUnconscious (Object.lto
+		// 0x10009ad0): the hit box laid down or stood up, as SetUnconscious does
+		// it. Named here; the name is lost.
+		virtual void SetLyingDown(bool bLyingDown);
 		bool IsUnconscious() {return m_bUnconscious;}
 
 		// defense
@@ -671,6 +675,7 @@ class CAI : public CCharacter, public IAISensing
 		LTBOOL		m_bAlwaysActivate;			// Do we always activate regardless of our state
 		LTBOOL		m_bPreserveActiveCmds;		// Should we not delete our active cmd's when used?
 		bool		m_bUnconscious;
+		bool		m_bLyingDown;	// RETAIL: Contract J.A.C.K.'s (Object.lto 0x10009ad0)
 
 		// Animation stuff
 

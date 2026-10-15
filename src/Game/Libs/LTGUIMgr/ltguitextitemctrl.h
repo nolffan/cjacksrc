@@ -60,6 +60,8 @@ public:
 	// Set the font, pass in a NULL pointer to change only the font size
 	//   pass in a font size of 0 to retain the current size.
     virtual LTBOOL	SetFont ( CUIFont *pFont, uint8 nFontSize);
+	// RETAIL: Contract J.A.C.K.'s, the slot after SetFont (CShell.dll 0x10085ae0)
+	virtual uint8	GetFontSize ( )					{ return m_nBaseFontSize; }
 
 	// Width/Height calculations
 	virtual uint16	GetWidth ( )						{ return m_nWidth; }

@@ -55,7 +55,8 @@ class CPlayerObj;
 #define SAVE_CHARSTRING(variable)  pMsg->WriteString(variable);
 #define LOAD_CHARSTRING(variable, nsize)  pMsg->ReadString(variable, nsize);
 #define SAVE_STDSTRING(variable) pMsg->WriteString((variable).c_str());
-#define LOAD_STDSTRING(variable) { (variable).resize(pMsg->PeekString(0,0) + 1); pMsg->ReadString((variable).begin(), (variable).size()); }
+// RETAIL: read through a buffer, as Object.lto's KeyFramer::Load (0x100ebebd) does
+#define LOAD_STDSTRING(variable) { char szString[256]; pMsg->ReadString(szString, 256); (variable) = szString; }
 #define SAVE_RANGE(variable) pMsg->Writefloat((float)variable.GetMin()); pMsg->Writefloat((float)variable.GetMax());
 #define LOAD_RANGE(variable) variable.Set(pMsg->Readfloat(), pMsg->Readfloat());
 #define LOAD_RANGE_CAST(variable, type) variable.Set((type)pMsg->Readfloat(), (type)pMsg->Readfloat());
