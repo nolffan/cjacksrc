@@ -67,6 +67,7 @@ define_holder(IClientShell, i_client_shell);
 
 //the ILTClient game interface
 #include "iltclient.h"
+#include "sysudpdriver.h"	// RETAIL: GetUDPSocket
 static ILTClient *ilt_client;
 define_holder(ILTClient, ilt_client);
 
@@ -146,8 +147,8 @@ static IWorldParticleBlockerData *world_particle_blocker_data;
 define_holder(IWorldParticleBlockerData, world_particle_blocker_data);
 
 #include "iltmath.h"
-static ILTMath *ilt_math;
-define_holder(ILTMath, ilt_math);
+// RETAIL: no ILTMath holder and no CLTClient::Math (Lithtech.exe's
+// CLTClient vtable ends at GetMaxRadiusInPoly, 0x54b728)
 
 // ---------------------------------
 // Begin undocumented random puff.
@@ -330,7 +331,6 @@ class CLTClient : public ILTClient {
 	virtual ILTModel *GetModelLT();
 	virtual ILTTransform *GetTransformLT();
 	virtual ILTSoundMgr *SoundMgr();
-	virtual ILTMath *Math();
 
 	virtual LTRESULT OpenFile(const char *pFilename, ILTStream **pStream);
 	virtual LTRESULT CopyFile(const char *pszSourceFile, const char *pszDestFile);
@@ -407,6 +407,7 @@ class CLTClient : public ILTClient {
 	virtual LTRESULT SetObjectPos(HLOCALOBJ hObj, const LTVector *pPos, bool bForce);
 
 	virtual LTParticle* AddParticle(HLOCALOBJ hObj, const LTVector *pPos, const LTVector *pVelocity, const LTVector *pColor, float lifeTime);
+	virtual LTRESULT GetUDPSocket(uint32 *phSocket);	// RETAIL
 	virtual LTRESULT StartQuery(const char *pInfo);
 	virtual LTRESULT UpdateQuery();
 	virtual LTRESULT GetQueryResults(NetSession* &pListHead);
@@ -552,10 +553,6 @@ ILTBenchmarkMgr *CLTClient::GetBenchmarkMgr()
 	return ilt_benchmarkmgr;
 }
 
-ILTMath *CLTClient::Math()
-{
-	return ilt_math;
-}
 
 LTRESULT CLTClient::OpenFile(const char *pFilename, ILTStream **pStream)
 {
@@ -1624,6 +1621,19 @@ LTRESULT CLTClient::GetDeviceObjectName( char const* pszDeviceName, uint32 nObje
 	}
 
 	return LT_OK;
+}
+
+// RETAIL: the internet driver's socket (Lithtech.exe 0x409070)
+LTRESULT CLTClient::GetUDPSocket(uint32 *phSocket)
+{
+	CBaseDriver *pDriver = g_pClientMgr->m_NetMgr.GetDriver("internet");
+	if (pDriver)
+	{
+		*phSocket = (uint32)((CUDPDriver*)pDriver)->m_Socket;
+		return LT_OK;
+	}
+
+	return LT_NOTFOUND;
 }
 
 // ----------------------------------------------------------------- //

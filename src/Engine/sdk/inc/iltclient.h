@@ -3184,6 +3184,18 @@ control between updates.)
 */
 
 /*!
+\param phSocket (return) The internet driver's socket.
+\return \b LT_NOTFOUND if there is no internet driver; otherwise, \b LT_OK.
+
+cjacksrc: Contract J.A.C.K.'s, as ILTServer::GetUDPSocket; its slot comes
+right after AddParticle's (Lithtech.exe's CLTClient vtable, 0x409070), so
+every virtual after it is one slot further than NOLF2's.
+
+Used for: Networking.
+*/
+    virtual LTRESULT GetUDPSocket(uint32 *phSocket) = 0;
+
+/*!
 \ingroup queryfns
 \param pInfo A string containing IP addresses to check for sessions.
 \return \b LT_NOTINITIALIZED if there is no main driver, or \b LT_ERROR if it can't bind to port; otherwise, returns \b LT_OK.
