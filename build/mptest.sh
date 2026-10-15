@@ -49,7 +49,7 @@ for f in "$GAME"/*; do
 done
 cp "$GAME/autoexec.cfg.retail" "$RUN/autoexec.cfg"
 cp "$GAME/Default.prf.retail" "$RUN/Profiles/Default.prf"
-printf '[Multiplayer]\r\nGameType = 1\r\nPort = 27888\r\nLANOnly = 1\r\nDedicated = 1\r\nUsePassword = 0\r\n' > "$RUN/Profiles/mptest.txt"
+printf '[Multiplayer]\r\nGameType = 1\r\nPort = 27888\r\nLANOnly = TRUE\r\nDedicated = TRUE\r\nUsePassword = FALSE\r\n' > "$RUN/Profiles/mptest.txt"
 printf '[MissionList]\r\nMission0=0\r\nLoopMissions=1\r\n' > "$RUN/Profiles/mptest/Campaigns/default_campaign.txt"
 printf '%s ++screenwidth 640 ++screenheight 480 ++bitdepth 32 ++windowed 0 +DisableMovies 1 +join 127.0.0.1:27888 +gametype Cooperative\r\n' \
     "$(tr -d '\r\n' < "$GAME/cjackcmds.txt")" > "$RUN/cjackcmds.txt"
