@@ -72,6 +72,16 @@ private:
 		const ModelHookData*	m_pHookData;
 	};
 
+	// RETAIL: RenderPieceList sorts pointers to the pieces (0x50d62b)
+	struct FSortQueuedPieces
+	{
+		bool operator()(const SQueuedPiece *pLHS, const SQueuedPiece *pRHS) const
+		{
+			return *pLHS < *pRHS;
+		}
+	};
+	typedef vector<SQueuedPiece*>		TSortedPieceList;
+
 	typedef vector<SQueuedPiece>		TPieceList;
 	TPieceList							m_cPieceList;
 };

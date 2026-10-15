@@ -436,6 +436,10 @@ SharedTexture *CD3D_RenderBlock::LoadSpriteData(CRBSection &cSection, uint32 nTe
 	return pResult;
 }
 
+// The engine's debug level (bdefs.cpp), which the renderer's headers do not
+// declare
+extern int32 g_DebugLevel;
+
 bool CD3D_RenderBlock::Load(ILTStream *pStream)
 {
 	if (m_bShadersBound)
@@ -510,14 +514,16 @@ bool CD3D_RenderBlock::Load(ILTStream *pStream)
 
 			if ((cCurSection.m_eShader != eShader_Gouraud) && 
 				(cCurSection.m_eShader != eShader_Lightmap) && 
-				(cCurSection.m_pTexture[0] == NULL))
+				(cCurSection.m_pTexture[0] == NULL) &&
+				(g_DebugLevel >= 1))	// RETAIL: 0x4e70c6
 			{
 				dsi_ConsolePrint("Renderer: Error loading texture %s", sTextureName[0]);
 			}
 
 			// Handle the dual texture cases
 			if (((cCurSection.m_eShader == eShader_Gouraud_DualTexture) || (cCurSection.m_eShader == eShader_Lightmap_DualTexture)) &&
-				(cCurSection.m_pTexture[1] == NULL))
+				(cCurSection.m_pTexture[1] == NULL) &&
+				(g_DebugLevel >= 1))	// RETAIL: 0x4e70f8
 			{
 				dsi_ConsolePrint("Renderer: Error loading texture %s", sTextureName[1]);
 			}
@@ -644,12 +650,11 @@ bool CD3D_RenderBlock::Load(ILTStream *pStream)
 	uint32 nLightGroupCount;
 	*pStream >> nLightGroupCount;
 	LT_MEM_TRACK_ALLOC(m_aLightGroups.reserve(nLightGroupCount), LT_MEM_TYPE_RENDER_LIGHTGROUP);
-	// cjacksrc: no push_back() in Visual C++ .NET 2003's vector: the 2006
-	// tree's local
-	SRBLightGroup LightGroup;
 	for (; nLightGroupCount; --nLightGroupCount)
 	{
-		m_aLightGroups.push_back(LightGroup);
+		// cjacksrc: no push_back() in Visual C++ .NET 2003's vector; a
+		// temporary each time round (RETAIL: 0x4e7466)
+		m_aLightGroups.push_back(SRBLightGroup());
 		*pStream >> m_aLightGroups.back();
 	}
 
@@ -759,7 +764,7 @@ void CD3D_RenderBlock::GetLightList(const ViewParams& Params, const DynamicLight
 	//  But it's much cheaper than allocating it for every render block
 	typedef vector<DynamicLight*> TLightList;
 	static TLightList aLightList;
-	aLightList.clear();
+	aLightList.resize(0);	// RETAIL: 0x4e60db
 
 	DynamicLight **pCurLight = g_WorldDynamicLights;
 	DynamicLight **pLastLight = &g_WorldDynamicLights[g_nNumWorldDynamicLights];
@@ -805,7 +810,7 @@ bool CD3D_RenderBlock::DrawAggregateShader(IAggregateShader *pShader)
 
 	// Make sure we're good with our shaders
 	if (!m_bShadersBound)
-		m_pWorld->BindAll();
+		g_Device.m_pRenderWorld->BindAll();
 
 	// Update the shader data if they're not up to date
 	if (m_bShadersDirty)
@@ -817,7 +822,7 @@ bool CD3D_RenderBlock::DrawAggregateShader(IAggregateShader *pShader)
 	for (uint32 nShaderLoop = 0; nShaderLoop < k_eShader_Num; ++nShaderLoop)
 	{
 		if (m_aShaderIndices[nShaderLoop] != k_InvalidShaderIndex)
-			m_pWorld->GetShader((ERenderShader)nShaderLoop)->DrawAggregateShader(pShader, m_aShaderIndices[nShaderLoop]);
+			g_Device.m_pRenderWorld->GetShader((ERenderShader)nShaderLoop)->DrawAggregateShader(pShader, m_aShaderIndices[nShaderLoop]);
 	}
 
 	return true;
@@ -827,7 +832,7 @@ void CD3D_RenderBlock::PreDraw(const ViewParams& Params)
 {
 	// Make sure we're good with our shaders
 	if (!m_bShadersBound)
-		m_pWorld->BindAll();
+		g_Device.m_pRenderWorld->BindAll();
 
 	// Update the shader data if they're not up to date
 	if (m_bShadersDirty)
@@ -861,7 +866,7 @@ bool CD3D_RenderBlock::Draw(const ViewParams& Params)
 	{
 		if (m_aShaderIndices[nShaderLoop] == k_InvalidShaderIndex)
 			continue;
-		CRenderShader *pShader = m_pWorld->GetShader((ERenderShader)nShaderLoop);
+		CRenderShader *pShader = g_Device.m_pRenderWorld->GetShader((ERenderShader)nShaderLoop);
 		pShader->Draw(cDrawState, m_aShaderIndices[nShaderLoop]);
 	}
 
@@ -1059,7 +1064,7 @@ void CD3D_RenderBlock::UpdateShaderLightmaps(bool bFullUpdate)
 	uint8 *pLMScratchPad = 0;
 
 	// Point directly at the lightmap shader
-	CRenderShader *pShader = m_pWorld->GetShader(eShader_Lightmap);
+	CRenderShader *pShader = g_Device.m_pRenderWorld->GetShader(eShader_Lightmap);
 	CRenderShader_Lightmap *pLMShader = reinterpret_cast<CRenderShader_Lightmap*>(pShader);
 
 	for (uint32 nCurSection = 0; nCurSection < m_aSections.size(); ++nCurSection)
@@ -1278,7 +1283,7 @@ void CD3D_RenderBlock::UpdateShaderData(bool bFullUpdate)
 		if (m_aShaderIndices[nCurShader] == k_InvalidShaderIndex)
 			continue;
 
-		CRenderShader *pShader = m_pWorld->GetShader((ERenderShader)nCurShader);
+		CRenderShader *pShader = g_Device.m_pRenderWorld->GetShader((ERenderShader)nCurShader);
 		if (pShader)
 			pShader->Lock(m_aShaderIndices[nCurShader]);
 	}
@@ -1290,7 +1295,7 @@ void CD3D_RenderBlock::UpdateShaderData(bool bFullUpdate)
 		if ((uint32)iCurSection->m_eBoundShader > nEndShader)
 			continue;
 
-		CRenderShader *pShader = m_pWorld->GetShader(iCurSection->m_eBoundShader);
+		CRenderShader *pShader = g_Device.m_pRenderWorld->GetShader(iCurSection->m_eBoundShader);
 		if (pShader)
 			pShader->AddSection(m_pWorld, *iCurSection, m_aIndices, pFinalVertices, m_aVertices);
 	}
@@ -1301,7 +1306,7 @@ void CD3D_RenderBlock::UpdateShaderData(bool bFullUpdate)
  		if (m_aShaderIndices[nCurShader] == k_InvalidShaderIndex)
  			continue;
  
- 		CRenderShader *pShader = m_pWorld->GetShader((ERenderShader)nCurShader);
+ 		CRenderShader *pShader = g_Device.m_pRenderWorld->GetShader((ERenderShader)nCurShader);
  		if (pShader)
  			pShader->MarkSectionBreaks();
  	}
@@ -1312,7 +1317,7 @@ void CD3D_RenderBlock::UpdateShaderData(bool bFullUpdate)
 		if (m_aShaderIndices[nCurShader] == k_InvalidShaderIndex)
 			continue;
 
-		CRenderShader *pShader = m_pWorld->GetShader((ERenderShader)nCurShader);
+		CRenderShader *pShader = g_Device.m_pRenderWorld->GetShader((ERenderShader)nCurShader);
 		if (pShader)
 			pShader->Unlock();
 	}
@@ -1330,7 +1335,7 @@ void CD3D_RenderBlock::PreBind()
 	for (; iCurSection != m_aSections.end(); ++iCurSection)
 	{
 		CRBSection &cSection = *iCurSection;
-		CRenderShader *pShader = m_pWorld->AllocShader(cSection);
+		CRenderShader *pShader = g_Device.m_pRenderWorld->AllocShader(cSection);
 		if (!pShader)
 		{
 			// This is valid in some cases..  For example, on the lightmap shader when lightmaps are disabled
@@ -1463,7 +1468,7 @@ uint32 CD3D_RenderBlock::IntersectRay(const SRay &sRay, TIntersectionList &sResu
 {
 	const float k_fEqualDistanceEpsilon = 0.0001f;
 
-	sResults.clear();
+	sResults.resize(0);	// RETAIL: 0x4e64d2
 
 	if (!Intersect_Ray_AABB(sRay, m_vBoundsMin, m_vBoundsMax))
 		return 0;
@@ -1490,7 +1495,7 @@ uint32 CD3D_RenderBlock::IntersectRay(const SRay &sRay, TIntersectionList &sResu
 		if (eIntersect == eIntersectionType_First && !sResults.empty() && 
 			(sResults.front().m_fDistance > (sCurIntersect.m_fDistance + k_fEqualDistanceEpsilon)))
 		{
-			sResults.clear();
+			sResults.resize(0);	// RETAIL: 0x4e662a
 		}
 
 		sResults.push_back(sCurIntersect);
@@ -1534,7 +1539,7 @@ void CD3D_RenderBlock::DebugTri(const SIntersection &sIntersect, float fX, float
 	}
 
 	// Hand it off to the shader for the actual drawing
-	m_pWorld->GetShader(pSection->m_eBoundShader)->DebugTri(
+	g_Device.m_pRenderWorld->GetShader(pSection->m_eBoundShader)->DebugTri(
 		m_aShaderIndices[pSection->m_eBoundShader],
 		*pSection, sIntersect.m_nTriIndex * 3, m_aIndices, m_aVertices, fX, fY, fSizeX, fSizeY);
 }
@@ -1543,12 +1548,15 @@ void CD3D_RenderBlock::DebugTri(const SIntersection &sIntersect, float fX, float
 // screen filled with sky when it shouldn't.
 void CD3D_RenderBlock::ExtendSkyBounds(const ViewParams& Params, float &fMinX, float &fMinY, float &fMaxX, float &fMaxY) const
 {
+	// RETAIL: Contract J.A.C.K.'s form (0x4e5cd0): the clipped edge's point
+	// and the unclipped vertices extend the bounds, and the polygon is
+	// tested and clamped against the screen, before NOLF2's "SKYBOX FIX for
+	// Multiple Cameras" (the viewport rectangle)
 	TGeometryPolyList::const_iterator iCurPoly = m_aSkyPortals.begin();
 	for (; iCurPoly != m_aSkyPortals.end(); ++iCurPoly)
 	{
 		const SRBGeometryPoly &sCurPoly = *iCurPoly;
 
-		uint32 nNear = 0;
 		float fLocalMinX = FLT_MAX, fLocalMinY = FLT_MAX, fLocalMaxX = -FLT_MAX, fLocalMaxY = -FLT_MAX;
 
 		LTVector vPrevVert = sCurPoly.m_aVerts.back();
@@ -1563,56 +1571,48 @@ void CD3D_RenderBlock::ExtendSkyBounds(const ViewParams& Params, float &fMinX, f
 			float fCurNearDist = Params.m_ClipPlanes[CPLANE_NEAR_INDEX].DistTo(vCurVert);
 			bool bCurClip = fCurNearDist > 0.0f;
 
-			bool bVertOK = true;
-
 			if (bCurClip != bPrevClip)
 			{
 				float fInterpolant = (fCurNearDist != fPrevNearDist) ? -fPrevNearDist / (fCurNearDist - fPrevNearDist) : 0.0f;
 				LTVector vTemp;
 				VEC_LERP(vTemp, vPrevVert, vCurVert, fInterpolant);
-				vCurVert = vTemp;
+
+				// Transform all the way to screen space
+				MatVMul_InPlace_H(&(Params.m_FullTransform), &vTemp);
+				// Update the extents
+				fLocalMinX = LTMIN(fLocalMinX, vTemp.x);
+				fLocalMinY = LTMIN(fLocalMinY, vTemp.y);
+				fLocalMaxX = LTMAX(fLocalMaxX, vTemp.x);
+				fLocalMaxY = LTMAX(fLocalMaxY, vTemp.y);
 			}
 
-			// Transform all the way to screen space
-			MatVMul_InPlace_H(&(Params.m_FullTransform), &vCurVert);
-			// Update the extents
-			fLocalMinX = LTMIN(fLocalMinX, vCurVert.x);
-			fLocalMinY = LTMIN(fLocalMinY, vCurVert.y);
-			fLocalMaxX = LTMAX(fLocalMaxX, vCurVert.x);
-			fLocalMaxY = LTMAX(fLocalMaxY, vCurVert.y);
+			if (bCurClip)
+			{
+				// Transform all the way to screen space
+				MatVMul_InPlace_H(&(Params.m_FullTransform), &vCurVert);
+				// Update the extents
+				fLocalMinX = LTMIN(fLocalMinX, vCurVert.x);
+				fLocalMinY = LTMIN(fLocalMinY, vCurVert.y);
+				fLocalMaxX = LTMAX(fLocalMaxX, vCurVert.x);
+				fLocalMaxY = LTMAX(fLocalMaxY, vCurVert.y);
+			}
 
 			vPrevVert = *iCurVert;
 			fPrevNearDist = fCurNearDist;
 			bPrevClip = bCurClip;
 		}
-		// Skip over polys that are entirely outside the clipping area
-		if ((nNear == sCurPoly.m_aVerts.size()) || 
-		// SKYBOX FIX for Multiple Cameras
-			/*
-			(fLocalMaxX < 0.0f) ||
+		// Skip over polys that are entirely outside the screen
+		if ((fLocalMaxX < 0.0f) ||
 			(fLocalMaxY < 0.0f) ||
 			(fLocalMinX > Params.m_fScreenWidth) ||
 			(fLocalMinY > Params.m_fScreenHeight))
-			*/
-			(fLocalMaxX < static_cast<float>(Params.m_Rect.left))  ||
-			(fLocalMaxY < static_cast<float>(Params.m_Rect.top))   ||
-			(fLocalMinX > static_cast<float>(Params.m_Rect.right)) ||
-			(fLocalMinY > static_cast<float>(Params.m_Rect.bottom)) )
 			continue;
 
-		// SKYBOX FIX for Multiple Cameras
-		/*
 		// Clamp to the screen
 		fLocalMinX = LTMAX(0.0f, fLocalMinX);
 		fLocalMinY = LTMAX(0.0f, fLocalMinY);
 		fLocalMaxX = LTMIN(Params.m_fScreenWidth, fLocalMaxX);
 		fLocalMaxY = LTMIN(Params.m_fScreenHeight, fLocalMaxY);
-		*/
-		//Clamp to the viewport
-		fLocalMinX = LTMAX(static_cast<float>(Params.m_Rect.left), fLocalMinX);
-		fLocalMinY = LTMAX(static_cast<float>(Params.m_Rect.top), fLocalMinY);
-		fLocalMaxX = LTMIN(static_cast<float>(Params.m_Rect.right), fLocalMaxX);
-		fLocalMaxY = LTMIN(static_cast<float>(Params.m_Rect.bottom), fLocalMaxY);
 
 		// Extend the bounds
 		fMinX = LTMIN(fMinX, fLocalMinX);
@@ -1648,7 +1648,7 @@ void CD3D_RenderBlock::GetMemStats(CMemStats_World &cMemStats) const
 	for (uint32 nShaderLoop = 0; nShaderLoop < k_eShader_Num; ++nShaderLoop)
 	{
 		if (m_aShaderIndices[nShaderLoop] != k_InvalidShaderIndex)
-			m_pWorld->GetShader((ERenderShader)nShaderLoop)->GetMemStats(cMemStats);
+			g_Device.m_pRenderWorld->GetShader((ERenderShader)nShaderLoop)->GetMemStats(cMemStats);
 	}
 
 	// Add in the dynamic light memory usage
