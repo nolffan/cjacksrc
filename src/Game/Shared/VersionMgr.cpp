@@ -31,8 +31,10 @@ int const GAME_HANDSHAKE_VER_MINOR = 3;
 int const GAME_HANDSHAKE_VER = ((GAME_HANDSHAKE_VER_MAJOR << 8) + GAME_HANDSHAKE_VER_MINOR);
 
 static const uint32 s_nBuildNumber = 193;
+#if defined(_CLIENTBUILD)
 static const char* s_szNetVersion	= "1.0.0.3";
 static const char* s_szNetGameName	= "contractjack";
+#endif
 
 const CVersionMgr::TSaveVersion CVersionMgr::kSaveVersion__1_1 = 72;
 const CVersionMgr::TSaveVersion CVersionMgr::kSaveVersion__1_2 = 90;

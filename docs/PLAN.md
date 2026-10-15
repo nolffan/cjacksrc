@@ -645,7 +645,23 @@ NOLF2's file order. Recorded: the launcher 284 of 344 functions identical (98.9%
   server's nears are two register allocations in ButeMgr (a hash_map's
   `lower_bound`, CButeMgr's constructor: which of the three CString
   members stay in registers); its unplaced are ButeMgr's EH funclets.
-  Not yet compared: the images' data and import order (`tools/bindiff.py`).
+  Whole files: the imports are retail's in order (the server links
+  `server.lib` before `winmm.lib`); RegMgr and regmgr32 are `/Ox /GF`
+  (every image that links CRegMgr imports `RegDeleteKeyA`, used only by
+  its uncalled members), which gives the launcher's `.text` retail's
+  exact size and `.data` retail's bytes; what still moves code is which
+  copy of a folded COMDAT the linker keeps (the launcher's first object
+  ends Serialize/AssertValid/OnMouseMove in retail, AssertValid/
+  OnMouseMove/Serialize in ours), the `.rdata` order, and the server's
+  `.text`, 0xc0 bytes short. Data-only literals checked against the
+  retail strings: the server's application name `ContractJackServer`,
+  its registry key `Contract Jack`, its log `server.log`, the launcher's
+  `CJ Modification %i`.
+- **For the game package**: RegMgr is now `/Ox /GF` (CShell.dll and
+  Object.lto import RegDeleteKeyA/RegDeleteValueA as retail does; no
+  score change); VersionMgr.cpp's NOLF2 network strings are client-only;
+  ButeMgr's string holder change and hash (above) gained 13 and 12
+  functions in CShell.dll and Object.lto.
 
 ### 11. release
 

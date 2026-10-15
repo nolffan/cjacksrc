@@ -14,8 +14,8 @@ the attribution is the header's own testimony.
 | `SndDrv.dll` | 2003-10-14 | 6 / 10 | one VC6 C++ object (12.00.8168) and one of cl 13.00.9178: EAX's GUIDs and the DirectX SDK's `dxguid.lib`, as in NOLF2's | -- |
 | `ltmsg.dll` | | 7 / 2 | resources and msvcrt's DLL entry | -- |
 | `GameSpy.dll` | 2003-10-31 | 29 / 18 | the C objects are GameSpy's SDK (22) and msvcrt.lib's; the C++ ones Monolith's wrapper, WONAPI.lib's CD key check and msvcrt/msvcprt's | `msvc-7.10-3077`: the wrapper `/MD /Ox /GF` (no `/Gy`, no `/GX`, no `NDEBUG`), WONAPI `/MD /O2 /GX /GR` |
-| `ContractJack.exe` | 2003-10-31 | 15 / 28 | 9 objects of tool 0x27, build 8491: AliasObj 7.0, the alias members of MFC 7.1's import library `mfc71.lib` (its 496 objects of 0x27/8491); MFC 7.1 as a DLL | `/MD /Ox /GF`, no `/GX`, no `/GR`; regmgr32 `/O2`, no `/GX` (below) |
-| `ContractJackServer.exe` | 2003-10-31 | 15 / 28 | the same 9 of 0x27/8491 (`mfc71.lib`) | `/MD /Ox /GF /GR`, no `/GX`; ButeMgrMfcDll `/O2 /GX` (below) |
+| `ContractJack.exe` | 2003-10-31 | 15 / 28 | 9 objects of tool 0x27, build 8491: AliasObj 7.0, the alias members of MFC 7.1's import library `mfc71.lib` (its 496 objects of 0x27/8491); MFC 7.1 as a DLL | `/MD /Ox /GF`, no `/GX`, no `/GR`; regmgr32 and RegMgr `/Ox /GF` (below) |
+| `ContractJackServer.exe` | 2003-10-31 | 15 / 28 | the same 9 of 0x27/8491 (`mfc71.lib`) | `/MD /Ox /GF /GR`, no `/GX`; ButeMgrMfcDll `/O2 /GX`, RegMgr and regmgr32 `/Ox /GF` (below) |
 | `CShell.dll` | 2003-10-31 | 9 / 306 | 3 import descriptors of lib 7.00.9210 (the DirectX 8.1 SDK's `dinput8.lib`) | msvc-7.10-3077, `/MD /O2 /GR`, no `/GX` (LTGUIMgr `/GS`): provisional, below |
 | `Object.lto` | 2003-10-31 | 7 / 348 | | msvc-7.10-3077, `/MD /O2 /GR`, no `/GX`: provisional |
 | `ClientFx.fxd` | 2003-10-14 | 115 / 41 | `libcmt.lib` statically: most C objects are the CRT's | msvc-7.10-3077, `/MT /O2`, no `/GX`: provisional |
@@ -139,4 +139,18 @@ Measured on the retail images, then on our builds (`progress/README.md`):
   (`ltbasetypes.h`, `iltserver.h`, `iltmessage.h`): their six float
   constants' initializers follow theApp's among retail's (0x40c550..), and
   the shared `VersionMgr.cpp` needs them.
+- **The registry libraries without `/Gy` too.** Every image that links
+  RegMgr (CRegMgr: the launcher, the server, CShell.dll, Object.lto)
+  imports `RegDeleteKeyA` and `RegDeleteValueA`, which only CRegMgr's
+  uncalled Delete* members use: the whole regmgr.obj is linked, so it
+  was compiled `/Ox /GF`; regmgr32.obj likewise (the launcher's own code
+  is then exactly retail's size, 0xb644 bytes of `.text`). The link is
+  the default `/OPT:ICF` (retail folds CObject's empty virtuals into one
+  `ret 4`; `/OPT:NOICF` overshoots the server by 7.5 KB); which copy of a
+  folded COMDAT survives, and so where it lies, still differs from
+  retail's in places (the launcher's first object's tail, 0x4016c0).
+- **The server's link line** names `server.lib` before `winmm.lib`, as
+  NOLF2's project did: that puts `server.DLL` first among the imports,
+  as in retail; the import tables of both programs are retail's, DLL for
+  DLL and function for function, in order.
 

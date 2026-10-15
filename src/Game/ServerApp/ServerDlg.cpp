@@ -30,7 +30,8 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-char const REGPRODUCTNAME[] = "No One Lives Forever 2";
+// RETAIL: Contract J.A.C.K.'s registry key (the server's strings, 0x41784c)
+char const REGPRODUCTNAME[] = "Contract Jack";
 char const REGPRODUCTVER[] = "1.0";
 
 //#define DIR_CUSTOM					"Custom"
@@ -1808,7 +1809,8 @@ bool CServerDlg::InitErrorLog( )
 
 	if( m_sErrorLogFileName.empty( ))
 	{
-		m_sErrorLogFileName = "nolf2srv.log";
+		// RETAIL: 0x417978
+		m_sErrorLogFileName = "server.log";
 	}
 
 	// Make sure we start fresh.

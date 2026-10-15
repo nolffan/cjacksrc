@@ -38,7 +38,8 @@ CServerApp::CServerApp(LPCTSTR lpszAppName) : CWinApp(lpszAppName)
 /////////////////////////////////////////////////////////////////////////////
 // The one and only CServerApp object
 
-CServerApp theApp("NOLF2Srv");
+// RETAIL: the application name (its initializer, 0x4155f0)
+CServerApp theApp("ContractJackServer");
 
 CServerApp* GetTheApp()
 {
