@@ -1116,6 +1116,9 @@ WeaponState CClientWeapon::Update( bool bFire, FireType eFireType /*=FT_NORMAL_F
 	// Update the weapon's position
 	UpdateWeaponPosition( vFireOffset );
 
+	// RETAIL: 0x10027f27 let the weapon cool down
+	UpdateHeat();
+
 	// Update the muzzle flash...
 	UpdateMuzzleFlash( eState, vFlashOffset );
 
@@ -2280,6 +2283,7 @@ bool CClientWeapon::Activate()
 	// create all client fx
 	CreatePVAttachClientFX();
 	CreateMuzzleFlash();
+	CreateHeatFX();
 
 	// create any mods
 	CreateMods();
@@ -4318,6 +4322,89 @@ void CClientWeapon::RemoveMuzzleFlash()
 		ASSERT( 0 != g_pClientFXMgr );
 		g_pClientFXMgr->ShutdownClientFX( &m_MuzzleFlashFX );
 	}
+}
+
+
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	CClientWeapon::CreateHeatFX
+//
+//	PURPOSE:	Create the fx shown while the weapon is overheated
+//
+// ----------------------------------------------------------------------- //
+
+void CClientWeapon::CreateHeatFX()
+{
+	// Remove the old FX Instance
+	RemoveHeatFX();
+
+	if( !m_HeatFX.IsValid() )
+	{
+		if ( '\0' != m_pWeapon->szHeatPVOverheatFxName[ 0 ] )
+		{ 
+			CLIENTFX_CREATESTRUCT fxInit( m_pWeapon->szHeatPVOverheatFxName, FXFLAG_LOOP | FXFLAG_REALLYCLOSE, m_hObject ); 
+			g_pClientFXMgr->CreateClientFX( &m_HeatFX, fxInit, false );
+			if( m_HeatFX.IsValid() ) 
+			{
+				m_HeatFX.GetInstance()->Hide();
+				m_HeatFX.GetInstance()->SetPos( LTVector(0.0f,0.0f,0.0f), LTVector(0.0f,0.0f,0.0f) );
+			}
+		}
+	}
+
+	UpdateHeat();
+}
+
+
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	CClientWeapon::RemoveHeatFX
+//
+// ----------------------------------------------------------------------- //
+
+void CClientWeapon::RemoveHeatFX()
+{
+	if ( m_HeatFX.IsValid() )
+	{
+		g_pClientFXMgr->ShutdownClientFX( &m_HeatFX );
+	}
+}
+
+
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	CClientWeapon::UpdateHeat
+//
+//	PURPOSE:	Let the weapon cool down; an overheated weapon first waits
+//				out its overheat time.
+//
+// ----------------------------------------------------------------------- //
+
+void CClientWeapon::UpdateHeat()
+{
+	if( m_fHeat <= 0.0f )
+		return;
+
+	WEAPON const* pWeapon = GetWeapon();
+	if( !pWeapon )
+		return;
+
+	float fTime = g_pLTClient->GetTime();
+	float fDelta = fTime - m_fLastHeatTime;
+
+	if( m_fHeat >= 1.0f )
+	{
+		if( fDelta < pWeapon->fHeatOverheatTime )
+			return;
+
+		fDelta -= pWeapon->fHeatOverheatTime;
+		m_fLastHeatTime += pWeapon->fHeatOverheatTime;
+	}
+
+	m_fHeat -= fDelta * pWeapon->fHeatDissipationRate;
+	m_fHeat = Clamp( m_fHeat, 0.0f, 1.0f );
+
+	m_fLastHeatTime = fTime;
 }
 
 

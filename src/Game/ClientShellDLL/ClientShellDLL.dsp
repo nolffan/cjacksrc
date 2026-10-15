@@ -1122,6 +1122,10 @@ SOURCE=.\VehicleMgr.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\VehicleWeapon.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\Shared\VersionMgr.cpp
 # End Source File
 # Begin Source File
@@ -2199,6 +2203,10 @@ SOURCE=.\VarTrack.h
 # Begin Source File
 
 SOURCE=.\VehicleMgr.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\VehicleWeapon.h
 # End Source File
 # Begin Source File
 

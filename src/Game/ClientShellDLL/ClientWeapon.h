@@ -285,6 +285,12 @@ protected:
 	// muzzle flash helper routines
 	void          CreateMuzzleFlash();
 	void          RemoveMuzzleFlash();
+
+	// cjacksrc: Contract J.A.C.K.'s weapon heat: the overheat fx, and the
+	// heat dissipating (RETAIL: 0x100264c0, 0x100255f0, 0x10025960).
+	void          CreateHeatFX();
+	void          RemoveHeatFX();
+	void          UpdateHeat();
 	void          StartMuzzleFlash();
 	void          UpdateMuzzleFlash( WeaponState eState, LTVector const &vOffset );
 
