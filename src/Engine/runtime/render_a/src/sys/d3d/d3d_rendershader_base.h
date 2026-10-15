@@ -35,6 +35,8 @@ struct SShaderDrawRange
 		m_nStartVertex = LTMIN(m_nStartVertex, nStartVertex);
 		m_nEndVertex   = LTMAX(m_nEndVertex, nEndVertex);
 	}
+	uint32 GetTriCount() const		{ return (m_nEndIndex - m_nStartIndex) / 3; }
+	uint32 GetVertexCount() const	{ return m_nEndVertex - m_nStartVertex; }
 	void Draw()
 	{
 		uint32 nNumTris = (m_nEndIndex - m_nStartIndex) / 3;
@@ -444,7 +446,7 @@ public:
 		const CD3D_RenderWorld *pCurWorld = NULL;
 
 		TSectionList::iterator iCurSection = m_aSections.begin() + m_nFirstQueuedSection;
-		TSectionList::iterator iEndSection = m_aSections.begin() + (m_nLastQueuedSection + 1);
+		TSectionList::iterator iEndSection = m_aSections.begin() + m_nLastQueuedSection + 1;
 
 		for (;;)
 		{
@@ -493,17 +495,26 @@ public:
 					bChangeSection = true;
 					break;
 				}
-				if (iCurSection->m_bQueuedForRender)
+				if (!iCurSection->m_bQueuedForRender)
+				{
+					if (iCurSection->m_bBreakBatch || g_CV_DebugRBDrawExact.m_Val)
+					{
+						iCurSection->m_bBreakBatch = false;
+						break;
+					}
+				}
+				else
 				{
 					GetShaderDrawRange().Add(iCurSection->m_nStartIndex, iCurSection->m_nEndIndex, iCurSection->m_nStartVertex, iCurSection->m_nEndVertex);
 					iCurSection->m_bQueuedForRender = false;
 				}
-				else if (iCurSection->m_bBreakBatch || g_CV_DebugRBDrawExact.m_Val)
-				{
-					iCurSection->m_bBreakBatch = false;
-					break;
-				}
 			}
+
+			// RETAIL: the stats compile away in Final, their range accesses
+			// stay (0x4b0c11, 0x4b0c50)
+			IncFrameStat(eFS_ShaderTris, GetShaderDrawRange().GetTriCount());
+			IncFrameStat(eFS_ShaderVerts, GetShaderDrawRange().GetVertexCount());
+			IncFrameStat(eFS_ShaderDrawPrim, 1);
 
 			// Draw
 			GetShaderDrawRange().Draw();

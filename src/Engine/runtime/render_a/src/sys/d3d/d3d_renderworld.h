@@ -36,6 +36,13 @@ public:
 	// Given the current frame information, is the provided bounding box in the frustum and not occluded?
 	// Note : This must not be called before Draw due to using the current frame visibility state
 	bool IsAABBVisible(const ViewParams& pParams, const LTVector &vMin, const LTVector &vMax, bool bUseOccluders) const;
+	// RETAIL: the same in three states: hidden, partly, entirely visible
+	// (Lithtech.exe 0x4a9470)
+	PolySide GetAABBVisibility(const ViewParams& Params, const LTVector &vMin, const LTVector &vMax, bool bUseOccluders) const;
+
+	// RETAIL: flush the main world's shaders, which every world's blocks
+	// queue into (0x4a8170)
+	void FlushShaders();
 
 	// Find a worldmodel with a given name
 	// Returns NULL if no world model of that name is found
@@ -77,6 +84,9 @@ public:
 
 	// Bind all the renderblocks
 	void BindAll();
+	// RETAIL: BindAll's two steps, per world (0x4a8100, 0x4a8130)
+	void PreBindBlocks();
+	void BindBlocks();
 
 private:
 	typedef std::vector<CD3D_RenderBlock*> TRBList;
