@@ -106,5 +106,5 @@ against retail `server.dll` and the single-player demo's plaintext of
   Lib_ILTSound and Lib_RezMgr are `/O2 /Ob2` without `/GX` (nolf2src's
   had it). The renderer's 133 EH frames are the standard library's own
   `try` blocks. Lib_StdLith and Lib_Lith (the game's too) are without
-  `/GX` as well, as the game DLLs show them; ltmem (SndDrv.dll's too)
-  keeps its flags for now.
+  `/GX` as well, as the game DLLs show them; the engine's ltmem is
+  `/Ox /GF` (SndDrv.dll's object of it unchanged).

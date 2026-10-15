@@ -35,6 +35,8 @@ struct SShaderDrawRange
 		m_nStartVertex = LTMIN(m_nStartVertex, nStartVertex);
 		m_nEndVertex   = LTMAX(m_nEndVertex, nEndVertex);
 	}
+	uint32 GetTriCount() const		{ return (m_nEndIndex - m_nStartIndex) / 3; }
+	uint32 GetVertexCount() const	{ return m_nEndVertex - m_nStartVertex; }
 	void Draw()
 	{
 		uint32 nNumTris = (m_nEndIndex - m_nStartIndex) / 3;
@@ -224,11 +226,11 @@ public:
 
 			m_aLockedVertices.reserve(m_aVBs.size());
 			TVBList::iterator iCurVB = m_aVBs.begin();
-			void *plv = 0;
 
 			for (; iCurVB != m_aVBs.end(); ++iCurVB)
 			{
 				// Lock it
+				void *plv = 0;
 				m_aLockedVertices.push_back(plv);
 				if (!SUCCEEDED((*iCurVB)->Lock(0, 0, (BYTE**)&m_aLockedVertices.back(), 0)))
 				{
@@ -288,8 +290,8 @@ public:
 		// Remember where we came from
 		cISection.m_pOriginalIndices = &aIndices[cSection.m_nStartIndex];
 		cISection.m_pOriginalVertices = aSrcVertices;
-		cISection.m_pWorld = pWorld;	// RETAIL: 0x4be4a0
 		cISection.m_nOriginalVertexOffset = -(int32)(cSection.m_nStartVertex - cISection.m_nStartVertex);
+		cISection.m_pWorld = pWorld;	// RETAIL: 0x4be4a0
 
 		// Fill the VB
 		ASSERT(cSection.m_nVertexCount == cISection.m_nVertexCount);
@@ -444,7 +446,7 @@ public:
 		const CD3D_RenderWorld *pCurWorld = NULL;
 
 		TSectionList::iterator iCurSection = m_aSections.begin() + m_nFirstQueuedSection;
-		TSectionList::iterator iEndSection = m_aSections.begin() + (m_nLastQueuedSection + 1);
+		TSectionList::iterator iEndSection = m_aSections.begin() + m_nLastQueuedSection + 1;
 
 		for (;;)
 		{
@@ -493,17 +495,26 @@ public:
 					bChangeSection = true;
 					break;
 				}
-				if (iCurSection->m_bQueuedForRender)
+				if (!iCurSection->m_bQueuedForRender)
+				{
+					if (iCurSection->m_bBreakBatch || g_CV_DebugRBDrawExact.m_Val)
+					{
+						iCurSection->m_bBreakBatch = false;
+						break;
+					}
+				}
+				else
 				{
 					GetShaderDrawRange().Add(iCurSection->m_nStartIndex, iCurSection->m_nEndIndex, iCurSection->m_nStartVertex, iCurSection->m_nEndVertex);
 					iCurSection->m_bQueuedForRender = false;
 				}
-				else if (iCurSection->m_bBreakBatch || g_CV_DebugRBDrawExact.m_Val)
-				{
-					iCurSection->m_bBreakBatch = false;
-					break;
-				}
 			}
+
+			// RETAIL: the stats compile away in Final, their range accesses
+			// stay (0x4b0c11, 0x4b0c50)
+			IncFrameStat(eFS_ShaderTris, GetShaderDrawRange().GetTriCount());
+			IncFrameStat(eFS_ShaderVerts, GetShaderDrawRange().GetVertexCount());
+			IncFrameStat(eFS_ShaderDrawPrim, 1);
 
 			// Draw
 			GetShaderDrawRange().Draw();
@@ -771,6 +782,19 @@ protected:
 		PD3DDEVICE->SetIndices(0, 0);
 	}
 
+	// RETAIL: a renderblock drawn directly (with its lights) breaks the
+	// queued batches around its sections (0x4feb90, before
+	// QueueRenderBlock)
+	void BreakRenderBlockBatch(uint32 nRenderBlock)
+	{
+		CRenderBlockData &cRB = m_aRenderBlocks[nRenderBlock];
+		CRenderBlockData::TSectionIndexList::iterator iCurSection = cRB.m_aSections.begin();
+		for (; iCurSection != cRB.m_aSections.end(); ++iCurSection)
+		{
+			m_aSections[*iCurSection].m_bBreakBatch = true;
+		}
+	}
+
 	// Queue a renderblock for later rendering
 	// RETAIL: with the world transform and the queued range (0x4febd0)
 	void QueueRenderBlock(const ViewParams &Params, uint32 nRenderBlock)
@@ -936,13 +960,12 @@ private:
 
 		// Go through the starting points...
 		TRenderBlockPreviewList::iterator iCurPreviewRB = m_aPreviewRenderBlocks.begin();
-		// cjacksrc: Visual C++ .NET 2003's vector has no push_back(); the
-		// 2006 tree's local, as that compiler's code had it
-		CRenderBlockData rbd;
 		for (; iCurPreviewRB != m_aPreviewRenderBlocks.end(); ++iCurPreviewRB)
 		{
 			// Add a new renderblock
-			m_aRenderBlocks.push_back(rbd);
+			// cjacksrc: Visual C++ .NET 2003's vector has no push_back(); a
+			// temporary each time round (RETAIL: 0x4c17b3)
+			m_aRenderBlocks.push_back(CRenderBlockData());
 			CRenderBlockData &cRB = m_aRenderBlocks.back();
 
 			// Figure out how many sections are in this block
@@ -1004,13 +1027,12 @@ private:
 
 		// Put them in order
 		TIndexList::iterator iCurIndex = aSortIndices.begin();
-		// cjacksrc: the 2006 tree's local (no push_back() in Visual C++ .NET
-		// 2003's vector)
-		CInternalSection is;
 		for (; iCurIndex != aSortIndices.end(); ++iCurIndex)
 		{
 			// Move the section
-			aSortedSections.push_back(is);
+			// cjacksrc: no push_back() in Visual C++ .NET 2003's vector; a
+			// temporary each time round, destroyed after it (RETAIL: 0x4c29b0)
+			aSortedSections.push_back(CInternalSection());
 			aSortedSections.back() = m_aSections[iCurIndex->m_nSection];
 
 			// Adjust the RB section index
@@ -1122,10 +1144,33 @@ protected:
  				return true;
 			}
 
+#ifdef CJACK_MODERN
+			// MODERN.md EN-1: the world only among equal base sections, so
+			// that std::sort is given a strict weak ordering
  			if(CShaderSection::operator!=(static_cast<const CShaderSection&>(cOther)))
 			{
  				return false;
 			}
+
+			if (m_pWorld != cOther.m_pWorld)
+			{
+				return m_pWorld < cOther.m_pWorld;
+			}
+#else
+			// RETAIL: Contract J.A.C.K. then groups the sections by world
+			// (0x4c16b6, 0x4c8b4c), without the matching inequality test:
+			// a bug (RETAIL_BUGS.md), as a section can then sort both before
+			// and after another
+			if (m_pWorld < cOther.m_pWorld)
+			{
+				return true;
+			}
+
+ 			if(CShaderSection::operator!=(static_cast<const CShaderSection&>(cOther)))
+			{
+ 				return false;
+			}
+#endif
 
  			return m_pTextureEffect < cOther.m_pTextureEffect;
  		}

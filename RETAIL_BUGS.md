@@ -28,7 +28,9 @@ too, since Contract J.A.C.K. was built from the same code: check each
 against the retail binary before listing it. Those Contract J.A.C.K. no
 longer has go at the end, so nobody looks again.
 
-**Fixed so far** (in the modern build): none yet.
+**Fixed so far** (in the modern build): four -- the two GameSpy handle
+bugs (MODERN.md GS-1), GetCommandName (GAME-1) and the world shaders' section
+order (EN-1).
 
 ## Format
 
@@ -123,6 +125,24 @@ prediction (predict.cpp) all but stops extrapolating; `MaxExtrapolateTime
 0.25` stores 0. The defaults are right only because nobody sets them.
 
 Not fixed yet: in the modern build the two entries would be `EV_FLOAT`.
+
+### The world's shader sections are sorted with an inconsistent order
+
+Lithtech.exe 0x4c16b6 and the other instances of std::sort's helpers the
+world shaders inline it into (CRenderShader_Base::CInternalSection's
+operator<, src/Engine/runtime/render_a/src/sys/d3d/
+d3d_rendershader_base.h, through SortSections' FSortSections). A section
+sorts before another if its base section (texture, flags) is less, or
+else if its world is less, and only then are unequal base sections
+ordered after: so a section with the greater texture but the lesser world
+sorts both before and after the other. std::sort needs a strict weak
+ordering; given this one it can order sections arbitrarily, and its
+unguarded insertion pass can in principle step outside the range. In
+practice a level's world models seldom share a shader with the main
+world in a way that triggers it.
+
+Fixed in the modern build: src/Engine/runtime/render_a/src/sys/d3d/
+d3d_rendershader_base.h, MODERN.md EN-1.
 
 ## NOLF2's bugs Contract J.A.C.K. no longer has
 

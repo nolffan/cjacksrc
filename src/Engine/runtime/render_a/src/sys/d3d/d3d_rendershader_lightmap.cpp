@@ -51,11 +51,11 @@ bool CRenderShader_Lightmap::ValidateShader(const CRBSection &cSection)
 	StageStateSet state03(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
 	StageStateSet state04(0, D3DTSS_ALPHAARG2, D3DTA_DIFFUSE);
 	StageStateSet state05(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
-	StageStateSet state10(1, D3DTSS_COLOROP, D3DTOP_DISABLE);
-	StageStateSet state11(1, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
-
+	// RETAIL: the clamps before stage 1's (0x4eac24), as PreFlush has them
 	StageStateSet stateWrap0(0, D3DTSS_ADDRESSU, D3DTADDRESS_CLAMP);
 	StageStateSet stateWrap1(0, D3DTSS_ADDRESSV, D3DTADDRESS_CLAMP);
+	StageStateSet state10(1, D3DTSS_COLOROP, D3DTOP_DISABLE);
+	StageStateSet state11(1, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
 
 	d3d_SetTextureDirect(pTempTexture, 0);
 
@@ -284,6 +284,7 @@ void CRenderShader_Lightmap::DrawNormal(const DrawState &cState, uint32 nRenderB
 	if (bDrawingLights)
 	{
 		DrawLights(cState, nRenderBlock);
+		BreakRenderBlockBatch(nRenderBlock);	// RETAIL: 0x4ee3ef
 	}
 	else
 	{
@@ -824,7 +825,7 @@ void CRenderShader_Lightmap_Texture_Detail::PreFlush()
 	PD3DDEVICE->SetTextureStageState(1, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
 	PD3DDEVICE->SetTextureStageState(1, D3DTSS_ALPHAARG2, D3DTA_CURRENT);
 	PD3DDEVICE->SetTextureStageState(1, D3DTSS_ALPHAOP, D3DTOP_SELECTARG2);
-	PD3DDEVICE->SetTextureStageState(1, D3DTSS_TEXCOORDINDEX, 1);
+	// RETAIL: stage 1's texture coordinates left as they are (0x4ebd04)
 	PD3DDEVICE->SetTextureStageState(2, D3DTSS_COLOROP, D3DTOP_DISABLE);
 	PD3DDEVICE->SetTextureStageState(2, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
 }
@@ -1367,6 +1368,9 @@ void CRenderShader_Lightmap_Texture_EnvBumpMap::PostFlush()
 	LTMatrix mIdentity;
 	mIdentity.Identity();
 	PD3DDEVICE->SetTransform(D3DTS_TEXTURE0, (D3DMATRIX*)&mIdentity);
+
+	// RETAIL: the texture stage's coordinates back to its own (0x4ecbb5)
+	PD3DDEVICE->SetTextureStageState(knTexStage, D3DTSS_TEXCOORDINDEX, knTexStage);
 
 	PD3DDEVICE->SetRenderState(D3DRS_ALPHABLENDENABLE, m_nFlushStateAlpha0);
 	PD3DDEVICE->SetRenderState(D3DRS_SRCBLEND, m_nFlushStateAlpha1);

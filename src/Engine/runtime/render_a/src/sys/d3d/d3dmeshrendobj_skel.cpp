@@ -321,13 +321,14 @@ void CD3DSkelMesh::FreeDeviceObjects()
 
 inline uint32 CD3DSkelMesh::SetTransformsToBoneSet(BoneSetListItem* pBoneSet,D3DMATRIX* pTransforms, uint32 nNumMatrices)
 {
-	uint32 iCurrBone;
+	int32 iCurrBone;	// RETAIL: signed (0x4d0a01)
 	for (iCurrBone=0; iCurrBone < 4; ++iCurrBone) 
 	{
 		if (pBoneSet->BoneSetArray[iCurrBone] == 0xFF)
 			break;
 
-		g_RenderStateMgr.SetTransform(D3DTS_WORLDMATRIX(iCurrBone),&pTransforms[pBoneSet->BoneSetArray[iCurrBone]]);
+		// RETAIL: through the device's own SetTransform (0x4d09f6)
+		PD3DDEVICE->SetTransform(D3DTS_WORLDMATRIX(iCurrBone),&pTransforms[pBoneSet->BoneSetArray[iCurrBone]]);
 	}
 
 	// Only change the blend state if the number of matrices changed...
@@ -381,17 +382,19 @@ inline uint32 CD3DSkelMesh::SetTransformsToBoneSet(BoneSetListItem* pBoneSet,D3D
 	return iCurrBone;
 }
 
-inline uint32 CD3DSkelMesh::SetMatrixPalette(uint32 MinBone,uint32 MaxBone,D3DMATRIX* pTransforms)
+// RETAIL: through the device's own SetTransform, and returning nothing, so
+// that the vertex blend state is a tail call (Lithtech.exe 0x4d0890)
+inline void CD3DSkelMesh::SetMatrixPalette(uint32 MinBone,uint32 MaxBone,D3DMATRIX* pTransforms)
 {
 	for (uint32 i=MinBone;i<=MaxBone;++i)
 	{
 		if (m_bReIndexedBones)
 		{
-			g_RenderStateMgr.SetTransform(D3DTS_WORLDMATRIX(i),&pTransforms[m_pReIndexedBoneList[i]]);
+			PD3DDEVICE->SetTransform(D3DTS_WORLDMATRIX(i),&pTransforms[m_pReIndexedBoneList[i]]);
 		}
 		else
 		{
-			g_RenderStateMgr.SetTransform(D3DTS_WORLDMATRIX(i),&pTransforms[i]);
+			PD3DDEVICE->SetTransform(D3DTS_WORLDMATRIX(i),&pTransforms[i]);
 		}
 	}
 
@@ -417,8 +420,6 @@ inline uint32 CD3DSkelMesh::SetMatrixPalette(uint32 MinBone,uint32 MaxBone,D3DMA
 				PD3DDEVICE->SetRenderState(D3DRS_VERTEXBLEND,D3DVBF_DISABLE);
 			}
 	}
-
-	return (MaxBone-MinBone);
 }
 
 // THIS Function should be removed when we go to the full render object implementation - it's
@@ -431,7 +432,9 @@ void CD3DSkelMesh::Render(D3DMATRIX* pD3DTransforms, CD3DRenderStyle* pRenderSty
 		case eD3DRenderDirect :
 		{	// We need to do the bone walk, but we can render direct (they've been pre-processed into triangle group/bone group order)...
 			uint32 iCurrentPolyIndex = 0;
-			uint32 nNumActiveBones = 0;
+			// RETAIL: none counted yet, so the first set always sets the
+			// vertex blend (0x4d039d)
+			uint32 nNumActiveBones = 0xFFFFFFFF;
 			for( int32 iBoneSet = 0; (iBoneSet < (int32)m_iBoneSetCount) ; ++iBoneSet )
 			{
 				BoneSetListItem* pBoneSet = &m_pBoneSetArray[iBoneSet];

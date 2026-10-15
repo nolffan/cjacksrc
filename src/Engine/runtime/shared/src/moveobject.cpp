@@ -92,7 +92,7 @@ struct SObjectCollideOrder
 		if (IsSolidWorld(pA)) return true;
 		if (IsSolidWorld(pB)) return false;
 		if (IsSolid(pA->m_Flags, m_bServer)) return true;
-		return !IsSolid(pB->m_Flags, m_bServer);
+		return IsSolid(pB->m_Flags, m_bServer) ? false : true;	// RETAIL: 0x44bef1
 	}
 	bool m_bServer;
 };

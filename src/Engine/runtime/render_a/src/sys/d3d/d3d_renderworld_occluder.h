@@ -122,7 +122,7 @@ public:
 		iterator m_pEndVert;
 	};
 
-	void Init() { m_aVisible.clear(); m_aOccluded.clear(); }
+	void Init() { m_aVisible.resize(0); m_aOccluded.resize(0); }	// RETAIL: 0x4a9578
 	void InitAABB(const ViewParams& pParams, const LTVector &vMin, const LTVector &vMax, bool bVisible);
 	void InitPolyWorld(const SRBGeometryPoly &sPoly, bool bVisible);
 	// bSplitOccluded dictates whether or not occluded polys should also be split

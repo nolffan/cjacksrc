@@ -2193,8 +2193,8 @@ static void DoPointCollision
 
 	pInfo->m_FinalPos = request.m_NewPos;
 
-	// RETAIL: no progress ends it, a floor hit sets what the object stands
-	// on, and no message when the iterations run out (server.dll 0x10007620)
+	// RETAIL: no progress ends it, and a floor hit sets what the object
+	// stands on (server.dll 0x10007620)
 	for(i=0; i < MAX_PHYSICS_ITERATIONS; i++)
 	{
 		// Do a fast test to see if we hit anything.
@@ -2222,9 +2222,16 @@ static void DoPointCollision
 		if (pNode->GetPlane()->m_Normal.y > 0.01f)
 		{
 			if (!pInfo->m_pStandingOn ||
-				(pNode->GetPlane()->m_Normal.y > pInfo->m_pStandingOn->GetPlane()->m_Normal.y))
+				(pInfo->m_pStandingOn->GetPlane()->m_Normal.y < pNode->GetPlane()->m_Normal.y))
 				pInfo->m_pStandingOn = pNode;
 		}
+	}
+
+	// RETAIL: the iterations ran out (Lithtech.exe 0x416e2e)
+	if(g_DebugLevel > 0)
+	{
+		dsi_ConsolePrint("Error: (point) physics recursed infinitely on a %s",
+			request.m_pAbstract->GetObjectClassName(request.m_pObject));
 	}
 }
 

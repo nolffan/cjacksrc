@@ -342,11 +342,18 @@ void CRenderModelPieceList::QueuePiece(ModelInstance* pInstance, ModelPiece* pPi
 //Renders all the queued pieces and flushes the list
 void CRenderModelPieceList::RenderPieceList(float fAlpha)
 {
-	// Oh my god!  STL-Port let us down!  We have to use stable_sort, because
-	// sort appears to have a problem sorting this list sometimes.
+	// RETAIL: Contract J.A.C.K. sorts pointers to the queued pieces, not the
+	// pieces themselves (0x50d536)
+	static TSortedPieceList aSortedPieces;
+	aSortedPieces.resize(0);
+	aSortedPieces.reserve(m_cPieceList.size());
+	for (TPieceList::iterator iCurPiece = m_cPieceList.begin(); iCurPiece != m_cPieceList.end(); ++iCurPiece)
+		aSortedPieces.push_back(&(*iCurPiece));
+
 	//we need to sort the list first
-	//std::sort(m_cPieceList.begin(), m_cPieceList.end());
-	stable_sort(m_cPieceList.begin(), m_cPieceList.end());
+	// RETAIL: std::sort over the pointers (0x50d62b, std::_Sort 0x50eb60),
+	// not NOLF2's stable_sort over the pieces
+	std::sort(aSortedPieces.begin(), aSortedPieces.end(), FSortQueuedPieces());
 
 	//make sure some stuff is setup
 	StateSet ssLightEnable(D3DRS_LIGHTING, TRUE);
@@ -372,19 +379,19 @@ void CRenderModelPieceList::RenderPieceList(float fAlpha)
 	//clear out the texture list
 	memset(PrevTextureList, 0, sizeof(PrevTextureList));
 
-	for(uint32 nCurrPiece = 0; nCurrPiece < m_cPieceList.size();)
+	for(uint32 nCurrPiece = 0; nCurrPiece < aSortedPieces.size();)
 	{
 		//we now have our starting, we now need to expand out and see where this render style ends
 		//(being careful to observe the really close switch)
 		uint32 nStartPiece = nCurrPiece;
 
-		CD3DRenderStyle* pCurrRenderStyle = m_cPieceList[nStartPiece].m_pRenderStyle;
+		CD3DRenderStyle* pCurrRenderStyle = aSortedPieces[nStartPiece]->m_pRenderStyle;
 
-		for(; nCurrPiece < m_cPieceList.size(); nCurrPiece++)
+		for(; nCurrPiece < aSortedPieces.size(); nCurrPiece++)
 		{
 			//see if we need to bail
-			if( (m_cPieceList[nCurrPiece].m_pRenderStyle != pCurrRenderStyle) ||
-				(m_cPieceList[nCurrPiece].m_bReallyClose != m_cPieceList[nStartPiece].m_bReallyClose))
+			if( (aSortedPieces[nCurrPiece]->m_pRenderStyle != pCurrRenderStyle) ||
+				(aSortedPieces[nCurrPiece]->m_bReallyClose != aSortedPieces[nStartPiece]->m_bReallyClose))
 			{
 				break;
 			}
@@ -421,20 +428,20 @@ void CRenderModelPieceList::RenderPieceList(float fAlpha)
 
 				//setup all the texture and render style information
 				g_RenderStateMgr.SetRenderStyleStates(pCurrRenderStyle, nCurrPass);
-				g_RenderStateMgr.SetRenderStyleTextures(pCurrRenderStyle, nCurrPass, m_cPieceList[nStartPiece].m_TextureList);
+				g_RenderStateMgr.SetRenderStyleTextures(pCurrRenderStyle, nCurrPass, aSortedPieces[nStartPiece]->m_TextureList);
 
 				//keep track of stats
 				IncFrameStat(eFS_ModelRender_RenderStyleSets, 1);
 				IncFrameStat(eFS_ModelRender_TextureSets, 1);
 
 				//update our texture list information since the render style set them
-				memcpy(PrevTextureList, m_cPieceList[nStartPiece].m_TextureList, sizeof(PrevTextureList));
+				memcpy(PrevTextureList, aSortedPieces[nStartPiece]->m_TextureList, sizeof(PrevTextureList));
 
 				//now we need to render each piece of this pass
 				for(uint32 nRSPiece = nStartPiece; nRSPiece < nCurrPiece; nRSPiece++)
 				{
 					//cache the current piece
-					SQueuedPiece& Piece = m_cPieceList[nRSPiece];
+					SQueuedPiece& Piece = *aSortedPieces[nRSPiece];
 
 					//handle environment mapping on the PV
 					bModifiedReallyCloseEnvMap = HandleReallyCloseEnvMapPanning(Piece.m_pInstance, pCurrRenderStyle, nCurrPass, bModifiedReallyCloseEnvMap);
@@ -516,7 +523,7 @@ void CRenderModelPieceList::RenderPieceList(float fAlpha)
 	g_Device.SetDefaultRenderStates();		
 
 	//we are done, clear out the lists
-	m_cPieceList.clear();
+	m_cPieceList.resize(0);	// RETAIL: 0x50db63
 }
 
 //call this to free all memory associated with the piece list. This will require it to grow

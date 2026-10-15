@@ -534,31 +534,53 @@ package 4; not additive, because CJ's own SDK had them):
   m_TCPAddress (the client joins on that socket unless it is -1; our
   constructor sets -1, which the game's inline copy should check).
 
-**Where it stands / next** (stopped here: score recorded at `Lithtech.exe` 6,508 identical, 83.3%; `server.dll` 2,675, 93.1%) (breadth first, per module, with
-`tools/fndiff.py`, `o2gap.py`, `vtabcheck.py`, `uncovered.py`;
-`tools/layoutscan.py --image=<target>` finds the layout shifts; the
-near lists of `progress.py --nears=<target>` pair some rows wrongly,
-check with exematch):
-- open from the analyses: where the main world's shaders flush when
-  CD3D_RenderWorld::m_bFlushOnDraw is clear (the flag is not set yet;
-  the world's Draw still flushes, so the game draws); each shader's
-  PostFlushBlock body, DrawAggregateShader, DrawFogPass; the
-  StartGameRequest field ConnectTCP's first argument comes from
-  (+0x68); moveplayer.cpp and world_blocker_data.cpp (CJ's blocker
-  Intersect takes the player mover and collides through WorldPolys:
-  out/physics analysis, not applied); the client side of the
-  unguaranteed data reads bytes in the other order than the server
-  writes them (both as retail: a retail bug if confirmed by matching);
-- CD3D_RenderWorld::Draw (retail 0x4a9ea0, 256 bytes more than ours):
-  the DebugRBOccludeWorld/OccludeEarlyVisible paths ("World Blocks
-  Early-out Visible"), and the flush-on-draw ending; the shader Flush
-  instances (1,228 bytes against our 1,102: the shared range's static
-  guard and the loop shapes);
-- MultiPassLightMatch and DisablePSGP are strings of CJ's not yet placed;
-- ltmem's tracking categories and full `mem` command (2006 tree's);
-- Lib_StdLith/Lith/ltmem flags (shared with the game and SndDrv.dll:
-  StdLith is marginally better without /GX);
-- then module by module through the nears.
+**Round 2** (on master's 07d9301): the render world's occlusion and
+flush-on-draw paths (BindAll, GetAABBVisibility, FlushShaders, the
+early-out-visible subtree path), the twelve shader Flush instances and
+the shaders' template members (Lock, AddSection, InitRenderBlocks,
+SortSections and the inlined sort helpers: CJ compares the worlds of two
+sections after the base sections' less-than, without an inequality test,
+RETAIL_BUGS.md, fixed under CJACK_MODERN as MODERN.md EN-1); batch breaks
+after lit render blocks; the player mover's blocker collision through
+WorldPolys; the engine's ltmem (ltmemstats/ltmemtrack/ltmemheap of the
+2006 tree, library /Ox /GF, SndDrv.dll unchanged at 225); StdLith and Lith
+without /GX (the game branch's same change); render blocks through
+g_Device.m_pRenderWorld, CJ's sky bounds, model-piece sorting by pointer
+with std::sort, shadow queueing with a weighted tween slot, render style
+loading in CJ's file layout (a render pass's Direct3D data without the
+structure's padding), the back-buffer sync under LockableBackBuffer, ATI's
+MultiPassLightMatch/Use0WeightsForDisable, WM_FONTCHANGE broadcasts.
+**SDK change for the game:** `ltbasedefs.h`'s LTStrCat is `__forceinline`
+only under DIRECTENGINE_COMPILE or __D3DREND (the engine's projects); the
+game's code still sees the plain inline.
+
+**Where it stands / next** (stopped here: score recorded at
+`Lithtech.exe` 6,713 identical, 91.0%; `server.dll` 2,717, 95.2%;
+SndDrv.dll 225) (breadth first, per module, with `tools/fndiff.py`,
+`o2gap.py`, `vtabcheck.py`, `uncovered.py`; `progress.py --nears=<target>`
+pairs some rows wrongly where a function's CSV extent is split, so check
+each with fndiff against the retail address first):
+- nears left as register allocation only (tried, no source shape found):
+  CD3D_RenderWorld::Draw, CPlayerMover::Collide/_Poly/StairStep,
+  MoveObject, RotateWorldModel, QueueShadows, LoadLightGroup, SSubLM::Load,
+  the light-group stream operator, CPixelShaderMgr::FreeShader;
+- RunClientApp, InstallPixelShader and a few others call through
+  SecuROM's API thunks in the demo image (`call 0x612bf0` plus a junk
+  byte): `tools/demoimports.py` should resolve those six-byte calls too;
+- d3d_BlitToScreen3D (989 bytes against 1,085; d3d_BlitToScreen no longer
+  calls the _Old form, which is now unused): CJ's tile clipping loop;
+- d3d_utils (d3d_GetColorMasks, d3d_D3DFormatToString), BuildDeviceList,
+  ps_UpdateParticleBoundingBox, DrawDynamicParticles, con_WriteHistory,
+  cc_SaveConfigFile, CClientShell::Term, CSoundMgr::Term, df_FindNext,
+  input_TrackDevice, GetFrameOccluders, AllocShader,
+  d3d_RenderWorldWithAggregate, COccludee::SplitPlane;
+- server: SendAllObjectsUnguaranteed, FillPacketFromInfo,
+  UpdateSendTimeWithAttachments, CServerEvent::DecrementRefCount;
+- client.cpp keeps nolf2src's NOLF2SRC_MODERN blocks (never compiled
+  here): to become CJACK_MODERN when the modern build is taken up;
+- the two Lightmap_Texture-style SortSections were fixed by dropping the
+  textured lightmap sections' constructors; watch the modern build for
+  code that relied on them.
 
 ### 11. release
 

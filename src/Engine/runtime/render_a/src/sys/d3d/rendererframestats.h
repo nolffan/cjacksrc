@@ -39,6 +39,7 @@ enum	ERendererFrameStats	{
 								eFS_ObjectsCulled,
 								eFS_WorldBlocksCullTested,
 								eFS_WorldBlocksCulled,
+								eFS_WorldBlocksEarlyOutVisible,	// RETAIL
 								eFS_InsideBoxCullCount,
 								eFS_FrustumCulledCount,
 								eFS_OccluderCulledCount,

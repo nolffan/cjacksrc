@@ -683,6 +683,7 @@ static void d3d_ShowCullCounts()
 		g_pStruct->ConsolePrint("--World--");
 		g_pStruct->ConsolePrint("World Blocks Tested for Culling: %d", FrameStat(eFS_WorldBlocksCullTested));
 		g_pStruct->ConsolePrint("World Blocks Culled: %d", FrameStat(eFS_WorldBlocksCulled));
+		g_pStruct->ConsolePrint("World Blocks Early-out Visible: %d", FrameStat(eFS_WorldBlocksEarlyOutVisible));	// RETAIL: 0x4d89ec
 		g_pStruct->ConsolePrint("World Block Cull Rate: %d", (FrameStat(eFS_WorldBlocksCullTested) > 0) ? (100 * FrameStat(eFS_WorldBlocksCulled)) / FrameStat(eFS_WorldBlocksCullTested) : 0);
 		g_pStruct->ConsolePrint("--Total--");
 		g_pStruct->ConsolePrint("Total Tested for Culling: %d", nTotalCullTested);

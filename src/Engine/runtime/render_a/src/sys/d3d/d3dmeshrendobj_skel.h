@@ -82,7 +82,7 @@ public:
 private:
 
 	inline uint32		SetTransformsToBoneSet(BoneSetListItem* pBoneSet,D3DMATRIX* pTransforms, uint32 nNumMatrices);
-	inline uint32		SetMatrixPalette(uint32 MinBone,uint32 MaxBone,D3DMATRIX* pTransforms);
+	inline void			SetMatrixPalette(uint32 MinBone,uint32 MaxBone,D3DMATRIX* pTransforms);
 
 	//cached render states
 	DWORD					m_nPrevFogTableMode;

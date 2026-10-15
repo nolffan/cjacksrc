@@ -60,7 +60,8 @@ CPixelShaderMgr::SPixelShader::SPixelShader(const char* pszName, uint8* pFunctio
 {
 	uint32 nNameLen = strlen(pszName) + 1;
 	m_pszName = new char[nNameLen];
-	LTStrCpy(m_pszName, pszName, nNameLen);
+	if (m_pszName)	// RETAIL: 0x4ca6c9
+		LTStrCpy(m_pszName, pszName, nNameLen);
 
 	m_pFunction = pFunction;
 }

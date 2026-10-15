@@ -172,6 +172,14 @@ class InstalledFontFace
 //
 // ----------------------------------------------------------------------- //
 
+// RETAIL: tells the other top-level windows that the installed fonts changed,
+// after a font file is added or removed (Lithtech.exe 0x5157c0)
+static void BroadcastFontChange( )
+{
+	DWORD dwResult;
+	SendMessageTimeout( HWND_BROADCAST, WM_FONTCHANGE, 0, 0, SMTO_ABORTIFHUNG | SMTO_BLOCK, 30, &dwResult );
+}
+
 bool InstalledFontFace::Init( char const* pszFontFile, char const* pszFontFace, int nHeight )
 {
 	// Check inputs.
@@ -206,6 +214,8 @@ bool InstalledFontFace::Init( char const* pszFontFile, char const* pszFontFace, 
 			DEBUG_PRINT( 1, ( "InstalledFontFace::Init: Could not install font file %s", szOutName ));
 			return false;
 		}
+
+		BroadcastFontChange( );
 	}
 
 	// Create the font they asked for.
@@ -214,7 +224,7 @@ bool InstalledFontFace::Init( char const* pszFontFile, char const* pszFontFace, 
 	logFont.lfHeight = nHeight;
 	
 	logFont.lfWeight = FW_NORMAL;
-	logFont.lfCharSet = ANSI_CHARSET;
+	logFont.lfCharSet = DEFAULT_CHARSET;	// RETAIL: 0x515c39
 	logFont.lfOutPrecision = OUT_TT_PRECIS;
 	logFont.lfClipPrecision = CLIP_DEFAULT_PRECIS;
 	logFont.lfQuality = ANTIALIASED_QUALITY;
@@ -257,6 +267,7 @@ void InstalledFontFace::Term( )
 	if( !m_sFontFile.empty( ))
 	{
 		RemoveFontResource( m_sFontFile.c_str( ));
+		BroadcastFontChange( );
 
 		// Check if we should delete the file.
 		if( m_bDeleteFile )
