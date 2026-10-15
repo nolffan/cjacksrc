@@ -42,6 +42,8 @@ class CVersionMgr
 
 		const char* GetVersion();
 		const char* GetBuild() { return m_sBuild.c_str(); }
+		// RETAIL: CShell 0x10067086 the version as GameSpy's patch check gets it
+		const char* GetVersionString() { return m_sVersion.c_str(); }
 		const uint32 GetSaveVersion();
 		const char* GetNetGameName();
 		const char* GetNetVersion();

@@ -55,6 +55,7 @@
 #include "ScmdConsole.h"
 #include "ScmdConsoleDriver_CShell.h"
 #include "mmsystem.h"
+#include <shellapi.h>
 
 #ifdef STRICT
 	WNDPROC g_pfnMainWndProc = NULL;
@@ -63,6 +64,43 @@
 #endif
 
 #define MAX_FRAME_DELTA					0.1f
+
+// RETAIL: 0x1014afa0 FilePlanet's updater, which GameSpy's patch check
+// hands the new version's address to.
+static char const* g_pszPatchUpdater = "FPUpdate.exe";
+
+// --------------------------------------------------------------------------- //
+//
+//	ROUTINE:	LaunchApplication()
+//
+//	PURPOSE:	Starts an application and shuts the game down (RETAIL: 0x10045f00).
+//
+// --------------------------------------------------------------------------- //
+
+bool WINAPI LaunchApplication( char const* pszApplication, char const* pszParameters )
+{
+	if( !pszApplication || !pszApplication[0] || !CWinUtil::FileExist( pszApplication ))
+		return false;
+
+	// Save the current render mode.  We'll need to restore it if the
+	// launching fails.
+	RMode rMode;
+	g_pLTClient->GetRenderMode( &rMode );
+
+	// Shutdown the renderer, minimize it, and hide it...
+	g_pLTClient->ShutdownRender( RSHUTDOWN_MINIMIZEWINDOW | RSHUTDOWN_HIDEWINDOW );
+
+	if( (int)ShellExecute( NULL, "open", pszApplication, pszParameters, NULL, SW_SHOWNORMAL ) <= 32 )
+	{
+		g_pLTClient->SetRenderMode( &rMode );
+		return false;
+	}
+
+	// We're done with this process.
+	g_pLTClient->Shutdown();
+
+	return true;
+}
 
 #define WEAPON_MOVE_INC_VALUE_SLOW		0.0025f
 #define WEAPON_MOVE_INC_VALUE_FAST		0.005f
@@ -4950,6 +4988,22 @@ void CGameClientShell::SendClientLoadedMessage( )
 	g_pLTClient->SendToServer(cMsg.Read(),MESSAGE_GUARANTEED);
 }
 
+
+// --------------------------------------------------------------------------- //
+//
+//	ROUTINE:	CGameClientShell::LauncherServerApp()
+//
+//	PURPOSE:	Launches the serverapp.
+//
+// --------------------------------------------------------------------------- //
+
+bool CGameClientShell::LaunchPatchUpdater( char const* pszURL )
+{
+	if( !pszURL || !pszURL[0] )
+		return false;
+
+	return LaunchApplication( g_pszPatchUpdater, pszURL );
+}
 
 // --------------------------------------------------------------------------- //
 //

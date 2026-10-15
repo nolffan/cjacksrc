@@ -386,9 +386,7 @@ CInterfaceMgr::CInterfaceMgr()
 	m_bEnteredScreenState = false;
 	m_bIntentionalDisconnect = false;
 
-	m_InterfaceTimer.SetTeamId( INVALID_TEAM );
-	m_BlueInterfaceTimer.SetTeamId( 0 );
-	m_RedInterfaceTimer.SetTeamId( 1 );
+	m_pGameSpyPatchInfo = LTNULL;
 
 	m_bSkipPreLoadScreen = false;
 	m_ePostLoadScreenID	= SCREEN_ID_POSTLOAD;
@@ -600,6 +598,29 @@ LTBOOL CInterfaceMgr::Init()
 	m_szMouseFXName[0] = 0;
 	m_szSelectFXName[0] = 0;
 
+	// RETAIL: 0x10066f0a the timers take their look from the layout here.
+	m_RedInterfaceTimer.Init( (uint8)g_pLayoutMgr->GetInt("Miscellaneous","Team1TimerFont"),
+		(uint8)g_pLayoutMgr->GetInt("Miscellaneous","Team1TimerSize"),
+		g_pLayoutMgr->GetPoint("Miscellaneous","Team1TimerPos"),
+		g_pLayoutMgr->GetVector("Miscellaneous","Team1TimerColor"), CUI_HALIGN_CENTER );
+	m_BlueInterfaceTimer.Init( (uint8)g_pLayoutMgr->GetInt("Miscellaneous","Team2TimerFont"),
+		(uint8)g_pLayoutMgr->GetInt("Miscellaneous","Team2TimerSize"),
+		g_pLayoutMgr->GetPoint("Miscellaneous","Team2TimerPos"),
+		g_pLayoutMgr->GetVector("Miscellaneous","Team2TimerColor"), CUI_HALIGN_CENTER );
+	m_InterfaceTimer.Init( (uint8)g_pLayoutMgr->GetInt("Miscellaneous","TimerFont"),
+		(uint8)g_pLayoutMgr->GetInt("Miscellaneous","TimerSize"),
+		g_pLayoutMgr->GetPoint("Miscellaneous","TimerPos"),
+		g_pLayoutMgr->GetVector("Miscellaneous","TimerColor"), CUI_HALIGN_CENTER );
+
+	// RETAIL: 0x10067069 ask GameSpy whether there is a newer version.
+	IGameSpyPatchInfo::StartupInfo startupInfo;
+	startupInfo.m_nGameType = eGameSpyGameType_Retail;
+	startupInfo.m_sVersion = g_pVersionMgr->GetVersionString( );
+	startupInfo.m_nDistributionId = atoi( LoadTempString( IDS_GAMESPY_DISTRIBUTIONID ));
+	m_pGameSpyPatchInfo = IGameSpyPatchInfo::Create( startupInfo );
+	if( m_pGameSpyPatchInfo )
+		m_pGameSpyPatchInfo->RequestPatchInfo( );
+
 	// Consider ourselves initialized.
 	m_bInitialized = true;
 
@@ -678,6 +699,12 @@ void CInterfaceMgr::Term()
 	{
         g_pLTClient->SoundMgr()->KillSound(m_hSound);
 		m_hSound = LTNULL;
+	}
+
+	if( m_pGameSpyPatchInfo )
+	{
+		IGameSpyPatchInfo::Delete( m_pGameSpyPatchInfo );
+		m_pGameSpyPatchInfo = LTNULL;
 	}
 
 	// Unititialized.
@@ -990,6 +1017,71 @@ void CInterfaceMgr::UpdateScreenState()
 		UpdateScreenFade();
 		g_pLTClient->EndOptimized2D();
 		g_pLTClient->End3D(END3D_CANDRAWCONSOLE);
+	}
+
+	// RETAIL: 0x10069a24
+	if( m_pGameSpyPatchInfo )
+		UpdatePatchInfo( );
+}
+
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	NewPatchCallBack()
+//
+//	PURPOSE:	The player chose whether to get the new version (RETAIL: 0x10062e40)
+//
+// ----------------------------------------------------------------------- //
+
+void NewPatchCallBack( LTBOOL bReturn, void *pData )
+{
+	if( bReturn )
+	{
+		CInterfaceMgr* pInterfaceMgr = ( CInterfaceMgr* )pData;
+		g_pGameClientShell->LaunchPatchUpdater( pInterfaceMgr->m_sPatchURL.c_str( ));
+	}
+}
+
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	CInterfaceMgr::UpdatePatchInfo()
+//
+//	PURPOSE:	Wait for GameSpy's answer about a new version (RETAIL: 0x10063de0)
+//
+// ----------------------------------------------------------------------- //
+
+void CInterfaceMgr::UpdatePatchInfo()
+{
+	if( !m_pGameSpyPatchInfo )
+		return;
+
+	switch( m_pGameSpyPatchInfo->GetPatchInfoStatus( ))
+	{
+		case IGameSpyPatchInfo::eBrowserStatus_Idle:
+		case IGameSpyPatchInfo::eBrowserStatus_Error:
+		{
+			IGameSpyPatchInfo::Delete( m_pGameSpyPatchInfo );
+			m_pGameSpyPatchInfo = LTNULL;
+		}
+		break;
+		case IGameSpyPatchInfo::eBrowserStatus_Complete:
+		{
+			IGameSpyPatchInfo::PatchInfoResults patchInfoResults;
+			if( m_pGameSpyPatchInfo->GetPatchInfoResults( patchInfoResults ) &&
+				patchInfoResults.m_bNewVersion && !m_MessageBox.IsVisible( ))
+			{
+				m_sPatchURL = patchInfoResults.m_sURL;
+
+				MBCreate mb;
+				mb.eType = LTMB_YESNO;
+				mb.pFn = NewPatchCallBack;
+				mb.pData = this;
+				ShowMessageBox( IDS_NEW_VERSION, &mb, 0, LTTRUE );
+			}
+
+			IGameSpyPatchInfo::Delete( m_pGameSpyPatchInfo );
+			m_pGameSpyPatchInfo = LTNULL;
+		}
+		break;
 	}
 }
 
@@ -4314,6 +4406,9 @@ void CInterfaceMgr::ScreenDimsChanged()
 	GetScreenMgr( )->ScreenDimsChanged();
 	m_MenuMgr.ScreenDimsChanged();
 	GetHUDMgr()->ScreenDimsChanged();
+	m_InterfaceTimer.ScreenDimsChanged();
+	m_RedInterfaceTimer.ScreenDimsChanged();
+	m_BlueInterfaceTimer.ScreenDimsChanged();
 
 	// Update the camera rect...
     uint32 dwWidth = 640, dwHeight = 480;
@@ -6139,16 +6234,18 @@ bool CInterfaceMgr::HandleDisplayTimerMsg( ILTMessage_Read& msg )
 	uint8 nTeamId = msg.Readuint8( );
 
 	// Calculate time to the end.
+	// RETAIL: 0x100653d0 0 is the game's timer, 1 and 2 the teams',
+	// 3 and up the demolition bombs' (CHUDBombTarget, still to be written).
 	switch( nTeamId )
 	{
 		case 0:
-			m_BlueInterfaceTimer.SetTime( fGameTimeEnd, bPaused );
+			m_InterfaceTimer.SetTime( fGameTimeEnd, bPaused );
 			break;
 		case 1:
-			m_RedInterfaceTimer.SetTime( fGameTimeEnd, bPaused );
+			m_BlueInterfaceTimer.SetTime( fGameTimeEnd, bPaused );
 			break;
-		default:
-			m_InterfaceTimer.SetTime( fGameTimeEnd, bPaused );
+		case 2:
+			m_RedInterfaceTimer.SetTime( fGameTimeEnd, bPaused );
 			break;
 	}
     return LTTRUE;

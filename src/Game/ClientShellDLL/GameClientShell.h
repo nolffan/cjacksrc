@@ -148,6 +148,7 @@ public:
 	CClientFXMgr*	GetClientFXMgr() { return &m_ClientFXMgr; }
 
 	bool		LauncherServerApp( char const* pszProfileFile );
+	bool		LaunchPatchUpdater( char const* pszURL );
 
 protected :
     uint32      OnEngineInitialized(RMode *pMode, LTGUID *pAppGuid);

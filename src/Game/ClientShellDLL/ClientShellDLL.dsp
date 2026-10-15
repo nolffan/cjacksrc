@@ -32,7 +32,7 @@ RSC=rc.exe
 # PROP Intermediate_Dir "..\built\Final\ClientShellDLL"
 # PROP Ignore_Export_Lib 1
 # PROP Target_Dir ""
-# ADD CPP /nologo /MD /W3 /GR /O2 /I "..\Shared\TO2" /I ".\\" /I "..\ClientRes\Shared" /I "..\ClientRes\TO2" /I "..\Shared" /I "..\..\Engine\sdk\inc" /I "..\..\libs\stdlith" /I "..\..\libs\butemgr" /I "..\..\libs\cryptmgr" /I "..\..\libs\lith" /I "..\..\libs\mfcstub" /I "..\Libs\LTGUIMgr" /I "..\..\libs\regmgr" /I "..\Libs\ServerDir" /D "NDEBUG" /D "_CLIENTBUILD" /D "WIN32" /D "_WINDOWS" /D "_NOLFBUILD" /D "NO_PRAGMA_LIBS" /D "NOPS2" /D "_FINAL" /D "MEMTRACK_CLIENT" /Yu"stdafx.h" /FD /Zm1000 /c
+# ADD CPP /nologo /MD /W3 /GR /O2 /I "..\Shared\TO2" /I ".\\" /I "..\ClientRes\Shared" /I "..\ClientRes\TO2" /I "..\Shared" /I "..\..\Engine\sdk\inc" /I "..\..\libs\stdlith" /I "..\..\libs\butemgr" /I "..\..\libs\cryptmgr" /I "..\..\libs\lith" /I "..\..\libs\mfcstub" /I "..\Libs\LTGUIMgr" /I "..\..\libs\regmgr" /I "..\Libs\ServerDir" /I "..\Libs\GameSpy" /D "NDEBUG" /D "_CLIENTBUILD" /D "WIN32" /D "_WINDOWS" /D "_NOLFBUILD" /D "NO_PRAGMA_LIBS" /D "NOPS2" /D "_FINAL" /D "MEMTRACK_CLIENT" /Yu"stdafx.h" /FD /Zm1000 /c
 # ADD RSC /l 0x409 /d "NDEBUG"
 LINK32=link.exe
 # ADD LINK32 winmm.lib ole32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /machine:I386 /nodefaultlib:"LIBCMTD" /out:"..\built\Final\ClientShellDLL\CShell.dll"
@@ -2208,6 +2208,10 @@ SOURCE=..\Shared\WinUtil.h
 # Begin Group "Libraries"
 
 # PROP Default_Filter "lib"
+# Begin Source File
+
+SOURCE=..\built\Final\libs\GameSpy\GameSpy.lib
+# End Source File
 # Begin Source File
 
 SOURCE=..\..\libs\built\Final\ButeMgr\ButeMgr.lib

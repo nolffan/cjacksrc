@@ -385,7 +385,7 @@ BEGIN
     IDS_CJ_1444             "Checkpoint"
     IDS_CJ_1445             "Load from the last checkpoint."
     IDS_CJ_1446             "Saving checkpoint..."
-    IDS_CJ_1447             "881"
+    IDS_GAMESPY_DISTRIBUTIONID "881"
     IDS_CJ_1448             "Internet"
     IDS_CJ_1449             "Internet"
     IDS_CJ_1450             "LAN"

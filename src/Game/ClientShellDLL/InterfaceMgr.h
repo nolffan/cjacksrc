@@ -42,6 +42,7 @@
 #include "ClientFxMgr.h"
 #include "CursorMgr.h"
 #include "LTObjRef.h"
+#include "IGameSpy.h"
 
 
 extern ILTModelClient*	g_pILTModelClient;
@@ -585,6 +586,13 @@ private:
 
 		bool			m_bHideHUDInPopup;
 		eHUDRenderLevel m_ePrePopupHUDRenderLevel;
+
+		// RETAIL: 0xb5b0 GameSpy's check for a new version, made at Init,
+		// and the address of the patch it found.
+		void			UpdatePatchInfo();
+		IGameSpyPatchInfo*	m_pGameSpyPatchInfo;
+		std::string		m_sPatchURL;
+		friend void NewPatchCallBack( LTBOOL bReturn, void *pData );
 };
 
 
