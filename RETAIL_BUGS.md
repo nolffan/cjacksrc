@@ -28,9 +28,10 @@ too, since Contract J.A.C.K. was built from the same code: check each
 against the retail binary before listing it. Those Contract J.A.C.K. no
 longer has go at the end, so nobody looks again.
 
-**Fixed so far** (in the modern build): four -- the two GameSpy handle
-bugs (MODERN.md GS-1), GetCommandName (GAME-1) and the world shaders' section
-order (EN-1).
+**Fixed so far** (in the modern build): seven -- the two GameSpy handle
+bugs (MODERN.md GS-1), GetCommandName (GAME-1), the world shaders' section
+order (EN-1), the launcher's path overrun (APPS-1) and find handles
+(APPS-2), and the dedicated server's console formats (APPS-3).
 
 ## Format
 
@@ -143,6 +144,44 @@ world in a way that triggers it.
 
 Fixed in the modern build: src/Engine/runtime/render_a/src/sys/d3d/
 d3d_rendershader_base.h, MODERN.md EN-1.
+
+### The launcher's own path can overrun a buffer
+
+ContractJack.exe 0x40669d (CLauncherApp::InitInstance,
+src/Game/Launcher/Launcher.cpp). Checking whether the game is already
+running, the launcher reads the current directory into `sDir[128]` (at
+most 125 characters), appends `\`, and `sprintf`s it with `LITHTECH.EXE`
+into `sExe[128]`: a directory of 116 to 124 characters overruns `sExe` on
+the stack at start-up. NOLF2's launcher has the same code.
+
+Fixed in the modern build: src/Game/Launcher/Launcher.cpp, MODERN.md
+APPS-1.
+
+### The launcher never closes its find handles
+
+ContractJack.exe 0x409210 and 0x409260 (ExistRezFile and ExistRezDir,
+src/Game/Launcher/RezFind.cpp; FindRezFiles, 0x4092a0, has both inlined)
+and 0x405310 (CDisplayMgr::EnumerateRenderers,
+src/Game/Launcher/DisplayMgr.cpp). Each `_findfirst` handle is left open on
+every path: the launcher does not even import `_findclose`. Each leaks a
+search handle for as long as the launcher runs; harmless in practice, as
+NOLF2's launcher showed.
+
+Fixed in the modern build: src/Game/Launcher/RezFind.cpp and
+DisplayMgr.cpp, MODERN.md APPS-2.
+
+### The dedicated server's console takes messages as formats
+
+ContractJackServer.exe 0x4097d0 (ScmdConsoleDriver_ServerApp::WriteMessage,
+src/Game/ServerApp/ScmdConsoleDriver_ServerApp.cpp) passes each SCMD reply
+as the format string of CServerDlg::WriteConsoleString (0x40ac00, a
+`_vsnprintf`), and the replies carry text from the players: the client
+list (`LISTCLIENTS`) has their names. A player named `%s%s%s` makes the
+server read arguments that are not there when its operator lists the
+clients, and can crash it. NOLF2's dedicated server has the same code.
+
+Fixed in the modern build: src/Game/ServerApp/
+ScmdConsoleDriver_ServerApp.cpp, MODERN.md APPS-3.
 
 ## NOLF2's bugs Contract J.A.C.K. no longer has
 

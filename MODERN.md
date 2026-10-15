@@ -42,6 +42,14 @@ modes at any size; our Bink player on FFmpeg in place of RAD's
 * **GAME-1: GetCommandName.** Returns the name it finds instead of always
   its error string (`RETAIL_BUGS.md`;
   src/Game/ClientShellDLL/ProfileMgr.cpp).
+* **APPS-1: the launcher's own path.** The game's path is written into
+  `sExe` with a bound (`RETAIL_BUGS.md`; src/Game/Launcher/Launcher.cpp).
+* **APPS-2: the launcher's find handles.** ExistRezFile, ExistRezDir and
+  CDisplayMgr::EnumerateRenderers close their `_findfirst` handles
+  (`RETAIL_BUGS.md`; src/Game/Launcher/RezFind.cpp, DisplayMgr.cpp).
+* **APPS-3: the dedicated server's console.** SCMD replies are written as
+  text, not as a format (`RETAIL_BUGS.md`;
+  src/Game/ServerApp/ScmdConsoleDriver_ServerApp.cpp).
 * **EN-1: the world shaders' section order.** The sections compare by
   world only among equal base sections, so the sort gets a strict weak
   ordering (`RETAIL_BUGS.md`; src/Engine/runtime/render_a/src/sys/d3d/

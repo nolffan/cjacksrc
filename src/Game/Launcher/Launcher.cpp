@@ -120,7 +120,14 @@ BOOL CLauncherApp::InitInstance()
 	GetCurrentDirectory(125, sDir);
 	if(strlen(sDir) > 3) strcat(sDir, "\\");
 
+#ifdef CJACK_MODERN
+	// MODERN.md APPS-1: a directory of up to 124 characters and the "\"
+	// fit sDir, but not with "LITHTECH.EXE" after them in sExe[128]
+	_snprintf(sExe, sizeof(sExe) - 1, "%sLITHTECH.EXE", sDir);
+	sExe[sizeof(sExe) - 1] = '\0';
+#else
 	sprintf(sExe, "%sLITHTECH.EXE", sDir);
+#endif
 
 	if(ExistProcess(sExe, 1))
 	{

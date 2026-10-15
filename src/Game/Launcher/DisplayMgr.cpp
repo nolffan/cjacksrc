@@ -1124,6 +1124,10 @@ int CDisplayMgr::EnumerateRenderers(const char* sDir)
 
 		if (_findnext(handle, &fd) == -1) bContinue = FALSE;
 	}
+#ifdef CJACK_MODERN
+	// MODERN.md APPS-2: the find handle is closed
+	if (handle != -1) _findclose(handle);
+#endif
 
 
 	// All done...

@@ -995,7 +995,11 @@ bool CButeMgr::AuxTabItemsSave( char const* pszAttName, CSymTabItem& theItem, vo
 		break;
 	case StringType:
 		{
+#if _MSC_VER > 1300
+			CString s = theItem.data.s->c_str( );
+#else
 			CString s = *theItem.data.s;
+#endif
 			s.Replace("\"", "\"\"");
 			*pSaveData << '"' << s << '"';
 			break;
@@ -1360,6 +1364,16 @@ CButeMgr::SymTypes CButeMgr::GetType(const char* szTagName, const char* szAttNam
 //				lifetime is guaranteed.
 //
 ////////////////////////////////////////////////////////////////////////
+#if _MSC_VER > 1300
+std::string const& CButeMgr::AddString( char const* pszString )
+{
+	// Add the string to the string holder.
+	std::pair< StringHolder::const_iterator, bool > pr = m_stringHolder.insert( pszString );
+
+	// pr.first is a pointer to a std::string.  So, dereferance and return the std::string.
+	return *pr.first;
+}
+#else
 CString const& CButeMgr::AddString( char const* pszString )
 {
 	// Add the string to the string holder.
@@ -1368,6 +1382,7 @@ CString const& CButeMgr::AddString( char const* pszString )
 	// pr.first is a pointer to a CString.  So, dereferance and return the CString.
 	return *pr.first;
 }
+#endif
 
 
 ////////////////////////////////////////////////////////////////////////
@@ -1394,7 +1409,11 @@ CButeMgr::TableOfItems* CButeMgr::CreateTableOfItems( TableOfTags& tableOfTags, 
 
 	// Add the string to the string list and use it with the tableOfTags map.  This string pointer
 	// will persist for the life of this ButeMgr object.
+#if _MSC_VER > 1300
+	char const* pszTagString = AddString( pszTagName ).c_str( );
+#else
 	char const* pszTagString = AddString( pszTagName );
+#endif
 
 	// Add the table of items to the table of tags.
 	tableOfTags[pszTagString] = pTableOfItems;
@@ -1460,7 +1479,11 @@ CButeMgr::CSymTabItem* CButeMgr::CreateSymTabItem( TableOfItems& tableOfItems, c
 
 	// Add the string to the string list and use it with the tableOfItems map.  This string pointer
 	// will persist for the life of this ButeMgr object.
+#if _MSC_VER > 1300
+	char const* pszItemString = AddString( pszAttName ).c_str( );
+#else
 	char const* pszItemString = AddString( pszAttName );
+#endif
 
 	// Add the symtab to the table of tags.
 	tableOfItems[pszItemString] = pSymTabItem;
@@ -1972,7 +1995,11 @@ const char *CButeMgr::GetString(const char* szTagName, const char* szAttName, co
 	if (pItem = FindSymTabItem(szTagName, szAttName))
 	{
 		if (pItem->SymType == StringType)
+#if _MSC_VER > 1300
+			return pItem->data.s->c_str( );
+#else
 			return *(pItem->data.s);
+#endif
 		else
 			DisplayMessage("Type mismatch - [%s]:%s", szTagName, szAttName);
 	}

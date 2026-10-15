@@ -21,6 +21,7 @@
 #include <map>
 #include <set>
 #include <functional>
+#include <string>
 #include <hash_set>
 #include <hash_map>
 #if _MSC_VER >= 1300
@@ -194,7 +195,12 @@ public:
 			bool b;
 			double d;
 			float f;
+#if _MSC_VER > 1300
+			// RETAIL: the string holder's std::string
+			std::string const* s;
+#else
 			CString const* s;
+#endif
 			CRect* r;
 			CPoint* point;
 			CAVector* v;
@@ -353,7 +359,10 @@ private:
 #elif _MSC_VER > 1300  // NET 2003
 	// Used to define dictionary of strings.
 	// This must be case sensitive!
-	typedef stdext::hash_set< CString, ButeMgrHashCompare > StringHolder;
+	// RETAIL: Contract J.A.C.K.'s holds std::strings with the standard
+	// library's own hash and less (ContractJackServer.exe's insert,
+	// 0x410f60, compares with operator<)
+	typedef stdext::hash_set< std::string > StringHolder;
 
 	// Used to define map of strings to CSymTabItems.
 	typedef stdext::hash_map< char const*, CSymTabItem*, ButeMgrHashCompare > TableOfItems;
@@ -483,7 +492,11 @@ private:
 											   void* pContext );
 
 	// Adds string to string list and returns the pointer to the string in the list.
+#if _MSC_VER > 1300
+	std::string const& AddString( char const* pszString );
+#else
 	CString const& AddString( char const* pszString );
+#endif
 
 	ObjectBank< CRect > m_RectBank;
 	ObjectBank< CPoint > m_PointBank;

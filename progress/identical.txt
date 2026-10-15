@@ -4894,6 +4894,7 @@ CShell.dll	sub_101178f0
 CShell.dll	sub_10117910
 CShell.dll	sub_10117940
 CShell.dll	sub_10117970
+CShell.dll	sub_101179e0
 CShell.dll	sub_10117cc0
 CShell.dll	sub_10117ce0
 CShell.dll	sub_10117cf0
@@ -4920,6 +4921,8 @@ CShell.dll	sub_10118580
 CShell.dll	sub_101185e0
 CShell.dll	sub_10118620
 CShell.dll	sub_10118680
+CShell.dll	sub_101186d0
+CShell.dll	sub_10118730
 CShell.dll	sub_10118770
 CShell.dll	sub_10118830
 CShell.dll	sub_10118860
@@ -4933,6 +4936,9 @@ CShell.dll	sub_10118b70
 CShell.dll	sub_10118c10
 CShell.dll	sub_10118d10
 CShell.dll	sub_10118e00
+CShell.dll	sub_10118e30
+CShell.dll	sub_10119140
+CShell.dll	sub_101191b0
 CShell.dll	sub_10119240
 CShell.dll	sub_10119310
 CShell.dll	sub_10119360
@@ -4953,6 +4959,7 @@ CShell.dll	sub_1011a470
 CShell.dll	sub_1011a550
 CShell.dll	sub_1011aab0
 CShell.dll	sub_1011ac90
+CShell.dll	sub_1011ace0
 CShell.dll	sub_1011ad10
 CShell.dll	sub_1011ad40
 CShell.dll	sub_1011ad60
@@ -4977,7 +4984,10 @@ CShell.dll	sub_1011b180
 CShell.dll	sub_1011b1f0
 CShell.dll	sub_1011b250
 CShell.dll	sub_1011b2c0
+CShell.dll	sub_1011b320
+CShell.dll	sub_1011b390
 CShell.dll	sub_1011b3ff
+CShell.dll	sub_1011b420
 CShell.dll	sub_1011b48d
 CShell.dll	sub_1011b4b0
 CShell.dll	sub_1011b51f
@@ -4990,6 +5000,7 @@ CShell.dll	sub_1011b6cd
 CShell.dll	sub_1011b6f0
 CShell.dll	sub_1011b760
 CShell.dll	sub_1011b780
+CShell.dll	sub_1011b7a0
 CShell.dll	sub_1011b8c0
 CShell.dll	sub_1011b8f0
 CShell.dll	sub_1011b930
@@ -5000,6 +5011,7 @@ CShell.dll	sub_1011ba50
 CShell.dll	sub_1011bbb0
 CShell.dll	sub_1011bbbc
 CShell.dll	sub_1011bca0
+CShell.dll	sub_1011bd10
 CShell.dll	sub_1011c020
 CShell.dll	sub_1011c330
 CShell.dll	sub_1011c640
@@ -5007,6 +5019,7 @@ CShell.dll	sub_1011c690
 CShell.dll	sub_1011c6e0
 CShell.dll	sub_1011c770
 CShell.dll	sub_1011c7b0
+CShell.dll	sub_1011c800
 CShell.dll	sub_1011c860
 CShell.dll	sub_1011c970
 CShell.dll	sub_1011c9b0
@@ -6465,6 +6478,7 @@ ContractJackServer.exe	sub_40ec20
 ContractJackServer.exe	sub_40ec70
 ContractJackServer.exe	sub_40ece0
 ContractJackServer.exe	sub_40ede0
+ContractJackServer.exe	sub_40ee50
 ContractJackServer.exe	sub_40f180
 ContractJackServer.exe	sub_40f200
 ContractJackServer.exe	sub_40f250
@@ -6499,6 +6513,9 @@ ContractJackServer.exe	sub_40f8b0
 ContractJackServer.exe	sub_40f910
 ContractJackServer.exe	sub_40f960
 ContractJackServer.exe	sub_40f9b0
+ContractJackServer.exe	sub_40f9f0
+ContractJackServer.exe	sub_40fa90
+ContractJackServer.exe	sub_40fab0
 ContractJackServer.exe	sub_40fb1f
 ContractJackServer.exe	sub_40fb40
 ContractJackServer.exe	sub_40fb60
@@ -6539,6 +6556,8 @@ ContractJackServer.exe	sub_4109b0
 ContractJackServer.exe	sub_410a10
 ContractJackServer.exe	sub_410a50
 ContractJackServer.exe	sub_410ab0
+ContractJackServer.exe	sub_410af0
+ContractJackServer.exe	sub_410b50
 ContractJackServer.exe	sub_410b90
 ContractJackServer.exe	sub_410c50
 ContractJackServer.exe	sub_410cf0
@@ -6546,6 +6565,8 @@ ContractJackServer.exe	sub_410d80
 ContractJackServer.exe	sub_410e30
 ContractJackServer.exe	sub_410ed0
 ContractJackServer.exe	sub_410ef0
+ContractJackServer.exe	sub_410f60
+ContractJackServer.exe	sub_411220
 ContractJackServer.exe	sub_4112a0
 ContractJackServer.exe	sub_411310
 ContractJackServer.exe	sub_4115c0
@@ -6555,10 +6576,13 @@ ContractJackServer.exe	sub_411950
 ContractJackServer.exe	sub_4119a0
 ContractJackServer.exe	sub_4119e0
 ContractJackServer.exe	sub_411a20
+ContractJackServer.exe	sub_411a60
 ContractJackServer.exe	sub_411ad0
 ContractJackServer.exe	sub_411ba0
 ContractJackServer.exe	sub_411bf0
 ContractJackServer.exe	sub_411c20
+ContractJackServer.exe	sub_411f90
+ContractJackServer.exe	sub_412050
 ContractJackServer.exe	sub_4120b0
 ContractJackServer.exe	sub_412180
 ContractJackServer.exe	sub_4121d0
@@ -6569,6 +6593,7 @@ ContractJackServer.exe	sub_4124c0
 ContractJackServer.exe	sub_412ee0
 ContractJackServer.exe	sub_412f30
 ContractJackServer.exe	sub_413010
+ContractJackServer.exe	sub_413100
 ContractJackServer.exe	sub_4132c0
 ContractJackServer.exe	sub_4132f0
 ContractJackServer.exe	sub_413340
@@ -14553,7 +14578,6 @@ Object.lto	sub_1002e2a0
 Object.lto	sub_1002e450
 Object.lto	sub_1002e5b0
 Object.lto	sub_1002e6a0
-Object.lto	sub_1002e9e0
 Object.lto	sub_1002f1c0
 Object.lto	sub_1002f1c8
 Object.lto	sub_1002f1f0
@@ -21076,6 +21100,7 @@ Object.lto	sub_1016dcd0
 Object.lto	sub_1016dcf0
 Object.lto	sub_1016dd20
 Object.lto	sub_1016dd50
+Object.lto	sub_1016ddc0
 Object.lto	sub_1016e0a0
 Object.lto	sub_1016e0c0
 Object.lto	sub_1016e0d0
@@ -21102,6 +21127,8 @@ Object.lto	sub_1016e960
 Object.lto	sub_1016e9c0
 Object.lto	sub_1016ea00
 Object.lto	sub_1016ea60
+Object.lto	sub_1016eab0
+Object.lto	sub_1016eb10
 Object.lto	sub_1016eb50
 Object.lto	sub_1016ec10
 Object.lto	sub_1016ec40
@@ -21115,6 +21142,9 @@ Object.lto	sub_1016ef50
 Object.lto	sub_1016eff0
 Object.lto	sub_1016f0f0
 Object.lto	sub_1016f1e0
+Object.lto	sub_1016f210
+Object.lto	sub_1016f520
+Object.lto	sub_1016f590
 Object.lto	sub_1016f620
 Object.lto	sub_1016f6f0
 Object.lto	sub_1016f740
@@ -21134,6 +21164,7 @@ Object.lto	sub_10170800
 Object.lto	sub_10170850
 Object.lto	sub_10170930
 Object.lto	sub_10170e90
+Object.lto	sub_10171070
 Object.lto	sub_101710a0
 Object.lto	sub_101710c0
 Object.lto	sub_101710e0
@@ -21157,7 +21188,10 @@ Object.lto	sub_101714e0
 Object.lto	sub_10171550
 Object.lto	sub_101715b0
 Object.lto	sub_10171620
+Object.lto	sub_10171680
+Object.lto	sub_101716f0
 Object.lto	sub_1017175f
+Object.lto	sub_10171780
 Object.lto	sub_101717ed
 Object.lto	sub_10171810
 Object.lto	sub_1017187f
@@ -21170,6 +21204,7 @@ Object.lto	sub_10171a2d
 Object.lto	sub_10171a50
 Object.lto	sub_10171ac0
 Object.lto	sub_10171ae0
+Object.lto	sub_10171b00
 Object.lto	sub_10171b50
 Object.lto	sub_10171b80
 Object.lto	sub_10171bc0
@@ -21180,12 +21215,14 @@ Object.lto	sub_10171e10
 Object.lto	sub_10171e1c
 Object.lto	sub_10171f00
 Object.lto	sub_10171f70
+Object.lto	sub_10171fc0
 Object.lto	sub_101722d0
 Object.lto	sub_101725e0
 Object.lto	sub_101728f0
 Object.lto	sub_10172940
 Object.lto	sub_101729d0
 Object.lto	sub_10172a10
+Object.lto	sub_10172a60
 Object.lto	sub_10172ac0
 Object.lto	sub_10172bd0
 Object.lto	sub_10172c10

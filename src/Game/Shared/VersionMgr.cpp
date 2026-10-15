@@ -39,6 +39,16 @@ const CVersionMgr::TSaveVersion CVersionMgr::kSaveVersion__1_2 = 90;
 const CVersionMgr::TSaveVersion CVersionMgr::kSaveVersion__1_3 = 124;
 const CVersionMgr::TSaveVersion CVersionMgr::kSaveVersion__CurrentBuild = s_nBuildNumber;
 
+// RETAIL: every Contract J.A.C.K. binary that has CVersionMgr -- the
+// launcher, the dedicated server, CShell.dll and Object.lto -- exports an
+// int named by a GUID, {33560E70-C1C2-4DCC-A206-454C1A563E3D}
+// (?_0x33560e700xc1c20x4dcc0xa20x60x450x4c0x1a0x560x3e0x3d@@3HA), zero,
+// beside g_pVersionMgr (ContractJack.exe .data 0x4113cc). Nothing in the
+// binaries reads it: a marker for something outside them to find.
+#define VERSIONMGR_EXPORT_GUID( a, b, c, d0, d1, d2, d3, d4, d5, d6, d7 ) \
+	__declspec( dllexport ) int _##a##b##c##d0##d1##d2##d3##d4##d5##d6##d7
+VERSIONMGR_EXPORT_GUID( 0x33560e70, 0xc1c2, 0x4dcc, 0xa2, 0x6, 0x45, 0x4c, 0x1a, 0x56, 0x3e, 0x3d );
+
 CVersionMgr* g_pVersionMgr = NULL;
 
 
