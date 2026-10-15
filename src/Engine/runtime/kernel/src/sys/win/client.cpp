@@ -169,8 +169,8 @@ static bool StartClient(ClientGlob *pGlob)
     return LTTRUE;
 }
 
-#ifdef NOLF2SRC_MODERN
-// MODERN.md M-G41: is the game in a window (the renderer's "windowed"),
+#ifdef CJACK_MODERN
+// MODERN.md EN-2: is the game in a window (the renderer's "windowed"),
 // and should it play on when the window loses the focus
 // (RunInBackground, a console variable; 0 unless set)?
 static bool cl_ModernWindowed()
@@ -341,8 +341,8 @@ static LRESULT WINAPI MainWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM
 
             case WM_ACTIVATEAPP: 
 			{
-#ifdef NOLF2SRC_MODERN
-                // MODERN.md M-G41: in a window the game keeps its renderer
+#ifdef CJACK_MODERN
+                // MODERN.md EN-2: in a window the game keeps its renderer
                 // when it loses the focus: retail shut the renderer down
                 // and brought it back (a reload of every texture, and a
                 // black window meanwhile), which only a full-screen device
@@ -614,7 +614,8 @@ int RunClientApp(HINSTANCE hInstance) {
     wndclass.cbClsExtra    = 0;
     wndclass.cbWndExtra    = 0;
     wndclass.hInstance     = pGlob->m_hInstance;
-    wndclass.hIcon         = LoadIcon (LTNULL, IDI_APPLICATION);
+    // RETAIL: the executable's own icon, resource 128 (0x405cb2)
+    wndclass.hIcon         = LoadIcon (GetModuleHandle(LTNULL), MAKEINTRESOURCE(128));
     wndclass.hCursor       = LoadCursor (LTNULL, IDC_ARROW);
     wndclass.hbrBackground = (HBRUSH)GetStockObject (BLACK_BRUSH);
     wndclass.lpszMenuName  = LTNULL;
@@ -635,6 +636,12 @@ int RunClientApp(HINSTANCE hInstance) {
                 LTNULL,													// window menu handle
                 pGlob->m_hInstance,										// program instance handle
                 LTNULL);												// creation parameters
+
+    // RETAIL: the window's small and large icons (0x405d47)
+    SendMessage(pGlob->m_hMainWnd, WM_SETICON, ICON_SMALL,
+        (LPARAM)LoadImage(GetModuleHandle(LTNULL), MAKEINTRESOURCE(128), IMAGE_ICON, 16, 16, 0));
+    SendMessage(pGlob->m_hMainWnd, WM_SETICON, ICON_BIG,
+        (LPARAM)LoadImage(GetModuleHandle(LTNULL), MAKEINTRESOURCE(128), IMAGE_ICON, 32, 32, 0));
 
 
     bPrevHighPriority = LTFALSE;

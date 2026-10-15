@@ -100,16 +100,18 @@ Safe string concatination (strncat doesn't always null terminate, but this does)
 */
 // cjacksrc: Contract J.A.C.K.'s engine copies after the string's end, and
 // only when there is room (server.dll 0x1000a97a), where NOLF2's appended
-// with strncat whatever the length. The engine's images have it inline
-// everywhere (Lithtech.exe 0x4ea53e), which Visual C++ .NET 2003 does only
-// when forced; the game's code keeps the plain inline.
-#if defined(DIRECTENGINE_COMPILE) || defined(__D3DREND)
-__forceinline
-#else
-inline
-#endif
-void LTStrCat(char *pDest, const char *pSrc, uint32 destBytes) 
+// with strncat whatever the length.
+inline void LTStrCat(char *pDest, const char *pSrc, uint32 destBytes) 
 {
+#if defined(DIRECTENGINE_COMPILE) || defined(__D3DREND)
+    // cjacksrc: in the engine's code, as LTStrCpy, nothing to do in no room
+    // (Lithtech.exe 0x4cedb5; the out-of-line copy 0x419760). That also
+    // brings Visual C++'s inlining choices to retail's (0x4ea53e inline,
+    // 0x43c277 a call). The game's code is still to be checked.
+    if (destBytes == 0)
+        return;
+#endif
+
     uint32 nDestLen = strlen(pDest);
     if (nDestLen < destBytes)
     {

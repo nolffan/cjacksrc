@@ -26,11 +26,11 @@ static char THIS_FILE[] = __FILE__;
 COLORREF crHighlightText = RGB(255, 255, 0);
 COLORREF crNormalText = RGB(192, 160, 32);
 
-#ifdef _TO2DEMO
-char const GAME_NAME[] = "No One Lives Forever 2 (Official Demo)";
-#else
-char const GAME_NAME[] = "No One Lives Forever 2";
-#endif
+// RETAIL: GAME_NAME, Contract J.A.C.K.'s "Contract Jack", is the shared
+// VersionMgr.cpp's, which the launcher compiles too (CVersionMgr: the CD key
+// in the registry). The retail image has the string among this file's
+// (0x40e778), so this file may have defined it there; VersionMgr.cpp
+// defines it for the game DLLs.
 
 /////////////////////////////////////////////////////////////////////////////
 // CLauncherApp
@@ -55,9 +55,10 @@ CLauncherApp::CLauncherApp()
 	m_bDisableJoysticks = FALSE;
 	m_bDisableTripleBuffering = FALSE;
 	m_bDisableHardwareCursor = FALSE;
-	m_bDisableAnimatedLoadScreen = FALSE;
-	m_bDisableHardwareSound = FALSE;
+	// RETAIL: hardware sound is off by default (0x406188)
+	m_bDisableHardwareSound = TRUE;
 	m_bDisableSoundFilters = TRUE;
+	m_bEnableScreenshots = FALSE;
 	m_bRestoreDefaults = FALSE;
 	m_bSaveCommands = FALSE;
 	m_dwNumLauncherRuns = 0;
@@ -89,17 +90,12 @@ BOOL CLauncherApp::InitInstance()
 	//  of your final executable, you should remove from the following
 	//  the specific initialization routines you do not need.
 
-#ifdef _AFXDLL
-	Enable3dControls();			// Call this when using MFC in a shared DLL
-#else
-	Enable3dControlsStatic();	// Call this when linking to MFC statically
-#endif
-
 	// Load some strings
 	m_csAppName.LoadString(IDS_GAME_NAME);
 	m_csAppName.LoadString(IDS_GAME_NAME);
-	m_csAppCD1Check.LoadString(IDS_APPCD1CHECK);
-	m_csAppCD2Check.LoadString(IDS_APPCD2CHECK);
+	// RETAIL: the disc check files are no longer strings (0x40654c)
+	m_csAppCD1Check.Format("\\%s", "ContractJack.exe");
+	m_csAppCD2Check = "\\DATA\\GAME2.REZ";
 	m_csRezBase.LoadString(IDS_REZBASE);
 	m_csSetupExe.LoadString(IDS_SETUPEXE);
 	m_csServerExe.LoadString(IDS_SERVEREXE);
@@ -124,7 +120,14 @@ BOOL CLauncherApp::InitInstance()
 	GetCurrentDirectory(125, sDir);
 	if(strlen(sDir) > 3) strcat(sDir, "\\");
 
+#ifdef CJACK_MODERN
+	// MODERN.md APPS-1: a directory of up to 124 characters and the "\"
+	// fit sDir, but not with "LITHTECH.EXE" after them in sExe[128]
+	_snprintf(sExe, sizeof(sExe) - 1, "%sLITHTECH.EXE", sDir);
+	sExe[sizeof(sExe) - 1] = '\0';
+#else
 	sprintf(sExe, "%sLITHTECH.EXE", sDir);
+#endif
 
 	if(ExistProcess(sExe, 1))
 	{
@@ -165,9 +168,9 @@ BOOL CLauncherApp::InitInstance()
 		m_bDisableJoysticks = GetRegistryBool("Disable Joysticks");
 		m_bDisableTripleBuffering = GetRegistryBool("Disable Triple Buffering");
 		m_bDisableHardwareCursor = GetRegistryBool("Disable Hardware Cursor");
-		m_bDisableAnimatedLoadScreen = GetRegistryBool("Disable Animated Load Screen");
 		m_bDisableHardwareSound = GetRegistryBool("Disable Hardware Sound");
 		m_bDisableSoundFilters = GetRegistryBool("Disable Sound Filters");
+		m_bEnableScreenshots = GetRegistryBool("Enable Screenshots");
 
 		// Check for a command string
 		m_bSaveCommands = GetRegistryBool("Save Commands");
@@ -193,25 +196,26 @@ BOOL CLauncherApp::InitInstance()
 		FindRezFiles(CD_GetDriveLetterWithGame(bBogus),m_csRezBase);
 
 		// Check for command line params
+		// RETAIL: Contract J.A.C.K.'s are "+JOIN <address>" (GameSpy's) and
+		// "+MOD <mod>", which selects a mod (0x406a39)
 		CString csCmdLine = m_lpCmdLine;
 		csCmdLine.MakeUpper();
-		if(csCmdLine.Find("-GOMULTIHOST") != -1)
-			m_bGoMultiHost = TRUE;
-		if(csCmdLine.Find("-GOMULTIJOIN") != -1)
+		if(csCmdLine.Find("+JOIN ") != -1)
 			m_bGoMultiJoin = TRUE;
-		if(csCmdLine.Find("-GOMULTIFIND") != -1)
-			m_bGoMultiFind = TRUE;
-		if(csCmdLine.Find("-GOSERVER") != -1)
-			m_bGoServer = TRUE;
-		if(csCmdLine.Find("-GOGAME") != -1)
-			m_bGoGame = TRUE;
-		// Check for GameSpy command line params
-		if(csCmdLine.Find("CONNECT") != -1)
-			m_bGoMultiHost = TRUE;
-	}
 
-	// Change dialog colors
-	SetDialogBkColor(RGB(0, 0, 0), RGB(255, 255, 255));
+		CString csMod = "+MOD ";
+		int nModPos = csCmdLine.Find(csMod);
+		if(nModPos != -1)
+		{
+			CString csModName = csCmdLine.Right(csCmdLine.GetLength() - nModPos - csMod.GetLength());
+			csModName.Trim();
+			int nEnd = csModName.Find(" ");
+			if(nEnd == -1)
+				nEnd = csModName.GetLength();
+			csModName = csModName.Left(nEnd);
+			theApp.m_RegMgr.SetField(FIELD_SELECTEDMOD, (char *)(LPCTSTR)csModName);
+		}
+	}
 
 	// Make our custom brush and font
 	m_BkBrush.CreateSolidBrush((RGB(0,0,0)));
@@ -239,9 +243,9 @@ BOOL CLauncherApp::InitInstance()
 		m_RegMgr.SetField("Disable Joysticks", m_bDisableJoysticks);
 		m_RegMgr.SetField("Disable Triple Buffering", m_bDisableTripleBuffering);
 		m_RegMgr.SetField("Disable Hardware Cursor", m_bDisableHardwareCursor);
-		m_RegMgr.SetField("Disable Animated Load Screen", m_bDisableAnimatedLoadScreen);
 		m_RegMgr.SetField("Disable Hardware Sound", m_bDisableHardwareSound);
 		m_RegMgr.SetField("Disable Sound Filters", m_bDisableSoundFilters);
+		m_RegMgr.SetField("Enable Screenshots", m_bEnableScreenshots);
 
 		// Set the language - done by the installer
 		//m_RegMgr.SetField("Language", (char *)(LPCTSTR)m_csLanguage);
@@ -305,10 +309,14 @@ int CLauncherApp::MessageBox(UINT nIDText, UINT nIDCaption, DWORD dwType)
 //				key that's already open
 //
 // ----------------------------------------------------------------------- //
-BOOL CLauncherApp::GetRegistryBool(char *szField)
+BOOL CLauncherApp::GetRegistryBool(char *szField, BOOL bDefault)
 {
+	// RETAIL: a default when the field is not there (0x405cd0)
 	DWORD dwResult;
-	return(m_RegMgr.GetField(szField,&dwResult) && (dwResult == 1));
+	if(m_RegMgr.GetField(szField,&dwResult))
+		return (dwResult == 1);
+
+	return bDefault;
 }
 
 // ----------------------------------------------------------------------- //
@@ -319,11 +327,14 @@ BOOL CLauncherApp::GetRegistryBool(char *szField)
 //				key that's already open
 //
 // ----------------------------------------------------------------------- //
-DWORD CLauncherApp::GetRegistryDWord(char *szField)
+DWORD CLauncherApp::GetRegistryDWord(char *szField, DWORD dwDefault)
 {
+	// RETAIL: a default when the field is not there (0x405d00)
 	DWORD dwResult = 0;
-	m_RegMgr.GetField(szField,&dwResult);
-	return dwResult;
+	if(m_RegMgr.GetField(szField,&dwResult))
+		return dwResult;
+
+	return dwDefault;
 }
 
 // ----------------------------------------------------------------------- //
@@ -663,11 +674,6 @@ CString CLauncherApp::GetAdvancedOptionsCommandLineString()
 		sAdv += " +DisableHardwareCursor 0";
 	}
 	
-	if(m_bDisableAnimatedLoadScreen)
-	{
-		sAdv += " +DynamicLoadScreen 0";
-	}
-
 	if(m_bDisableHardwareSound)
 	{
 		sAdv += " +DisableHardwareSound 1";
@@ -684,6 +690,16 @@ CString CLauncherApp::GetAdvancedOptionsCommandLineString()
 	else
 	{
 		sAdv += " +DisableSoundFilters 0";
+	}
+
+	// RETAIL: the screenshot option is the engine's lockable back buffer
+	if(m_bEnableScreenshots)
+	{
+		sAdv += " +lockablebackbuffer 1";
+	}
+	else
+	{
+		sAdv += " +lockablebackbuffer 0";
 	}
 
 	if(m_bRestoreDefaults)

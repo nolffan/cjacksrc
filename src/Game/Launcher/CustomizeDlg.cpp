@@ -130,7 +130,8 @@ BOOL CustomizeDlg::OnInitDialog()
 	{
 		int iPosY = (CD_ROW_Y_START + (i * CD_ROW_Y_OFFSET));
 
-		sprintf( szMod, "NOLF2 Modification %i", i);
+		// RETAIL: 0x40dcbc
+		sprintf( szMod, "CJ Modification %i", i);
 		m_apTextCheckBox[i] = (CTextCheckBox*)AddTextCheckBox( aModID[i], CD_COLUMN_1_X, iPosY, szMod );
 
 		if( !m_apTextCheckBox[i] )

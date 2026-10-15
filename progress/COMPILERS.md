@@ -14,8 +14,8 @@ the attribution is the header's own testimony.
 | `SndDrv.dll` | 2003-10-14 | 6 / 10 | one VC6 C++ object (12.00.8168) and one of cl 13.00.9178: EAX's GUIDs and the DirectX SDK's `dxguid.lib`, as in NOLF2's | -- |
 | `ltmsg.dll` | | 7 / 2 | resources and msvcrt's DLL entry | -- |
 | `GameSpy.dll` | 2003-10-31 | 29 / 18 | the C objects are GameSpy's SDK (22) and msvcrt.lib's; the C++ ones Monolith's wrapper, WONAPI.lib's CD key check and msvcrt/msvcprt's | `msvc-7.10-3077`: the wrapper `/MD /Ox /GF` (no `/Gy`, no `/GX`, no `NDEBUG`), WONAPI `/MD /O2 /GX /GR` |
-| `ContractJack.exe` | 2003-10-31 | 15 / 28 | 9 objects of tool 0x27, build 8491 (not yet identified); MFC 7.1 as a DLL | -- |
-| `ContractJackServer.exe` | 2003-10-31 | 15 / 28 | the same 9 of 0x27/8491 | -- |
+| `ContractJack.exe` | 2003-10-31 | 15 / 28 | 9 objects of tool 0x27, build 8491: AliasObj 7.0, the alias members of MFC 7.1's import library `mfc71.lib` (its 496 objects of 0x27/8491); MFC 7.1 as a DLL | `/MD /Ox /GF`, no `/GX`, no `/GR`; regmgr32 and RegMgr `/Ox /GF` (below) |
+| `ContractJackServer.exe` | 2003-10-31 | 15 / 28 | the same 9 of 0x27/8491 (`mfc71.lib`) | `/MD /Ox /GF /GR`, no `/GX`; ButeMgrMfcDll `/O2 /GX`, RegMgr and regmgr32 `/Ox /GF` (below) |
 | `CShell.dll` | 2003-10-31 | 9 / 306 | 3 import descriptors of lib 7.00.9210 (the DirectX 8.1 SDK's `dinput8.lib`) | msvc-7.10-3077, `/MD /O2 /GR`, no `/GX` (LTGUIMgr `/GS`): provisional, below |
 | `Object.lto` | 2003-10-31 | 7 / 348 | | msvc-7.10-3077, `/MD /O2 /GR`, no `/GX`: provisional |
 | `ClientFx.fxd` | 2003-10-14 | 115 / 41 | `libcmt.lib` statically: most C objects are the CRT's | msvc-7.10-3077, `/MT /O2`, no `/GX`: provisional |
@@ -108,3 +108,49 @@ against retail `server.dll` and the single-player demo's plaintext of
   `try` blocks. Lib_StdLith and Lib_Lith (the game's too) are without
   `/GX` as well, as the game DLLs show them; the engine's ltmem is
   `/Ox /GF` (SndDrv.dll's object of it unchanged).
+
+
+## The launcher and the dedicated server
+
+Measured on the retail images, then on our builds (`progress/README.md`):
+
+- **No `/Gy`** in either: both keep functions nothing calls -- every
+  dialog's `GetThisMessageMap` beside its `GetMessageMap` (MFC 7.1's
+  `BEGIN_MESSAGE_MAP` emits both), CVersionMgr's unused members, the
+  game options' `FixPlayerName` and `GetMaxPlayersForBandwidth` in the
+  server -- so their objects were compiled `/Ox /GF` (`/O2` without
+  `/Gy`), as `GameSpy.dll`'s and `SndDrv.dll`'s were. `/O2` placed 268
+  and 393 functions; `/Ox /GF` 280 and 521 (with the other changes of the
+  same commits). The link is the release default (`/OPT:REF`, no
+  incremental table: both images begin with a function).
+- **Exception handling.** The launcher has six `fs:0` frames in its own
+  code, all the STL's `try` blocks (CustomizeDlg's mod set): no `/GX`,
+  regmgr32.lib's CRegMgr32 included (its CString members' functions have
+  none in retail). The server's own objects have none but the STL's; 33
+  of its 46 framed functions are ButeMgr's (CButeMgr's constructor and
+  destructor, the hash tables' `insert`), so ButeMgrMfcDll keeps NOLF2's
+  `/GX` and the server's own objects drop it.
+- **RTTI.** The server has `/GR` (type descriptors for its game options
+  and SCMD handlers, `.?AVBaseGameOptions@@`, `.?AVScmdConsole@@`); the
+  launcher's only RTTI is the standard library's exceptions, so no `/GR`.
+- **No `/GS`** in either: the one `__security_check_cookie` call is the C
+  runtime's.
+- The launcher's `stdafx.h` includes the SDK headers the server's does
+  (`ltbasetypes.h`, `iltserver.h`, `iltmessage.h`): their six float
+  constants' initializers follow theApp's among retail's (0x40c550..), and
+  the shared `VersionMgr.cpp` needs them.
+- **The registry libraries without `/Gy` too.** Every image that links
+  RegMgr (CRegMgr: the launcher, the server, CShell.dll, Object.lto)
+  imports `RegDeleteKeyA` and `RegDeleteValueA`, which only CRegMgr's
+  uncalled Delete* members use: the whole regmgr.obj is linked, so it
+  was compiled `/Ox /GF`; regmgr32.obj likewise (the launcher's own code
+  is then exactly retail's size, 0xb644 bytes of `.text`). The link is
+  the default `/OPT:ICF` (retail folds CObject's empty virtuals into one
+  `ret 4`; `/OPT:NOICF` overshoots the server by 7.5 KB); which copy of a
+  folded COMDAT survives, and so where it lies, still differs from
+  retail's in places (the launcher's first object's tail, 0x4016c0).
+- **The server's link line** names `server.lib` before `winmm.lib`, as
+  NOLF2's project did: that puts `server.DLL` first among the imports,
+  as in retail; the import tables of both programs are retail's, DLL for
+  DLL and function for function, in order.
+

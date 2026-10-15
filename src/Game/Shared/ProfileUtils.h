@@ -225,6 +225,7 @@ const char*	GetProfileDir( char const* pszProfileName );
 const char*	GetProfileFile( char const* pszProfileName );
 const char*	GetCampaignDir( char const* pszProfileName, GameType eGameType );
 const char*	GetCampaignFile( ServerGameOptions const& serverGameOptions );
+const char*	FixPlayerName( char const* pszPlayerName );
 
 
 #endif // PROFILEUTILS_H

@@ -69,9 +69,9 @@ void d3d_GetColorMasks(D3DFORMAT iD3DFormat, uint32& iBitCount, uint32& iAlphaMa
 		iBitCount = 32; iAlphaMask = 0x00000000; iRedMask = 0x00000000; iGreenMask = 0xFFFF0000; iBlueMask = 0x0000FFFF; break;
 	case D3DFMT_Q8W8V8U8:
 		iBitCount = 32; iAlphaMask = 0x00000000; iRedMask = 0x00000000; iGreenMask = 0x00FF0000; iBlueMask = 0x000000FF; break;
-// - This went away in DX9?
-//	case D3DFMT_W11V11U10:
-//		iBitCount = 32; iAlphaMask = 0x00000000; iRedMask = 0x00000000; iGreenMask = 0x001FFC00; iBlueMask = 0x000003FF; break;
+	// RETAIL: Direct3D 8 still has it (0x4ce827, the table's last entry)
+	case D3DFMT_W11V11U10:
+		iBitCount = 32; iAlphaMask = 0x00000000; iRedMask = 0x00000000; iGreenMask = 0x001FFC00; iBlueMask = 0x000003FF; break;
 
 	default : 
 		assert(0 && "Unknown Format"); 
@@ -161,8 +161,7 @@ void  d3d_D3DFormatToString(D3DFORMAT Format, char *pStr, uint32 nBufferLen)
 	case D3DFMT_X8L8V8U8 :			d3d_AddToString(pStr, "D3DFMT_X8L8V8U8", nBufferLen); break;
 	case D3DFMT_Q8W8V8U8 :			d3d_AddToString(pStr, "D3DFMT_Q8W8V8U8", nBufferLen); break;
 	case D3DFMT_V16U16 :			d3d_AddToString(pStr, "D3DFMT_V16U16", nBufferLen); break;
-// This went away in DX9
-//	case D3DFMT_W11V11U10 :			d3d_AddToString(pStr, "D3DFMT_W11V11U10", nBufferLen); break;
+	case D3DFMT_W11V11U10 :			d3d_AddToString(pStr, "D3DFMT_W11V11U10", nBufferLen); break;	// RETAIL: Direct3D 8's
 	case D3DFMT_UYVY :				d3d_AddToString(pStr, "D3DFMT_UYVY", nBufferLen); break;
 	case D3DFMT_YUY2 :				d3d_AddToString(pStr, "D3DFMT_YUY2", nBufferLen); break;
 	case D3DFMT_DXT1 :				d3d_AddToString(pStr, "D3DFMT_DXT1", nBufferLen); break;

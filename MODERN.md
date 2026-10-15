@@ -45,7 +45,32 @@ modes at any size; our Bink player on FFmpeg in place of RAD's
 * **GAME-2: the chassis's update.** The update a chassis sends the
   clients names SFX_CHASSIS_ID and the chassis, as every special-fx
   message does (`RETAIL_BUGS.md`; src/Game/ObjectDLL/Chassis.cpp).
+* **APPS-1: the launcher's own path.** The game's path is written into
+  `sExe` with a bound (`RETAIL_BUGS.md`; src/Game/Launcher/Launcher.cpp).
+* **APPS-2: the launcher's find handles.** ExistRezFile, ExistRezDir and
+  CDisplayMgr::EnumerateRenderers close their `_findfirst` handles
+  (`RETAIL_BUGS.md`; src/Game/Launcher/RezFind.cpp, DisplayMgr.cpp).
+* **APPS-3: the dedicated server's console.** SCMD replies are written as
+  text, not as a format (`RETAIL_BUGS.md`;
+  src/Game/ServerApp/ScmdConsoleDriver_ServerApp.cpp).
 * **EN-1: the world shaders' section order.** The sections compare by
   world only among equal base sections, so the sort gets a strict weak
   ordering (`RETAIL_BUGS.md`; src/Engine/runtime/render_a/src/sys/d3d/
   d3d_rendershader_base.h).
+* **EN-2: the window keeps its renderer.** In a window the game no longer
+  shuts its renderer down and brings it back when it loses the focus (a
+  reload of every texture and a black window meanwhile; only a full-screen
+  device needs it); it pauses, unless the console variable
+  RunInBackground is set, when it plays on behind other windows
+  (src/Engine/runtime/kernel/src/sys/win/client.cpp; nolf2src's M-G41).
+* **EN-3: ShowVersionInfo.** ILTClient's GetVersionInfoExt and
+  GetPerformanceInfo are set, and the console command tests the first
+  before calling it (`RETAIL_BUGS.md`; src/Engine/runtime/client/src/
+  clientde_impl.cpp, consolecommands.cpp).
+* **EN-4: the music thread's handle.** CLTDirectMusicMgr::Term closes the
+  notification thread's handle (`RETAIL_BUGS.md`; src/Engine/runtime/
+  kernel/src/sys/win/ltdirectmusic_impl.cpp).
+* **EN-5: a failed transition segment.** CLTDirectMusicMgr::ChangeIntensity
+  tests the transition's segment state before using it, as NOLF2's does
+  (`RETAIL_BUGS.md`; src/Engine/runtime/kernel/src/sys/win/
+  ltdirectmusic_impl.cpp).

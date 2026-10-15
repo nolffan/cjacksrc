@@ -55,8 +55,8 @@ int ServerGameOptions::GetGameTypeStringID() const
 		case eGameTypeCooperative:		return IDS_COOPERATIVE;
 		case eGameTypeDeathmatch:		return IDS_DEATHMATCH;
 		case eGameTypeTeamDeathmatch:	return IDS_TEAMDEATHMATCH;
-		case eGameTypeDoomsDay:			return IDS_DOOMSDAY;
 		case eGameTypeDemolition:		return IDS_DEMOLITION;
+		case eGameTypeDoomsDay:			return IDS_DOOMSDAY;
 		default:						return 0;
 	};
 }
@@ -664,5 +664,73 @@ const char*	GetCampaignFile( ServerGameOptions const& serverGameOptions )
 	}
 
 	return sCampaignFile.c_str();
+}
+
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	FixPlayerName
+//
+//	PURPOSE:	The player name without leading and trailing whitespace, at
+//				most MAX_PLAYER_NAME-1 characters
+//
+//	RETAIL: ContractJackServer.exe 0x4044c0, CShell.dll 0x100aeba0, Object.lto
+//	0x1011b8a0; the name is the one FEAR's ProfileUtils.cpp gives its wide
+//	version
+//
+// ----------------------------------------------------------------------- //
+
+const char*	FixPlayerName(char const* pszPlayerName) 
+{
+	static char szName[MAX_PLAYER_NAME];
+
+	char *pName = (char *)pszPlayerName;
+
+	//strip leading whitespace
+	while (pName && (*pName == ' ' || *pName == '\t'))
+	{
+		pName++;
+	}
+
+	if (pName)
+	{
+		strncpy(szName, pName, MAX_PLAYER_NAME-1);
+		szName[MAX_PLAYER_NAME-1] = 0;
+
+		//strip trailing whitespace
+		int nLen = strlen(szName) - 1;
+		while (nLen > 0 && (szName[nLen] == ' ' || szName[nLen] == '\t'))
+		{
+			szName[nLen] = 0;
+			nLen--;
+		}
+	}
+	else
+		szName[0] = 0;
+
+	return szName;
+}
+
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	ServerGameOptions::GetMaxPlayersForBandwidth
+//
+//	PURPOSE:	The most players the server's bandwidth allows: 32 kbps a
+//				player, 2 to 16 players
+//
+//	RETAIL: ContractJackServer.exe 0x404550, CShell.dll 0x100aec30, Object.lto
+//	0x1011b930
+//
+// ----------------------------------------------------------------------- //
+
+uint8 ServerGameOptions::GetMaxPlayersForBandwidth() const
+{
+	uint16 nBandwidth;
+	if( m_nBandwidthServer >= eBandwidth_Custom )
+		nBandwidth = m_nBandwidthServerCustom;
+	else
+		nBandwidth = g_BandwidthServer[m_nBandwidthServer];
+
+	int nMaxPlayers = nBandwidth / 32;
+	return ( uint8 )(( nMaxPlayers <= 2 ) ? 2 : (( nMaxPlayers > 16 ) ? 16 : nMaxPlayers ));
 }
 

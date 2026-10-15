@@ -1,5 +1,11 @@
 //Microsoft Developer Studio generated resource script.
 //
+// cjacksrc: Contract J.A.C.K.'s dedicated server resources, as the retail
+// ContractJackServer.exe (1.1) has them: NOLF2's script with Contract
+// J.A.C.K.'s caption, strings and version. The icons and the splash screen
+// are the retail game's: build/appres.py writes them out of the retail
+// image into src/Game/built/retail/ServerApp/ (the project's /i path)
+// before the build.
 #include "..\..\..\resource.h"
 
 #define APSTUDIO_READONLY_SYMBOLS
@@ -68,8 +74,8 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDR_MAINFRAME           ICON    DISCARDABLE     "..\\..\\ServerApp.ico"
-IDI_SELECTED            ICON    DISCARDABLE     "..\\..\\selected.ico"
+IDR_MAINFRAME           ICON    DISCARDABLE     "ServerApp.ico"
+IDI_SELECTED            ICON    DISCARDABLE     "selected.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -78,7 +84,7 @@ IDI_SELECTED            ICON    DISCARDABLE     "..\\..\\selected.ico"
 
 IDD_GAMESERVER DIALOG DISCARDABLE  0, 0, 430, 263
 STYLE DS_MODALFRAME | WS_MINIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "No One Lives Forever 2 - Dedicated Server"
+CAPTION "Contract J.A.C.K. - Dedicated Server"
 FONT 8, "MS Sans Serif"
 BEGIN
     GROUPBOX        "Server Info",IDC_STATIC,7,7,267,51
@@ -162,18 +168,18 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "Comments", "monolith@lith.com\0"
-            VALUE "CompanyName", "Monolith Productions Inc.\0"
-            VALUE "FileDescription", "NOLF2 Stand-Alone Server\0"
-            VALUE "FileVersion", "1, 0, 0, 0\0"
-            VALUE "InternalName", "NOLF2Serv\0"
-            VALUE "LegalCopyright", "Copyright (C) 2002, Monolith Productions, Inc.\0"
-            VALUE "LegalTrademarks", "\0"
-            VALUE "OriginalFilename", "NOLF2Serv.exe\0"
-            VALUE "PrivateBuild", "\0"
-            VALUE "ProductName", "NOLF2\0"
-            VALUE "ProductVersion", "1, 0, 0, 0\0"
-            VALUE "SpecialBuild", "\0"
+            VALUE "Comments", "monolith@lith.com"
+            VALUE "CompanyName", "Monolith Productions Inc."
+            VALUE "FileDescription", "Contract J.A.C.K. Stand-Alone Server"
+            VALUE "FileVersion", "1, 0, 0, 0"
+            VALUE "InternalName", "ContractJackServer"
+            VALUE "LegalCopyright", "Copyright (C) 2003, Monolith Productions, Inc."
+            VALUE "LegalTrademarks", ""
+            VALUE "OriginalFilename", "ContractJackServer.exe"
+            VALUE "PrivateBuild", ""
+            VALUE "ProductName", "ContractJack"
+            VALUE "ProductVersion", "1, 0, 0, 0"
+            VALUE "SpecialBuild", ""
         END
     END
     BLOCK "VarFileInfo"
@@ -254,7 +260,6 @@ END
 STRINGTABLE DISCARDABLE 
 BEGIN
     IDS_NETERR_GENERIC      "ERROR - Unable to setup the network game server."
-    IDS_RETAIL              "Retail"
     IDS_NETERR_SELECTSERVICE 
                             "ERROR - Unable to use the selected network service."
     IDS_NETERR_FILLSERVICE  "ERROR - Unable to access the available network services."
@@ -262,8 +267,8 @@ BEGIN
     IDS_NETERR_HOSTSESSION  "ERROR - Unable to host the game session."
     IDS_NETERR_INIT         "ERROR - Unable to initialize the networking system."
     IDS_NETERR_SETNETSERVICE "ERROR - Unable to set the network service."
-    IDS_APPREGNAME          "No One Lives Forever 2"
-    IDS_APPNAME             "NOLF2Svr"
+    IDS_APPREGNAME          "Contract J.A.C.K."
+    IDS_APPNAME             "ContractJackServer.exe"
     IDS_NETERR_NOCONFIGS    "ERROR - No server configuration file.  A configuration file must be setup inside the game menus and selected for the server."
     IDS_NETERR_CORRUPTCONFIG 
                             "ERROR - The config file could not be read properly. The file may be corrupt."
@@ -271,7 +276,6 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    IDS_COLUMNHEADER_TAGS   "Tags"
     IDS_SERVER              "Server"
     IDS_NONE                "None"
     IDS_COLUMNHEADER_TIMEONSERVER "Time"

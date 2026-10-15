@@ -31,13 +31,25 @@ int const GAME_HANDSHAKE_VER_MINOR = 3;
 int const GAME_HANDSHAKE_VER = ((GAME_HANDSHAKE_VER_MAJOR << 8) + GAME_HANDSHAKE_VER_MINOR);
 
 static const uint32 s_nBuildNumber = 193;
+#if defined(_CLIENTBUILD)
 static const char* s_szNetVersion	= "1.0.0.3";
 static const char* s_szNetGameName	= "contractjack";
+#endif
 
 const CVersionMgr::TSaveVersion CVersionMgr::kSaveVersion__1_1 = 72;
 const CVersionMgr::TSaveVersion CVersionMgr::kSaveVersion__1_2 = 90;
 const CVersionMgr::TSaveVersion CVersionMgr::kSaveVersion__1_3 = 124;
 const CVersionMgr::TSaveVersion CVersionMgr::kSaveVersion__CurrentBuild = s_nBuildNumber;
+
+// RETAIL: every Contract J.A.C.K. binary that has CVersionMgr -- the
+// launcher, the dedicated server, CShell.dll and Object.lto -- exports an
+// int named by a GUID, {33560E70-C1C2-4DCC-A206-454C1A563E3D}
+// (?_0x33560e700xc1c20x4dcc0xa20x60x450x4c0x1a0x560x3e0x3d@@3HA), zero,
+// beside g_pVersionMgr (ContractJack.exe .data 0x4113cc). Nothing in the
+// binaries reads it: a marker for something outside them to find.
+#define VERSIONMGR_EXPORT_GUID( a, b, c, d0, d1, d2, d3, d4, d5, d6, d7 ) \
+	__declspec( dllexport ) int _##a##b##c##d0##d1##d2##d3##d4##d5##d6##d7
+VERSIONMGR_EXPORT_GUID( 0x33560e70, 0xc1c2, 0x4dcc, 0xa2, 0x6, 0x45, 0x4c, 0x1a, 0x56, 0x3e, 0x3d );
 
 CVersionMgr* g_pVersionMgr = NULL;
 
@@ -79,6 +91,13 @@ void CVersionMgr::SetCDKey( char const* pszCDKey )
 const uint32 CVersionMgr::GetSaveVersion()
 {
 	return s_nBuildNumber;
+}
+
+// RETAIL: Object.lto 0x1015ccb0, ContractJack.exe 0x40a890: an empty member
+// function of two arguments between GetSaveVersion and GetVersion; what it
+// was is not known (our name, as its arguments' types)
+void CVersionMgr::Unknown( uint32 /*nArg1*/, uint32 /*nArg2*/ )
+{
 }
 
 // RETAIL: Object.lto 0x1015ccc0, CShell.dll 0x1010cfc0
@@ -152,6 +171,10 @@ CVersionMgr::CVersionMgr()
 
 // NOLF2's, which Contract J.A.C.K. has no use for (WON's server directory
 // and the build GUID of the cheat codes): to be taken out with their users.
+// Only the client still has them: the launcher and the dedicated server,
+// which compile this file without /Gy, have none (ContractJack.exe goes from
+// GetVersion's 0x40a8a0 and Update's 0x40a8b0 to the constructor 0x40a8c0).
+#if defined(_CLIENTBUILD)
 const char* CVersionMgr::GetNetVersion()
 {
 	return s_szNetVersion;
@@ -166,3 +189,4 @@ const LTGUID* CVersionMgr::GetBuildGuid()
 {
 	return &GAMEGUID;
 }
+#endif // _CLIENTBUILD
