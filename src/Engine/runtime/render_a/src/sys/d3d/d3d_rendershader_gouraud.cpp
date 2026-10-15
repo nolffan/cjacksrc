@@ -114,6 +114,7 @@ void CRenderShader_Gouraud::DrawNormal(const DrawState &cState, uint32 nRenderBl
 		if (nOldAlphaBlendEnable == 0)
 		{
 			DrawLights(cState, nRenderBlock);
+			BreakRenderBlockBatch(nRenderBlock);	// RETAIL: 0x4fc0ba
 			return;
 		}
 	}
@@ -299,6 +300,8 @@ void CRenderShader_Gouraud_Texture::DrawNormal(const DrawState &cState, uint32 n
 
 		PD3DDEVICE->SetStreamSource(0, 0, 0);
 		PD3DDEVICE->SetIndices(0, 0);
+
+		BreakRenderBlockBatch(nRenderBlock);	// RETAIL: 0x4fc78f
 	}
 	else
 	{
@@ -625,6 +628,8 @@ void CRenderShader_Gouraud_Detail::DrawNormal(const DrawState &cState, uint32 nR
 
 		PD3DDEVICE->SetStreamSource(0, 0, 0);
 		PD3DDEVICE->SetIndices(0, 0);
+
+		BreakRenderBlockBatch(nRenderBlock);	// RETAIL: 0x4fc78f
 	}
 	else
 	{
@@ -1004,6 +1009,8 @@ void CRenderShader_Gouraud_EnvMap::DrawNormal(const DrawState &cState, uint32 nR
 
 		PD3DDEVICE->SetStreamSource(0, 0, 0);
 		PD3DDEVICE->SetIndices(0, 0);
+
+		BreakRenderBlockBatch(nRenderBlock);	// RETAIL: 0x4fc78f
 	}
 	else
 	{
@@ -1402,6 +1409,8 @@ void CRenderShader_Gouraud_EnvBumpMap::DrawNormal(const DrawState &cState, uint3
 
 		PD3DDEVICE->SetStreamSource(0, 0, 0);
 		PD3DDEVICE->SetIndices(0, 0);
+
+		BreakRenderBlockBatch(nRenderBlock);	// RETAIL: 0x4fc78f
 	}
 	else
 	{
@@ -1527,6 +1536,9 @@ void CRenderShader_Gouraud_EnvBumpMap::PostFlush()
 	LTMatrix mIdentity;
 	mIdentity.Identity();
 	PD3DDEVICE->SetTransform(D3DTS_TEXTURE1, (D3DMATRIX*)&mIdentity);
+
+	// RETAIL: the texture stage's coordinates back to its own (0x4faba5)
+	PD3DDEVICE->SetTextureStageState(knTexStage, D3DTSS_TEXCOORDINDEX, knTexStage);
 
 	if (m_nCurAlphaTest != m_nOldAlphaTest)
 		PD3DDEVICE->SetRenderState(D3DRS_ALPHATESTENABLE, (DWORD)m_nOldAlphaTest);
@@ -1774,6 +1786,8 @@ void CRenderShader_Gouraud_DualTexture::DrawNormal(const DrawState &cState, uint
 
 		PD3DDEVICE->SetStreamSource(0, 0, 0);
 		PD3DDEVICE->SetIndices(0, 0);
+
+		BreakRenderBlockBatch(nRenderBlock);	// RETAIL: 0x4fc78f
 	}
 	else
 	{

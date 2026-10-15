@@ -782,6 +782,19 @@ protected:
 		PD3DDEVICE->SetIndices(0, 0);
 	}
 
+	// RETAIL: a renderblock drawn directly (with its lights) breaks the
+	// queued batches around its sections (0x4feb90, before
+	// QueueRenderBlock)
+	void BreakRenderBlockBatch(uint32 nRenderBlock)
+	{
+		CRenderBlockData &cRB = m_aRenderBlocks[nRenderBlock];
+		CRenderBlockData::TSectionIndexList::iterator iCurSection = cRB.m_aSections.begin();
+		for (; iCurSection != cRB.m_aSections.end(); ++iCurSection)
+		{
+			m_aSections[*iCurSection].m_bBreakBatch = true;
+		}
+	}
+
 	// Queue a renderblock for later rendering
 	// RETAIL: with the world transform and the queued range (0x4febd0)
 	void QueueRenderBlock(const ViewParams &Params, uint32 nRenderBlock)

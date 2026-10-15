@@ -157,6 +157,8 @@ void CRenderShader_Gouraud_Texture_Fullbright::DrawNormal(const DrawState &cStat
 
 		PD3DDEVICE->SetStreamSource(0, 0, 0);
 		PD3DDEVICE->SetIndices(0, 0);
+
+		BreakRenderBlockBatch(nRenderBlock);	// RETAIL: 0x4fc78f
 	}
 	else
 	{
@@ -398,6 +400,8 @@ void CRenderShader_Gouraud_Detail_Fullbright::DrawNormal(const DrawState &cState
 
 		PD3DDEVICE->SetStreamSource(0, 0, 0);
 		PD3DDEVICE->SetIndices(0, 0);
+
+		BreakRenderBlockBatch(nRenderBlock);	// RETAIL: 0x4fc78f
 	}
 	else
 	{
@@ -473,6 +477,9 @@ void CRenderShader_Gouraud_Detail_Fullbright::PostFlush()
 	d3d_DisableTexture(0);
 	d3d_DisableTexture(1);
 	d3d_DisableTexture(3);
+
+	// RETAIL: stage 3's texture coordinates back to its own (0x4feef4)
+	PD3DDEVICE->SetTextureStageState(3, D3DTSS_TEXCOORDINDEX, 3);
 
 	if (m_nCurAlphaTest != m_nOldAlphaTest)
 		PD3DDEVICE->SetRenderState(D3DRS_ALPHATESTENABLE, (DWORD)m_nOldAlphaTest);
@@ -674,6 +681,8 @@ void CRenderShader_Gouraud_EnvMap_Fullbright::DrawNormal(const DrawState &cState
 
 		PD3DDEVICE->SetStreamSource(0, 0, 0);
 		PD3DDEVICE->SetIndices(0, 0);
+
+		BreakRenderBlockBatch(nRenderBlock);	// RETAIL: 0x4fc78f
 	}
 	else
 	{
@@ -758,10 +767,10 @@ void CRenderShader_Gouraud_EnvMap_Fullbright::PostFlush()
 {
 	d3d_DisableTexture(0);
 	d3d_DisableTexture(1);
-	d3d_DisableTexture(3);
 
-	// Make sure to turn off the transform
-	d3d_UnsetEnvMapTransform(1);
+	// RETAIL: stage 1's texture coordinates back, the transform left
+	// (0x4fee3d)
+	PD3DDEVICE->SetTextureStageState(1, D3DTSS_TEXCOORDINDEX, 1);
 
 	if (m_nCurAlphaTest != m_nOldAlphaTest)
 		PD3DDEVICE->SetRenderState(D3DRS_ALPHATESTENABLE, (DWORD)m_nOldAlphaTest);
