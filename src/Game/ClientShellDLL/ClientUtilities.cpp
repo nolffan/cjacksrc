@@ -109,6 +109,8 @@ void EndTimingCounter(char *msg, ...)
 #endif
 
 
+
+
 void GetConsoleString(char const* sKey, char* sDest, char const* sDefault)
 {
     if (g_pLTClient)

@@ -436,7 +436,8 @@ class CCharacter : public GameBase, public IHitBoxUser, public IPlayerTrackerRec
 		void			SetRadarVisible( bool bRadarVisible );
 
 		// Sets what character is carrying somthing.
-		void			SetCarrying( uint8 nCarrying );
+		void			SetCarrying( uint8 nCarrying, struct CHASSISPIECE const* pChassisPiece = LTNULL );
+		struct CHASSISPIECE const* GetCarriedChassisPiece( ) const { return m_pCarriedChassisPiece; }
 		uint8			GetCarrying() {return m_nCarrying;}
 
 
@@ -658,6 +659,9 @@ class CCharacter : public GameBase, public IHitBoxUser, public IPlayerTrackerRec
 
 		// Indicates what character is carrying
 		uint8	m_nCarrying;
+
+		// RETAIL: 0xc84 the chassis piece carried, if any
+		struct CHASSISPIECE const*	m_pCarriedChassisPiece;
 
 };
 

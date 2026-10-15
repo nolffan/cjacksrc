@@ -313,6 +313,9 @@ typedef std::list< LTObjRefNotifier > ObjRefNotifierList;
 
 class CButeMgr;
 
+// Print to the console if DebugLevel is at least nLevel.
+void DebugCPrint( int nLevel, char const* szFormat, ... );
+
 void ButeToConsoleFloat( CButeMgr &bute, const char *pszButeTag, const char *pszButeAttr, const char *pszConsoleVar );
 void ButeToConsoleString( CButeMgr &bute, const char *pszButeTag, const char *pszButeAttr, const char *pszConsoleVar );
 void ConsoleToButeFloat( CButeMgr &bute, const char *pszButeTag, const char *pszButeAttr, const char *pszConsoleVar );

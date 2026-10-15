@@ -16,8 +16,39 @@
 
 #ifdef _CLIENTBUILD
 	#include "ClientUtilities.h"
+#else
+	#include "ServerUtilities.h"
 #endif //_CLIENTBUILD
 
+
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	DebugCPrint
+//
+//	PURPOSE:	Print to the console if the DebugLevel console variable is
+//				at least nLevel (RETAIL: CShell 0x100214a0, Object
+//				0x100b09c0)
+//
+// ----------------------------------------------------------------------- //
+
+void DebugCPrint(int nLevel, char const* szFormat, ...)
+{
+	static char szBuffer[512];
+
+	if (nLevel > GetConsoleInt("DebugLevel", 0))
+		return;
+
+	va_list marker;
+	va_start(marker, szFormat);
+	vsprintf(szBuffer, szFormat, marker);
+	va_end(marker);
+
+#ifdef _CLIENTBUILD
+	g_pLTClient->CPrint(szBuffer);
+#else
+	g_pLTServer->CPrint(szBuffer);
+#endif
+}
 
 void ButeToConsoleFloat( CButeMgr &bute, const char *pszButeTag, const char *pszButeAttr, const char *pszConsoleVar )
 {

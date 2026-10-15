@@ -12,6 +12,7 @@
 
 #include "stdafx.h"
 #include "Character.h"
+#include "ChassisButeMgr.h"
 #include "iltserver.h"
 #include "ServerUtilities.h"
 #include "stdio.h"
@@ -442,6 +443,7 @@ CCharacter::CCharacter() : GameBase(OT_MODEL)
 	m_bRadarVisible = false;
 
 	m_nCarrying = CFX_CARRY_NONE;
+	m_pCarriedChassisPiece = LTNULL;
 }
 
 // ----------------------------------------------------------------------- //
@@ -1119,11 +1121,12 @@ void CCharacter::SetRadarVisible( bool bRadarVisible )
 //
 // ----------------------------------------------------------------------- //
 
-void CCharacter::SetCarrying( uint8 nCarrying )
+void CCharacter::SetCarrying( uint8 nCarrying, CHASSISPIECE const* pChassisPiece )
 {
 	if( m_nCarrying != nCarrying )
 	{
 		m_nCarrying = nCarrying;
+		m_pCarriedChassisPiece = pChassisPiece;
 
 		CAutoMessage cMsg;
 		cMsg.Writeuint8( MID_SFX_MESSAGE );
@@ -1131,6 +1134,7 @@ void CCharacter::SetCarrying( uint8 nCarrying )
 		cMsg.WriteObject( m_hObject );
 		cMsg.Writeuint8( CFX_CARRY );
 		cMsg.Writeuint8( m_nCarrying );
+		cMsg.Writeuint8( pChassisPiece ? pChassisPiece->m_nId : CHASSISBMGR_INVALID_ID );
 		g_pLTServer->SendToClient( cMsg.Read(), LTNULL, MESSAGE_GUARANTEED );
 
 		CreateSpecialFX();
@@ -1429,6 +1433,7 @@ void CCharacter::CreateSpecialFX(LTBOOL bUpdateClients /* =LTFALSE */)
 	m_pcs->bTracking				= m_bTracking;
 	m_pcs->bRadarVisible			= m_bRadarVisible;
 	m_pcs->nCarrying				= m_nCarrying;
+	m_pcs->pChassisPiece			= m_pCarriedChassisPiece;
 	
 
 	// If our Crosshair is unknown, then the effect gets the result of
@@ -3895,6 +3900,7 @@ void CCharacter::Save(ILTMessage_Write *pMsg)
 	SAVE_bool( m_bRadarVisible );
 
 	SAVE_BYTE( m_nCarrying);
+	SAVE_CHARSTRING( m_pCarriedChassisPiece ? m_pCarriedChassisPiece->m_sName.c_str( ) : "" );
 }
 
 
@@ -4050,15 +4056,11 @@ void CCharacter::Load(ILTMessage_Read *pMsg)
 	}
 
 
-	if( g_pVersionMgr->GetCurrentSaveVersion( ) < CVersionMgr::kSaveVersion__1_3 )
-	{
-		if( !IsPlayer(m_hObject) )
-			m_nCarrying = CFX_CARRY_NONE;
-	}
-	else
-	{
-		LOAD_BYTE( m_nCarrying );
-	}
+	LOAD_BYTE( m_nCarrying );
+
+	char szChassisPiece[256];
+	LOAD_CHARSTRING( szChassisPiece, ARRAY_LEN( szChassisPiece ));
+	m_pCarriedChassisPiece = ChassisButeMgr::Instance( ).GetPiece( szChassisPiece );
 }
 
 // ----------------------------------------------------------------------- //

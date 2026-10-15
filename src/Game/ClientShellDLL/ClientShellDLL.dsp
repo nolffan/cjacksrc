@@ -119,6 +119,10 @@ SOURCE=.\CharacterFX.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\Shared\ChassisButeMgr.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\CheatMgr.cpp
 # End Source File
 # Begin Source File
@@ -1207,6 +1211,10 @@ SOURCE=.\ChainedFX.h
 # Begin Source File
 
 SOURCE=.\CharacterFX.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\Shared\ChassisButeMgr.h
 # End Source File
 # Begin Source File
 
