@@ -309,9 +309,11 @@ bool d3d_OptimizeSurface(HLTBUFFER hBuffer, PValue transparentColor )
 				pTile->m_SrcImageRect.right = nCurrX + pTile->m_nXPixels;
 				pTile->m_SrcImageRect.bottom = nCurrY + pTile->m_nYPixels;
 
-				if(x > 0 && x < nTilesX - 1)
+				// RETAIL: every tile but the first loses its last pixel
+				// (Lithtech.exe 0x4e2ed3)
+				if(x > 0)
 					pTile->m_SrcImageRect.right--;
-				if(y > 0 && y < nTilesY - 1)
+				if(y > 0)
 					pTile->m_SrcImageRect.bottom--;
 
 				//handle square textures
