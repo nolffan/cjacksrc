@@ -127,6 +127,12 @@ private:
 	// Memory statistics tracking variables
 	CMemStats_World m_cTotalMemStats;
 	CMemStats_World m_cVisibleMemStats;
+
+	// RETAIL: set while the queued objects are drawn (Lithtech.exe 0x4df5b8,
+	// 0x4df64d), for the world models' shaders to flush at once; sizeof
+	// 0x25c (0x4a64eb)
+public:
+	bool m_bFlushOnDraw;
 };
 
 #endif //__D3D_RENDERWORLD_H__

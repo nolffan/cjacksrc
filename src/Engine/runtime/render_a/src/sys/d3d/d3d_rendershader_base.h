@@ -17,6 +17,33 @@
 #include "sprite.h"
 #include <algorithm>
 
+class CD3D_RenderWorld;
+class ViewParams;
+
+// RETAIL: the one index and vertex range every world shader draws through,
+// a function-static (s_cRange 0x58aa80; its accessor 0x4ab5d0, Add 0x4af290,
+// Draw 0x4af240): a flush adds the sections it batches, draws once, resets
+struct SShaderDrawRange
+{
+	SShaderDrawRange() : m_nStartVertex(0xFFFFFFFF), m_nEndVertex(0), m_nStartIndex(0xFFFFFFFF), m_nEndIndex(0) {}
+	~SShaderDrawRange() {}
+	void Reset() { m_nStartIndex = 0xFFFFFFFF; m_nEndIndex = 0; m_nStartVertex = 0xFFFFFFFF; m_nEndVertex = 0; }
+	void Add(uint32 nStartIndex, uint32 nEndIndex, uint32 nStartVertex, uint32 nEndVertex)
+	{
+		m_nStartIndex  = LTMIN(m_nStartIndex, nStartIndex);
+		m_nEndIndex    = LTMAX(m_nEndIndex, nEndIndex);
+		m_nStartVertex = LTMIN(m_nStartVertex, nStartVertex);
+		m_nEndVertex   = LTMAX(m_nEndVertex, nEndVertex);
+	}
+	void Draw()
+	{
+		uint32 nNumTris = (m_nEndIndex - m_nStartIndex) / 3;
+		PD3DDEVICE->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, m_nStartVertex, m_nEndVertex - m_nStartVertex, m_nStartIndex, nNumTris);
+	}
+	uint32 m_nStartVertex, m_nEndVertex, m_nStartIndex, m_nEndIndex;
+};
+inline SShaderDrawRange &GetShaderDrawRange() { static SShaderDrawRange s_cRange; return s_cRange; }
+
 // Base templatized shader implementation
 template <typename SVertex, typename CShaderSection, uint32 nFVF>
 class CRenderShader_Base : public CRenderShader
@@ -33,7 +60,9 @@ public:
 		m_bLocked(false),
 		m_pLockedIndices(0),
 		m_nCurVB(0),
-		m_nQueuedSections(0)
+		m_nQueuedSections(0),
+		m_nFirstQueuedSection(0xFFFFFFFF),
+		m_nLastQueuedSection(0)
 	{
 	}
 
@@ -229,7 +258,7 @@ public:
 	}
 
 	// Add a section to the rendering list
-	virtual void AddSection(const CRBSection &cSection, const uint16 *aIndices, const SRBVertex *aVertices, const SRBVertex *aSrcVertices)
+	virtual void AddSection(const CD3D_RenderWorld *pWorld, const CRBSection &cSection, const uint16 *aIndices, const SRBVertex *aVertices, const SRBVertex *aSrcVertices)
 	{
 		// Don't add if we're not locked
 		if (!m_bLocked)
@@ -259,6 +288,7 @@ public:
 		// Remember where we came from
 		cISection.m_pOriginalIndices = &aIndices[cSection.m_nStartIndex];
 		cISection.m_pOriginalVertices = aSrcVertices;
+		cISection.m_pWorld = pWorld;	// RETAIL: 0x4be4a0
 		cISection.m_nOriginalVertexOffset = -(int32)(cSection.m_nStartVertex - cISection.m_nStartVertex);
 
 		// Fill the VB
@@ -408,29 +438,28 @@ public:
 
 		m_nCurVB = m_aVBs.size();
 
+		// RETAIL: only the queued range of sections, each world model's with
+		// its transform, drawn through the shared range (0x4aee20, 0x4bf010)
 		bool bChangeSection = true;
+		const CD3D_RenderWorld *pCurWorld = NULL;
 
-		TSectionList::iterator iCurSection = m_aSections.begin();
+		TSectionList::iterator iCurSection = m_aSections.begin() + m_nFirstQueuedSection;
+		TSectionList::iterator iEndSection = m_aSections.begin() + (m_nLastQueuedSection + 1);
 
 		for (;;)
 		{
 			// Skip any un-rendered sections
-			for (; iCurSection != m_aSections.end(); ++iCurSection)
+			for (; iCurSection != iEndSection; ++iCurSection)
 			{
 				bChangeSection |= iCurSection->m_bSectionBreak;
+				if (iCurSection->m_bBreakBatch)
+					iCurSection->m_bBreakBatch = false;
 				if (iCurSection->m_bQueuedForRender)
-				{
 					break;
-				}
 			}
 
-			if (iCurSection == m_aSections.end())
-			{
+			if (iCurSection == iEndSection)
 				break;
-			}
-
-			// Mark this section as rendered
-			iCurSection->m_bQueuedForRender = false;
 
 			if (bChangeSection)
 			{
@@ -444,49 +473,49 @@ public:
 
 			PreFlushBlock(*iCurSection);
 
-			uint32 nStartIndex = iCurSection->m_nStartIndex;
-			uint32 nEndIndex = iCurSection->m_nEndIndex;
-			uint32 nStartVertex = iCurSection->m_nStartVertex;
-			uint32 nEndVertex = iCurSection->m_nEndVertex;
+			if (pCurWorld != iCurSection->m_pWorld)
+			{
+				d3d_SetD3DMat(D3DTS_WORLD, &iCurSection->m_mWorld);
+				pCurWorld = iCurSection->m_pWorld;
+			}
+
+			GetShaderDrawRange().Add(iCurSection->m_nStartIndex, iCurSection->m_nEndIndex, iCurSection->m_nStartVertex, iCurSection->m_nEndVertex);
+
+			// Mark this section as rendered
+			iCurSection->m_bQueuedForRender = false;
 
 			// Queue up any continguous sections
 			TSectionList::iterator iFirstSection = iCurSection;
-			for (++iCurSection; iCurSection != m_aSections.end(); ++iCurSection)
+			for (++iCurSection; iCurSection != iEndSection; ++iCurSection)
 			{
-				if ((!iCurSection->m_bQueuedForRender) ||
-					(iCurSection->m_bSectionBreak))
+				if (iCurSection->m_bSectionBreak)
 				{
-					bChangeSection |= iCurSection->m_bSectionBreak;
+					bChangeSection = true;
 					break;
 				}
-
-				ASSERT(nStartVertex <= iCurSection->m_nStartVertex);
-				ASSERT(nEndVertex <= iCurSection->m_nEndVertex);
-				nEndVertex = iCurSection->m_nEndVertex;
-				nEndIndex = iCurSection->m_nEndIndex;
-				iCurSection->m_bQueuedForRender = false;
-
-				IncFrameStat(eFS_ShaderBatched, 1);
+				if (iCurSection->m_bQueuedForRender)
+				{
+					GetShaderDrawRange().Add(iCurSection->m_nStartIndex, iCurSection->m_nEndIndex, iCurSection->m_nStartVertex, iCurSection->m_nEndVertex);
+					iCurSection->m_bQueuedForRender = false;
+				}
+				else if (iCurSection->m_bBreakBatch || g_CV_DebugRBDrawExact.m_Val)
+				{
+					iCurSection->m_bBreakBatch = false;
+					break;
+				}
 			}
 
-			uint32 nNumTris = (nEndIndex - nStartIndex) / 3;
-			uint32 nNumVerts = nEndVertex - nStartVertex;
-
-			IncFrameStat(eFS_ShaderTris, nNumTris);
-			IncFrameStat(eFS_ShaderVerts, nNumVerts);
-			IncFrameStat(eFS_ShaderDrawPrim, 1);
-
 			// Draw
-			PD3DDEVICE->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, nStartVertex, nNumVerts,
-				nStartIndex, nNumTris);
-			DEBUG_PRINT(2,("Brush Section: (%p) Start: (%d) Verts: (%d) sIdx: (%d) Tris: (%d)", &(*iFirstSection), nStartVertex, nNumVerts, nStartIndex, nNumTris));
+			GetShaderDrawRange().Draw();
 
-			IncFrameStat(eFS_WorldTriangles, nNumTris);
+			PostFlushBlock(*iFirstSection);
 
-			PostFlushBlock(*iFirstSection, nStartIndex, nEndIndex, nStartVertex, nEndVertex);
+			GetShaderDrawRange().Reset();
 		}
 
 		m_nQueuedSections = 0;
+		m_nFirstQueuedSection = 0xFFFFFFFF;
+		m_nLastQueuedSection = 0;
 
 		PostFlush();
 
@@ -670,11 +699,16 @@ protected:
 	{
 	}
 
-	// Called after flushing a block of sections
-	virtual void PostFlushBlock(CInternalSection &cSection,
-		uint32 nStartIndex, uint32 nEndIndex,
-		uint32 nStartVertex, uint32 nEndVertex)
+	// Called after flushing a block of sections (RETAIL: the range is the
+	// shared one, 0x4fb780)
+	virtual void PostFlushBlock(CInternalSection &cSection)
 	{
+	}
+
+	// RETAIL: draw the shared range (0x4feaa0)
+	void DrawQueuedRange()
+	{
+		GetShaderDrawRange().Draw();
 	}
 
 	// Called after flushing
@@ -738,14 +772,19 @@ protected:
 	}
 
 	// Queue a renderblock for later rendering
-	void QueueRenderBlock(uint32 nRenderBlock)
+	// RETAIL: with the world transform and the queued range (0x4febd0)
+	void QueueRenderBlock(const ViewParams &Params, uint32 nRenderBlock)
 	{
 		CRenderBlockData &cRB = m_aRenderBlocks[nRenderBlock];
 		CRenderBlockData::TSectionIndexList::iterator iCurSection = cRB.m_aSections.begin();
 		for (; iCurSection != cRB.m_aSections.end(); ++iCurSection)
 		{
 			m_aSections[*iCurSection].m_bQueuedForRender = true;
+			m_aSections[*iCurSection].m_bBreakBatch = false;
+			m_aSections[*iCurSection].m_mWorld = Params.m_mWorld;
 			++m_nQueuedSections;
+			m_nFirstQueuedSection = LTMIN(m_nFirstQueuedSection, *iCurSection);
+			m_nLastQueuedSection = LTMAX(m_nLastQueuedSection, *iCurSection);
 		}
 	}
 
@@ -1019,6 +1058,7 @@ protected:
 			CShaderSection(),
 			m_pTextureEffect(NULL),
 			m_bQueuedForRender(false),
+			m_bBreakBatch(false),
 			m_bSectionBreak(false)
 		{
 			for(uint32 nCurrSpr = 0; nCurrSpr < CRBSection::kNumTextures; nCurrSpr++)
@@ -1038,6 +1078,7 @@ protected:
 			m_nVertexCount(cOther.m_nVertexCount),
 			m_pTextureEffect(cOther.m_pTextureEffect),
 			m_bQueuedForRender(false),
+			m_bBreakBatch(false),
 			m_bSectionBreak(false)
 		{
 			if (m_pTextureEffect)
@@ -1143,6 +1184,7 @@ protected:
 			m_nStartVertex = cOther.m_nStartVertex;
 			m_nEndVertex = cOther.m_nEndVertex;
 			m_nVertexCount = cOther.m_nVertexCount;
+			m_pWorld = cOther.m_pWorld;	// RETAIL: 0x4bdc5d
 			return *this;
 		}
 
@@ -1187,6 +1229,8 @@ protected:
 		const uint16 *m_pOriginalIndices;
 		const SRBVertex *m_pOriginalVertices;
 		int32 m_nOriginalVertexOffset;
+		// RETAIL: the world the section belongs to (AddSection's new argument)
+		const CD3D_RenderWorld *m_pWorld;
 
 		// The sprite data if applicable
 		CRBSection::CSpriteData *m_pSpriteData[CRBSection::kNumTextures];
@@ -1195,6 +1239,10 @@ protected:
 		CTextureScriptInstance *m_pTextureEffect;
 
 		bool m_bQueuedForRender;
+		// RETAIL: cleared when queued and flushed, never set (0x4febd0)
+		bool m_bBreakBatch;
+		// RETAIL: the view's world transform when queued (Flush sets it, 0x4aefd5)
+		LTMatrix m_mWorld;
 		bool m_bSectionBreak;
 	};
 
@@ -1242,6 +1290,10 @@ protected:
 	uint32 m_nCurVB;
 	// The number of currently queued sections
 	uint32 m_nQueuedSections;
+	// RETAIL: the lowest and highest section queued since the last Flush
+	// (QueueRenderBlock 0x4febd0, Flush 0x4aee20)
+	uint32 m_nFirstQueuedSection;
+	uint32 m_nLastQueuedSection;
 
 	bool m_bLocked;
 	uint16 *m_pLockedIndices;

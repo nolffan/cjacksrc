@@ -31,7 +31,8 @@ public:
 	// Lock (AddSection is going to be called for each of the sections)
 	virtual void Lock(uint32 nRenderBlock) {}
 	// Add a section to the rendering list
-	virtual void AddSection(const CRBSection &cSection, const uint16 *aIndices, const SRBVertex *aVertices, const SRBVertex *aSrcVertices) {}
+	// RETAIL: with the section's world (Lithtech.exe 0x4be4a0)
+	virtual void AddSection(const class CD3D_RenderWorld *pWorld, const CRBSection &cSection, const uint16 *aIndices, const SRBVertex *aVertices, const SRBVertex *aSrcVertices) {}
 	// Unlock (AddSection is done being called)
 	virtual void Unlock() {}
 	// Clear the rendering data

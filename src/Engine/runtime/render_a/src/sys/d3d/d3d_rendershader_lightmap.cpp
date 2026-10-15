@@ -258,15 +258,14 @@ void CRenderShader_Lightmap::DrawLights(const DrawState &cState, uint32 nRenderB
 		IncFrameStat(eFS_ShaderDrawPrim, 1);
 
 		// Draw it
-		PD3DDEVICE->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, cSection.m_nStartVertex, cSection.m_nVertexCount,
-			cSection.m_nStartIndex, cSection.m_nTriCount);
+		GetShaderDrawRange().Add(cSection.m_nStartIndex, cSection.m_nEndIndex, cSection.m_nStartVertex, cSection.m_nEndVertex);
+				GetShaderDrawRange().Draw();	// RETAIL: 0x4fd4b5
 
 		// Count it
 		IncFrameStat(eFS_WorldTriangles, cSection.m_nTriCount);
 
-		PostFlushBlock(cSection,
-			cSection.m_nStartIndex, cSection.m_nStartIndex + cSection.m_nTriCount * 3,
-			cSection.m_nStartVertex, cSection.m_nStartVertex + cSection.m_nVertexCount);
+		PostFlushBlock(cSection);
+				GetShaderDrawRange().Reset();
 	}
 
 	DrawLightList(cState, nRenderBlock);
@@ -288,7 +287,7 @@ void CRenderShader_Lightmap::DrawNormal(const DrawState &cState, uint32 nRenderB
 	}
 	else
 	{
-		QueueRenderBlock(nRenderBlock);
+		QueueRenderBlock(*cState.m_pParams, nRenderBlock);
 	}
 }
 
@@ -319,9 +318,7 @@ void CRenderShader_Lightmap::PreFlushBlock(CInternalSection &cSection)
 		cSection.m_pTextureEffect->Install(1, TSChannel_LightMap);
 }
 
-void CRenderShader_Lightmap::PostFlushBlock(CInternalSection &cSection,
-		uint32 nStartIndex, uint32 nEndIndex,
-		uint32 nStartVertex, uint32 nEndVertex)
+void CRenderShader_Lightmap::PostFlushBlock(CInternalSection &cSection)
 {
 	if (cSection.m_pTextureEffect)
 		cSection.m_pTextureEffect->Uninstall(1, TSChannel_LightMap);
@@ -497,7 +494,7 @@ void CRenderShader_Lightmap_Texture::FillSection(CSection_Lightmap_Texture &cInt
 
 void CRenderShader_Lightmap_Texture::DrawNormal(const DrawState &cState, uint32 nRenderBlock)
 {
-	QueueRenderBlock(nRenderBlock);
+	QueueRenderBlock(*cState.m_pParams, nRenderBlock);
 }
 
 void CRenderShader_Lightmap_Texture::PreFlush()
@@ -538,9 +535,7 @@ void CRenderShader_Lightmap_Texture::PreFlushBlock(CInternalSection &cSection)
 		cSection.m_pTextureEffect->Install(1, TSChannel_Base);
 }
 
-void CRenderShader_Lightmap_Texture::PostFlushBlock(CInternalSection &cSection,
-		uint32 nStartIndex, uint32 nEndIndex,
-		uint32 nStartVertex, uint32 nEndVertex)
+void CRenderShader_Lightmap_Texture::PostFlushBlock(CInternalSection &cSection)
 {
 	// Fullbright it
 	if (cSection.m_bFullbright)
@@ -549,11 +544,7 @@ void CRenderShader_Lightmap_Texture::PostFlushBlock(CInternalSection &cSection,
 		PD3DDEVICE->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
 
 		// Draw it
-		uint32 nNumTris = (nEndIndex - nStartIndex) / 3;
-		PD3DDEVICE->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, nStartVertex, nEndVertex - nStartVertex,
-			nStartIndex, nNumTris);
-
-		IncFrameStat(eFS_WorldTriangles, nNumTris);
+		DrawQueuedRange();	// RETAIL: the shared range (0x4feaa0)
 
 		PD3DDEVICE->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_DESTCOLOR);
 		PD3DDEVICE->SetRenderState(D3DRS_DESTBLEND, g_CV_Saturate ? D3DBLEND_SRCCOLOR : D3DBLEND_ZERO);
@@ -803,7 +794,7 @@ void CRenderShader_Lightmap_Texture_Detail::FillSection(CSection_Lightmap_Textur
 
 void CRenderShader_Lightmap_Texture_Detail::DrawNormal(const DrawState &cState, uint32 nRenderBlock)
 {
-	QueueRenderBlock(nRenderBlock);
+	QueueRenderBlock(*cState.m_pParams, nRenderBlock);
 }
 
 void CRenderShader_Lightmap_Texture_Detail::PreFlush()
@@ -851,9 +842,7 @@ void CRenderShader_Lightmap_Texture_Detail::PreFlushBlock(CInternalSection &cSec
 		cSection.m_pTextureEffect->Install(2, TSChannel_Base, TSChannel_Detail);
 }
 
-void CRenderShader_Lightmap_Texture_Detail::PostFlushBlock(CInternalSection &cSection,
-		uint32 nStartIndex, uint32 nEndIndex,
-		uint32 nStartVertex, uint32 nEndVertex)
+void CRenderShader_Lightmap_Texture_Detail::PostFlushBlock(CInternalSection &cSection)
 {
 	// Fullbright it
 	if (cSection.m_bFullbright)
@@ -862,11 +851,7 @@ void CRenderShader_Lightmap_Texture_Detail::PostFlushBlock(CInternalSection &cSe
 		PD3DDEVICE->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
 
 		// Draw it
-		uint32 nNumTris = (nEndIndex - nStartIndex) / 3;
-		PD3DDEVICE->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, nStartVertex, nEndVertex - nStartVertex,
-			nStartIndex, nNumTris);
-
-		IncFrameStat(eFS_WorldTriangles, nNumTris);
+		DrawQueuedRange();	// RETAIL: the shared range (0x4feaa0)
 
 		PD3DDEVICE->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_DESTCOLOR);
 		PD3DDEVICE->SetRenderState(D3DRS_DESTBLEND, g_CV_Saturate ? D3DBLEND_SRCCOLOR : D3DBLEND_ZERO);
@@ -1003,7 +988,7 @@ void CRenderShader_Lightmap_Texture_EnvMap::FillSection(CSection_Lightmap_Textur
 
 void CRenderShader_Lightmap_Texture_EnvMap::DrawNormal(const DrawState &cState, uint32 nRenderBlock)
 {
-	QueueRenderBlock(nRenderBlock);
+	QueueRenderBlock(*cState.m_pParams, nRenderBlock);
 }
 
 void CRenderShader_Lightmap_Texture_EnvMap::PreFlush()
@@ -1061,9 +1046,7 @@ void CRenderShader_Lightmap_Texture_EnvMap::PreFlushBlock(CInternalSection &cSec
 		cSection.m_pTextureEffect->Install(2, TSChannel_Base, TSChannel_EnvMap);
 }
 
-void CRenderShader_Lightmap_Texture_EnvMap::PostFlushBlock(CInternalSection &cSection,
-		uint32 nStartIndex, uint32 nEndIndex,
-		uint32 nStartVertex, uint32 nEndVertex)
+void CRenderShader_Lightmap_Texture_EnvMap::PostFlushBlock(CInternalSection &cSection)
 {
 	// Fullbright it
 	if (cSection.m_bFullbright)
@@ -1072,11 +1055,7 @@ void CRenderShader_Lightmap_Texture_EnvMap::PostFlushBlock(CInternalSection &cSe
 		PD3DDEVICE->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
 
 		// Draw it
-		uint32 nNumTris = (nEndIndex - nStartIndex) / 3;
-		PD3DDEVICE->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, nStartVertex, nEndVertex - nStartVertex,
-			nStartIndex, nNumTris);
-
-		IncFrameStat(eFS_WorldTriangles, nNumTris);
+		DrawQueuedRange();	// RETAIL: the shared range (0x4feaa0)
 
 		PD3DDEVICE->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_DESTCOLOR);
 		PD3DDEVICE->SetRenderState(D3DRS_DESTBLEND, g_CV_Saturate ? D3DBLEND_SRCCOLOR : D3DBLEND_ZERO);
@@ -1281,7 +1260,7 @@ void CRenderShader_Lightmap_Texture_EnvBumpMap::FillSection(CSection_Lightmap_Te
 
 void CRenderShader_Lightmap_Texture_EnvBumpMap::DrawNormal(const DrawState &cState, uint32 nRenderBlock)
 {
-	QueueRenderBlock(nRenderBlock);
+	QueueRenderBlock(*cState.m_pParams, nRenderBlock);
 }
 
 void CRenderShader_Lightmap_Texture_EnvBumpMap::PreFlush()
@@ -1358,9 +1337,7 @@ void CRenderShader_Lightmap_Texture_EnvBumpMap::PreFlushBlock(CInternalSection &
 		cSection.m_pTextureEffect->Install(3, TSChannel_Base, TSChannel_Null, TSChannel_Base);
 }
 
-void CRenderShader_Lightmap_Texture_EnvBumpMap::PostFlushBlock(CInternalSection &cSection,
-		uint32 nStartIndex, uint32 nEndIndex,
-		uint32 nStartVertex, uint32 nEndVertex)
+void CRenderShader_Lightmap_Texture_EnvBumpMap::PostFlushBlock(CInternalSection &cSection)
 {
 	// Fullbright it
 	if (cSection.m_bFullbright)
@@ -1369,11 +1346,7 @@ void CRenderShader_Lightmap_Texture_EnvBumpMap::PostFlushBlock(CInternalSection 
 		PD3DDEVICE->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
 
 		// Draw it
-		uint32 nNumTris = (nEndIndex - nStartIndex) / 3;
-		PD3DDEVICE->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, nStartVertex, nEndVertex - nStartVertex,
-			nStartIndex, nNumTris);
-
-		IncFrameStat(eFS_WorldTriangles, nNumTris);
+		DrawQueuedRange();	// RETAIL: the shared range (0x4feaa0)
 
 		PD3DDEVICE->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_DESTCOLOR);
 		PD3DDEVICE->SetRenderState(D3DRS_DESTBLEND, g_CV_Saturate ? D3DBLEND_SRCCOLOR : D3DBLEND_ZERO);
@@ -1526,7 +1499,7 @@ void CRenderShader_Lightmap_Texture_DualTexture::FillSection(CSection_Lightmap_T
 
 void CRenderShader_Lightmap_Texture_DualTexture::DrawNormal(const DrawState &cState, uint32 nRenderBlock)
 {
-	QueueRenderBlock(nRenderBlock);
+	QueueRenderBlock(*cState.m_pParams, nRenderBlock);
 }
 
 void CRenderShader_Lightmap_Texture_DualTexture::PreFlush()
@@ -1579,9 +1552,7 @@ void CRenderShader_Lightmap_Texture_DualTexture::PreFlushBlock(CInternalSection 
 		cSection.m_pTextureEffect->Install(2, TSChannel_Base, TSChannel_DualTexture);
 }
 
-void CRenderShader_Lightmap_Texture_DualTexture::PostFlushBlock(CInternalSection &cSection,
-		uint32 nStartIndex, uint32 nEndIndex,
-		uint32 nStartVertex, uint32 nEndVertex)
+void CRenderShader_Lightmap_Texture_DualTexture::PostFlushBlock(CInternalSection &cSection)
 {
 	if (cSection.m_pTextureEffect)
 		cSection.m_pTextureEffect->Uninstall(2, TSChannel_Base, TSChannel_DualTexture);

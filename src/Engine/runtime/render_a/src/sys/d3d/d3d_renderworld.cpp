@@ -30,7 +30,8 @@ CD3D_RenderWorld::CD3D_RenderWorld() :
 	m_pRenderBlocks(0),
 	m_nRenderBlockCount(0),
 	m_nOccludeCollectTime(0),
-	m_bBlocksDirty(true)
+	m_bBlocksDirty(true),
+	m_bFlushOnDraw(false)	// RETAIL: 0x4a9039
 {
 	for (uint32 nShaderLoop = 0; nShaderLoop < k_eShader_Num + 2; ++nShaderLoop)
 		m_aShaders[nShaderLoop] = 0;
@@ -244,6 +245,7 @@ void CD3D_RenderWorld::DrawOccluder(const COccludee::COutline &cOutline)
 
 void CD3D_RenderWorld::StartFrame(const ViewParams& Params)
 {
+	GetShaderDrawRange().Reset();	// RETAIL: 0x4aaba0
 	m_aOccluderOutlines.clear();
 	m_nOccludeCollectTime = 0;
 

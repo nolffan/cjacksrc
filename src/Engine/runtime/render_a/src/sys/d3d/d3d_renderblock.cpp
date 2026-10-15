@@ -1292,7 +1292,7 @@ void CD3D_RenderBlock::UpdateShaderData(bool bFullUpdate)
 
 		CRenderShader *pShader = m_pWorld->GetShader(iCurSection->m_eBoundShader);
 		if (pShader)
-			pShader->AddSection(*iCurSection, m_aIndices, pFinalVertices, m_aVertices);
+			pShader->AddSection(m_pWorld, *iCurSection, m_aIndices, pFinalVertices, m_aVertices);
 	}
 
  	//we now need to mark all the section boundaries

@@ -160,7 +160,7 @@ void CRenderShader_Gouraud_Texture_Fullbright::DrawNormal(const DrawState &cStat
 	}
 	else
 	{
-		QueueRenderBlock(nRenderBlock);
+		QueueRenderBlock(*cState.m_pParams, nRenderBlock);
 	}
 }
 
@@ -207,9 +207,7 @@ void CRenderShader_Gouraud_Texture_Fullbright::PreFlushBlock(CInternalSection &c
 		cSection.m_pTextureEffect->Install(2, TSChannel_Base, TSChannel_Base);
 }
 
-void CRenderShader_Gouraud_Texture_Fullbright::PostFlushBlock(CInternalSection &cSection, 
-		uint32 nStartIndex, uint32 nEndIndex,
-		uint32 nStartVertex, uint32 nEndVertex)
+void CRenderShader_Gouraud_Texture_Fullbright::PostFlushBlock(CInternalSection &cSection)
 {
 	// Clear texture effects
 	if (cSection.m_pTextureEffect)
@@ -403,7 +401,7 @@ void CRenderShader_Gouraud_Detail_Fullbright::DrawNormal(const DrawState &cState
 	}
 	else
 	{
-		QueueRenderBlock(nRenderBlock);
+		QueueRenderBlock(*cState.m_pParams, nRenderBlock);
 	}
 }
 
@@ -463,9 +461,7 @@ void CRenderShader_Gouraud_Detail_Fullbright::PreFlushBlock(CInternalSection &cS
 		cSection.m_pTextureEffect->Install(4, TSChannel_Base, TSChannel_Detail, TSChannel_Null, TSChannel_Base);
 }
 
-void CRenderShader_Gouraud_Detail_Fullbright::PostFlushBlock(CInternalSection &cSection, 
-		uint32 nStartIndex, uint32 nEndIndex,
-		uint32 nStartVertex, uint32 nEndVertex)
+void CRenderShader_Gouraud_Detail_Fullbright::PostFlushBlock(CInternalSection &cSection)
 {
 	// Clear texture effects
 	if (cSection.m_pTextureEffect)
@@ -681,7 +677,7 @@ void CRenderShader_Gouraud_EnvMap_Fullbright::DrawNormal(const DrawState &cState
 	}
 	else
 	{
-		QueueRenderBlock(nRenderBlock);
+		QueueRenderBlock(*cState.m_pParams, nRenderBlock);
 	}
 }
 
@@ -751,9 +747,7 @@ void CRenderShader_Gouraud_EnvMap_Fullbright::PreFlushBlock(CInternalSection &cS
 		cSection.m_pTextureEffect->Install(4, TSChannel_Base, TSChannel_EnvMap, TSChannel_Null, TSChannel_Base);
 }
 
-void CRenderShader_Gouraud_EnvMap_Fullbright::PostFlushBlock(CInternalSection &cSection, 
-		uint32 nStartIndex, uint32 nEndIndex,
-		uint32 nStartVertex, uint32 nEndVertex)
+void CRenderShader_Gouraud_EnvMap_Fullbright::PostFlushBlock(CInternalSection &cSection)
 {
 	// Clear texture effects
 	if (cSection.m_pTextureEffect)

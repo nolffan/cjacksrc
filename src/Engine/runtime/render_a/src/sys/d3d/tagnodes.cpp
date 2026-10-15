@@ -397,7 +397,7 @@ void d3d_TagVisibleLeaves(const ViewParams& Params)
 			g_Device.m_pRenderWorld->StartFrame(Params);
 	}
 
-//	if(!g_CV_LockPVS)
+	if(!g_CV_LockPVS.m_Val)	// RETAIL: 0x4e0a14
 	{
 		// Rebuild the visible set.
 		pVisibleSet->ClearSet();

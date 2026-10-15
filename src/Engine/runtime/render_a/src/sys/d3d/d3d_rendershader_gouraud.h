@@ -120,9 +120,7 @@ protected:
 	virtual void PreFlush();
 	virtual void FlushChangeSection(CInternalSection &cSection);
 	virtual void PreFlushBlock(CInternalSection &cSection);
-	virtual void PostFlushBlock(CInternalSection &cSection, 
-		uint32 nStartIndex, uint32 nEndIndex,
-		uint32 nStartVertex, uint32 nEndVertex);
+	virtual void PostFlushBlock(CInternalSection &cSection);
 	virtual void PostFlush();
 
 	// Translate a block of vertices from SRBVertex to SVertex
@@ -201,9 +199,7 @@ protected:
 	virtual void PreFlush();
 	virtual void FlushChangeSection(CInternalSection &cSection);
 	virtual void PreFlushBlock(CInternalSection &cSection);
-	virtual void PostFlushBlock(CInternalSection &cSection, 
-		uint32 nStartIndex, uint32 nEndIndex,
-		uint32 nStartVertex, uint32 nEndVertex);
+	virtual void PostFlushBlock(CInternalSection &cSection);
 	virtual void PostFlush();
 
 	// Translate a block of vertices from SRBVertex to SVertex
@@ -280,9 +276,7 @@ protected:
 	virtual void PreFlush();
 	virtual void FlushChangeSection(CInternalSection &cSection);
 	virtual void PreFlushBlock(CInternalSection &cSection);
-	virtual void PostFlushBlock(CInternalSection &cSection, 
-		uint32 nStartIndex, uint32 nEndIndex,
-		uint32 nStartVertex, uint32 nEndVertex);
+	virtual void PostFlushBlock(CInternalSection &cSection);
 	virtual void PostFlush();
 
 	// Translate a block of vertices from SRBVertex to SVertex
@@ -368,9 +362,7 @@ protected:
 	virtual void PreFlush();
 	virtual void FlushChangeSection(CInternalSection &cSection);
 	virtual void PreFlushBlock(CInternalSection &cSection);
-	virtual void PostFlushBlock(CInternalSection &cSection, 
-		uint32 nStartIndex, uint32 nEndIndex,
-		uint32 nStartVertex, uint32 nEndVertex);
+	virtual void PostFlushBlock(CInternalSection &cSection);
 	virtual void PostFlush();
 
 	// Translate a block of vertices from SRBVertex to SVertex
@@ -456,9 +448,7 @@ protected:
 	virtual void PreFlush();
 	virtual void FlushChangeSection(CInternalSection &cSection);
 	virtual void PreFlushBlock(CInternalSection &cSection);
-	virtual void PostFlushBlock(CInternalSection &cSection, 
-		uint32 nStartIndex, uint32 nEndIndex,
-		uint32 nStartVertex, uint32 nEndVertex);
+	virtual void PostFlushBlock(CInternalSection &cSection);
 	virtual void PostFlush();
 	
 	// Translate a block of vertices from SRBVertex to SVertex

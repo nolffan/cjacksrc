@@ -808,7 +808,7 @@ PolySide COccluder_Frustum::Classify(COccludee &cOccludee) const
 		return BackSide;
 
 	// Classify based on the edge planes
-	TPlaneList::const_iterator iCurPlane = m_aWorldEdgePlanes.begin();
+	TWorldPlaneList::const_iterator iCurPlane = m_aWorldEdgePlanes.begin();
 	for (; iCurPlane != m_aWorldEdgePlanes.end(); ++iCurPlane)
 	{
 		PolySide nResult = cOccludee.ClassifyPlane(*iCurPlane, true);
@@ -840,7 +840,7 @@ PolySide COccluder_Frustum::ClassifyAABB(const LTVector &vMin, const LTVector &v
 	if (nCurSide == FrontSide)
 		return BackSide;
 
-	TPlaneList::const_iterator iCurPlane = m_aWorldEdgePlanes.begin();
+	TWorldPlaneList::const_iterator iCurPlane = m_aWorldEdgePlanes.begin();
 	TCornerList::const_iterator iCurCorner = m_aEdgeCorners.begin();
 	for (; iCurPlane != m_aWorldEdgePlanes.end(); ++iCurPlane, ++iCurCorner)
 	{
@@ -907,7 +907,7 @@ PolySide COccluder_Frustum::OccludeWorld(COccludee &cOccludee) const
 	if (cOccludee.SplitPlane(m_cPolyPlane, false) == BackSide)
 		return BackSide;
 
-	TPlaneList::const_iterator iCurPlane = m_aWorldEdgePlanes.begin();
+	TWorldPlaneList::const_iterator iCurPlane = m_aWorldEdgePlanes.begin();
 	for (; iCurPlane != m_aWorldEdgePlanes.end(); ++iCurPlane)
 	{
 		PolySide nResult = cOccludee.SplitPlane(*iCurPlane, false);
