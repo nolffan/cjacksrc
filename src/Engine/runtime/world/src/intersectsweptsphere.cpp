@@ -1,9 +1,8 @@
 
-// For some reason we can't use certain optimizations in this module or 
-// else the raycasting is all screwed up.  This module also can't use
-// precompiled headers or else these pragmas don't take effect.
-#pragma optimize("", off)
-#pragma optimize("as", on)
+// cjacksrc: Jupiter turns the optimizer down here ("the raycasting is all
+// screwed up" otherwise); Contract J.A.C.K.'s is full /O2: register
+// arguments, inlined vector maths, no frame (SweptSphereToPoint, server.dll
+// 0x10014bf0), so the two pragmas are gone.
 
 #include "bdefs.h"
 #include "de_world.h"

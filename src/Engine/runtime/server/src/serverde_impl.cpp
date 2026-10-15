@@ -2393,6 +2393,9 @@ LTRESULT si_CreateAttachment(HOBJECT hParent,
 	if (hAttachment)
 		*hAttachment = (HATTACHMENT)pAttachment;
 
+	// RETAIL: the child is put in place at once (server.dll 0x1003c354)
+	MoveAttachment(pAttachment, pParent, pChild);
+
 	return LT_OK;
 }
 

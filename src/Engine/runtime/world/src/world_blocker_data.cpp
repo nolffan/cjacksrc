@@ -657,14 +657,14 @@ bool CWorldBlockerData::CollidePlayer(
 
 	// Query a gross estimation of polys that the player "might" touch
 	static TIntList aPolySet;
-	aPolySet.clear();
+	aPolySet.resize(0);	// RETAIL: 0x10051560
 	LTVector vMidPt = (vStartPt + vEndPt) * 0.5f;
 	float fSphereRadius = fMoveMag * 0.5f + vDims.Mag();
 	if (!GetPolysInSphere(vMidPt, fSphereRadius, &aPolySet))
 		return false;
 
 	static TVectorList aRestrictDir;
-	aRestrictDir.clear();
+	aRestrictDir.resize(0);	// RETAIL: 0x10051560
 	aRestrictDir.reserve(5);
 
 	const float k_fConflictingPlaneEpsilon = -0.001f;

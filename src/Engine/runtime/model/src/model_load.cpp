@@ -1089,7 +1089,7 @@ LTRESULT Model::Load(ModelLoadRequest *pRequest, const char* pFilename)
 Error:
 
     buffer256 error_string("Error loading model: %s %d %s\n", pFilename,error_val, g_szErrorMsgMap[ error_val]);
-	dsi_ConsolePrint(error_string);
+	DEBUG_PRINT(1, (error_string));	// RETAIL: server.dll 0x10020880
 #if !defined(__LINUX)
     OutputDebugString(error_string);
 #endif

@@ -483,14 +483,8 @@ void ModelPiece::Term()
 #ifdef DE_RENDER_COMPILE
 			if (m_pRenderObjects[i]) g_Device.DestroyRenderObject(m_pRenderObjects[i]);
 #endif
-#ifdef DE_SERVER_COMPILE
-			if (m_pRenderObjects[i])
-			{
-				// On the server side, empty objects are allocated. Delete these.
-				delete m_pRenderObjects[i];
-				m_pRenderObjects[i] = NULL;
-			}
-#endif
+			// RETAIL: no server-side deletion of the empty render objects
+			// (server.dll 0x1001ade0)
 		}
 	}
 

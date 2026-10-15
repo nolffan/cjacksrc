@@ -730,7 +730,7 @@ bool CanOptimizeObject(LTObject *pObj)
 
 }
 
-uint16 sm_GetNewSoundTrackChangeFlags(CSoundTrack *pSoundTrack)
+uint32 sm_GetNewSoundTrackChangeFlags(CSoundTrack *pSoundTrack)	// RETAIL: uint32 (server.dll 0x100364f0)
 {
     uint16 wChangeFlags;
 

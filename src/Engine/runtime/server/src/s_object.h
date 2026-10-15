@@ -24,7 +24,7 @@ uint32 sm_GetNewObjectChangeFlags(LTObject *pObject);
 
 // Figures out what change flags need to be set for this soundtrack to 
 // tell clients about it.
-uint16 sm_GetNewSoundTrackChangeFlags(CSoundTrack *pSoundTrack);
+uint32 sm_GetNewSoundTrackChangeFlags(CSoundTrack *pSoundTrack);
 
 // Adds the object to the list of changed objects.
 void AddObjectToChangeList(LTObject *pObj);

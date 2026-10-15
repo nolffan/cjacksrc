@@ -2190,14 +2190,13 @@ static void DoPointCollision
 	const Node *pNode;
 	LTVector iPos;
 	LTPlane iPlane;
-	bool bContinue;
 
 	pInfo->m_FinalPos = request.m_NewPos;
 
+	// RETAIL: no progress ends it, a floor hit sets what the object stands
+	// on, and no message when the iterations run out (server.dll 0x10007620)
 	for(i=0; i < MAX_PHYSICS_ITERATIONS; i++)
 	{
-		bContinue = false;
-
 		// Do a fast test to see if we hit anything.
 		pNode = IntersectLine(	request.m_pWorld->GetRootNode(), 
 								&request.m_OriginalPos,
@@ -2206,28 +2205,26 @@ static void DoPointCollision
 								&iPlane
 								);
 
-		if( pNode )
-		{
-			// Have it adjust the velocity.
-			DoObjectCollisionResponse( request, pInfo, pNode );
-
-			// Move back to the point of intersection
-			pInfo->m_FinalPos = iPos;
-
-			++pInfo->m_nHits;
-			bContinue = true;
-		}
-		
-		if(!bContinue)
+		if (!pNode)
 			return;
-	}
 
-	// Got into a potentially recursive situation and kept hitting stuff.
-	// Just put them back at their original position.
-	if(g_DebugLevel > 0)
-	{
-		dsi_ConsolePrint("Error: (point) physics recursed infinitely on a %s",
-			request.m_pAbstract->GetObjectClassName(request.m_pObject));
+		if ((pInfo->m_FinalPos - iPos).MagSqr() == 0.0f)
+			return;
+
+		// Have it adjust the velocity.
+		DoObjectCollisionResponse( request, pInfo, pNode );
+
+		// Move back to the point of intersection
+		pInfo->m_FinalPos = iPos;
+
+		++pInfo->m_nHits;
+
+		if (pNode->GetPlane()->m_Normal.y > 0.01f)
+		{
+			if (!pInfo->m_pStandingOn ||
+				(pNode->GetPlane()->m_Normal.y > pInfo->m_pStandingOn->GetPlane()->m_Normal.y))
+				pInfo->m_pStandingOn = pNode;
+		}
 	}
 }
 
@@ -2342,7 +2339,7 @@ void CollideWithWorld
 			if (bCylinderCollide || bHitStairStep)
 			{
 				static IWorldBlockerData::TNormalList aRestrictNormals;
-				aRestrictNormals.clear();
+				aRestrictNormals.resize(0);	// RETAIL: 0x100079cf
 
 				// If we are standing on something, restrict the player to moving along the plane they're standing on
 				if (bHitStairStep)

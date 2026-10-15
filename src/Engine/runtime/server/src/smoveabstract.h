@@ -43,4 +43,8 @@ void FullMoveObject
 	const uint32	flags
 );
 
+// RETAIL: moves one attachment to its parent (server.dll 0x10042d70)
+class Attachment;
+void MoveAttachment(Attachment *pAttachment, LTObject *pParent, LTObject *pChild);
+
 #endif

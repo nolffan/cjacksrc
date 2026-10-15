@@ -9,6 +9,7 @@
 #include "packetdefs.h"
 #include "de_world.h"
 #include "ltserverobj.h"
+#include <algorithm>
 #include "de_mainworld.h"
 #include "ltsysoptim.h"
 #include "moveplayer.h"
@@ -77,6 +78,25 @@ static LTBOOL IsSolidWorld(LTObject *pObj)
 }
 
 // [RP] - 1/25/02 Is the object solid? Dependent on client/server
+LTBOOL IsSolid( uint32 dwFlags, LTBOOL bServer );
+
+// RETAIL: the order DetectAndProcessCollisions takes the objects in
+// (its out-of-line operator(), server.dll 0x10023f50)
+struct SObjectCollideOrder
+{
+	SObjectCollideOrder(bool bServer) : m_bServer(bServer) {}
+	bool operator()(LTObject *pA, LTObject *pB) const
+	{
+		if (pA->IsMainWorldModel()) return true;
+		if (pB->IsMainWorldModel()) return false;
+		if (IsSolidWorld(pA)) return true;
+		if (IsSolidWorld(pB)) return false;
+		if (IsSolid(pA->m_Flags, m_bServer)) return true;
+		return !IsSolid(pB->m_Flags, m_bServer);
+	}
+	bool m_bServer;
+};
+
 LTBOOL IsSolid( uint32 dwFlags, LTBOOL bServer )
 {
 	if( bServer )
@@ -715,11 +735,20 @@ inline LTBOOL DoSolidBBoxCollision(MoveState *pState, LTObject *pTestObj,
 			// The push amount is the distance along the normal behind the plane.  If we had used
 			// a dot product, this number would be negative...
 			fDot2 = -pushAmount.Mag();
+			// RETAIL: a zero push moves the whole way (server.dll 0x100244d0)
+			if (fDot2 == 0.0f)
+			{
+				newPos = vDeltaPos + pTestObj->GetPos();
+				DEBUG_PRINT(1, ("fDot2 = 0.0"));
+			}
+			else
+			{
 			vNormal = pushAmount / -fDot2;
 			
 			fDot1 = fDot2 + vNormal.Dot(vDeltaPos);
 			newPos = vDeltaPos * (1.0f - ( -fDot1 / ( fDot2 - fDot1 )));
 			newPos += pTestObj->GetPos();
+			}
 		}
 
 		moveState.Inherit(pState, pTestObj);
@@ -790,11 +819,19 @@ inline LTBOOL DoSolidBBoxCollision(MoveState *pState, LTObject *pTestObj,
 		// The push amount is the distance along the normal behind the plane.  If we had used
 		// a dot product, this number would be negative...
 		fDot2 = -pushAmount.Mag();
+		// RETAIL: and says so (server.dll 0x1002478c)
+		if (fDot2 == 0.0f)
+		{
+			dsi_PrintToConsole("fDot2 = 0.0");
+		}
+		else
+		{
 		vNormal = pushAmount / -fDot2;
 		
 		fDot1 = fDot2 - vNormal.Dot(vDeltaPos);
 		destPos = vDeltaPos * ( -fDot1 / ( fDot2 - fDot1 ));
 		destPos += startPos;
+		}
 	}
 
 	// Do a collision response.
@@ -1191,9 +1228,14 @@ static void DetectAndProcessCollisions
 			FindObjectsCB, &objectArray);
 	}
 
+	// RETAIL: the objects sorted, the main world, then the solid worlds,
+	// then the solid objects first, and walked forwards (server.dll 0x10022abf)
+	std::sort(objectArray.m_pObjects, objectArray.m_pObjects + objectArray.m_nObjects,
+		SObjectCollideOrder(pState->m_bServer != 0));
+
 	pHitObjects[0] = pHitObjects[1] = LTNULL;
 
-	for( i = objectArray.m_nObjects - 1, nRestarts = 0; i >= 0 && nRestarts < 10; i-- )
+	for( i = 0, nRestarts = 0; i < objectArray.m_nObjects && nRestarts < 10; i++ )
 	{
 		pTestObj = objectArray.m_pObjects[i];
 
@@ -1215,7 +1257,7 @@ static void DetectAndProcessCollisions
 
 			SetObjectBoundingBox(pState->m_pObj, LTTRUE);
 
-			i = objectArray.m_nObjects;
+			i = -1;
 			nRestarts++;
 
 			// Reset some info...

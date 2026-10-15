@@ -98,13 +98,17 @@ inline void LTStrCpy(char *pDest, const char *pSrc, uint32 destBytes)
 /*!
 Safe string concatination (strncat doesn't always null terminate, but this does).
 */
+// cjacksrc: Contract J.A.C.K.'s engine copies after the string's end, and
+// only when there is room (server.dll 0x1000a97a), where NOLF2's appended
+// with strncat whatever the length
 inline void LTStrCat(char *pDest, const char *pSrc, uint32 destBytes) 
 {
-    if (destBytes == 0)
-        return;
-
-    strncat(pDest, pSrc, destBytes - 1);
-    pDest[destBytes - 1] = '\0';
+    uint32 nDestLen = strlen(pDest);
+    if (nDestLen < destBytes)
+    {
+        strncpy(&pDest[nDestLen], pSrc, destBytes - nDestLen - 1);
+        pDest[destBytes - 1] = '\0';
+    }
 }
 
 /*!

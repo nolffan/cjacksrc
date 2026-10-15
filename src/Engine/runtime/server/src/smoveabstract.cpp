@@ -75,45 +75,43 @@ void SMoveAbstract::BreakContainerLinks(LTObject *pObj)
 }
 
 
+// RETAIL: one attachment moved to its parent, out of MoveAttachments
+// (server.dll 0x10042d70), and called by si_CreateAttachment too
+void MoveAttachment(Attachment *pAttachment, LTObject *pParent, LTObject *pChild)
+{
+    MoveState moveState;
+    LTVector vNewPos = pAttachment->m_Offset.m_Pos;
+    LTMatrix mTemp;
+    pParent->m_Rotation.ConvertToMatrix(mTemp);
+    mTemp.Apply3x3(vNewPos);
+    LTVector attachPos = pParent->GetPos() + vNewPos;
+
+    // Teleport the attachment to the right spot...
+    moveState.Setup(world_bsp_server->ServerTree(), g_pServerMgr->m_MoveAbstract, pChild, pChild->m_BPriority);
+
+	// Set the MoveObject flags...
+	uint32 dwFlags = MO_DETACHSTANDING | MO_MOVESTANDINGONS | MO_TELEPORT;
+	if( pParent->m_ObjectType != OT_MODEL )
+	{
+		// Set the change flags for everything but models...
+		dwFlags |= MO_SETCHANGEFLAG;
+	}
+
+	MoveObject(&moveState, attachPos, dwFlags);
+
+    // Update its rotation..
+    pChild->m_Rotation = pParent->m_Rotation * pAttachment->m_Offset.m_Rot;
+}
+
 void SMoveAbstract::MoveAttachments(MoveState *pState)
 {
-    Attachment *pAttachment;
-    LTObject *pAttachedObj;
-    MoveState moveState;
-    LTVector attachPos;
-
     // Move the attachments (but don't set their change flags if it's a model.. the client will set their
     // position automatically).
-    pAttachment = pState->m_pObj->m_Attachments;
-    while (pAttachment)
+    for (Attachment *pAttachment = pState->m_pObj->m_Attachments; pAttachment; pAttachment = pAttachment->m_pNext)
     {
-        pAttachedObj = sm_FindObject(pAttachment->m_nChildID);
+        LTObject *pAttachedObj = sm_FindObject(pAttachment->m_nChildID);
         if (pAttachedObj)
-        {
-            LTVector vNewPos = pAttachment->m_Offset.m_Pos;
-            LTMatrix mTemp;
-            pState->m_pObj->m_Rotation.ConvertToMatrix(mTemp);
-            mTemp.Apply3x3(vNewPos);
-            attachPos = pState->m_pObj->GetPos() + vNewPos;
-            
-            // Teleport the attachment to the right spot...
-            moveState.Setup(pState->m_pWorldTree, pState->m_pAbstract, pAttachedObj, pAttachedObj->m_BPriority);
-            
-			// Set the MoveObject flags...
-			uint32 dwFlags = MO_DETACHSTANDING | MO_MOVESTANDINGONS | MO_TELEPORT;
-			if( pState->m_pObj->m_ObjectType != OT_MODEL )
-			{
-				// Set the change flags for everything but models...
-				dwFlags |= MO_SETCHANGEFLAG;
-			}
-
-			MoveObject(&moveState, attachPos, dwFlags);
-
-            // Update its rotation..
-            pAttachedObj->m_Rotation = pState->m_pObj->m_Rotation * pAttachment->m_Offset.m_Rot;
-        }
-
-        pAttachment = pAttachment->m_pNext;
+            MoveAttachment(pAttachment, pState->m_pObj, pAttachedObj);
     }
 }
 
