@@ -227,16 +227,30 @@ server are not in the workspace yet (their resources first).
   (`GetHeat`, our name; CClientWeapon returns its member at 0x158),
   CPlayerMgr::DoActivate is not virtual, CLTGUITextCtrl has `GetFontSize`
   after SetFont.
-- **Scores**: CShell.dll 3,556 identical of 6,567, Object.lto 5,705 of
-  9,787, ClientFx.fxd 285 of 452. The runtime boundaries are pinned from
-  our maps.
-- **Stubbed.** Multiplayer: the two places NOLF2 creates its WON server
-  directory create none. CJ's servers and browser use GameSpy.dll's
-  `IGameSpyServer`/`IGameSpyBrowser`/`IGameSpyPatchInfo`
-  (`src/Game/Libs/GameSpy/IGameSpy.h`), still to be written, with
-  CShell.dll and Object.lto linking GameSpy.lib. Retail does it in
-  CGameServerShell::OnServerInitialized itself (0x100df380, after
-  `srand`; the server pointer at 0x194f4 of CGameServerShell).
+- **Game options** (`Shared/ProfileUtils`): Contract J.A.C.K.'s are one
+  polymorphic BaseGameOptions (every option of every game type, 0x94 bytes;
+  GetName, Clear, Write, Read virtual) with a subclass per game type giving
+  its name and defaults, and ServerGameOptions holds six (single player
+  and Demolition too: `eGameTypeDemolition` is 5) and a status the server
+  sets for its host (0xac). Weapons stay is new, the tag score is gone
+  (from the mission settings and the scoring too). Reconstructed from
+  Object.lto's ProfileUtils.obj (0x1011a900..0x1011c490). The host
+  screens (ScreenHost*Options) still show NOLF2's controls.
+- **Version manager and server shell**: one non-virtual CVersionMgr (no
+  CTO2VersionMgr; CD key in the registry, "CJ v1.1", build 193, CJ's
+  game GUID), CGameServerShell is the server shell (no
+  CTO2GameServerShell), with GameSpy's server: created and published at
+  the end of OnServerInitialized, fed packets in ProcessPacket, deleted in
+  OnServerTerm. Not yet: the rest of OnServerInitialized's changes (it
+  takes the host's options in InitGameType), the republishing
+  (0x100dbcb0), the socket the engine hands GameSpy (ILTServer vtable
+  0x118, missing from our SDK), CDemolitionMissionMgr, and the client side
+  (IGameSpyBrowser in ClientMultiplayerMgr and the join screens,
+  IGameSpyPatchInfo); the client still has NOLF2's WON code, with no
+  directory created.
+- **Scores**: CShell.dll 3,602 identical of 6,567, Object.lto 5,848 of
+  9,787 (811 KB), ClientFx.fxd 285 of 452. The runtime boundaries are
+  pinned from our maps.
 - **Classes still to change** (RTTI, retail vs ours). Object.lto has
   AINodeSniper, AimMagnet (+plugin), BaseGameOptions and its
   Singleplayer/DM/TeamDM/Coop/Demolition/Doomsday subclasses,
