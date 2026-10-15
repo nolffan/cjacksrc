@@ -361,6 +361,14 @@ void CD3D_Device::PreCalcSomeDeviceCaps()
 	if (!m_pD3DDevice)
 		return;
 
+	// RETAIL: on ATI's cards (vendor 0x1002) Contract J.A.C.K. matches the
+	// multipass lighting and disables with zero weights (0x4a5e25)
+	if (m_pAdapter->AdapterID.VendorId == 0x1002)
+	{
+		g_pStruct->RunConsoleString("MultiPassLightMatch 1");
+		g_pStruct->RunConsoleString("Use0WeightsForDisable 1");
+	}
+
 	// Check for TableFog...
 	if ((m_DeviceCaps.RasterCaps & D3DPRASTERCAPS_FOGTABLE) && ((m_DeviceCaps.RasterCaps & D3DPRASTERCAPS_ZFOG) || (m_DeviceCaps.RasterCaps & D3DPRASTERCAPS_WFOG)) && g_CV_TableFog.m_Val)
 	{
@@ -376,7 +384,7 @@ void CD3D_Device::PreCalcSomeDeviceCaps()
 	D3D_CALL(m_pD3DDevice->GetDepthStencilSurface(&pDepthStencilBuffer));
 	if (pDepthStencilBuffer)
 	{
-		D3DSURFACE_DESC SurfDesc;	// SurfDesc.Size   = sizeof(SurfDesc);
+		D3DSURFACE_DESC SurfDesc;	SurfDesc.Size   = sizeof(SurfDesc);	// RETAIL: 0x4a5e9f
 		D3D_CALL(pDepthStencilBuffer->GetDesc(&SurfDesc));
 		m_ExtraDevCaps.m_DepthStencilBufferFormat = SurfDesc.Format; uint32 iZDepth,iStencilDepth;
 		d3d_GetDepthStencilBits(m_ExtraDevCaps.m_DepthStencilBufferFormat,iZDepth,iStencilDepth);

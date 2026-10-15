@@ -67,9 +67,11 @@ void d3d_DrawSolidWorldModel(const ViewParams& Params, LTObject *pObj)
 			{
 				d3d_SetD3DMat(D3DTS_WORLD, &pInstance->m_Transform);
 				NewParams.m_mInvWorld = pInstance->m_BackTransform;
+				NewParams.m_mWorld = pInstance->m_Transform;	// RETAIL: 0x502af4
 				pWorldModel->Draw(NewParams, true);
 				d3d_SetD3DMat(D3DTS_WORLD, &NewParams.m_mIdentity);
 				NewParams.m_mInvWorld.Identity();
+				NewParams.m_mWorld.Identity();
 			}
 		}
 

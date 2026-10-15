@@ -128,6 +128,8 @@ bool CModelShadowShader::BeginShader(	uint32 nVertSize,				//the size of the ver
 	}
 
 	PD3DDEVICE->SetRenderState(D3DRS_DEPTHBIAS, F2DW(-(float)GetZBias(eShaderID)));*/
+	// RETAIL: Direct3D 8's single Z bias (0x4ef009)
+	PD3DDEVICE->SetRenderState(D3DRS_ZBIAS, GetZBias(eShaderID));
 
 	//setup our input streams for D3D
 	PD3DDEVICE->SetVertexShader(nVertType);
@@ -451,6 +453,7 @@ bool CModelShadowShader::RestoreRenderStates()
 	//turn off Z biasing
 //	PD3DDEVICE->SetRenderState(D3DRS_SLOPESCALEDEPTHBIAS, F2DW(0.0f));
 //	PD3DDEVICE->SetRenderState(D3DRS_DEPTHBIAS, F2DW(0.0f));
+	PD3DDEVICE->SetRenderState(D3DRS_ZBIAS, 0);	// RETAIL: 0x4eed41
 
 	//clear out the textures
 	d3d_DisableTexture(0);
