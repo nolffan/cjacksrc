@@ -334,13 +334,18 @@ server are not in the workspace yet (their resources first).
   edit control has two members more (0x180 from Create, 0x184 a
   character filter called from HandleChar, 0x101243c0); KeyFramer's
   other HSTRINGs are still HSTRINGs in retail.
-- **Where it stopped / next**: breadth first by near count (CShell:
-  InterfaceMgr, PlayerMgr, GameClientShell, VehicleMgr, ScreenJoin,
-  CharacterFX, ClientWeapon; Object: PlayerObj, Character, AI states,
-  GameServerShell): the layouts above, CClientWeapon's virtuals, the
-  DoomsDay/VolumeEffect virtuals, then CJ's connection flow and GameSpy
-  browser, CHUDBombTarget and Demolition; the launcher and the dedicated
-  server (ContractJack.exe, ContractJackServer.exe) are not started.
+- **Where it stopped / next**: breadth first by near count. Next: the
+  chassis classes (Chassis.cpp, ChassisPiece.cpp from NOLF2's DoomsDay
+  files, DoomsDayDevice/Piece as their subclasses, ChassisFX and
+  ChassisPieceFX on the client) and CJ's CHUDCarrying with them; the
+  layouts of CPlayerMgr (two new members after the fire jitter, 0x6c
+  and 0x70; +8 later), CGameClientShell, CCharacterFX, CVehicleMgr (CJ's
+  holds a CVehicleWeapon at 0x2140) and WEAPON (AutoTarget*, ShowChooser
+  before the heat fields); CClientWeapon's virtual order (79 slots);
+  then CJ's connection flow (handshake on the client records, GameSpy's
+  CD key check, FinishClientConnect), the GameSpy server browser and
+  Demolition. The launcher and the dedicated server are the apps
+  package's.
 - **Tools** (not committed, one-offs under out/): rtti.py (vtables by
   RTTI), vtcmp.py (a class's vtable, retail beside ours), ctorcmp.py
   (constructor store offsets aligned), place.py (the scoreboard's
