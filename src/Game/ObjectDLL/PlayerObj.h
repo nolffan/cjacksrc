@@ -396,7 +396,6 @@ class CPlayerObj : public CCharacter
 		bool CanDropObject( );
 
 		// Generates a unique name for all players from a given name.
-		void GenerateUniqueName( char const* pszNameBase, char* pszUniqueName, int nUniqueNameSize );
 
 		// Setup our dead body...
 		virtual void	SetupBody(Body* pBody);
@@ -503,7 +502,6 @@ class CPlayerObj : public CCharacter
 
 
 		// Multiplayer data
-		std::string	m_sNetNameUnique;
 		int			m_nRespawnCount;
 
 		LTBOOL		m_bHasDoneHandshake; // Is the handshaking done yet?

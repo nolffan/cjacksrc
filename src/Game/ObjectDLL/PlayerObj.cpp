@@ -5571,9 +5571,7 @@ LTBOOL CPlayerObj::MultiplayerUpdate(ILTMessage_Read *pMsg)
 	pMsg->ReadString( ncd.m_szName, ARRAY_LEN( ncd.m_szName ));
 
 	// Update the players unique name.
-	char szUniqueName[MAX_PLAYER_NAME];
-	GenerateUniqueName(ncd.m_szName, szUniqueName, ARRAY_LEN( szUniqueName ));
-	m_sNetNameUnique = szUniqueName;
+	SetNetClientData( ncd );
 	ModelId eModelId = ( ModelId )pMsg->Readuint8( );
 
 	uint8 nTeam = pMsg->Readuint8( );
@@ -8613,10 +8611,17 @@ bool CPlayerObj::AcquireCurrentLevelDefaults()
 
 void CPlayerObj::SetNetClientData( NetClientData const& netClientData )
 {
-	// Give the player a unique name.
+	// RETAIL: 0x10107e80 the unique name is the server shell's, in the
+	// client's record.
 	char szUniqueName[MAX_PLAYER_NAME];
-	GenerateUniqueName( netClientData.m_szName, szUniqueName, ARRAY_LEN( szUniqueName ));
-	m_sNetNameUnique = szUniqueName;
+	g_pGameServerShell->GenerateUniqueName( m_hClient, netClientData.m_szName, szUniqueName, ARRAY_LEN( szUniqueName ));
+
+	ClientData* pClientData = g_pGameServerShell->GetClientData( m_hClient );
+	if( pClientData )
+	{
+		pClientData->m_sUniqueName = szUniqueName;
+		g_pLTServer->SetClientData( m_hClient, ( uint8 const* )&netClientData, sizeof( netClientData ));
+	}
 }
 
 
@@ -8631,59 +8636,11 @@ void CPlayerObj::SetNetClientData( NetClientData const& netClientData )
 
 char const* CPlayerObj::GetNetUniqueName( )
 {
-	return m_sNetNameUnique.c_str( );
-}
+	ClientData* pClientData = m_hClient ? g_pGameServerShell->GetClientData( m_hClient ) : NULL;
+	if( !pClientData )
+		return "";
 
-// ----------------------------------------------------------------------- //
-//
-//  ROUTINE:	CPlayerObj::GenerateUniqueName
-//
-//  PURPOSE:	Generates a unqiue name for all players given a base name.
-//
-// ----------------------------------------------------------------------- //
-
-static bool IsNameTaken( char const* pszName, CPlayerObj* pSkipPlayer )
-{
-	for( CPlayerObj::PlayerObjList::const_iterator iter = CPlayerObj::GetPlayerObjList( ).begin( ); 
-		iter != CPlayerObj::GetPlayerObjList( ).end( ); iter++ )
-	{
-		CPlayerObj* pPlayer = *iter;
-
-		// Skip target player.
-		if( pPlayer == pSkipPlayer )
-			continue;
-
-		// Check if our name is different than this player
-		if( stricmp( pszName, pPlayer->GetNetUniqueName( )) == 0 )
-			return true;
-	}
-
-	return false;
-}
-
-void CPlayerObj::GenerateUniqueName( char const* pszNameBase, char* pszUniqueName, int nUniqueNameSize )
-{
-	CString sUniqueName = pszNameBase;
-	bool bFound = false;
-
-	// If the base name is taken, then generate a new name with a number on the 
-	// end of the base name.
-	if( IsNameTaken( sUniqueName, this ))
-	{
-		int nCount = 0;
-		while( 1 )
-		{
-			sUniqueName.Format( "%s%d", pszNameBase, nCount );
-			if( !IsNameTaken( sUniqueName, this ))
-				break;
-
-			nCount++;
-		}
-	}
-
-	// Copy the string.
-	strncpy( pszUniqueName, sUniqueName, nUniqueNameSize );
-	pszUniqueName[nUniqueNameSize-1] = 0;
+	return pClientData->m_sUniqueName.c_str( );
 }
 
 

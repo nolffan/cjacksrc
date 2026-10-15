@@ -92,12 +92,26 @@ class TimeRamp
 };
 
 
+// RETAIL: Contract J.A.C.K.'s record of a client (0x2c bytes, Object
+// 0x100e04b7): its connection state and unique name live here, not in
+// the player object.
 struct ClientData
 {
-	ClientData( );
+	ClientData( )
+	{
+		m_hClient = NULL;
+		m_nLastClientUpdateTime = GetTickCount( );
+		m_nState = 0;
+		m_bFlag = false;
+		m_nTeamId = INVALID_TEAM;
+	}
 
 	HCLIENT m_hClient;
+	uint32	m_nState;					// 2 waiting for GameSpy's CD key check, 3 connected
 	uint32 m_nLastClientUpdateTime;
+	std::string	m_sUniqueName;			// The player's name, unique on the server
+	bool	m_bFlag;					// RETAIL: 0x28, not yet identified
+	uint8	m_nTeamId;
 };
 
 
@@ -348,8 +362,16 @@ class CGameServerShell : public IServerShellStub
 		// Sets up weaponmgr with weapon restrictions.
 		void ApplyWeaponRestrictions( );
 
+	public:
+
 		// Gets the clientdata given a HCLIENT.
 		ClientData* GetClientData( HCLIENT hClient );
+
+		// Makes a name unique among the clients' (RETAIL: 0x100dc160).
+		void GenerateUniqueName( HCLIENT hClient, char const* pszNameBase, char* pszUniqueName, int nUniqueNameSize );
+		bool IsNameTaken( char const* pszName, HCLIENT hSkipClient );
+
+	protected:
 
 	protected:
 

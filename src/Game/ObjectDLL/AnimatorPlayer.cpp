@@ -369,6 +369,7 @@ void CAnimatorPlayer::Init(HOBJECT hObject)
     m_AniClimbUp                = AniPlayerMain            (LTTRUE,     _A("ClU"),			_N,					_N,					_N,					_N);
     m_AniClimbDown              = AniPlayerMain            (LTTRUE,     _A("ClD"),			_N,					_N,					_N,					_N);
     m_AniSnowmobile             = AniPlayerMain            (LTTRUE,     _A("LRdS"),			_N,					_N,					_N,					_N);
+    m_AniMotorcycle             = AniPlayerMain            (LTTRUE,     _A("LRdM"),			_N,					_N,					_N,					_N);
 	
 	m_AniDT_Slippery			= AniPlayerMain			   (LTFALSE,	_A("banana_idle"),	_N,					_N,					_A("banana_in"),	_A("banana_out"));
 	m_AniDT_Sleeping			= AniPlayerMain			   (LTFALSE,	_A("KnockOut_idle"),_N,					_N,					_A("KnockOut_in"),	_A("KnockOut_out"));
@@ -918,6 +919,7 @@ void CAnimatorPlayer::Init(HOBJECT hObject)
 	m_apAniPlayerMains[eClimbingUp]					= &m_AniClimbUp;
 	m_apAniPlayerMains[eClimbingDown]				= &m_AniClimbDown;
 	m_apAniPlayerMains[eSnowmobile]					= &m_AniSnowmobile;
+	m_apAniPlayerMains[eMotorcycle]					= &m_AniMotorcycle;
 	m_apAniPlayerMains[eDT_Slippery]				= &m_AniDT_Slippery;
 	m_apAniPlayerMains[eDT_Sleeping]				= &m_AniDT_Sleeping;
 	m_apAniPlayerMains[eDT_Stun]					= &m_AniDT_Stun;

@@ -139,11 +139,6 @@ inline float TODHoursToSeconds(float time)
 }
 
 
-ClientData::ClientData( )
-{
-	m_hClient = NULL;
-	m_nLastClientUpdateTime = GetTickCount( );
-}
 
 
 
@@ -5538,6 +5533,64 @@ void CGameServerShell::SetLGFlags( uint8 nLGFlags )
 //	PURPOSE:	Gets the clientdata given a HCLIENT.
 //
 // ----------------------------------------------------------------------- //
+
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	CGameServerShell::IsNameTaken
+//
+//	PURPOSE:	Does another client have this name? (RETAIL: 0x100dc0f0)
+//
+// ----------------------------------------------------------------------- //
+
+bool CGameServerShell::IsNameTaken( char const* pszName, HCLIENT hSkipClient )
+{
+	ClientDataList::iterator iter = m_ClientDataList.begin( );
+	for( ; iter != m_ClientDataList.end( ); iter++ )
+	{
+		ClientData* pClientData = *iter;
+		if( !pClientData || pClientData->m_hClient == hSkipClient )
+			continue;
+
+		if( stricmp( pszName, pClientData->m_sUniqueName.c_str( )) == 0 )
+			return true;
+	}
+
+	return false;
+}
+
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	CGameServerShell::GenerateUniqueName
+//
+//	PURPOSE:	Makes a client's name unique among the clients' (RETAIL: 0x100dc160)
+//
+// ----------------------------------------------------------------------- //
+
+void CGameServerShell::GenerateUniqueName( HCLIENT hClient, char const* pszNameBase, char* pszUniqueName, int nUniqueNameSize )
+{
+	char szName[256];
+	strncpy( szName, pszNameBase, ARRAY_LEN( szName ));
+	szName[ARRAY_LEN( szName ) - 1] = 0;
+
+	// If the base name is taken, then generate a new name with a number on the 
+	// end of the base name.
+	if( IsNameTaken( szName, hClient ))
+	{
+		int nCount = 0;
+		_snprintf( szName, ARRAY_LEN( szName ), "%s%d", pszNameBase, nCount );
+		szName[ARRAY_LEN( szName ) - 1] = 0;
+		while( IsNameTaken( szName, hClient ))
+		{
+			nCount++;
+			_snprintf( szName, ARRAY_LEN( szName ), "%s%d", pszNameBase, nCount );
+			szName[ARRAY_LEN( szName ) - 1] = 0;
+		}
+	}
+
+	// Copy the string.
+	strncpy( pszUniqueName, szName, nUniqueNameSize );
+	pszUniqueName[nUniqueNameSize-1] = 0;
+}
 
 ClientData* CGameServerShell::GetClientData( HCLIENT hClient )
 {

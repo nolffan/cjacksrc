@@ -115,6 +115,7 @@ class CAnimatorPlayer : public CAnimator
 			eClimbingUp		,
 			eClimbingDown	,		
 			eSnowmobile		,
+			eMotorcycle		,		// RETAIL: Contract J.A.C.K.'s "LRdM" (Object 0x1008b904)
 			eDT_Slippery	,
 			eDT_Sleeping	,
 			eDT_Stun		,
@@ -471,6 +472,7 @@ class CAnimatorPlayer : public CAnimator
 		AniPlayerMain				m_AniClimbUp;
 		AniPlayerMain				m_AniClimbDown;
 		AniPlayerMain				m_AniSnowmobile;
+		AniPlayerMain				m_AniMotorcycle;
 
 		AniPlayerMain				m_AniDT_Slippery;
 		AniPlayerMain				m_AniDT_Sleeping;
