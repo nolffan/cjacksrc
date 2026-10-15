@@ -1,0 +1,31 @@
+# playtest-play.txt -- Contract J.A.C.K.'s level, save and load test for
+# build/playtest.sh, with a world on the command line (make test
+# TEST_WORLD='Worlds\RetailSinglePlayer\M01S01'
+# TEST_SCRIPT=build/playtest-play.txt): past the briefing, until the HUD is
+# up, a little play, a quicksave (F6), more play, a quickload (F9). Keys are
+# the shipped autoexec.cfg's.
+window 180
+wait 25
+shot briefing
+key space
+wait 10
+skipcine 120
+shot play
+turn 300 0
+hold w 2
+shot moved
+key F6
+wait 5
+shot saved
+hold s 2
+turn -300 0
+shot moved-again
+key F9
+wait 3
+shot confirm
+# "This will end your current game. Continue?": Yes
+key Return
+wait 25
+shot loaded
+skipcine 60
+shot after-load
