@@ -144,6 +144,18 @@ world in a way that triggers it.
 Fixed in the modern build: src/Engine/runtime/render_a/src/sys/d3d/
 d3d_rendershader_base.h, MODERN.md EN-1.
 
+### The ShowVersionInfo console command calls a null function
+
+Lithtech.exe 0x41a360 (con_ShowVersionInfo, src/Engine/runtime/client/src/
+consolecommands.cpp) and 0x40bcd0 (CLTClient::InitFunctionPointers,
+clientde_impl.cpp). ILTClient's GetVersionInfoExt and GetPerformanceInfo
+are never set (the engine leaves them NULL), yet ShowVersionInfo calls
+GetVersionInfoExt without testing it, as NOLF2's did: typing the command
+in the console crashes the game.
+
+Fixed in the modern build: src/Engine/runtime/client/src/clientde_impl.cpp
+and consolecommands.cpp, MODERN.md EN-3.
+
 ## NOLF2's bugs Contract J.A.C.K. no longer has
 
 (none checked yet)

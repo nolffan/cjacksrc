@@ -110,6 +110,13 @@ inline
 #endif
 void LTStrCat(char *pDest, const char *pSrc, uint32 destBytes) 
 {
+#if defined(DIRECTENGINE_COMPILE) || defined(__D3DREND)
+    // cjacksrc: in the engine's code, as LTStrCpy, nothing to do in no room
+    // (Lithtech.exe 0x4cedb5); the game's code is still to be checked
+    if (destBytes == 0)
+        return;
+#endif
+
     uint32 nDestLen = strlen(pDest);
     if (nDestLen < destBytes)
     {

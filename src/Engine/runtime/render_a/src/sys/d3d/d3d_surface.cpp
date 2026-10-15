@@ -32,7 +32,6 @@ extern FormatMgr g_FormatMgr;
 
 extern void d3d_DestroyTiles(RSurface *pSurface);
 extern void d3d_BlitToScreen3D(BlitRequest *pRequest);
-extern void d3d_BlitToScreen3D_Old(BlitRequest *pRequest);
 extern void d3d_WarpToScreen3D(BlitRequest *pRequest);
 extern int  d3d_RenderScene(SceneDesc* pDesc);
 

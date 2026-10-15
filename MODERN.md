@@ -52,3 +52,7 @@ modes at any size; our Bink player on FFmpeg in place of RAD's
   device needs it); it pauses, unless the console variable
   RunInBackground is set, when it plays on behind other windows
   (src/Engine/runtime/kernel/src/sys/win/client.cpp; nolf2src's M-G41).
+* **EN-3: ShowVersionInfo.** ILTClient's GetVersionInfoExt and
+  GetPerformanceInfo are set, and the console command tests the first
+  before calling it (`RETAIL_BUGS.md`; src/Engine/runtime/client/src/
+  clientde_impl.cpp, consolecommands.cpp).

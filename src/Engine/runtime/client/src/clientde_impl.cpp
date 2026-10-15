@@ -3330,8 +3330,15 @@ void CLTClient::InitFunctionPointers()
 	IsLobbyLaunched = ci_IsLobbyLaunched;
 	GetTcpIpAddress = ci_GetTcpIpAddress;
 
+#ifdef CJACK_MODERN
+	// MODERN.md EN-3: the two are set, so ShowVersionInfo works
 	GetVersionInfoExt = in_GetVersionInfoExt;
 	GetPerformanceInfo = in_GetPerformanceInfo;
+#else
+	// RETAIL: GetVersionInfoExt and GetPerformanceInfo are left NULL
+	// (Lithtech.exe 0x40c16d), though the console's ShowVersionInfo calls
+	// the first (RETAIL_BUGS.md); the game does not call them
+#endif
 
 	SetConsoleEnable = ci_SetConsoleEnable;
 

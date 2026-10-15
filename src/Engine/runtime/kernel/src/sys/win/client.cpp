@@ -614,7 +614,8 @@ int RunClientApp(HINSTANCE hInstance) {
     wndclass.cbClsExtra    = 0;
     wndclass.cbWndExtra    = 0;
     wndclass.hInstance     = pGlob->m_hInstance;
-    wndclass.hIcon         = LoadIcon (LTNULL, IDI_APPLICATION);
+    // RETAIL: the executable's own icon, resource 128 (0x405cb2)
+    wndclass.hIcon         = LoadIcon (GetModuleHandle(LTNULL), MAKEINTRESOURCE(128));
     wndclass.hCursor       = LoadCursor (LTNULL, IDC_ARROW);
     wndclass.hbrBackground = (HBRUSH)GetStockObject (BLACK_BRUSH);
     wndclass.lpszMenuName  = LTNULL;
@@ -635,6 +636,12 @@ int RunClientApp(HINSTANCE hInstance) {
                 LTNULL,													// window menu handle
                 pGlob->m_hInstance,										// program instance handle
                 LTNULL);												// creation parameters
+
+    // RETAIL: the window's small and large icons (0x405d47)
+    SendMessage(pGlob->m_hMainWnd, WM_SETICON, ICON_SMALL,
+        (LPARAM)LoadImage(GetModuleHandle(LTNULL), MAKEINTRESOURCE(128), IMAGE_ICON, 16, 16, 0));
+    SendMessage(pGlob->m_hMainWnd, WM_SETICON, ICON_BIG,
+        (LPARAM)LoadImage(GetModuleHandle(LTNULL), MAKEINTRESOURCE(128), IMAGE_ICON, 32, 32, 0));
 
 
     bPrevHighPriority = LTFALSE;
