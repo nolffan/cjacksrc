@@ -152,7 +152,16 @@ void CFresnelTable::GenerateTable(float fVolumeIOR, float fBaseReflection)
 		float fG = fIORRatioSqr + Sqr(fCos) - 1.0f;
 
 		//figure out the final fresnel term
-		float fVal = (Sqr(fG - fCos) / (2.0f * Sqr(fG + fCos))) * (1.0f + Sqr(fCos * (fG + fCos) - 1.0f) / Sqr(fCos * (fG - fCos) + 1.0f));
+		// RETAIL: in parts, guarded against a zero denominator (0x506f28)
+		float fNum1		= Sqr(fG - fCos);
+		float fDenom1	= 2.0f * Sqr(fG + fCos);
+		float fNum2		= Sqr(fCos * (fG + fCos) - 1.0f);
+		float fDenom2	= Sqr(fCos * (fG - fCos) + 1.0f);
+		float fVal;
+		if ((fDenom1 != 0.0f) && (fDenom2 != 0.0f))
+			fVal = (fNum2 / fDenom2 + 1.0f) * (fNum1 / fDenom1);
+		else
+			fVal = 0.0f;
 
 		//this should always be (0..1)
 		assert(fVal >= 0.0f);

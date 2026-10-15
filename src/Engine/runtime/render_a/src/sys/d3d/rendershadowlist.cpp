@@ -386,8 +386,7 @@ static void RenderModelPieces( ModelInstance* pInstance )
 		StateSet ssZRead(D3DRS_ZENABLE, D3DZB_FALSE);
 		StateSet ssZWrite(D3DRS_ZWRITEENABLE, FALSE);
 
-		// Disable fog for shadows.
-		StateSet ssFogEnable(D3DRS_FOGENABLE, FALSE);
+		// RETAIL: fog left as it is (0x4db1ee)
 
 		for (uint32 nCurrPiece = 0; nCurrPiece < nNumPieces; nCurrPiece++)
 		{
@@ -678,8 +677,10 @@ void CRenderShadowList::QueueShadows(ModelInstance* pInstance, const CRelevantLi
 
 	uint32 nShadows = 0;
 
-	//determine if we will be doing tweening of the lights
-	bool bTweenLights = g_CV_ModelShadow_Proj_Tween.m_Val != 0;
+	// RETAIL: Contract J.A.C.K.'s form (0x4dd2dd): with tweening, the last
+	// slot goes to a blend of all the lights the others left, weighted by
+	// their brightness
+	uint32 nMaxQueued = (g_CV_ModelShadow_Proj_Tween.m_Val) ? nMaxShadows - 1 : nMaxShadows;
 
 	//tween information
 	LTVector vTweenPos;
@@ -689,8 +690,8 @@ void CRenderShadowList::QueueShadows(ModelInstance* pInstance, const CRelevantLi
 	//determine if we can support perspective
 	bool bPerspective = (!!g_CV_ModelShadow_Proj_Perspective.m_Val) && CModelShadowShader::GetSingleton()->CanSupportPerspective();
 
-	//the index of the last light used for shadow generation in the list
-	uint32 nLastUsedLight = 0;
+	//the index of the first light not used for shadow generation in the list
+	uint32 nFirstUnusedLight = 0;
 
 	for (uint32 nCurrLight = 0; nCurrLight < LightList.GetNumLights(); ++nCurrLight)
 	{
@@ -701,43 +702,36 @@ void CRenderShadowList::QueueShadows(ModelInstance* pInstance, const CRelevantLi
 		if (!(Light.GetFlags() & FLAG_CASTSHADOWS) && !g_CV_DrawAllModelShadows.m_Val)
 			continue;
 
-		vTweenColor = LightList.GetLightSample(nCurrLight);
+		//see if we have filled up the list, if so, no need to continue on
+		if (nShadows >= nMaxQueued)
+			break;
+
+		vTweenColor	= LightList.GetLightSample(nCurrLight);
+		vTweenPos	= Light.GetPos();
+		bTweenOrtho	= !bPerspective;
 
 		if(Light.GetType() == CRenderLight::eLight_Dir)
 		{
 			vTweenPos	= pInstance->GetPos() - Light.GetDir() * pInstance->GetDims().Mag() * 2.0f;
 			bTweenOrtho	= true;
 		}
-		else
-		{
-			vTweenPos	= Light.GetPos();
-			bTweenOrtho	= !bPerspective;
-		}
-
-		//save this index
-		nLastUsedLight = nCurrLight;
-		nShadows++;
 
 		//add it to the list
-		if((nShadows < nMaxShadows) || !bTweenLights)
-		{
-			QueueShadow(pInstance, vModelPos, vTweenPos, vTweenColor, bTweenOrtho);
-		}
+		QueueShadow(pInstance, vModelPos, vTweenPos, vTweenColor, bTweenOrtho);
 
-		//see if we have filled up the list, if so, no need to continue on
-		if(nShadows >= nMaxShadows)
-			break;
+		nShadows++;
+		nFirstUnusedLight = nCurrLight + 1;
 	}
 
-	//don't bother tweening if we could fit all of our shadows appropriately
-	if (bTweenLights && (nShadows >= nMaxShadows ))
+	//if there is still room, blend the rest into the last one
+	if (nShadows < nMaxShadows)
 	{
-		// Merge the furthest away light source with the next furthest so that shadows are blended
-		// between the furthest
-		float fLowestScore = GetMaxVecComponent(LightList.GetLightSample(nLastUsedLight));
-		float fNumBlendedLightSources = 1.0f;
+		vTweenPos.Init();
+		vTweenColor.Init();
+		bTweenOrtho = !bPerspective;
+		float fTotalWeight = 0.0f;
 
-		for (uint32 nCurrLight = nLastUsedLight + 1; nCurrLight < LightList.GetNumLights(); ++nCurrLight)
+		for (uint32 nCurrLight = nFirstUnusedLight; nCurrLight < LightList.GetNumLights(); ++nCurrLight)
 		{
 			const CRenderLight& Light = LightList.GetLight(nCurrLight);
 			assert(Light.GetType() != CRenderLight::eLight_Invalid);
@@ -746,13 +740,15 @@ void CRenderShadowList::QueueShadows(ModelInstance* pInstance, const CRelevantLi
 			if (!(Light.GetFlags() & FLAG_CASTSHADOWS) && !g_CV_DrawAllModelShadows.m_Val)
 				continue;
 
-			float fBlendWeight			 = GetMaxVecComponent(LightList.GetLightSample(nCurrLight)) / fLowestScore;
-			vTweenColor					+= LightList.GetLightSample(nCurrLight);
-			fNumBlendedLightSources		+= fBlendWeight;
+			LTVector vLightColor	= LightList.GetLightSample(nCurrLight);
+			float fBlendWeight		= GetMaxVecComponent(vLightColor);
+			vTweenColor				+= vLightColor * fBlendWeight;
+			fTotalWeight			+= fBlendWeight;
 
 			if(Light.GetType() == CRenderLight::eLight_Dir)
 			{
 				vTweenPos	+= fBlendWeight * (pInstance->GetPos() - Light.GetDir() * pInstance->GetDims().Mag() * 2.0f);
+				bTweenOrtho	= true;
 			}
 			else
 			{
@@ -760,11 +756,16 @@ void CRenderShadowList::QueueShadows(ModelInstance* pInstance, const CRelevantLi
 			}
 		}
 
-		//scale the position back to the appropriate amount
-		vTweenPos /= fNumBlendedLightSources;
+		if (fTotalWeight > 0.0f)
+		{
+			//scale back to the appropriate amount
+			float fInvWeight = 1.0f / fTotalWeight;
+			vTweenPos	*= fInvWeight;
+			vTweenColor	*= fInvWeight;
 
-		//now add this shadow to the list
-		QueueShadow(pInstance, vModelPos, vTweenPos, vTweenColor, bTweenOrtho);
+			//now add this shadow to the list
+			QueueShadow(pInstance, vModelPos, vTweenPos, vTweenColor, bTweenOrtho);
+		}
 	}
 
 	//success
@@ -831,7 +832,7 @@ void CRenderShadowList::RenderQueuedShadows(const ViewParams& Params)
 	//see if we have any shadows to render
 	if(nShadowsToRender == 0)
 	{
-		m_cShadowList.clear();
+		m_cShadowList.resize(0);	// RETAIL: 0x4dd83c
 		return;
 	}
 
@@ -841,7 +842,7 @@ void CRenderShadowList::RenderQueuedShadows(const ViewParams& Params)
 	//just bail if we don't have any shadows, otherwise we will just infinitely loop
 	if(m_cTextureList.size() == 0)
 	{
-		m_cShadowList.clear();
+		m_cShadowList.resize(0);
 		return;
 	}
 
@@ -949,7 +950,7 @@ void CRenderShadowList::RenderQueuedShadows(const ViewParams& Params)
 	pDepthStencilBuffer->Release();	pDepthStencilBuffer	  = NULL;
 
 	//clear out the list
-	m_cShadowList.clear();
+	m_cShadowList.resize(0);	// RETAIL: 0x4ddb60
 
 	//restore our device state
 	g_Device.SetDefaultRenderStates();
