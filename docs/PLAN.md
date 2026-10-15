@@ -637,29 +637,59 @@ the unchecked indices) and DrawAggregateShader (resize(0)). The nears
 list paired UpdateSendTimeWithAttachments with heap code at 0x4a03b0 and
 0x1005e930; its real homes are 0x45fe20 and 0x10030640.
 
+**Round 5** (on master's 412c3e7): **the SDK interfaces against
+retail, slot by slot.** Every engine table the game reaches through the
+SDK was compared with the shipped one, slot by slot (the placed function
+at each slot, or the slot's code with its calls mapped through the
+placements where small functions share a shape): ILTClient (94),
+ILTServer (78, in Lithtech.exe and server.dll), ILTCommon, ILTModel,
+ILTPhysics, ILTTransform, ILTSoundMgr (client and server),
+ILTDrawPrim, ILTTexInterface, ILTFontManager, ILTWidgetManager,
+ILTCursor (retail's table at 0x5548d8, after the cursor instance's three
+slots), ILTBenchmarkMgr, ILTDirectMusicMgr, ILTVideoMgr, the message
+classes, SpriteControl, the CUI fonts, poly strings and widgets, and
+ICommandLineArgs. All agree. The interface getters (slots 1-5 and 49-56
+of ILTClient) were checked through the holders' names ("ILTDrawPrim.
+Default" and so on) beside each global. ILTClient's and ILTServer's
+function-pointer members sit at retail's offsets too (all 129 and 106
+stores of InitFunctionPointers / SetupFunctionPointers, at 0x40bcd0 and
+0x1003d3d0). One signature differs: **GetParticleBlockersInAABB** takes
+`(pos, dims, uint32* pIndices, uint32& nNumIndices)` in CJ (NULL to
+count; CShell's snow airspace calls it twice, 0x100f01ed). The SDK has
+that form now, with `GetParticleBlockersInAABBList` as an inline helper
+for the old vector form, and **SnowFX.cpp** (game package) makes CJ's
+two calls; dropping every mention of `std::vector<uint32>` from
+iltclient.h moved a scheduling choice in Object.lto's
+CAIGoalMgr::HandleCommand (its stdafx.h includes the header), which the
+helper restores. Also: ltmem without /GX (LTMemHeapInit inlines the
+group Init; CLilFixedHeapGroup::Term matches; SndDrv.dll unchanged),
+CWorldParticleBlockerData::GetBlockersInAABB, si_SetObjectPos (moves only
+on a change of position), and `tools/fndiff.py` reads `--end` as decimal
+or `+size` as well as hex (tools clone commit 0f87cb5).
+
 **Where it stands / next** (stopped here: score recorded at
-`Lithtech.exe` 6,824 identical, 94.3%; `server.dll` 2,728, 95.9%;
+`Lithtech.exe` 6,832 identical, 94.4%; `server.dll` 2,735, 96.1%;
 SndDrv.dll 225) (breadth first, per module, with `tools/fndiff.py`,
 `o2gap.py`, `vtabcheck.py`, `uncovered.py`; `progress.py --nears=<target>`
 pairs some rows wrongly where a function's CSV extent is split, so check
-each with fndiff against the retail address first, and pass `--end` in
-hex: fndiff reads a decimal end as hex; fndiff on
+each with fndiff against the retail address first; fndiff on
 `--image=out/spdemo/Lithtech-readable.exe` reads SecuROM's calls put
-back):
-- structural nears not yet done: DrawDynamicParticles (block order and
-  pEffect kept in a register), CModelMgr::ForEach (retail calls the set
-  iterator's _Inc out of line; ours inlines it whatever the iterator
-  form), MarkSectionBreaks for Lightmap_Texture (retail inlines != into a
-  call of ==; ours calls != out of line, and writing == inlines it
-  whole), LTMemHeapInit (inlining), CLilFixedHeapGroup::Init and
-  CGeneralHeapGroup::Term, GetBlockersInAABB, MoveObject and
-  RotateWorldModel;
+back; `vtabcheck.py` misses tables whose constructor is not placed, so
+interface tables were matched by their slots' placements instead):
+- structural nears not yet done: DrawDynamicParticles (pEffect kept in a
+  register where retail reloads it; the failed-allocation return placed
+  out of line), CModelMgr::ForEach (retail calls the set iterator's _Inc
+  out of line; ours inlines it whatever the iterator form),
+  MarkSectionBreaks for Lightmap_Texture (retail inlines != into a call
+  of ==; ours calls != out of line, and writing == inlines it whole);
 - nears left as register allocation or scheduling only (tried, no source
-  shape found): BuildDeviceList (four stack slots), CreateDevice (esi and
-  edi swapped), CUIBitmapFont::BuildFontTable (three stack slots),
-  MoveAttachment (the MoveState zeroing interleaved), CD3D_RenderWorld::
-  Draw, CPlayerMover::Collide/_Poly/StairStep, QueueShadows,
-  LoadLightGroup, SSubLM::Load, the light-group stream operator,
+  shape found): MoveObject and RotateWorldModel (retail keeps 0 in a
+  register for its compares and stores), BuildDeviceList (four stack
+  slots), CreateDevice (esi and edi swapped),
+  CUIBitmapFont::BuildFontTable (three stack slots), MoveAttachment (the
+  MoveState zeroing interleaved), CD3D_RenderWorld::Draw,
+  CPlayerMover::Collide/_Poly/StairStep, QueueShadows, LoadLightGroup,
+  SSubLM::Load, the light-group stream operator,
   ps_UpdateParticleBoundingBox (x operand order),
   SendAllObjectsUnguaranteed, CD3DDrawPrim::SetCamera and
   SetTransformMode, the DrawPolyGrid imul order;

@@ -2781,8 +2781,13 @@ void si_SetObjectPos(HOBJECT hObj, const LTVector *pos)
 	if (!pObj)
 		return;
 
-	FullMoveObject(pObj, pos,
-		MO_DETACHSTANDING|MO_SETCHANGEFLAG|MO_MOVESTANDINGONS|MO_TELEPORT);
+	// RETAIL: only when the position changes (server.dll 0x1003c5a8)
+	const LTVector &vCurPos = pObj->GetPos();
+	if (pos->x != vCurPos.x || pos->y != vCurPos.y || pos->z != vCurPos.z)
+	{
+		FullMoveObject(pObj, pos,
+			MO_DETACHSTANDING|MO_SETCHANGEFLAG|MO_MOVESTANDINGONS|MO_TELEPORT);
+	}
 }
 
 LTRESULT si_TeleportObject(HOBJECT hObj, const LTVector *pNewPos)

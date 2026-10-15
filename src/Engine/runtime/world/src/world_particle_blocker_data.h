@@ -20,7 +20,7 @@ public:
 	
     virtual ELoadWorldStatus Load(ILTStream *pStream) = 0;
 
-	virtual bool GetBlockersInAABB( const LTVector& pos, const LTVector& dims, std::vector<uint32>& indices ) = 0;
+	virtual bool GetBlockersInAABB( const LTVector& pos, const LTVector& dims, uint32* pIndices, uint32& nNumIndices ) = 0;
 	virtual bool GetBlockerEdgesXZ( uint32 index, LTPlane& blockerPlane, uint32& numEdges, LTPlane*& edgePlanes ) = 0;
 };
 
