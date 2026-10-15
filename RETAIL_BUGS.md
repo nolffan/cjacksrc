@@ -112,6 +112,24 @@ prediction (predict.cpp) all but stops extrapolating; `MaxExtrapolateTime
 
 Not fixed yet: in the modern build the two entries would be `EV_FLOAT`.
 
+### The world's shader sections are sorted with an inconsistent order
+
+Lithtech.exe 0x4c16b6 and the other instances of std::sort's helpers the
+world shaders inline it into (CRenderShader_Base::CInternalSection's
+operator<, src/Engine/runtime/render_a/src/sys/d3d/
+d3d_rendershader_base.h, through SortSections' FSortSections). A section
+sorts before another if its base section (texture, flags) is less, or
+else if its world is less, and only then are unequal base sections
+ordered after: so a section with the greater texture but the lesser world
+sorts both before and after the other. std::sort needs a strict weak
+ordering; given this one it can order sections arbitrarily, and its
+unguarded insertion pass can in principle step outside the range. In
+practice a level's world models seldom share a shader with the main
+world in a way that triggers it.
+
+Fixed in the modern build: src/Engine/runtime/render_a/src/sys/d3d/
+d3d_rendershader_base.h, MODERN.md EN-1.
+
 ## NOLF2's bugs Contract J.A.C.K. no longer has
 
 (none checked yet)

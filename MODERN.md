@@ -39,3 +39,7 @@ modes at any size; our Bink player on FFmpeg in place of RAD's
   constructor sets its thread and browser handles before anything can
   fail (`RETAIL_BUGS.md`; src/Game/Libs/GameSpy/WinSync.h,
   GameSpyBrowser.cpp).
+* **EN-1: the world shaders' section order.** The sections compare by
+  world only among equal base sections, so the sort gets a strict weak
+  ordering (`RETAIL_BUGS.md`; src/Engine/runtime/render_a/src/sys/d3d/
+  d3d_rendershader_base.h).

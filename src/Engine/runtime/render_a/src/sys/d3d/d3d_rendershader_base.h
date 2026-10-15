@@ -1131,8 +1131,23 @@ protected:
  				return true;
 			}
 
+#ifdef CJACK_MODERN
+			// MODERN.md EN-1: the world only among equal base sections, so
+			// that std::sort is given a strict weak ordering
+ 			if(CShaderSection::operator!=(static_cast<const CShaderSection&>(cOther)))
+			{
+ 				return false;
+			}
+
+			if (m_pWorld != cOther.m_pWorld)
+			{
+				return m_pWorld < cOther.m_pWorld;
+			}
+#else
 			// RETAIL: Contract J.A.C.K. then groups the sections by world
-			// (0x4c16b6, 0x4c8b4c), without the matching inequality test
+			// (0x4c16b6, 0x4c8b4c), without the matching inequality test:
+			// a bug (RETAIL_BUGS.md), as a section can then sort both before
+			// and after another
 			if (m_pWorld < cOther.m_pWorld)
 			{
 				return true;
@@ -1142,6 +1157,7 @@ protected:
 			{
  				return false;
 			}
+#endif
 
  			return m_pTextureEffect < cOther.m_pTextureEffect;
  		}
