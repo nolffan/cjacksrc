@@ -361,9 +361,13 @@ dedicated server (package 7).
     only reads the model id and makes or reuses the player. The client's
     handshake (ClientMultiplayerMgr) must read the hello's two strings.
     Do server and client together, so multiplayer keeps working.
-  - CJ's CHUDCarrying (0xa4 bytes: the chassis pieces' carrying and
-    pickup icons, 0x84; a list of pieces, 0x94, add 0x10052570, remove
-    0x100522d0; Render 0x100520a0 uses CanCarryObject's FX, 0x1009b830).
+  - CJ's CHUDCarrying (0xa4 bytes: the body icons 0x78..0x80; per
+    chassis piece its carrying and pickup icons, 0x84, from Init
+    0x10052400; and a row of key icons, 0x94, 16-byte entries {icon, key
+    id, width, height}: Add 0x10052570 looks the key up in the key
+    manager (0x1017c9b4, its icon at +0x26), Remove 0x100522d0, Clear
+    0x10052340, called from 0x100fcb05..0x100fd41b; Render 0x100520a0
+    uses CanCarryObject(&pFX), 0x1009b830, and the carried piece 0x17c).
   - CVehicleMgr's earlier members (+4 at 0x18, +8 at 0x130, +44 before
     m_hCurJumpVolume) and its use of the weapon (SetPhysicsModel
     0x10107b50, UpdateWeaponModel's vehicle branch 0x1009ee04).
