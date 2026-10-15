@@ -71,3 +71,7 @@ modes at any size; our Bink player on FFmpeg in place of RAD's
   tests the transition's segment state before using it, as NOLF2's does
   (`RETAIL_BUGS.md`; src/Engine/runtime/kernel/src/sys/win/
   ltdirectmusic_impl.cpp).
+* **EN-6: batched quads keep their colours.** DrawPrim for screen-space
+  LT_POLYGT4 copies each vertex's own colour into its triangle list
+  (`RETAIL_BUGS.md`; src/Engine/runtime/render_b/src/sys/d3d/
+  d3ddrawprim.cpp).

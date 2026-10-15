@@ -182,6 +182,19 @@ code tests it (a fix marked "[kml]").
 Fixed in the modern build: src/Engine/runtime/kernel/src/sys/win/
 ltdirectmusic_impl.cpp, MODERN.md EN-5.
 
+### Batched screen-space quads lose their vertex colours
+
+Lithtech.exe 0x41d7e0 (CD3DDrawPrim::DrawPrim for LT_POLYGT4,
+src/Engine/runtime/render_b/src/sys/d3d/d3ddrawprim.cpp). When more than
+two textured Gouraud quads are drawn in screen space they are copied into
+a triangle list, and every one of the six vertices takes the colour of the
+quad's first vertex (0x41d8ef): a gradient across a quad drawn this way
+comes out flat. Two quads or fewer, or a 3D transform, keep each vertex's
+colour.
+
+Fixed in the modern build: src/Engine/runtime/render_b/src/sys/d3d/
+d3ddrawprim.cpp, MODERN.md EN-6.
+
 ### The launcher's own path can overrun a buffer
 
 ContractJack.exe 0x40669d (CLauncherApp::InitInstance,

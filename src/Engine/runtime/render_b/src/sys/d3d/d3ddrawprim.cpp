@@ -975,6 +975,15 @@ LTRESULT CD3DDrawPrim::DrawPrim(LT_POLYF3 *pPrim, uint32 nCount) {
 }
 
 // Draw primitive calls (quadrilaterals)
+// RETAIL: the batched screen-space POLYGT4 path colours all six vertices
+// with the first vertex's colour (Lithtech.exe 0x41d8ef; RETAIL_BUGS.md);
+// the modern build uses each vertex's own.
+#ifdef CJACK_MODERN
+#define GT4_BATCH_RGBA(pSrc, i)	RGBA_MAKE((pSrc)->verts[i].rgba.r,(pSrc)->verts[i].rgba.g,(pSrc)->verts[i].rgba.b,(pSrc)->verts[i].rgba.a)
+#else
+#define GT4_BATCH_RGBA(pSrc, i)	RGBA_MAKE((pSrc)->verts[0].rgba.r,(pSrc)->verts[0].rgba.g,(pSrc)->verts[0].rgba.b,(pSrc)->verts[0].rgba.a)
+#endif
+
 LTRESULT CD3DDrawPrim::DrawPrim(LT_POLYGT4 *pPrim, uint32 nCount) {
 	LPDIRECT3DDEVICE8 pDevice = r_GetRenderStruct()->GetD3DDevice();
 	if (!pDevice) return LT_ERROR;
@@ -1013,13 +1022,13 @@ LTRESULT CD3DDrawPrim::DrawPrim(LT_POLYGT4 *pPrim, uint32 nCount) {
 
 					pDstPtr->x	    = pSrcPtr->verts[1].x; pDstPtr->y = pSrcPtr->verts[1].y; pDstPtr->z = pSrcPtr->verts[1].z;
 					pDstPtr->rhw	= 1.0f;
-					pDstPtr->rgba   = RGBA_MAKE(pSrcPtr->verts[1].rgba.r,pSrcPtr->verts[1].rgba.g,pSrcPtr->verts[1].rgba.b,pSrcPtr->verts[1].rgba.a);
+					pDstPtr->rgba   = GT4_BATCH_RGBA(pSrcPtr, 1);
 					pDstPtr->u	    = pSrcPtr->verts[1].u; pDstPtr->v = pSrcPtr->verts[1].v; 
 					++pDstPtr;
 
 					pDstPtr->x	    = pSrcPtr->verts[2].x; pDstPtr->y = pSrcPtr->verts[2].y; pDstPtr->z = pSrcPtr->verts[2].z;
 					pDstPtr->rhw	= 1.0f;
-					pDstPtr->rgba   = RGBA_MAKE(pSrcPtr->verts[2].rgba.r,pSrcPtr->verts[2].rgba.g,pSrcPtr->verts[2].rgba.b,pSrcPtr->verts[2].rgba.a);
+					pDstPtr->rgba   = GT4_BATCH_RGBA(pSrcPtr, 2);
 					pDstPtr->u	    = pSrcPtr->verts[2].u; pDstPtr->v = pSrcPtr->verts[2].v; 
 					++pDstPtr;
 
@@ -1031,22 +1040,18 @@ LTRESULT CD3DDrawPrim::DrawPrim(LT_POLYGT4 *pPrim, uint32 nCount) {
 
 					pDstPtr->x	    = pSrcPtr->verts[2].x; pDstPtr->y = pSrcPtr->verts[2].y; pDstPtr->z = pSrcPtr->verts[2].z;
 					pDstPtr->rhw	= 1.0f;
-					pDstPtr->rgba   = RGBA_MAKE(pSrcPtr->verts[2].rgba.r,pSrcPtr->verts[2].rgba.g,pSrcPtr->verts[2].rgba.b,pSrcPtr->verts[2].rgba.a);
+					pDstPtr->rgba   = GT4_BATCH_RGBA(pSrcPtr, 2);
 					pDstPtr->u	    = pSrcPtr->verts[2].u; pDstPtr->v = pSrcPtr->verts[2].v; 
 					++pDstPtr;
 
 					pDstPtr->x	    = pSrcPtr->verts[3].x; pDstPtr->y = pSrcPtr->verts[3].y; pDstPtr->z = pSrcPtr->verts[3].z;
 					pDstPtr->rhw	= 1.0f;
-					pDstPtr->rgba   = RGBA_MAKE(pSrcPtr->verts[3].rgba.r,pSrcPtr->verts[3].rgba.g,pSrcPtr->verts[3].rgba.b,pSrcPtr->verts[3].rgba.a);
+					pDstPtr->rgba   = GT4_BATCH_RGBA(pSrcPtr, 3);
 					pDstPtr->u	    = pSrcPtr->verts[3].u; pDstPtr->v = pSrcPtr->verts[3].v; 
 					++pDstPtr;
 
 					--nCount; nDstBufSize -= 6; nDrawCount += 2; ++pSrcPtr; }
 				MODERN_PIXEL_ALIGN(m_VertTransBufT, pDstPtr); hRes = pDevice->DrawPrimitiveUP(D3DPT_TRIANGLELIST, nDrawCount, m_VertTransBufT, sizeof(DRAWPRIM_D3DTRANS_TEX));
-				if (hRes != D3D_OK)
-				{
-					return LT_ERROR;
-				}
 		} }
 		else {
   			LT_POLYGT4* pPrimPtr = pPrim;
@@ -1057,10 +1062,11 @@ LTRESULT CD3DDrawPrim::DrawPrim(LT_POLYGT4 *pPrim, uint32 nCount) {
   					m_VertTransBufT[i].u	= pPrimPtr->verts[i].u; m_VertTransBufT[i].v = pPrimPtr->verts[i].v; }
 
   			MODERN_PIXEL_ALIGN(m_VertTransBufT, m_VertTransBufT + 4); hRes = pDevice->DrawPrimitiveUP(D3DPT_TRIANGLEFAN, 2, m_VertTransBufT, sizeof(DRAWPRIM_D3DTRANS_TEX));
-			if (hRes != D3D_OK) 
-				return LT_ERROR;
 			--nCount; ++pPrimPtr; } }
 
+		// RETAIL: only the last draw's result is checked (Lithtech.exe 0x41db35)
+		if (hRes != D3D_OK)
+			return LT_ERROR;
 		 }
 
 	return LT_OK;
@@ -1083,9 +1089,10 @@ LTRESULT CD3DDrawPrim::DrawPrim(LT_POLYFT4 *pPrim, uint32 nCount) {
 				m_VertBufGT[i].rgba = pPrimPtr->rgba;
 				m_VertBufGT[i].u	= pPrimPtr->verts[i].u; m_VertBufGT[i].v = pPrimPtr->verts[i].v; }
 			hRes = pDevice->DrawPrimitiveUP(D3DPT_TRIANGLEFAN, 2, m_VertBufGT, sizeof(LT_VERTGT));
-			if (hRes != D3D_OK)
-				return LT_ERROR;
 			--nCount; ++pPrimPtr; }
+		// RETAIL: only the last draw's result is checked (Lithtech.exe 0x41db70)
+		if (hRes != D3D_OK)
+			return LT_ERROR;
 		 }
 	else {	// Use Transform and Lit verts...
 		HRESULT hRes = pDevice->SetVertexShader(DRAWPRIM_D3DTRANS_TEX_FLAGS);
@@ -1098,9 +1105,10 @@ LTRESULT CD3DDrawPrim::DrawPrim(LT_POLYFT4 *pPrim, uint32 nCount) {
 				m_VertTransBufT[i].rgba = RGBA_MAKE(pPrimPtr->rgba.r,pPrimPtr->rgba.g,pPrimPtr->rgba.b,pPrimPtr->rgba.a);
 				m_VertTransBufT[i].u	= pPrimPtr->verts[i].u; m_VertTransBufT[i].v = pPrimPtr->verts[i].v; }
 			MODERN_PIXEL_ALIGN(m_VertTransBufT, m_VertTransBufT + 4); hRes = pDevice->DrawPrimitiveUP(D3DPT_TRIANGLEFAN, 2, m_VertTransBufT, sizeof(DRAWPRIM_D3DTRANS_TEX));
-			if (hRes != D3D_OK)
-				return LT_ERROR; 
 			--nCount; ++pPrimPtr; }
+		// RETAIL: only the last draw's result is checked (Lithtech.exe 0x41db70)
+		if (hRes != D3D_OK)
+			return LT_ERROR; 
 		}
 
 	return LT_OK;
