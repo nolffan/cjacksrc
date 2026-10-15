@@ -2911,14 +2911,30 @@ Used for: Special FX.
 /*!
 \param  pos             Center of AABB.
 \param  dims            Dimensions of AABB.
-\param  indices         Array that will be filled in with the indices of the blockers in the AABB.
+\param  pIndices        Array that will be filled in with the indices of the blockers in the AABB,
+                        or NULL to count them only.
+\param  nNumIndices     Set to the number of blockers in the AABB.
 
 This retrieves the indices of all particle blockers that are within
-the AABB specified by pos and dims.
+the AABB specified by pos and dims. Call it with NULL first to size the
+array.
 
 Used for: Special FX.
 */
-	bool (*GetParticleBlockersInAABB)( const LTVector& pos, const LTVector& dims, std::vector<uint32>& indices );
+//! cjacksrc: Contract J.A.C.K.'s form, an array and a count rather than a
+//! std::vector (Lithtech.exe 0x40a5a0; CShell.dll 0x100f01ed calls it twice)
+	bool (*GetParticleBlockersInAABB)( const LTVector& pos, const LTVector& dims, uint32* pIndices, uint32& nNumIndices );
+
+//! cjacksrc: NOLF2's form over Contract J.A.C.K.'s (count, then fill), for
+//! code written against the std::vector one; not part of the interface.
+	bool GetParticleBlockersInAABBList( const LTVector& pos, const LTVector& dims, std::vector<uint32>& indices )
+	{
+		uint32 nNumIndices = 0;
+		if( !GetParticleBlockersInAABB( pos, dims, LTNULL, nNumIndices ) )
+			return false;
+		indices.resize( nNumIndices );
+		return !nNumIndices || GetParticleBlockersInAABB( pos, dims, &indices[0], nNumIndices );
+	}
 
 /*!
 \param  index           Index of blocker to retrieve.
