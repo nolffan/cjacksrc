@@ -181,16 +181,36 @@ TARGETS = [
     # ---- the launcher and the dedicated server ------------------------
     dict(label="ContractJack.exe", what="the launcher", kind="image",
          shipped=REFERENCE + "/ContractJack.exe", stem="ContractJack",
+         # src/Game/TO2.dsw (Launcher). As in our map: the launcher's objects
+         # (BitmapCheckButton .. Utils, then the shared VersionMgr.obj from
+         # 0x40a820), then regmgr.lib (CRegMgr, from 0x40a9b0) and
+         # regmgr32.lib (CRegMgr32, its OpenKey last, to 0x40b8db); from
+         # 0x40b8dc the import thunks of the MFC functions called without
+         # dllimport (mfc71.lib), mfcs71.lib's CComCriticalSection
+         # (0x40bd72), msvcrt.lib, the .text$x funclets (0x40c510). Then
+         # the dynamic initializers: theApp's (Launcher.obj, 0x40c530) and
+         # the SDK headers' float constants (StdAfx.obj, to 0x40c603), the
+         # ATL module's (atls.lib), and the atexit destructors: theApp's
+         # (0x40c630), the ATL module's (0x40c63a)
          built="src/Game/built/Final/Launcher/ContractJack.exe", optional=True,
-         # provisional: mfcs71.lib's CComCriticalSection::Init at 0x40bd86,
-         # then msvcrt.lib
-         app=[(0x00401000, 0x0040bd86)]),
+         app=[(0x00401000, 0x0040b8dc), (0x0040c530, 0x0040c603),
+              (0x0040c630, 0x0040c63a)]),
     dict(label="ContractJackServer.exe", what="the dedicated server", kind="image",
          shipped=REFERENCE + "/ContractJackServer.exe", stem="ContractJackServer",
+         # src/Game/TO2.dsw (ServerApp). As in our map: the server's objects
+         # (CommonUtilities .. VersionMgr, the shared ones among them), then
+         # its libraries (ButeMgr, CryptMgr, StdLith, RegMgr, RegMgr32, the
+         # last CRegMgr32::OpenKey ending at 0x41441b); from 0x41441c the
+         # import thunks of the MFC functions called without dllimport,
+         # mfcs71.lib (0x41493c), msvcrt.lib, the .text$x funclets
+         # (0x415180). Then the dynamic initializers of the server's own
+         # objects (the interface holders' and ltmodule's registrations, the
+         # SDK headers' float constants, theApp, ButeMgr's statics:
+         # 0x4154c0..0x415745) before the ATL module's (atls.lib), and the
+         # atexit destructors (0x415770..0x4158c9) before the ATL module's
          built="src/Game/built/Final/ServerApp/ContractJackServer.exe", optional=True,
-         # provisional: mfcs71.lib from 0x414950, then msvcrt.lib from
-         # __ftol2 (0x4149a0)
-         app=[(0x00401000, 0x00414950)]),
+         app=[(0x00401000, 0x0041441c), (0x004154c0, 0x00415746),
+              (0x00415770, 0x004158ca)]),
     # ---- the game ------------------------------------------------------
     dict(label="CShell.dll", what="the game: client", kind="image",
          shipped=REFERENCE + "/CShell.dll", stem="CShell",

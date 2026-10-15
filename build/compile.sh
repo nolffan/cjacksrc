@@ -14,4 +14,8 @@ set -e
 source "$(dirname "$0")/env.sh"
 cjacksrc_release_tree "$@"
 cd "$REPO"
+# the launcher's and the dedicated server's art, from the retail game
+# (build/appres.py): what their resource scripts compile
+source "$REPO/build/retail.sh"
+python3 build/appres.py "$(retail_dir)" src/Game/built/retail
 cjacksrc_make "${@:-all}"

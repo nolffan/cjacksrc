@@ -13,7 +13,11 @@
 #include <afxtempl.h>
 #include "Resource.h"
 #include "server_interface.h"
+#if _MSC_VER >= 1300
+#include <strstream>
+#else
 #include <strstrea.h>
+#endif
 #include "ProfileUtils.h"
 
 struct CPlayerInfo

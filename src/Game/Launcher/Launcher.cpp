@@ -26,11 +26,11 @@ static char THIS_FILE[] = __FILE__;
 COLORREF crHighlightText = RGB(255, 255, 0);
 COLORREF crNormalText = RGB(192, 160, 32);
 
-#ifdef _TO2DEMO
-char const GAME_NAME[] = "No One Lives Forever 2 (Official Demo)";
-#else
-char const GAME_NAME[] = "No One Lives Forever 2";
-#endif
+// RETAIL: GAME_NAME, Contract J.A.C.K.'s "Contract Jack", is the shared
+// VersionMgr.cpp's, which the launcher compiles too (CVersionMgr: the CD key
+// in the registry). The retail image has the string among this file's
+// (0x40e778), so this file may have defined it there; VersionMgr.cpp
+// defines it for the game DLLs.
 
 /////////////////////////////////////////////////////////////////////////////
 // CLauncherApp
@@ -55,7 +55,7 @@ CLauncherApp::CLauncherApp()
 	m_bDisableJoysticks = FALSE;
 	m_bDisableTripleBuffering = FALSE;
 	m_bDisableHardwareCursor = FALSE;
-	m_bDisableAnimatedLoadScreen = FALSE;
+	m_bEnableScreenshots = FALSE;
 	m_bDisableHardwareSound = FALSE;
 	m_bDisableSoundFilters = TRUE;
 	m_bRestoreDefaults = FALSE;
@@ -165,7 +165,7 @@ BOOL CLauncherApp::InitInstance()
 		m_bDisableJoysticks = GetRegistryBool("Disable Joysticks");
 		m_bDisableTripleBuffering = GetRegistryBool("Disable Triple Buffering");
 		m_bDisableHardwareCursor = GetRegistryBool("Disable Hardware Cursor");
-		m_bDisableAnimatedLoadScreen = GetRegistryBool("Disable Animated Load Screen");
+		m_bEnableScreenshots = GetRegistryBool("Enable Screenshots");
 		m_bDisableHardwareSound = GetRegistryBool("Disable Hardware Sound");
 		m_bDisableSoundFilters = GetRegistryBool("Disable Sound Filters");
 
@@ -239,7 +239,7 @@ BOOL CLauncherApp::InitInstance()
 		m_RegMgr.SetField("Disable Joysticks", m_bDisableJoysticks);
 		m_RegMgr.SetField("Disable Triple Buffering", m_bDisableTripleBuffering);
 		m_RegMgr.SetField("Disable Hardware Cursor", m_bDisableHardwareCursor);
-		m_RegMgr.SetField("Disable Animated Load Screen", m_bDisableAnimatedLoadScreen);
+		m_RegMgr.SetField("Enable Screenshots", m_bEnableScreenshots);
 		m_RegMgr.SetField("Disable Hardware Sound", m_bDisableHardwareSound);
 		m_RegMgr.SetField("Disable Sound Filters", m_bDisableSoundFilters);
 
@@ -663,11 +663,6 @@ CString CLauncherApp::GetAdvancedOptionsCommandLineString()
 		sAdv += " +DisableHardwareCursor 0";
 	}
 	
-	if(m_bDisableAnimatedLoadScreen)
-	{
-		sAdv += " +DynamicLoadScreen 0";
-	}
-
 	if(m_bDisableHardwareSound)
 	{
 		sAdv += " +DisableHardwareSound 1";
@@ -684,6 +679,16 @@ CString CLauncherApp::GetAdvancedOptionsCommandLineString()
 	else
 	{
 		sAdv += " +DisableSoundFilters 0";
+	}
+
+	// RETAIL: the screenshot option is the engine's lockable back buffer
+	if(m_bEnableScreenshots)
+	{
+		sAdv += " +lockablebackbuffer 1";
+	}
+	else
+	{
+		sAdv += " +lockablebackbuffer 0";
 	}
 
 	if(m_bRestoreDefaults)
