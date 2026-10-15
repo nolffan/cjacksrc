@@ -226,11 +226,11 @@ public:
 
 			m_aLockedVertices.reserve(m_aVBs.size());
 			TVBList::iterator iCurVB = m_aVBs.begin();
-			void *plv = 0;
 
 			for (; iCurVB != m_aVBs.end(); ++iCurVB)
 			{
 				// Lock it
+				void *plv = 0;
 				m_aLockedVertices.push_back(plv);
 				if (!SUCCEEDED((*iCurVB)->Lock(0, 0, (BYTE**)&m_aLockedVertices.back(), 0)))
 				{
@@ -290,8 +290,8 @@ public:
 		// Remember where we came from
 		cISection.m_pOriginalIndices = &aIndices[cSection.m_nStartIndex];
 		cISection.m_pOriginalVertices = aSrcVertices;
-		cISection.m_pWorld = pWorld;	// RETAIL: 0x4be4a0
 		cISection.m_nOriginalVertexOffset = -(int32)(cSection.m_nStartVertex - cISection.m_nStartVertex);
+		cISection.m_pWorld = pWorld;	// RETAIL: 0x4be4a0
 
 		// Fill the VB
 		ASSERT(cSection.m_nVertexCount == cISection.m_nVertexCount);
@@ -947,13 +947,12 @@ private:
 
 		// Go through the starting points...
 		TRenderBlockPreviewList::iterator iCurPreviewRB = m_aPreviewRenderBlocks.begin();
-		// cjacksrc: Visual C++ .NET 2003's vector has no push_back(); the
-		// 2006 tree's local, as that compiler's code had it
-		CRenderBlockData rbd;
 		for (; iCurPreviewRB != m_aPreviewRenderBlocks.end(); ++iCurPreviewRB)
 		{
 			// Add a new renderblock
-			m_aRenderBlocks.push_back(rbd);
+			// cjacksrc: Visual C++ .NET 2003's vector has no push_back(); a
+			// temporary each time round (RETAIL: 0x4c17b3)
+			m_aRenderBlocks.push_back(CRenderBlockData());
 			CRenderBlockData &cRB = m_aRenderBlocks.back();
 
 			// Figure out how many sections are in this block
@@ -1015,13 +1014,12 @@ private:
 
 		// Put them in order
 		TIndexList::iterator iCurIndex = aSortIndices.begin();
-		// cjacksrc: the 2006 tree's local (no push_back() in Visual C++ .NET
-		// 2003's vector)
-		CInternalSection is;
 		for (; iCurIndex != aSortIndices.end(); ++iCurIndex)
 		{
 			// Move the section
-			aSortedSections.push_back(is);
+			// cjacksrc: no push_back() in Visual C++ .NET 2003's vector; a
+			// temporary each time round, destroyed after it (RETAIL: 0x4c29b0)
+			aSortedSections.push_back(CInternalSection());
 			aSortedSections.back() = m_aSections[iCurIndex->m_nSection];
 
 			// Adjust the RB section index
@@ -1131,6 +1129,13 @@ protected:
  			if(CShaderSection::operator<(static_cast<const CShaderSection&>(cOther)))
 			{
  				return true;
+			}
+
+			// RETAIL: Contract J.A.C.K. then groups the sections by world
+			// (0x4c16b6, 0x4c8b4c), without the matching inequality test
+			if (m_pWorld < cOther.m_pWorld)
+			{
+				return true;
 			}
 
  			if(CShaderSection::operator!=(static_cast<const CShaderSection&>(cOther)))
