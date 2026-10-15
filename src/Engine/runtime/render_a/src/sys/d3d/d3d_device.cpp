@@ -284,7 +284,8 @@ void CD3D_Device::SetPresentationParams(D3DPRESENT_PARAMETERS& PresentationParam
 	PresentationParam.Windowed							= g_bRunWindowed;
 	PresentationParam.EnableAutoDepthStencil			= true;
 	PresentationParam.AutoDepthStencilFormat			= GetDefaultDepthStencilFormat(g_CV_ZBitDepth,g_CV_StencilBitDepth);
-	PresentationParam.Flags								= D3DPRESENTFLAG_LOCKABLE_BACKBUFFER;	// puffs, but need it for the console (should get rid of this eventually)...
+	// RETAIL: only when the console asks for it (Lithtech.exe 0x4a681d)
+	PresentationParam.Flags								= g_CV_LockableBackBuffer.m_Val ? D3DPRESENTFLAG_LOCKABLE_BACKBUFFER : 0;
 	PresentationParam.FullScreen_RefreshRateInHz		= D3DPRESENT_RATE_DEFAULT; //D3DPRESENT_RATE_UNLIMITED
 	PresentationParam.FullScreen_PresentationInterval	= (g_bRunWindowed || g_CV_VSyncOnFlip.m_Val) ? D3DPRESENT_INTERVAL_DEFAULT : D3DPRESENT_INTERVAL_IMMEDIATE;
 #ifdef CJACK_MODERN

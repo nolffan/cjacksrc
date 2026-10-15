@@ -36,7 +36,7 @@ RCONVAR(g_CV_CacheTextures, "CacheTextures", int, 0);
 //------------------------------
 // Really Close settings
 RCONVAR(g_CV_ModelNear, "reallyclose_near", float, 0.1f);
-RCONVAR(g_CV_ModelFar, "reallyclose_far", float, 7.0f);
+RCONVAR(g_CV_ModelFar, "reallyclose_far", float, 10.0f);	// RETAIL: 10 (object 0x57ce40)
 RCONVAR(g_CV_PVModelFOV, "PVModelFOV", float, 75.0f);
 RCONVAR(g_CV_PVModelAspect, "PVModelAspect", float, 1.0f);
 RCONVAR(g_CV_PVModelEnvmapVelocity, "PVModelEnvmapVelocity", float, 128.0f);
@@ -89,6 +89,9 @@ RCONVAR(g_CV_DebugRBTri, "DebugRBTri", int, 0);
 RCONVAR(g_CV_DebugRBCur, "DebugRBCur", int, 0);
 RCONVAR(g_CV_DebugRBAll, "DebugRBAll", int, 0);
 RCONVAR(g_CV_DebugRBFrustum, "DebugRBFrustum", int, 0);
+// RETAIL: Contract J.A.C.K.'s (objects 0x57d140, 0x57d158)
+RCONVAR(g_CV_DebugRBOccludeWorld, "DebugRBOccludeWorld", int, 1);
+RCONVAR(g_CV_DebugRBOccludeEarlyVisible, "DebugRBOccludeEarlyVisible", int, 1);
 RCONVAR(g_CV_DebugRBNoOccluders, "DebugRBNoOccluders", int, 0);
 RCONVAR(g_CV_DebugRBDrawOccluders, "DebugRBDrawOccluders", int, 0);
 RCONVAR(g_CV_DebugRBSortOccluders, "DebugRBSortOccluders", int, 1);
@@ -126,6 +129,9 @@ RCONVAR(g_CV_Bilinear, "Bilinear", int, 1);
 RCONVAR(g_CV_OptimizeSurfaces, "OptimizeSurfaces", int, 0);
 RCONVAR(g_CV_CullWorldTree, "CullWorldTree", int, 0);
 RCONVAR(g_CV_FarZ, "FarZ", float, 10000.0f);
+// RETAIL: Contract J.A.C.K.'s (objects 0x57d488, 0x57d4a0)
+RCONVAR(g_CV_Use0WeightsForDisable, "Use0WeightsForDisable", int, 0);
+RCONVAR(g_CV_LockableBackBuffer, "LockableBackBuffer", int, 0);
 
 //------------------------------
 // Gamma Control
@@ -136,7 +142,7 @@ RCONVAR(g_CV_GammaB, "GammaB", float, 1.0f);
 //------------------------------
 // Dynamic Lights
 RCONVAR(g_CV_DynamicLight_TextureSize, "DynamicLight_TextureSize", int, 256);
-RCONVAR(g_CV_DynamicLight_Backfacing, "DynamicLight_Backfacing", int, 0);
+RCONVAR(g_CV_DynamicLight_Backfacing, "DynamicLight_Backfacing", int, 1);	// RETAIL: 1 in Contract J.A.C.K. (NOLF2: 0)
 RCONVAR(g_CV_DynamicLight_Backfacing_Error, "DynamicLight_Backfacing_Error", float, 10.0f);
 RCONVAR(g_CV_LightAddPoly, "LightAddPoly", float, 1.0f);
 RCONVAR(g_CV_DynamicLight, "DynamicLight", int, 1);

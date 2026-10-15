@@ -1265,7 +1265,7 @@ LTRESULT CLTServer::SetObjectUnguaranteedData(HOBJECT hObj, uint32 nData)
 
 	uint32 nOld = hObj->m_nUnguaranteedData;
 	hObj->m_nUnguaranteedData = nData;
-	if (nOld != nData)
+	if (nData != nOld)
 		SetObjectChangeFlags(hObj, CF_UNGUARANTEED_DATA);
 	return LT_OK;
 }
@@ -3082,11 +3082,13 @@ FileEntry* si_GetFileList(const char *pDirName)
 LTRESULT CLTServer::GetUDPSocket(uint32 *phSocket)
 {
 	CBaseDriver *pDriver = g_pServerMgr->m_NetMgr.GetDriver("internet");
-	if (!pDriver)
-		return LT_NOTFOUND;
+	if (pDriver)
+	{
+		*phSocket = (uint32)((CUDPDriver*)pDriver)->m_Socket;
+		return LT_OK;
+	}
 
-	*phSocket = (uint32)((CUDPDriver*)pDriver)->m_Socket;
-	return LT_OK;
+	return LT_NOTFOUND;
 }
 
 void CLTServer::SetupFunctionPointers() 

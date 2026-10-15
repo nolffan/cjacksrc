@@ -502,9 +502,8 @@ LTRESULT CClientMgr::StartShell(StartGameRequest *pRequest)
             }
 
             // Connect to the given address.
-            // RETAIL: the 2006 tree's new first argument; retail passes whether a
-            // field of its StartGameRequest (+0x68) is -1 (Lithtech.exe 0x40f68c)
-            dResult = pDriver->ConnectTCP(true, pRequest->m_TCPAddress);
+            // RETAIL: a new socket unless the request brings one (Lithtech.exe 0x40f68c)
+            dResult = pDriver->ConnectTCP(pRequest->m_hSocket == (uint32)-1, pRequest->m_TCPAddress);
             if (dResult != LT_OK)
                 return dResult;
 

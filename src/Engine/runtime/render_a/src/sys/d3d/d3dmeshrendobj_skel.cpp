@@ -333,6 +333,33 @@ inline uint32 CD3DSkelMesh::SetTransformsToBoneSet(BoneSetListItem* pBoneSet,D3D
 	// Only change the blend state if the number of matrices changed...
 	if(nNumMatrices != iCurrBone)
 	{
+		// RETAIL: as the 2006 tree, 0 weights where the console asks
+		// (Lithtech.exe 0x4d0a09)
+		if( g_CV_Use0WeightsForDisable )
+		{
+			// ATI requires 0 weights instead of disable
+			switch (iCurrBone) 
+			{
+				case 1: 
+					PD3DDEVICE->SetRenderState(D3DRS_VERTEXBLEND,D3DVBF_0WEIGHTS); 
+					break;
+				case 2: 
+					PD3DDEVICE->SetRenderState(D3DRS_VERTEXBLEND,D3DVBF_1WEIGHTS); 
+					break;
+				case 3: 
+					PD3DDEVICE->SetRenderState(D3DRS_VERTEXBLEND,D3DVBF_2WEIGHTS); 
+					break;
+				case 4: 
+					PD3DDEVICE->SetRenderState(D3DRS_VERTEXBLEND,D3DVBF_3WEIGHTS); 
+					break;
+				default: 
+					PD3DDEVICE->SetRenderState(D3DRS_VERTEXBLEND,D3DVBF_DISABLE); 
+					ASSERT(0);
+					break;
+			}
+		}
+		else
+		{
 		switch (iCurrBone)
 		{
 			case 2: 
@@ -347,6 +374,7 @@ inline uint32 CD3DSkelMesh::SetTransformsToBoneSet(BoneSetListItem* pBoneSet,D3D
 			default: 
 				PD3DDEVICE->SetRenderState(D3DRS_VERTEXBLEND,D3DVBF_DISABLE);
 				break;
+		}
 		}
 	}
 

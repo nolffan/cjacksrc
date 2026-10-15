@@ -1178,6 +1178,7 @@ public:
     StartGameRequest() {
         m_Type = STARTGAME_NORMAL;
         m_WorldName[0] = 0;
+        m_hSocket = (uint32)-1;
         m_TCPAddress[0] = 0;
         m_RecordFilename[0] = 0;
         m_PlaybackFilename[0] = 0;
@@ -1191,6 +1192,12 @@ public:
 
     int m_Type;
     char m_WorldName[MAX_SGR_STRINGLEN];
+
+//! cjacksrc: Contract J.A.C.K.'s: a socket for the client to join with, or
+//! -1 for a new one (CClientMgr::StartGame passes whether it is -1 to
+//! ConnectTCP, Lithtech.exe 0x40f68c; server.dll's StartWorld reads the
+//! fields after it 4 bytes further, 0x10038bf1)
+    uint32 m_hSocket;
 
 //! TCP/IP address, if any.
     char m_TCPAddress[MAX_SGR_STRINGLEN];
