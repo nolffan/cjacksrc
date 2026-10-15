@@ -503,7 +503,9 @@ LTRESULT CClientMgr::StartShell(StartGameRequest *pRequest)
 
             // Connect to the given address.
             // RETAIL: a new socket unless the request brings one (Lithtech.exe 0x40f68c)
-            dResult = pDriver->ConnectTCP(pRequest->m_hSocket == (uint32)-1, pRequest->m_TCPAddress);
+            // (through a local, which retail keeps on the stack)
+            bool bNewSocket = (pRequest->m_hSocket == (uint32)-1);
+            dResult = pDriver->ConnectTCP(bNewSocket, pRequest->m_TCPAddress);
             if (dResult != LT_OK)
                 return dResult;
 
