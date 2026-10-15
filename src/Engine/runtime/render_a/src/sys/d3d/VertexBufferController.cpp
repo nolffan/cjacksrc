@@ -98,14 +98,7 @@ bool VertexBufferController::CreateIndexBuffer(int32 iIndexCount, bool bDynamic,
 //	(Just need to call it once per group of render calls)
 void VertexBufferController::SetStreamSources(uint32 iBaseVertexIndex)
 {
-	if (m_pVB_Index) 
-	{ 
-		if (FAILED(PD3DDEVICE->SetIndices(m_pVB_Index, iBaseVertexIndex)))
-		{ 
-			assert(0); return; 
-		} 
-	}
-
+	// RETAIL: the streams first, then the indices (Lithtech.exe 0x502660)
 	// Setup the Streams...
 	for (uint32 i = 0; i < VERTEXBUFFER_STREAMCOUNT; ++i) 
 	{
@@ -113,6 +106,11 @@ void VertexBufferController::SetStreamSources(uint32 iBaseVertexIndex)
 		{
 			if (FAILED(PD3DDEVICE->SetStreamSource(i,m_pVB_VertStream[i], m_VertexSize[i])))	{ assert(0); return; } 
 		} 
+	}
+
+	if (m_pVB_Index) 
+	{ 
+		PD3DDEVICE->SetIndices(m_pVB_Index, iBaseVertexIndex);
 	}
 }
 

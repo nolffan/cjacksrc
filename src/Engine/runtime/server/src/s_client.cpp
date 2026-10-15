@@ -1165,7 +1165,7 @@ void WriteObjectRemoves(UpdateInfo *pInfo, SentList *pPrevList)
 				if (pRecord->m_nRecordType == RECORDTYPE_LTOBJECT)
 				{
 					pInfo->m_pClient->m_ObjInfos[*pCurID].m_ChangeFlags = 
-						(uint16)sm_GetNewObjectChangeFlags((LTObject *)pRecord->m_pRecordData);
+						sm_GetNewObjectChangeFlags((LTObject *)pRecord->m_pRecordData);
 				}
 				else
 				{
@@ -1178,8 +1178,9 @@ void WriteObjectRemoves(UpdateInfo *pInfo, SentList *pPrevList)
 						pSoundTrack->Release(&pInfo->m_pClient->m_ObjInfos[ *pCurID ].m_nSoundFlags);
 					}
 
+					// RETAIL: both keep all 32 bits (Lithtech.exe 0x460d30)
 					 pInfo->m_pClient->m_ObjInfos[*pCurID].m_ChangeFlags = 
-						(uint16)sm_GetNewSoundTrackChangeFlags(pSoundTrack);
+						sm_GetNewSoundTrackChangeFlags(pSoundTrack);
 				}
 			}
 		}
@@ -1298,7 +1299,8 @@ void SendAllObjectsGuaranteed(ObjectMgr *pObjectMgr, UpdateInfo *pInfo)
 //Handles writing out the unguaranteed data of an object as well as all of its attachments
 // RETAIL: the least complete of their results (0x10030c00); the attachments
 // are written with the parent's ObjInfo, as retail does
-static int WriteUnguaranteedDataWithAttachments(LTObject* pObject, CPacket_Write& cUnguaranteed, ObjInfo* pObjInfo, bool bForce, const uint32 k_nUnguaranteedMask)
+// RETAIL: the arguments in WriteUnguaranteedInfo's order (server.dll 0x10030c00)
+static int WriteUnguaranteedDataWithAttachments(LTObject* pObject, ObjInfo* pObjInfo, bool bForce, CPacket_Write& cUnguaranteed, const uint32 k_nUnguaranteedMask)
 {
 	//write out the unguaranteed data for the object itself
 	int nResult = WriteUnguaranteedInfo(pObject, pObjInfo, bForce, cUnguaranteed);
@@ -1325,10 +1327,10 @@ static int WriteUnguaranteedDataWithAttachments(LTObject* pObject, CPacket_Write
 static void UpdateSendTimeWithAttachments(LTObject* pObject, UpdateInfo *pInfo, bool bFull, const uint32 k_nUnguaranteedMask)
 {
 	// Update the send time
-	ObjInfo &cObjInfo = pInfo->m_pClient->m_ObjInfos[pObject->m_ObjectID];
-	cObjInfo.m_nLastSentU = pInfo->m_nUpdateTime;
+	// RETAIL: the element is indexed afresh for each store (server.dll 0x10030640)
+	pInfo->m_pClient->m_ObjInfos[pObject->m_ObjectID].m_nLastSentU = pInfo->m_nUpdateTime;
 	if (bFull)
-		cObjInfo.m_nLastSentUFull = pInfo->m_nUpdateTime;
+		pInfo->m_pClient->m_ObjInfos[pObject->m_ObjectID].m_nLastSentUFull = pInfo->m_nUpdateTime;
 
 	// Update the send time of the attachments
 	for (Attachment *pAttachment = pObject->m_Attachments; pAttachment; pAttachment = pAttachment->m_pNext) 
@@ -1340,10 +1342,9 @@ static void UpdateSendTimeWithAttachments(LTObject* pObject, UpdateInfo *pInfo, 
 		if ((pAttachedObj->sd->m_NetFlags & k_nUnguaranteedMask) == 0)
 			continue;
 
-		ObjInfo &cAttachInfo = pInfo->m_pClient->m_ObjInfos[pAttachedObj->m_ObjectID];
-		cAttachInfo.m_nLastSentU = pInfo->m_nUpdateTime;
+		pInfo->m_pClient->m_ObjInfos[pAttachedObj->m_ObjectID].m_nLastSentU = pInfo->m_nUpdateTime;
 		if (bFull)
-			cAttachInfo.m_nLastSentUFull = pInfo->m_nUpdateTime;
+			pInfo->m_pClient->m_ObjInfos[pAttachedObj->m_ObjectID].m_nLastSentUFull = pInfo->m_nUpdateTime;
 	}
 }
 
@@ -1381,7 +1382,7 @@ void SendAllObjectsUnguaranteed(ObjectMgr *pObjectMgr, UpdateInfo *pInfo)
 
 				//write out all the unguaranteed data
 				ObjInfo *pObjInfo = &pInfo->m_pClient->m_ObjInfos[pObject->m_ObjectID];
-				WriteUnguaranteedDataWithAttachments(pObject, pInfo->m_cUnguaranteed, pObjInfo, true, k_nUnguaranteedMask);
+				WriteUnguaranteedDataWithAttachments(pObject, pObjInfo, true, pInfo->m_cUnguaranteed, k_nUnguaranteedMask);
 
 				// Update the send time
 				UpdateSendTimeWithAttachments(pObject, pInfo, true, k_nUnguaranteedMask);				
@@ -1464,7 +1465,7 @@ void SendAllObjectsUnguaranteed(ObjectMgr *pObjectMgr, UpdateInfo *pInfo)
 			bool bForce = bLossy | ((pInfo->m_nUpdateTime + nJitter - pObjInfo->m_nLastSentUFull) > (uint32)g_CV_NetMaxUnguaranteedPeriod);
 
 			//write out all the unguaranteed data
-			int nResult = WriteUnguaranteedDataWithAttachments(pObject, pInfo->m_cUnguaranteed, pObjInfo, bForce, k_nUnguaranteedMask);
+			int nResult = WriteUnguaranteedDataWithAttachments(pObject, pObjInfo, bForce, pInfo->m_cUnguaranteed, k_nUnguaranteedMask);
 
 			// Jump out if we're sending too much...
 			if (pInfo->m_cUnguaranteed.Size() >= nUpdateSizeRemaining)
