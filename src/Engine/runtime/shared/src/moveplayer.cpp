@@ -806,16 +806,12 @@ void CPlayerMover::CollideWithWorldModel_Poly(const WorldPoly *pPoly, const LTVe
 	// Early-out if we're outside the polygon's sphere
 	float fOffsetMagSqr = vOffset.MagSqr();
 	LTVector vStartPolyCenterOffset = pPoly->GetCenter() - vStart;
-	float fCenterOffsetMagSqr = vStartPolyCenterOffset.MagSqr();
-	ASSERT(fOffsetMagSqr != 0.0f);
-	if (fCenterOffsetMagSqr != 0.0f)
-	{
-		float fClosestOnOffsetTime = vOffset.Dot(vStartPolyCenterOffset) / (sqrtf(fCenterOffsetMagSqr) * fOffsetMagSqr);
-		LTVector vClosestOnOffset = vStart + vOffset * fClosestOnOffsetTime;
-		float fCombinedRadius = m_fPlayerSphereRadius + pPoly->GetRadius();
-		if ((vClosestOnOffset - pPoly->GetCenter()).MagSqr() > (fCombinedRadius * fCombinedRadius))
-			return;
-	}
+	// RETAIL: no zero test, no square root (server.dll 0x10027c90)
+	float fClosestOnOffsetTime = vStartPolyCenterOffset.Dot(vOffset) / fOffsetMagSqr;
+	LTVector vClosestOnOffset = vStart + vOffset * fClosestOnOffsetTime;
+	float fCombinedRadius = m_fPlayerSphereRadius + pPoly->GetRadius();
+	if ((vClosestOnOffset - pPoly->GetCenter()).MagSqr() > (fCombinedRadius * fCombinedRadius))
+		return;
 
 	// Find out how the starting position relates to the extension of the plane by the projection
 	float fPlaneDist = cPolyPlane.DistTo(vStart);
@@ -959,7 +955,7 @@ void CPlayerMover::CollideWithWorldModel(LTObject *pObject, const LTVector &vSta
 	// Pre-calculate some helpful acceleration information
 	LTVector vCurMidPt = (vStart + vEnd) * 0.5f;
 	LTVector vOffset = vEnd - vStart;
-	float fMoveRadius = vOffset.Mag() + m_fPlayerSphereRadius;
+	float fMoveRadius = vOffset.Mag() * 0.5f + m_fPlayerSphereRadius;	// RETAIL: 0x10028310
 
 	const Node *pRoot = pBSP->GetRootNode();
 
@@ -1232,18 +1228,36 @@ void CPlayerMover::Collide(const LTVector &vStart, const LTVector &vEnd, SCollid
 	LTVector vCollideStart = vStart;
 	LTVector vCollideEnd = vEnd;
 
+	// How far to move away from the normal after a collision
+	const float k_nMoveBackDist = k_fSafetyZone;
+	// Cos of minimum allowable angle to attempt a move-back
+	const float k_fMinMoveBackAngle = 0.001f;
+
 	// Collide against the blocker polygons
+	// RETAIL: through the player mover, backed off as from an object, and the
+	// end point kept (server.dll 0x100286b0)
 	float fBlockerTime;
 	LTVector vBlockerNormal;
-	bool bHitBlocker = g_iWorldBlockerData->Intersect(vCollideStart, vCollideEnd, m_vPlayerDims, &fBlockerTime, &vBlockerNormal);
+	bool bHitBlocker = g_iWorldBlockerData->Intersect(vCollideStart, vCollideEnd, m_vPlayerDims, this, &fBlockerTime, &vBlockerNormal);
 	if (bHitBlocker)
 	{
-		// Update the collision end point
-		vCollideEnd = vCollideStart + (vCollideEnd - vCollideStart) * fBlockerTime;
 		// Update the results
 		pResult->m_bCollision = true;
-		pResult->m_fTime = fBlockerTime;
+		pResult->m_fTime = LTCLAMP(fBlockerTime, 0.0f, 1.0f);
 		pResult->m_cPlane = LTPlane(vBlockerNormal, vCollideEnd);
+
+		LTVector vOffset = vCollideEnd - vCollideStart;
+		float fMoveDist = vOffset.Mag();
+		LTVector vMoveDir = vOffset / fMoveDist;
+		float fAngle = -vMoveDir.Dot(pResult->m_cPlane.m_Normal);
+		if (fAngle > k_fMinMoveBackAngle)
+		{
+			float fMoveBackDist = k_nMoveBackDist / fAngle;
+			float fTimeAdj = fMoveBackDist / fMoveDist;
+			pResult->m_fTime -= LTCLAMP(fTimeAdj, 0.0f, pResult->m_fTime);
+		}
+		if (pResult->m_fTime == 0.0f)
+			return;
 	}
 
 	// Find all intersecting objects
@@ -1264,13 +1278,9 @@ void CPlayerMover::Collide(const LTVector &vStart, const LTVector &vEnd, SCollid
 	if (nNumObjects == 0)
 		return;
 
-	// How far to move away from the normal after a collision
-	const float k_nMoveBackDist = k_fSafetyZone;
-	// Cos of minimum allowable angle to attempt a move-back
-	const float k_fMinMoveBackAngle = 0.001f;
-
 	// This is our current destination
-	LTVector vCurDest = vCollideEnd;
+	LTVector vCurDest;
+	VEC_LERP(vCurDest, vCollideStart, vCollideEnd, pResult->m_fTime);
 
 	// Movement offset
 	LTVector vOffset = vCollideEnd - vCollideStart;

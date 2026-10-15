@@ -3,6 +3,10 @@
 #include "world_blocker_data.h"
 
 #include "world_blocker_math.h"
+#include "de_world.h"
+#include "moveobject.h"
+#include "iltphysics.h"
+#include "moveplayer.h"
 
 #include <vector>
 
@@ -255,6 +259,7 @@ public:
 		const LTVector &vStartPt, // Starting point
 		const LTVector &vEndPt, // Ending point
 		const LTVector &vDims, // Dims of the player
+		const CPlayerMover *pMover, // RETAIL: the mover that collides
 		float *pTime, // Time of first intersection
 		LTVector *pNormal // Normal of first intersection
 		);
@@ -828,6 +833,7 @@ bool CWorldBlockerData::Intersect(
 		const LTVector &vStartPt,
 		const LTVector &vEndPt,
 		const LTVector &vDims,
+		const CPlayerMover *pMover,
 		float *pTime,
 		LTVector *pNormal
 		)
@@ -846,36 +852,48 @@ bool CWorldBlockerData::Intersect(
 	if (!GetPolysInSphere(vMidPt, fSphereRadius, &aPolySet))
 		return false;
 
+	// RETAIL: each blocker polygon as a WorldPoly, collided through the
+	// player mover (server.dll 0x10051120)
 	bool bResult = false;
 
-	LTVector vMoveDir = vMoveOffset / fMoveMag;
-
-	CSweptSphere cPlayerRep;
-	// Make sure the radius encloses the entire dims of the player
-	cPlayerRep.m_fRadius = LTMAX(vDims.x, vDims.z);
-	float fHalfVerticalOfs = vDims.y - cPlayerRep.m_fRadius;
-	fHalfVerticalOfs = LTMAX(fHalfVerticalOfs, 0.0f);
-	cPlayerRep.m_vOffset.Init(0.0f, fHalfVerticalOfs * 2, 0.0f);
-	cPlayerRep.m_vOffsetDir.Init(0.0f, 1.0f, 0.0f);
-	LTVector vRepAdj(0.0f, -fHalfVerticalOfs, 0.0f);
-	cPlayerRep.m_vOrigin = vStartPt + vRepAdj;
-
-	// Find the earliest intersection in the polygons
-	float fEarliestTime = fMoveMag;
-	LTVector vEarliestPlane;
+	uint32 nMaxVerts = 0;
 	TIntList::iterator iCurPoly = aPolySet.begin();
-	for (uint nCurIndex = 0; iCurPoly != aPolySet.end(); ++iCurPoly, ++nCurIndex)
+	for (; iCurPoly != aPolySet.end(); ++iCurPoly)
+	{
+		if (*iCurPoly >= (int)m_aPolys.size())
+			continue;
+		nMaxVerts = LTMAX(nMaxVerts, (uint32)m_aPolys[*iCurPoly].m_aVertices.size());
+	}
+
+	WorldPoly *pTestPoly = (WorldPoly*)alloca(sizeof(WorldPoly) + (nMaxVerts - 1) * sizeof(SPolyVertex));
+	pTestPoly->SetIndex(0);
+	pTestPoly->SetSurface(LTNULL);
+
+	const float k_fBacksideLimit = -0.0001f * vMoveOffset.Mag();
+	float fEarliestTime = 1.0f;
+	LTVector vEarliestPlane;
+	for (iCurPoly = aPolySet.begin(); iCurPoly != aPolySet.end(); ++iCurPoly)
 	{
 		if (*iCurPoly >= (int)m_aPolys.size())
 			continue;
 		CBlockerPoly &cCurPoly = m_aPolys[*iCurPoly];
-		float fIntersectTime;
-		LTVector vIntersectPlane;
-		if (CalcPolyIntersectTime(cCurPoly, cPlayerRep, vMoveDir, fEarliestTime, &fIntersectTime, &vIntersectPlane))
+		if (vMoveOffset.Dot(cCurPoly.m_cPlane.m_Normal) >= k_fBacksideLimit)
+			continue;
+		pTestPoly->SetCenter(cCurPoly.m_vCenter);
+		pTestPoly->SetRadius(cCurPoly.m_fRadius);
+		pTestPoly->SetNumVertices(cCurPoly.m_aVertices.size());
+		pTestPoly->SetPlane(&cCurPoly.m_cPlane);
+		SPolyVertex *pCurVert = pTestPoly->GetVertices();
+		for (TVectorList::iterator iCurVert = cCurPoly.m_aVertices.begin(); iCurVert != cCurPoly.m_aVertices.end(); ++iCurVert, ++pCurVert)
+			pCurVert->m_Vertex = (Vertex*)&(*iCurVert);
+
+		CPlayerMover::SCollideResult sCollide;
+		pMover->CollideWithPoly(pTestPoly, vStartPt, vMoveOffset, &sCollide);
+		if (sCollide.m_bCollision && (sCollide.m_fTime < fEarliestTime))
 		{
 			bResult = true;
-			fEarliestTime = fIntersectTime - 0.001f;
-			vEarliestPlane = vIntersectPlane;
+			fEarliestTime = sCollide.m_fTime;
+			vEarliestPlane = sCollide.m_cPlane.m_Normal;
 			if (fEarliestTime <= 0.0f)
 			{
 				fEarliestTime = 0.0f;
@@ -887,7 +905,7 @@ bool CWorldBlockerData::Intersect(
 	// Return the results
 	if (bResult)
 	{
-		*pTime = fEarliestTime / fMoveMag;
+		*pTime = fEarliestTime;
 		*pNormal = vEarliestPlane;
 	}
 

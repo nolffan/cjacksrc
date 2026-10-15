@@ -10,6 +10,37 @@ class WorldPoly;
 class CPlayerMover
 {
 public:
+	struct SCollideResult
+	{
+		// Time of the collision [0..1]
+		float m_fTime;
+		// The collision plane
+		LTPlane m_cPlane;
+		// Object we collided with (Note : May be null in the case of a blocker poly)
+		LTObject *m_pObject;
+		// BSP node we collided with
+		const Node *m_pObjectNode;
+		// Did we hit anything?
+		bool m_bCollision;
+	};
+
+	// RETAIL: one polygon against the player, as the blockers need it
+	// (server.dll 0x1004f8e0, emitted in world_blocker_data.obj)
+	void CollideWithPoly(const WorldPoly *pPoly, const LTVector &vStart, const LTVector &vOffset, SCollideResult *pResult) const
+	{
+		pResult->m_fTime = 1.0f;
+		pResult->m_pObject = LTNULL;
+		pResult->m_pObjectNode = LTNULL;
+		pResult->m_bCollision = false;
+		float fPlaneProjection = -1.0f;
+		PolySide nStartSide = GetPlaneSide(*pPoly->GetPlane(), vStart, &fPlaneProjection);
+		LTVector vEnd = vStart + vOffset;
+		PolySide nEndSide = GetPlaneSide(*pPoly->GetPlane(), vEnd, &fPlaneProjection);
+		if (((nStartSide == nEndSide) && (nStartSide == Intersect)) ||
+			((nStartSide != nEndSide) && (nStartSide != BackSide)))
+			CollideWithWorldModel_Poly(pPoly, vStart, vOffset, fPlaneProjection, pResult);
+	}
+
 	CPlayerMover(const MoveState &cMoveState, uint32 nFlags);
 	// Move the player to the specified destination, touching objects as necessary
 	// Returns the position where they would end up
@@ -30,19 +61,6 @@ protected:
 	// Any plane's normal with a Y value above this value is considered "steep"
 	static const float k_fSteepAngle;
 
-	struct SCollideResult
-	{
-		// Time of the collision [0..1]
-		float m_fTime;
-		// The collision plane
-		LTPlane m_cPlane;
-		// Object we collided with (Note : May be null in the case of a blocker poly)
-		LTObject *m_pObject;
-		// BSP node we collided with
-		const Node *m_pObjectNode;
-		// Did we hit anything?
-		bool m_bCollision;
-	};
 	// Collision function
 	void Collide(const LTVector &vStart, const LTVector &vEnd, SCollideResult *pResult) const;
 	// Move the player, sliding along surfaces
