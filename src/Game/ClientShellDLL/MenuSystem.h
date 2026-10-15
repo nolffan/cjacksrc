@@ -36,6 +36,7 @@ private:
 	CLTGUITextCtrl*	m_pTeamCtrl;
 	CLTGUITextCtrl*	m_pHostCtrl;
 	CLTGUITextCtrl*	m_pServerCtrl;
+	CLTGUITextCtrl*	m_pServerAddrCtrl;	// RETAIL: 0x808, the server's address on its own line
 };
 
 #endif //!defined(_MENU_SYSTEM_H_)
