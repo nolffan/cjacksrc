@@ -1938,10 +1938,8 @@ bool CClientMgr::Render(CameraInstance *pCamera, int drawMode, LTObject **pObjec
 	{
 		CountAdder cntAdd(&g_Ticks_Render);
 
-        // Set Internal DrawPrim's camera to the current rendering camera
-        // This is required for model OBBs to draw properly.
-        g_pLTDrawPrimInternal->SetCamera(static_cast<HOBJECT>(pCamera));
-
+        // RETAIL: no internal DrawPrim camera around the scene
+        // (Lithtech.exe 0x40f31b); the fear tree sets it for model OBBs.
 		if (g_CV_RenderEnable) {
 			renderStatus = pRenderStruct->RenderScene(&sceneDesc);
 		}
@@ -1949,10 +1947,6 @@ bool CClientMgr::Render(CameraInstance *pCamera, int drawMode, LTObject **pObjec
 #ifdef COMPILE_JUPITER_EVAL
     	m_WaterMark.Draw();
 #endif // COMPILE_JUPITER_EVAL
-
-        // Reset the camera to NULL
-        // This is required for the console to draw properly
-        g_pLTDrawPrimInternal->SetCamera(NULL);
 
 		if (g_CV_DrawDebugGeometry) {
 			drawAllDebugGeometry(); }                       // Draw all debug geometry here...

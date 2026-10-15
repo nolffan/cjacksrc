@@ -29,6 +29,8 @@ void CServerEvent::DecrementRefCount()
 		{
 			pNext = pCur->m_pNext;
 			pNode = ( ClientStructNode * )pCur->m_pData;
+			// RETAIL: each link is taken off the list first (Lithtech.exe 0x46c690)
+			dl_RemoveAt( &m_ClientStructNodeList, pCur );
 			sb_Free( &g_pServerMgr->m_ClientStructNodeBank, pNode );
 			pCur = pNext;
 		}
