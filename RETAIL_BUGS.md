@@ -110,6 +110,20 @@ calls it, so nothing shows in the game.
 Fixed in the modern build: src/Game/ClientShellDLL/ProfileMgr.cpp,
 MODERN.md GAME-1.
 
+### Two console variables take a float's value as an integer's bits
+
+Lithtech.exe and server.dll's engine-variable tables (the entries for
+`MaxExtrapolateTime` and `MaxExtrapolateDist`, src/Engine/runtime/shared/
+src/engine_vars.cpp) and cc_SetEngineVar (server.dll 0x10009490,
+src/Engine/runtime/shared/src/concommand.cpp). Both variables are floats
+(0.5 seconds, 64 units), but the table registers them with `EV_LONG`, so
+the integer slot points at them: setting `MaxExtrapolateTime 1` from the
+console stores the integer 1, a float of 1.4e-45, and the client's
+prediction (predict.cpp) all but stops extrapolating; `MaxExtrapolateTime
+0.25` stores 0. The defaults are right only because nobody sets them.
+
+Not fixed yet: in the modern build the two entries would be `EV_FLOAT`.
+
 ## NOLF2's bugs Contract J.A.C.K. no longer has
 
 (none checked yet)

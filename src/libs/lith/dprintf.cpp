@@ -42,11 +42,7 @@
 ***************************************************************************/
 
 #include "dprintf.h"
-#ifndef _LINUX
 #include <dos.h>
-#else
-#include <ctype.h>
-#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -72,7 +68,7 @@ typedef signed char INT8;
 typedef signed short int INT16;
 typedef int INT32;
 
-#ifndef _WINDOWS
+#ifndef _WINDOWS 
 typedef unsigned char SHORTBOOLEAN;
 #ifndef BOOLEAN
 typedef int BOOLEAN;
@@ -102,17 +98,12 @@ enum dprintfOutputType {
 #ifdef _CONSOLE
 unsigned short *dprintfmonoscreen;   // pointer to B000
 #else
-#ifdef _LINUX
-unsigned short *dprintfmonoscreen;   // pointer to B000
-#else
 #ifndef __FLATMODEL__
 unsigned short far *dprintfmonoscreen;   // pointer to B000
 #else
 unsigned short *dprintfmonoscreen;   // pointer to B000
 #endif
 #endif
-#endif
-
 unsigned int dbprintfcurrentLine = 0;  // current line
 unsigned int dprintfcurrentChar = 0;   // current char
 dprintfOutputType dprintfOutType = DPRINTF_UNKNOWN;
@@ -205,7 +196,6 @@ dprintfExcludeRegions dprintfExReg;
 #ifndef __WATCOM__
 #ifndef _WINDOWS
 #ifndef _CONSOLE
-#ifndef _LINUX
 
 /********************************  SERIAL ROUTINES *****************************/
 
@@ -446,7 +436,6 @@ void dpSerComPutStr (char *Str) {
 #endif
 #endif
 #endif
-#endif
 
 /********************************  MONOCHROME ROUTINES *****************************/
 
@@ -487,17 +476,12 @@ void dprintfmonoclrscr( void )
 #ifdef _CONSOLE
 void dprintfmonoprint(char *message )
 #else
-#ifdef _LINUX
-void dprintfmonoprint(char *message )
-#else
 #ifndef __FLATMODEL__
 void dprintfmonoprint(char far *message )
 #else
 void dprintfmonoprint(char *message )
 #endif
 #endif
-#endif
-
 {
 //  This function will display a string on the
 //  secondary monitor and generate a CR/LF if
@@ -508,7 +492,6 @@ void dprintfmonoprint(char *message )
 
 #ifndef _CONSOLE
 #ifndef _WINDOWS
-#ifndef _LINUX
     int i;
     static firstTimeThru = 1;   /* used to clear the screen
                                             first time in */
@@ -539,9 +522,6 @@ void dprintfmonoprint(char *message )
             ATTR + message[i++];
     }
 #else
-  printf(message);
-#endif
-#else
   OutputDebugString(message);
 #endif
 #else
@@ -558,20 +538,14 @@ void dprintfdoprint (char *Str) {
 #ifdef _DEBUG
 	printf(Str);
 	return;
-#endif
+#endif	
 #else
 #ifdef _WINDOWS
 #ifdef _DEBUG
 	OutputDebugString(Str);
 	return;
-#endif
-#else
-#ifdef _LINUX
-#ifdef _DEBUG
-	printf(Str);
-	return;
-#endif
-#else
+#endif	
+#else	
 
   switch (dprintfOutType) {
     case DPRINTF_MONOCHROME :
@@ -600,7 +574,6 @@ void dprintfdoprint (char *Str) {
 #endif
 #endif
   }
-#endif
 #endif
 #endif
 }
@@ -694,10 +667,6 @@ void dgotoxy (unsigned int Level, int X, int Y) {
 	return;
 #endif
 
-#ifdef _LINUX
-	return; 
-#endif
-
 #ifndef NODPRINTF
   if (dprintfExReg.In(Level)) return;
   switch (dprintfOutType) {
@@ -728,10 +697,6 @@ void dclrscr (unsigned int Level) {
 	return;
 #endif
 
-#ifdef _LINUX
-	return;
-#endif
-
 #ifndef NODPRINTF
   if (dprintfExReg.In(Level)) return;
   switch (dprintfOutType) {
@@ -751,28 +716,20 @@ void dclrscr (unsigned int Level) {
 dprintfinittype::dprintfinittype () {
   // set up initial variables
   dprintfExReg.NumRegions = 0;
-
-  dprintfOutType = DPRINTF_NOTHING;
-
 #ifdef _CONSOLE
 #ifdef _DEBUG
   dprintfOutType = DPRINTF_MONOCHROME;
 #else
   dprintfOutType = DPRINTF_NOTHING;
 #endif
+#else
 #endif
-
 #ifdef _WINDOWS
 #ifdef _DEBUG
   dprintfOutType = DPRINTF_MONOCHROME;
 #else
   dprintfOutType = DPRINTF_NOTHING;
 #endif
-#endif
-
-#ifdef _LINUX
-#ifdef _DEBUG
-  dprintfOutType = DPRINTF_MONOCHROME;
 #else
   dprintfOutType = DPRINTF_NOTHING;
 #endif
@@ -783,19 +740,7 @@ dprintfinittype::dprintfinittype () {
   if (Str != NULL) {
     char Buf[BUFSIZE];
     strcpy (Buf,Str); // this could be a problem if environment string is greater than BUFSIZE
-    
-    #ifdef _LINUX
-    	char * p = Buf;
-	
-	while ( *p )
-	{
-		*p = toupper( *p );
-		p++;
-	}
-
-    #else
     strupr (Buf); // convert buf to upper case
-    #endif
     if (strstr(Buf,"MONO") != NULL) dprintfOutType = DPRINTF_MONOCHROME;
     if (strstr(Buf,"FILE") != NULL) dprintfOutType = DPRINTF_FILE;
     if (strstr(Buf,"FILEAPPEND") != NULL) dprintfOutType = DPRINTF_FILEAPPEND;
@@ -809,17 +754,14 @@ dprintfinittype::dprintfinittype () {
     dprintfExReg.Scan (Buf);
   }
 
-#ifdef _WINDOWS
+#ifdef _WINDOWS  
     dprintfOutType = DPRINTF_MONOCHROME;
-#endif
-
-#ifdef _LINUX
-    dprintfOutType = DPRINTF_MONOCHROME;
-#endif
+#endif    
 
 #ifdef _CONSOLE
     dprintfOutType = DPRINTF_MONOCHROME;
-#endif
+#endif    
+  
 
   // open file if necessary
   switch (dprintfOutType) {
@@ -834,7 +776,6 @@ dprintfinittype::dprintfinittype () {
 #ifndef __WATCOM__
 #ifndef _WINDOWS
 #ifndef _CONSOLE
-#ifndef _LINUX    
     case DPRINTF_COM1 :
       dprintfPortHandle = dpSerComOpen (SerComUARTType8250,SerComCompTypeAT,0x3f8,4,9600,8,0,1,128,128);
       break;
@@ -844,8 +785,6 @@ dprintfinittype::dprintfinittype () {
 #endif
 #endif
 #endif
-#endif
-
     case DPRINTF_LPT1 :
       dprintffile = fopen ("LPT1","w");
       if (dprintffile == NULL) dprintfOutType = DPRINTF_NOTHING;
@@ -872,7 +811,6 @@ dprintfinittype::~dprintfinittype () {
 #ifndef __WATCOM__
 #ifndef _WINDOWS
 #ifndef _CONSOLE
-#ifndef _LINUX
     case DPRINTF_COM1 :
     case DPRINTF_COM2 :
       if (dprintfPortHandle != NULL) {
@@ -886,9 +824,7 @@ dprintfinittype::~dprintfinittype () {
 #endif
 #endif
 #endif
-#endif
-
   }
 }
-#endif
+//#endif
 

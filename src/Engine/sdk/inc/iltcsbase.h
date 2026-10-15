@@ -478,6 +478,17 @@ Used for: Networking
     virtual LTRESULT RemovePing(uint32 nPingID) = 0;
 
 /*!
+\param phSocket (return) the socket, if not NULL.
+
+cjacksrc: Contract J.A.C.K.'s: open the network driver's socket and start
+listening (server.dll's CLTServer vtable slot 36, 0x1003cc70; the name is
+ours, retail's driver method is OpenSocket).
+
+Used for: Networking.
+*/
+    virtual LTRESULT OpenSocket(uint32 *phSocket) = 0;
+
+/*!
 Gets the rotation of the specified object
 
 Used for: Object.
@@ -490,6 +501,17 @@ Gets the position of the specified object
 Used for: Object.
 */
     virtual LTRESULT GetObjectPos(HLOCALOBJ hObj, LTVector *pPos) = 0;
+
+/*!
+\param hObj the object; \param pData (return) its unguaranteed data.
+
+cjacksrc: Contract J.A.C.K.'s: a 32-bit value the server sends its clients
+with an object's unguaranteed updates (server.dll 0x1003a0a0, Lithtech.exe
+0x407ef0).
+
+Used for: Object.
+*/
+    virtual LTRESULT GetObjectUnguaranteedData(HLOCALOBJ hObj, uint32 *pData) = 0;
 
 /*!
 \param hObj Model instance

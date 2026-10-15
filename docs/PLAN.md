@@ -76,7 +76,7 @@ Every one is Visual C++ .NET 2003 (13.10.3077): `progress/COMPILERS.md`.
 | 3 | `small`: `ltmsg.dll`, `CRes.dll`, `SRes.dll` (resource scripts from the retail resources; `tools/rsrcdiff.py`), `SndDrv.dll` (nolf2src's reconstruction, compiled with VC .NET 2003) | 2 | `ltmsg.dll` done (retail's but for its time stamp); `SndDrv.dll` every scored function identical (225, the other 30 too small to score), the file retail's but for its template tail's order (below); CRes/SRes to do |
 | 4 | `game`: `CShell.dll`, `Object.lto`, `ClientFx.fxd` from NOLF2's source release toward Contract J.A.C.K. -- first the shared code (with Build 69's TO2/TRON as the later reference), then Contract J.A.C.K.'s own (its weapons, its missions' objects, its HUD and menus), placed by the scoreboard | 2 | |
 | 5 | `gamespy`: `GameSpy.dll`: Monolith's wrapper from the image, GameSpy's SDK rolled back to 2003 | 2 | builds, retail's exports and behaviour (`build/gamespytest.sh`); 163/181 of Monolith's functions identical (below) |
-| 6 | `engine`: `Lithtech.exe` and `server.dll` from the Jupiter tree, trimmed to 2003, D3D8; the demos' engine for the SecuROM pages and the imports (a `demoimports.py` for these demos) | 2 | |
+| 6 | `engine`: `Lithtech.exe` and `server.dll` from the Jupiter tree, trimmed to 2003, D3D8; the demos' engine for the SecuROM pages and the imports (a `demoimports.py` for these demos) | 2 | in progress: both build; `Lithtech.exe` 83.3%, `server.dll` 93.1% identical; converging (below) |
 | 7 | `apps`: the launcher `ContractJack.exe` and the dedicated server `ContractJackServer.exe` from NOLF2's Launcher and ServerApp | 2 | |
 | 8 | `boot`: the built binaries in the game under Wine, to the menu, a level, saving and loading (`make test`, tools/playtest.sh) | 3-7 | |
 | 9 | `match`: byte-matching, module by module, ratcheted by `make progress` | 3-7 | |
@@ -369,6 +369,141 @@ retail's order.
   C++ objects to our 12, so Monolith's project had more files than the
   five that carry code; the internet services through OpenSpy in the
   modern build.
+
+### 6. engine
+
+**Source: nolf2src's engine, brought forward.** `src/Engine/runtime`,
+`src/Engine/libs/rezmgr` are nolf2src's (the Jupiter tree of 2006
+back-ported to NOLF2's engine of 2002, Direct3D 8), imported unchanged
+and then changed in their own commits. Why that base and not the 2006
+tree: Contract J.A.C.K.'s engine is NOLF2's plus a year. Its strings
+(`strings` of the single-player demo's engine against NOLF2's retail
+one) are NOLF2's almost all through; its object order (string anchors,
+interface registrations) is NOLF2's module for module; it imports
+`d3d8.dll` and `dinput8.dll` and links D3DX8. What it has of the 2006
+tree's that NOLF2 lacked, found so far (each to be brought in from the
+2006 tree, or written from the retail code where the 2006 tree has
+dropped it again):
+- `lthread.cpp`/`ltthread.cpp` in the exe too (`LThread::Start`,
+  `CSysThread::Run`); `CUDPDriver::OpenSocket`; ltmem's tracking
+  categories and its `mem` command's full set (`ltmemtrack.cpp`,
+  `ltmemstats.cpp`: "Full memory log", "mark", "dump");
+- console variables the 2006 tree has (`Use0WeightsForDisable`,
+  `MultiPassLightMatch`) and ones neither tree has
+  (`NetMin/MaxUnguaranteedPeriod`, `MaxExtrapolateDist`, `DebugRB*`,
+  `LockableBackBuffer`, `DisablePSGP`), and "unguaranteed data" in the
+  client/server API (`GetObjectUnguaranteedData`,
+  `SetObjectUnguaranteedData`, `CLTServer::FinishClientConnect`):
+  Tron 2.0-era API, no source anywhere;
+- the engine-variable table's entries are 24 bytes, not 20: a sixth
+  field, 1 for `NewPlayerPhysics`, `UDPSimulate*` and 43 render
+  variables listed by name alone after them (`TableFog`, `FogEnable`,
+  `DrawWorld`, `Wireframe`, `LightMap`, ...): an anti-cheat list
+  (`engine_vars.cpp`, 0x428a10 returns the table); the code that reads
+  the flag is still to be found.
+What NOLF2 had and Contract J.A.C.K. dropped: the `CUIVectorFont`
+registration, `CUDPDriver::SendPing` and "UDP: Joining on port",
+`ps\envbumpmap.ps`, `r_LoadSystemTexture`'s and `r_TermRender`'s
+error tags, `ILTModel::GetModelOBBCopy`, `reallyclose_far`.
+
+**Libraries shared with the game.** `src/libs/stdlith`, `lith` and `zlib`
+are the game package's (NOLF2's source release), taken as the game
+branch had them, so that the two merge cleanly, with two changes VC .NET
+2003 needs: lith's `dprintf.cpp` enumerators get the 2006 tree's
+`DPRINTF_` prefix (the Platform SDK's WinIoCtl.h defines `Unknown`), and
+zlib is there because stdlith's `compressedio.cpp` includes it (without
+it the compile spins under Wine instead of failing). **SDK change for
+the game:** `sdk/inc/iltclient.h` loses three default arguments
+(`GetSoundOffset`'s `dwSize`, `ClearScreen`'s `pClearColor`, `End3D`'s
+`flags`): VC .NET 2003 refuses them on function-pointer members (C2383),
+as the 2006 tree's header has it; the game code passes them explicitly
+(`End3D(END3D_CANDRAWCONSOLE)`, `ClearScreen(..., LTNULL)`,
+`GetSoundOffset(..., LTNULL)`).
+
+**Build.** `src/Engine/runtime/winbuild/Engine.dsw`: `Lithtech`
+(`Lithtech.exe`) and `server` (`server.dll`), with D3DRender, Lib_UI,
+Lib_ILTSound, Lib_RezMgr, ltmem, Lib_StdLith, Lib_Lith. No STLport (the
+retail images use VC .NET 2003's own library). Both `/O2`, no `/GX`,
+`/GS`, `/GR` (`progress/COMPILERS.md` has the measurements). The exe
+names its libraries on the link line in the order retail has their code
+(ltmem, StdLith, RezMgr, renderer, sound loader, UI, Lith, then D3DX)
+and `/nodefaultlib:libci.lib` (d3dx8.lib asks for VC6's iostreams).
+`build/engine.sh` is nolf2src's one-object loop (`Lithtech-one x.cpp`,
+`server-one x.cpp`, `<project> verify`).
+
+**SecuROM.** `tools/demoimports.py` (now per game; `cjack` is picked by
+the retail engine's sha256) uses the single-player demo's engine
+(`rez/demos/contractjack_demo_sp.exe`, 2003-10-10, unprotected; Rich
+header, `.rdata` and `.data` sizes and addresses identical to retail's):
+`progress/engine/Lithtech-iat-calls.csv` names the import of each of
+retail's 1,088 redirected calls (35 SecuROM slots in `.obfzv`; 1,039
+paired exactly, 31 by context, 18 weakly); `demoimports.py extract && map
+&& plain` gives `out/spdemo/Lithtech-readable.exe`. The encrypted pages
+(0x536000..0x53b000) are D3DX's 3DNow! code and the CRT: no engine code.
+
+**Scoreboard.** `progress/targets.py`: both engine images have a second
+`app` range, the dynamic initializers and atexit destructors VC .NET
+2003 puts after the CRT and the funclets (exe 0x539a80..0x54987e, dll
+0x10064900..0x10069f9b); the exe's `purecall` is the encrypted thunk
+0x538534. First recorded score: `Lithtech.exe` 5,102 identical (55.3%
+of its bytes), `server.dll` 2,223 (66.6%).
+
+**Converging** (each in its commit, with the retail addresses): the
+libraries without /GX; LTObject's unguaranteed-data field; the 24-byte
+engine variables and the command-line lock; ViewParams' m_mWorld;
+CClientMgr's 2006-tree members and resource-tree vector; the world
+shaders' shared draw range and per-world sections; the collision,
+attachment and binding changes; the UDP driver (the 2006 one on the 2002
+locks: pause handshake, OpenSocket, bandwidth periods, the unguaranteed
+drop rate); the unguaranteed-data protocol (below). Helper agents read
+the retail code module by module and wrote the analyses these came from;
+the reports' open questions are listed below.
+
+**SDK changes the game must follow** (`src/Engine/sdk/inc`, shared with
+package 4; not additive, because CJ's own SDK had them):
+- `iltclient.h`: no default arguments on GetSoundOffset, ClearScreen,
+  End3D (VC .NET 2003 refuses them).
+- `ltbasedefs.h`: LTStrCat copies after the string's end, when there is
+  room (CJ's, server.dll 0x1000a97a).
+- `iltcsbase.h`: two new virtuals, `OpenSocket(uint32*)` after
+  RemovePing and `GetObjectUnguaranteedData(HLOCALOBJ, uint32*)` after
+  GetObjectPos; `iltserver.h`: `FinishClientConnect(HCLIENT)` after
+  GetClientAddr, `SetObjectUnguaranteedData(HOBJECT, uint32)` after
+  SetNetFlags, `GetUDPSocket(uint32*)` after GetSaveFileVersion (retail
+  CLTServer vtable 0x1006d430: 78 slots, NOLF2's 73). OpenSocket and
+  GetUDPSocket are our names. **The server no longer moves a new client
+  towards the world by itself**: the game calls FinishClientConnect
+  (and is told of the client, OnAddClient, on its hello packet), as
+  CJ's Object.lto does.
+- `ltbasedefs.h`: StartGameRequest has `uint32 m_hSocket` before
+  m_TCPAddress (the client joins on that socket unless it is -1; our
+  constructor sets -1, which the game's inline copy should check).
+
+**Where it stands / next** (stopped here: score recorded at `Lithtech.exe` 6,508 identical, 83.3%; `server.dll` 2,675, 93.1%) (breadth first, per module, with
+`tools/fndiff.py`, `o2gap.py`, `vtabcheck.py`, `uncovered.py`;
+`tools/layoutscan.py --image=<target>` finds the layout shifts; the
+near lists of `progress.py --nears=<target>` pair some rows wrongly,
+check with exematch):
+- open from the analyses: where the main world's shaders flush when
+  CD3D_RenderWorld::m_bFlushOnDraw is clear (the flag is not set yet;
+  the world's Draw still flushes, so the game draws); each shader's
+  PostFlushBlock body, DrawAggregateShader, DrawFogPass; the
+  StartGameRequest field ConnectTCP's first argument comes from
+  (+0x68); moveplayer.cpp and world_blocker_data.cpp (CJ's blocker
+  Intersect takes the player mover and collides through WorldPolys:
+  out/physics analysis, not applied); the client side of the
+  unguaranteed data reads bytes in the other order than the server
+  writes them (both as retail: a retail bug if confirmed by matching);
+- CD3D_RenderWorld::Draw (retail 0x4a9ea0, 256 bytes more than ours):
+  the DebugRBOccludeWorld/OccludeEarlyVisible paths ("World Blocks
+  Early-out Visible"), and the flush-on-draw ending; the shader Flush
+  instances (1,228 bytes against our 1,102: the shared range's static
+  guard and the loop shapes);
+- MultiPassLightMatch and DisablePSGP are strings of CJ's not yet placed;
+- ltmem's tracking categories and full `mem` command (2006 tree's);
+- Lib_StdLith/Lith/ltmem flags (shared with the game and SndDrv.dll:
+  StdLith is marginally better without /GX);
+- then module by module through the nears.
 
 ### 11. release
 

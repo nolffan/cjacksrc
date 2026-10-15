@@ -52,6 +52,8 @@ ClientMultiplayerMgr::ClientMultiplayerMgr( )
 	m_nCurMessageSourcePort = 0;
 
 	memset( &m_StartGameRequest, 0, sizeof( m_StartGameRequest ));
+	// No socket of our own yet (StartGameRequest::m_hSocket): the engine opens one.
+	m_StartGameRequest.m_hSocket = (uint32)-1;
 	m_StartGameRequest.m_Type = GAMEMODE_NONE;
 	memset( &m_NetClientData, 0, sizeof( m_NetClientData ));
 
@@ -286,6 +288,8 @@ bool ClientMultiplayerMgr::SetupClient(char const* pszIpAddress, char const* psz
 	// Start the game...
 
 	memset( &m_StartGameRequest, 0, sizeof( m_StartGameRequest ));
+	// No socket of our own yet (StartGameRequest::m_hSocket): the engine opens one.
+	m_StartGameRequest.m_hSocket = (uint32)-1;
 	m_ServerGameOptions.Clear( );
 	memset( &m_NetClientData, 0, sizeof( m_NetClientData ));
 
@@ -321,6 +325,8 @@ bool ClientMultiplayerMgr::SetupClient(char const* pszIpAddress, char const* psz
 bool ClientMultiplayerMgr::SetupServerSinglePlayer( )
 {
 	memset(&m_StartGameRequest, 0, sizeof(StartGameRequest));
+	// No socket of our own yet (StartGameRequest::m_hSocket): the engine opens one.
+	m_StartGameRequest.m_hSocket = (uint32)-1;
 	m_ServerGameOptions.Clear( );
 	memset( &m_NetClientData, 0, sizeof( m_NetClientData ));
 
@@ -347,6 +353,8 @@ bool ClientMultiplayerMgr::SetupServerSinglePlayer( )
 bool ClientMultiplayerMgr::SetupServerHost( int nPort, bool bLANOnly )
 {
 	memset( &m_StartGameRequest, 0, sizeof( m_StartGameRequest ));
+	// No socket of our own yet (StartGameRequest::m_hSocket): the engine opens one.
+	m_StartGameRequest.m_hSocket = (uint32)-1;
 	m_ServerGameOptions.Clear( );
 	memset( &m_NetClientData, 0, sizeof( m_NetClientData ));
 	

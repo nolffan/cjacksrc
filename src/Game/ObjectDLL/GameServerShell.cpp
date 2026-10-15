@@ -625,6 +625,15 @@ void CGameServerShell::OnAddClient(HCLIENT hClient)
 		iter++;
 	}
 
+	// The engine no longer moves a new client towards the world by itself:
+	// the game lets it in. Contract J.A.C.K. does that only once the
+	// client has passed the handshake and, on a published server,
+	// GameSpy's CD key check (ProcessHandshake, Object.lto 0x100de844;
+	// the GameSpy callbacks, 0x100dd48f, 0x100dd530, 0x100e097f), keeping
+	// a connection record per client (0x194fc). Until that is rebuilt the
+	// handshake stays where NOLF2 had it, after the client enters the
+	// world, and every client is let in here.
+	g_pLTServer->FinishClientConnect( hClient );
 }
 
 // ----------------------------------------------------------------------- //
