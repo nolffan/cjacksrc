@@ -20,10 +20,10 @@ LINKFROM_MODULE( VolumeEffect );
 BEGIN_CLASS(VolumeEffect)
 	ADD_DEDIT_COLOR( VolumeEffect )
 	ADD_VECTORPROP_VAL_FLAG(Dims, 128.0f, 128.0f, 128.0f, PF_DIMS)
-END_CLASS_DEFAULT_FLAGS(VolumeEffect, BaseClass, NULL, NULL, CF_ALWAYSLOAD)
+END_CLASS_DEFAULT_FLAGS(VolumeEffect, GameBase, NULL, NULL, CF_ALWAYSLOAD)
 
 
-VolumeEffect::VolumeEffect() : BaseClass(OT_NORMAL)
+VolumeEffect::VolumeEffect() : GameBase(OT_NORMAL)
 {
 	m_vDims.Init( 128.0f, 128.0f, 128.0f );
 }
@@ -57,9 +57,11 @@ uint32 VolumeEffect::EngineMessageFn( uint32 messageID, void* pData, LTFLOAT fDa
 		break;
 
 	case MID_SAVEOBJECT:
+		Save( (ILTMessage_Write*)pData );
 		break;
 
 	case MID_LOADOBJECT:
+		Load( (ILTMessage_Read*)pData );
 		break;
 
 	case MID_TOUCHNOTIFY:
@@ -83,5 +85,21 @@ bool VolumeEffect::ReadProp( ObjectCreateStruct* pOCS )
 
 void VolumeEffect::InitialUpdate( void )
 {
-	SetNextUpdate( m_hObject, UPDATE_NEVER );
+	SetNextUpdate( UPDATE_NEVER );
+}
+
+void VolumeEffect::Save( ILTMessage_Write *pMsg )
+{
+	if( !pMsg )
+		return;
+
+	SAVE_VECTOR( m_vDims );
+}
+
+void VolumeEffect::Load( ILTMessage_Read *pMsg )
+{
+	if( !pMsg )
+		return;
+
+	LOAD_VECTOR( m_vDims );
 }

@@ -51,6 +51,7 @@ CLTGUIEditCtrl::CLTGUIEditCtrl()
 	m_bUseFrame			= LTFALSE;
 
 	m_eInputMode		= kInputAll;
+	m_pFilterFn			= LTNULL;
 
 	memset(&m_Caret,0,sizeof(m_Caret));
 	memset(m_Frame,0,sizeof(m_Frame));
@@ -404,6 +405,12 @@ LTBOOL CLTGUIEditCtrl::HandleChar(unsigned char c)
 {
     if (CLTGUICtrl::HandleChar(c)) return LTTRUE;
     if (c < ' ') return LTFALSE;
+
+	if (m_pFilterFn)
+	{
+		c = m_pFilterFn(c);
+		if (!c) return LTFALSE;
+	}
 
 	switch	(m_eInputMode)
 	{

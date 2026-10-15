@@ -29,6 +29,8 @@ CHUDRewardMsgQueue*	g_pRewardMsgs = LTNULL;
 CHUDPaused*			g_pPaused = LTNULL;
 CHUDDisplayMeter*	g_pDisplayMeter = LTNULL;
 CHUDScores*			g_pScores = LTNULL;
+CHUDBombTarget*		g_pHUDBombTarget = LTNULL;
+CHUDCarrying*		g_pHUDCarrying = LTNULL;
 
 // ----------------------------------------------------------------------- //
 //
@@ -80,6 +82,9 @@ LTBOOL CHUDMgr::Init()
 	m_itemArray.push_back(&m_Radar);
 	m_itemArray.push_back(&m_DisplayMeter);
 	m_itemArray.push_back(&m_Scores);
+	m_itemArray.push_back(&m_BombTarget);
+	m_itemArray.push_back(&m_Carrying);
+	m_itemArray.push_back(&m_WeaponHeat);
 	
 	g_pPopup = &m_Popup;
 	g_pDecision = &m_Decision;
@@ -94,6 +99,8 @@ LTBOOL CHUDMgr::Init()
 	g_pPaused = &m_Paused;
 	g_pDisplayMeter = &m_DisplayMeter;
 	g_pScores = &m_Scores;
+	g_pHUDBombTarget = &m_BombTarget;
+	g_pHUDCarrying = &m_Carrying;
 
 	m_nCurrentLayout = GetConsoleInt("HUDLayout",0);
 	

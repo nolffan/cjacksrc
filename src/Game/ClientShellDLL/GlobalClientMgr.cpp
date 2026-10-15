@@ -20,6 +20,7 @@
 #include "RadarTypeMgr.h"
 #include "ActivateTypeMgr.h"
 #include "TriggerTypeMgr.h"
+#include "ChassisButeMgr.h"
 
 // ----------------------------------------------------------------------- //
 //
@@ -111,7 +112,7 @@ LTBOOL CGlobalClientMgr::Init()
 		if( !ActivateTypeMgr.Init() )
 		{
 			ASSERT( !"ERROR in CGlobalClientMgr::Init() Couldn't initialize CActivateTypeMgr." );
-			g_pLTClient->CPrint( "ERROR in CGlobalClientMgr::Init()\nCouldn't initialize CActivateTypeMgr.\n\n" );
+			DebugCPrint( 1, "ERROR in CGlobalClientMgr::Init()\nCouldn't initialize CActivateTypeMgr.\n\n" );
 		}
 	}
 
@@ -121,7 +122,16 @@ LTBOOL CGlobalClientMgr::Init()
 		if( !TriggerTypeMgr.Init() )
 		{
 			ASSERT( !"ERROR in CGlobalClienMgr::Init() Couldn't initialize CTriggerTypeMge." );
-			g_pLTClient->CPrint( "ERROR in CGlobalClientMgr::Init()\nCouldn't initialize CTriggerTypeMgr.\n\n" );
+			DebugCPrint( 1, "ERROR in CGlobalClientMgr::Init()\nCouldn't initialize CTriggerTypeMgr.\n\n" );
+		}
+	}
+
+	// RETAIL: 0x1004e65a (after the vehicles, CVehicleButeMgr, still to come)
+	if( !ChassisButeMgr::Instance( ).IsInitialized( ))
+	{
+		if( !ChassisButeMgr::Instance( ).Init( ))
+		{
+			DebugCPrint( 1, "ERROR in CGlobalClientMgr::Init()\nCouldn't initialize ChassisButeMgr.\n\n" );
 		}
 	}
 

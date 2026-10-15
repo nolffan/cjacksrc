@@ -18,6 +18,18 @@ Package=<4>
 
 ###############################################################################
 
+Project: "ButeMgrMfcDll"=..\libs\ButeMgr\ButeMgrMfcDll.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
 Project: "ClientFxDLL"=.\ClientFxDLL\ClientFxDLL.dsp - Package Owner=<4>
 
 Package=<5>
@@ -112,6 +124,36 @@ Package=<4>
 {{{
     Begin Project Dependency
     Project_Dep_Name ltmem
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "CryptMgrMfcDll"=..\libs\CryptMgr\CryptMgrMfcDll.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "Launcher"=.\Launcher\TO2\Launcher.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name RegMgr
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name regmgr32
     End Project Dependency
 }}}
 
@@ -217,6 +259,48 @@ Package=<4>
 {{{
     Begin Project Dependency
     Project_Dep_Name ltmem
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "regmgr32"=..\libs\RegMgr32\regmgr32.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "ServerApp"=.\ServerApp\ServerApp.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name ButeMgrMfcDll
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name CryptMgrMfcDll
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name Lib_Lith
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name Lib_StdLith
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name RegMgr
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name regmgr32
     End Project Dependency
 }}}
 

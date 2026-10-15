@@ -1473,6 +1473,10 @@ WEAPON::WEAPON()
 	fFireAnimRateScale		= 1.0f;
 	fReloadAnimRateScale	= 1.0f;
 
+	fHeatFactor				= 0.0f;
+	fHeatDissipationRate	= 0.0f;
+	fHeatOverheatTime		= 0.0f;
+
 	bRespawnWaitVisible		= false;
 	bRespawnWaitTranslucent = false;
 
@@ -1828,6 +1832,10 @@ void WEAPON::InitMembers( CButeMgr &buteMgr, char *aTagName )
 	bRespawnWaitTranslucent	= !!(buteMgr.GetInt( aTagName, WMGR_WEAPON_RESPAWNWAITTRANSLUCENT, bRespawnWaitTranslucent ));
 	
 	bCanServerRestrict = !!( buteMgr.GetInt( aTagName, WMGR_ALL_CANSERVERRESTRICT, bCanServerRestrict ));
+
+	fHeatFactor				= (float)buteMgr.GetDouble( aTagName, "HeatFactor", fHeatFactor );
+	fHeatDissipationRate	= (float)buteMgr.GetDouble( aTagName, "HeatDissipationRate", fHeatDissipationRate );
+	fHeatOverheatTime		= (float)buteMgr.GetDouble( aTagName, "HeatOverheatTime", fHeatOverheatTime );
 }
 
 // ----------------------------------------------------------------------- //

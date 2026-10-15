@@ -630,6 +630,10 @@ SOURCE=.\CharacterMgr.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\Shared\ChassisButeMgr.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\ClientLightFX.cpp
 # End Source File
 # Begin Source File
@@ -2034,6 +2038,10 @@ SOURCE=.\CharacterHitBox.h
 # Begin Source File
 
 SOURCE=.\CharacterMgr.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\Shared\ChassisButeMgr.h
 # End Source File
 # Begin Source File
 

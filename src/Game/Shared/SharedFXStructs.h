@@ -73,6 +73,11 @@ struct CHARCREATESTRUCT : public SFXCREATESTRUCT
 	LTVector		vHitBoxDims;
 	LTVector		vHitBoxOffset;
 	uint8			nCarrying;
+
+	// RETAIL: Contract J.A.C.K.'s (0x5c..0x64; Object 0x10145e19, 0x10146e62)
+	struct CHASSISPIECE const*	pChassisPiece;	// The chassis piece carried, sent as its id
+	uint32			nExtra60;			// Not yet identified, sent as a byte
+	uint8			nExtra64;			// Not yet identified (0xff by default)
 };
 
 inline void CHARCREATESTRUCT::Clear()
@@ -95,6 +100,9 @@ inline void CHARCREATESTRUCT::Clear()
 	bRadarVisible				= false;
 	bIsCinematicAI				= false;
 	nCarrying					= CFX_CARRY_NONE;
+	pChassisPiece				= LTNULL;
+	nExtra60					= 0;
+	nExtra64					= (uint8)-1;
 	
 	vHitBoxDims.Init();
 	vHitBoxOffset.Init();

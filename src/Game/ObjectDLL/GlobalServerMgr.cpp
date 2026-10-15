@@ -29,6 +29,7 @@
 #include "RadarTypeMgr.h"
 #include "ActivateTypeMgr.h"
 #include "TriggerTypeMgr.h"
+#include "ChassisButeMgr.h"
 
 // These includes necessary to establish correct linkage.  They rely on the header
 // using a LINKTO_MODULE macro, which places a global variable into the cpp file.  This
@@ -262,6 +263,12 @@ LTBOOL CGlobalServerMgr::Init()
 	{
 		CTriggerTypeMgr & TriggerTypeMgr = CTriggerTypeMgr::Instance();
 		TriggerTypeMgr.Init();
+	}
+
+	// RETAIL: 0x100e45ec (after the vehicles, CVehicleButeMgr, still to come)
+	if( !ChassisButeMgr::Instance( ).IsInitialized( ))
+	{
+		ChassisButeMgr::Instance( ).Init( );
 	}
 
     return LTTRUE;

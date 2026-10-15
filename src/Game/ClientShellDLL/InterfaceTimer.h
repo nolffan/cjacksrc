@@ -46,6 +46,7 @@ class CInterfaceTimer
 			m_bPause = bPause;
 		}
 		float		GetTime() const { return m_fTime; }
+		float		GetTimeLeft() const { return m_fTimeLeft; }
 
 	private:
 

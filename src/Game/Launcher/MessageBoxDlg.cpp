@@ -25,7 +25,8 @@ static char THIS_FILE[] = __FILE__;
 // Button and image coordinates
 /////////////////////////////////////////////
 
-#define MB_CLOSE_X		579
+// RETAIL: 0x40887e
+#define MB_CLOSE_X		577
 #define MB_CLOSE_Y		6
 
 #define MB_OK_X			189

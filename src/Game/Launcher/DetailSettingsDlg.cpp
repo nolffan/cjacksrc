@@ -29,7 +29,9 @@ static char THIS_FILE[] = __FILE__;
 #define DSD_CANCEL_X			178
 #define DSD_CANCEL_Y			440
 
-#define DSD_HIGHDETAIL_X		143 // Original = 123
+// RETAIL: the buttons at their original column, the texts 5 pixels
+// higher (CDetailSettingsDlg::OnInitDialog, 0x4035f0)
+#define DSD_HIGHDETAIL_X		123 // Original = 123
 #define DSD_HIGHDETAIL_Y		168
 #define DSD_MEDIUMDETAIL_X		DSD_HIGHDETAIL_X
 #define DSD_MEDIUMDETAIL_Y		277
@@ -39,11 +41,11 @@ static char THIS_FILE[] = __FILE__;
 
 #define DSD_HEADERTEXT_Y		38
 #define DSD_HEADERTEXT_HEIGHT	58
-#define DSD_HIGHTEXT_Y			122
+#define DSD_HIGHTEXT_Y			117
 #define DSD_HIGHTEXT_HEIGHT		49
-#define DSD_MEDIUMTEXT_Y		231
+#define DSD_MEDIUMTEXT_Y		226
 #define DSD_MEDIUMTEXT_HEIGHT	DSD_HIGHTEXT_HEIGHT
-#define DSD_LOWTEXT_Y			341
+#define DSD_LOWTEXT_Y			336
 #define DSD_LOWTEXT_HEIGHT		DSD_HIGHTEXT_HEIGHT
 
 

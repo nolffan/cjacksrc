@@ -14,6 +14,7 @@ code in substance either way.
 | `src/Game/Libs/GameSpy/*.cpp`, `*.h` | **Monolith Productions**' `Game\Libs\GameSpy`, the wrapper `GameSpy.dll` is: no source of it was ever released; reconstructed from the retail `GameSpy.dll` (1.1) so that it compiles back to it. `WinSync.h` is Monolith's synchronisation classes from the LithTech Jupiter tree (`runtime/shared/src/sys/win/winsync.h`), which the retail code shows the wrapper used | as Monolith's code above |
 | `src/Game/Libs/GameSpy/GameSpySDK/` | **GameSpy Industries / IGN Entertainment**: the GameSpy SDK's C source as IGN released it in 2011 under a BSD licence, from the snapshot mirrored at github.com/nitrocaster/GameSpy (commit `d1deb2d1a951`; serverbrowsing 2.07.00, December 2007). Only the modules `GameSpy.dll` links are kept, each with its `changelog.txt`; they are rolled back toward the July-October 2003 versions the retail image was built from, and the 2007 `common/` layer is replaced by a 2003-style `nonport.h`/`nonport.c`, written for this project | the three-clause BSD licence in `GameSpySDK/LICENSE.txt` (copyright IGN Entertainment, 2011): keep the notice with the source and reproduce it with binaries |
 | `src/Game/Libs/WONAPI/` | the part of **WON**'s client library (WONAPI, as Monolith's tree had it in `Game\Libs\WONAPI`) that `GameSpy.dll` links for its CD key check (`WONAPI::CDKey`, `CRC16`, `ByteBuffer`), written for this project from the retail image; WONAPI's own source is not in this repository | written for this project; no licence is declared |
+| `src/Game/Launcher/`, `src/Game/ServerApp/` | **Monolith Productions**: NOLF2's launcher and dedicated server (its source release's `Launcher` and `ServerApp`), brought to Contract J.A.C.K.'s retail `ContractJack.exe` and `ContractJackServer.exe` (1.1); their resource scripts restate the retail images' dialogs, strings and version resources. Their art -- the launcher's bitmaps, sounds, icon and cursor, the server's icons and splash screen -- is not here: `build/appres.py` writes it out of the retail images when the game is built | as Monolith's code above |
 | `src/cjacksrc/`, `build/`, `docker/`, `Makefile`, the documentation, `progress/` | written for this project (much of it adapted from nolfsrc and nolf2src) | no licence is declared |
 | `rez/` (submodule) | the disc images' installer; the images themselves are fetched from archive.org | see `rez/README.md` |
 | `toolchains/` (submodule) | the compilers, assembled from public copies of the original media | see `toolchains/README.md` |
@@ -32,6 +33,7 @@ directory lists every file; `tools/retailextract.py audit` every binary):
 | everything built (`MANIFEST.txt`: `built`) | built here from the source above | `src/` |
 | the game data: `.rez` archives, movies, configs | Monolith Productions / Vivendi Universal Games | the retail game (the retail game DLLs inside the archives are zeroed) |
 | `binkw32.dll` (Bink), the Microsoft C++ and MFC 7.1 runtime DLLs | RAD Game Tools, Microsoft | the retail game |
+| the art inside the built `ContractJack.exe` and `ContractJackServer.exe` (their bitmap, wave, icon and cursor resources) | Monolith Productions / Vivendi Universal Games | the retail images of the two programs, at build time (`build/appres.py`) |
 
 ## The archives
 
@@ -50,7 +52,9 @@ project's own files: the binaries built here (`.pdb` and `.map` too, for
 the debug builds), `linux-install.sh`, `windows-install.bat`,
 `cjackcmds.txt` and `MANIFEST.txt`. It has no `.rez` archive, movie,
 setting or profile of the retail game, no RAD Bink and no Microsoft runtime
-DLL. The install scripts copy those from the player's own disc images of
+DLL. (The launcher and the dedicated server built here do carry the retail
+game's art in their resources, compiled in from the retail images: an open
+question for the public archive, which ships them as built.) The install scripts copy those from the player's own disc images of
 Contract J.A.C.K. (the European or the USA release) and its English 1.1
 update into the directory, on the player's machine; nothing of them is in
 the archive, and the scripts carry no InstallShield or Microsoft code (they
