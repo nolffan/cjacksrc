@@ -279,9 +279,16 @@ server are not in the workspace yet (their resources first).
   player name is the server shell's (GenerateUniqueName 0x100dc160), not
   CPlayerObj's. RETAIL_BUGS.md: GetCommandName always answers its error
   string (fixed in the modern build, GAME-1).
-- **Scores** (recorded): CShell.dll 4,796 identical of 6,552, Object.lto
-  7,976 of 9,812 (1.22 MB), ClientFx.fxd 429 of 451; the commits after
-  the record add more. The runtime boundaries are pinned from our maps.
+- **Scores** (recorded): CShell.dll 4,916 identical of 6,555, Object.lto
+  8,112 of 9,770 (1.28 MB), ClientFx.fxd 429 of 451. The runtime
+  boundaries are pinned from our maps. Also done since the first record:
+  Body has no animator (CJ has no server CAnimatorBody; the client's
+  CBodyFX twitches the body when the server's damage message says so).
+- **Chassis.** CHARCREATESTRUCT carries a chassis piece (0x5c, sent as
+  its id, 0xff for none, looked up in the ChassisButeMgr at 0x100ae430),
+  a dword (0x60) and a byte (0x64, 0xff); CCharacter::SetCarrying takes
+  the piece too (0xc84, saved by name). Waits for ChassisButeMgr
+  ("attributes\chassis.txt").
 - **Classes still to change** (RTTI, retail vs ours). Object.lto has
   AINodeSniper, AimMagnet (+plugin), BaseGameOptions and its
   Singleplayer/DM/TeamDM/Coop/Demolition/Doomsday subclasses,
