@@ -46,3 +46,9 @@ modes at any size; our Bink player on FFmpeg in place of RAD's
   world only among equal base sections, so the sort gets a strict weak
   ordering (`RETAIL_BUGS.md`; src/Engine/runtime/render_a/src/sys/d3d/
   d3d_rendershader_base.h).
+* **EN-2: the window keeps its renderer.** In a window the game no longer
+  shuts its renderer down and brings it back when it loses the focus (a
+  reload of every texture and a black window meanwhile; only a full-screen
+  device needs it); it pauses, unless the console variable
+  RunInBackground is set, when it plays on behind other windows
+  (src/Engine/runtime/kernel/src/sys/win/client.cpp; nolf2src's M-G41).
