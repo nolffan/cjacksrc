@@ -50,7 +50,7 @@ enum PlayerColumns
 	ePlayerColumnsName,
 	ePlayerColumnsPing,
 	ePlayerColumnsKills,
-	ePlayerColumnsTags,
+	// RETAIL: no tags column (CServerDlg::OnInitDialog, 0x40bb68)
 	ePlayerColumnsScore,
 	ePlayerColumnsTime,
 };
@@ -299,7 +299,18 @@ bool CServerDlg::RunServer()
 	// Add in the servershell
 	if( !m_pServerMgr->LoadBinaries( ))
 	{
-		OnShellFatalError( IDS_ERROR_BINARIES );
+		// RETAIL: the game server's status says why it failed (0x40c4b9)
+		int nError = IDS_ERROR_BINARIES;
+		switch( m_ServerGameOptions.m_nServerStatus )
+		{
+			case 2:
+				nError = IDS_NETERR_SELECTSERVICE;
+				break;
+			case 3:
+				nError = IDS_NETERR_HOSTSESSION;
+				break;
+		}
+		OnShellFatalError( nError );
 		return FALSE;
 	}
 
@@ -528,8 +539,9 @@ DWORD CServerDlg::DoHost( )
 
 	if( !szSelectedMod[0] )
 	{
+		// RETAIL: a literal; the string table has no IDS_RETAIL (0x40aacf)
 		CString sModName;
-		sModName.LoadString( IDS_RETAIL );
+		sModName = "Retail";
 		m_ServerGameOptions.m_sModName = sModName;
 	}
 
@@ -645,8 +657,6 @@ BOOL CServerDlg::OnInitDialog()
 	m_Players.InsertColumn( ePlayerColumnsPing, sColumnHeader );
 	sColumnHeader.LoadString( IDS_COLUMNHEADER_KILLS );
 	m_Players.InsertColumn( ePlayerColumnsKills, sColumnHeader );
-	sColumnHeader.LoadString( IDS_COLUMNHEADER_TAGS );
-	m_Players.InsertColumn( ePlayerColumnsTags, sColumnHeader );
 	sColumnHeader.LoadString( IDS_COLUMNHEADER_SCORE );
 	m_Players.InsertColumn( ePlayerColumnsScore, sColumnHeader );
 	sColumnHeader.LoadString( IDS_COLUMNHEADER_TIMEONSERVER );
@@ -658,7 +668,6 @@ BOOL CServerDlg::OnInitDialog()
 	m_Players.SetColumnWidth( ePlayerColumnsName,	(int)(nWidth * 0.35));
 	m_Players.SetColumnWidth( ePlayerColumnsPing,	(int)(nWidth * 0.11));
 	m_Players.SetColumnWidth( ePlayerColumnsKills,	(int)(nWidth * 0.11));
-	m_Players.SetColumnWidth( ePlayerColumnsTags,	(int)(nWidth * 0.11));
 	m_Players.SetColumnWidth( ePlayerColumnsScore,	(int)(nWidth * 0.13));
 	m_Players.SetColumnWidth( ePlayerColumnsTime,	(int)(nWidth * 0.18));
 
@@ -869,13 +878,6 @@ void CServerDlg::UpdateUI()
 			if( m_Players.GetItemText( nPlayer, ePlayerColumnsKills ).Compare( sVal ))
 			{
 				m_Players.SetItemText( nPlayer, ePlayerColumnsKills, sVal );
-			}
-
-			// Update tags.
-			sVal.Format( "%d", playerInfo[nPlayer].m_nTags );
-			if( m_Players.GetItemText( nPlayer, ePlayerColumnsTags ).Compare( sVal ))
-			{
-				m_Players.SetItemText( nPlayer, ePlayerColumnsTags, sVal );
 			}
 
 			// Update score.
@@ -1175,7 +1177,6 @@ void CServerDlg::OnShellUpdate( ILTMessage_Read& msg )
 		msg.ReadString( pPlayerInfo->m_szPlayerHandle, sizeof( pPlayerInfo->m_szPlayerHandle ));
 		pPlayerInfo->m_szPlayerHandle[sizeof( pPlayerInfo->m_szPlayerHandle ) - 1] = 0;
 		pPlayerInfo->m_nKills = msg.Readint16( );
-		pPlayerInfo->m_nTags = msg.Readint16( );
 		pPlayerInfo->m_nScore = msg.Readint16( );
 	}
 }

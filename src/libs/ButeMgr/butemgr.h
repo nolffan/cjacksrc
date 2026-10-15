@@ -71,7 +71,9 @@ private:
 		uint32 nHash = 0;
 		for (; *pKey; ++pKey)
 		{
-			nHash = 13 * nHash + (toupper(*pKey) - '@');
+			// RETAIL: Contract J.A.C.K.'s hash (ContractJackServer.exe
+			// 0x40ec20; CShell.dll and Object.lto have the same loop)
+			nHash = 5 * nHash + tolower(*pKey);
 		}
 
 		return nHash;

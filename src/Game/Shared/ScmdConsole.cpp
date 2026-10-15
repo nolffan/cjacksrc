@@ -1406,6 +1406,9 @@ bool ScmdConsoleCommandHandler_ListGameOptions::Receive( ScmdCommandStatus eScmd
 
 			// Each game type can have different options.
 			GameType eGameType = ( GameType )msg.Readuint8( );
+			// RETAIL: Contract J.A.C.K.'s game types and options, weapons stay
+			// among them (ScmdConsoleCommandHandler_ListGameOptions::Receive,
+			// 0x4076b0)
 			switch( eGameType )
 			{
 				case eGameTypeDeathmatch:
@@ -1417,6 +1420,7 @@ bool ScmdConsoleCommandHandler_ListGameOptions::Receive( ScmdCommandStatus eScmd
 					WriteOutGameOption( nIndex++, "%d", IDS_FRAG_LIMIT, msg.Readuint8( ));
 					WriteOutGameOption( nIndex++, "%d", IDS_TIME_LIMIT, msg.Readuint8( ));
 					WriteOutGameOption( nIndex++, "%d", IDS_ROUNDS, msg.Readuint8( ));
+					WriteOutGameOption( nIndex++, "%d", IDS_WEAPONSSTAY, msg.Readbool( ));
 				}
 				break;
 
@@ -1430,6 +1434,7 @@ bool ScmdConsoleCommandHandler_ListGameOptions::Receive( ScmdCommandStatus eScmd
 					WriteOutGameOption( nIndex++, "%d", IDS_TIME_LIMIT, msg.Readuint8( ));
 					WriteOutGameOption( nIndex++, "%d", IDS_ROUNDS, msg.Readuint8( ));
 					WriteOutGameOption( nIndex++, "%d", IDS_FRIENDLY_FIRE, msg.Readbool( ));
+					WriteOutGameOption( nIndex++, "%d", IDS_WEAPONSSTAY, msg.Readbool( ));
 				}
 				break;
 
@@ -1442,6 +1447,7 @@ bool ScmdConsoleCommandHandler_ListGameOptions::Receive( ScmdCommandStatus eScmd
 					WriteOutGameOption( nIndex++, "%d", IDS_TIME_LIMIT, msg.Readuint8( ));
 					WriteOutGameOption( nIndex++, "%d", IDS_ROUNDS, msg.Readuint8( ));
 					WriteOutGameOption( nIndex++, "%d", IDS_FRIENDLY_FIRE, msg.Readbool( ));
+					WriteOutGameOption( nIndex++, "%d", IDS_WEAPONSSTAY, msg.Readbool( ));
 				}
 				break;
 
@@ -1453,6 +1459,18 @@ bool ScmdConsoleCommandHandler_ListGameOptions::Receive( ScmdCommandStatus eScmd
 					WriteOutGameOption( nIndex++, "%d", IDS_FRIENDLY_FIRE, msg.Readbool( ));
 					WriteOutGameOption( nIndex++, "%d", IDS_DIFFICULTY, msg.Readuint8( ));
 					WriteOutGameOption( nIndex++, "%f", IDS_HOST_PLAYERDIFF, msg.Readfloat( ));
+				}
+				break;
+
+				case eGameTypeDemolition:
+				{
+					ScmdConsole::Instance( ).GetScmdConsoleDriver( ).WriteStringResId( IDS_DEMOLITION );
+
+					uint32 nIndex = 0;
+					WriteOutGameOption( nIndex++, "%d", IDS_RUN_SPEED, msg.Readuint8( ));
+					WriteOutGameOption( nIndex++, "%d", IDS_ROUNDS, msg.Readuint8( ));
+					WriteOutGameOption( nIndex++, "%d", IDS_FRIENDLY_FIRE, msg.Readbool( ));
+					WriteOutGameOption( nIndex++, "%d", IDS_WEAPONSSTAY, msg.Readbool( ));
 				}
 				break;
 

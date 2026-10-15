@@ -28,7 +28,6 @@ struct CPlayerInfo
 		m_szPlayerHandle[0] = '\0';
 		m_nKills = 0;
 		m_nScore = 0;
-		m_nTags = 0;
 		m_timeOnServer.GetCurrentTime( );
 	}
 
@@ -53,7 +52,6 @@ struct CPlayerInfo
 		strcpy( m_szPlayerHandle, playerInfo.m_szPlayerHandle );
 		m_nKills = playerInfo.m_nKills;
 		m_nScore = playerInfo.m_nScore;
-		m_nTags = playerInfo.m_nTags;
 		m_timeOnServer = playerInfo.m_timeOnServer;
 	}
 
@@ -61,7 +59,6 @@ struct CPlayerInfo
 	char		m_szPlayerHandle[30];
 	int			m_nKills;
 	int			m_nScore;
-	int			m_nTags;
 	CTime		m_timeOnServer;
 };
 

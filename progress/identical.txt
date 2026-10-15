@@ -3367,6 +3367,7 @@ CShell.dll	sub_100ada40
 CShell.dll	sub_100adc00
 CShell.dll	sub_100adc50
 CShell.dll	sub_100adc60
+CShell.dll	sub_100adc80
 CShell.dll	sub_100adcd0
 CShell.dll	sub_100addb0
 CShell.dll	sub_100ae0a0
@@ -3392,6 +3393,8 @@ CShell.dll	sub_100ae950
 CShell.dll	sub_100ae9b0
 CShell.dll	sub_100aea20
 CShell.dll	sub_100aeaa0
+CShell.dll	sub_100aeba0
+CShell.dll	sub_100aec30
 CShell.dll	sub_100aec70
 CShell.dll	sub_100aed10
 CShell.dll	sub_100aef10
@@ -3615,6 +3618,7 @@ CShell.dll	sub_100b8990
 CShell.dll	sub_100b8a50
 CShell.dll	sub_100b8a80
 CShell.dll	sub_100b8aa0
+CShell.dll	sub_100b8cb0
 CShell.dll	sub_100b90d0
 CShell.dll	sub_100b90f0
 CShell.dll	sub_100b9140
@@ -4391,6 +4395,7 @@ CShell.dll	sub_100f246c
 CShell.dll	sub_100f2550
 CShell.dll	sub_100f25c0
 CShell.dll	sub_100f2660
+CShell.dll	sub_100f26a0
 CShell.dll	sub_100f29b0
 CShell.dll	sub_100f2a00
 CShell.dll	sub_100f2a20
@@ -4881,6 +4886,7 @@ CShell.dll	sub_10117530
 CShell.dll	sub_101176a0
 CShell.dll	sub_101176e0
 CShell.dll	sub_10117700
+CShell.dll	sub_10117730
 CShell.dll	sub_10117770
 CShell.dll	sub_101177e0
 CShell.dll	sub_101177f0
@@ -4994,6 +5000,8 @@ CShell.dll	sub_1011ba50
 CShell.dll	sub_1011bbb0
 CShell.dll	sub_1011bbbc
 CShell.dll	sub_1011bca0
+CShell.dll	sub_1011c020
+CShell.dll	sub_1011c330
 CShell.dll	sub_1011c640
 CShell.dll	sub_1011c690
 CShell.dll	sub_1011c6e0
@@ -6191,6 +6199,7 @@ ContractJackServer.exe	sub_403450
 ContractJackServer.exe	sub_403480
 ContractJackServer.exe	sub_4034d0
 ContractJackServer.exe	sub_4034f0
+ContractJackServer.exe	sub_403520
 ContractJackServer.exe	sub_403570
 ContractJackServer.exe	sub_403650
 ContractJackServer.exe	sub_403950
@@ -6216,6 +6225,8 @@ ContractJackServer.exe	sub_404220
 ContractJackServer.exe	sub_404290
 ContractJackServer.exe	sub_404310
 ContractJackServer.exe	sub_404390
+ContractJackServer.exe	sub_4044c0
+ContractJackServer.exe	sub_404550
 ContractJackServer.exe	sub_404590
 ContractJackServer.exe	sub_404630
 ContractJackServer.exe	sub_404860
@@ -6277,6 +6288,7 @@ ContractJackServer.exe	sub_407390
 ContractJackServer.exe	sub_407450
 ContractJackServer.exe	sub_407480
 ContractJackServer.exe	sub_4074a0
+ContractJackServer.exe	sub_4076b0
 ContractJackServer.exe	sub_407ad0
 ContractJackServer.exe	sub_407af0
 ContractJackServer.exe	sub_407b40
@@ -6349,6 +6361,7 @@ ContractJackServer.exe	sub_409bf0
 ContractJackServer.exe	sub_409c10
 ContractJackServer.exe	sub_409c30
 ContractJackServer.exe	sub_409c60
+ContractJackServer.exe	sub_409e80
 ContractJackServer.exe	sub_409ec0
 ContractJackServer.exe	sub_409f10
 ContractJackServer.exe	sub_409fc0
@@ -6369,10 +6382,12 @@ ContractJackServer.exe	sub_40a600
 ContractJackServer.exe	sub_40a680
 ContractJackServer.exe	sub_40a6c0
 ContractJackServer.exe	sub_40a700
+ContractJackServer.exe	sub_40a800
 ContractJackServer.exe	sub_40ac00
 ContractJackServer.exe	sub_40ad90
 ContractJackServer.exe	sub_40ade0
 ContractJackServer.exe	sub_40aed0
+ContractJackServer.exe	sub_40af20
 ContractJackServer.exe	sub_40afb0
 ContractJackServer.exe	sub_40b030
 ContractJackServer.exe	sub_40b090
@@ -6382,6 +6397,7 @@ ContractJackServer.exe	sub_40b780
 ContractJackServer.exe	sub_40b7c0
 ContractJackServer.exe	sub_40b810
 ContractJackServer.exe	sub_40b8a0
+ContractJackServer.exe	sub_40ba00
 ContractJackServer.exe	sub_40bdf0
 ContractJackServer.exe	sub_40bf40
 ContractJackServer.exe	sub_40bf50
@@ -6389,9 +6405,12 @@ ContractJackServer.exe	sub_40c000
 ContractJackServer.exe	sub_40c0d0
 ContractJackServer.exe	sub_40c100
 ContractJackServer.exe	sub_40c150
+ContractJackServer.exe	sub_40c390
+ContractJackServer.exe	sub_40c620
 ContractJackServer.exe	sub_40cee0
 ContractJackServer.exe	sub_40cf40
 ContractJackServer.exe	sub_40cfd0
+ContractJackServer.exe	sub_40cff0
 ContractJackServer.exe	sub_40d170
 ContractJackServer.exe	sub_40d300
 ContractJackServer.exe	sub_40d320
@@ -6407,15 +6426,18 @@ ContractJackServer.exe	sub_40d820
 ContractJackServer.exe	sub_40d840
 ContractJackServer.exe	sub_40d880
 ContractJackServer.exe	sub_40d8b0
+ContractJackServer.exe	sub_40d8d0
 ContractJackServer.exe	sub_40d900
 ContractJackServer.exe	sub_40d960
 ContractJackServer.exe	sub_40d9c0
+ContractJackServer.exe	sub_40da20
 ContractJackServer.exe	sub_40dc50
 ContractJackServer.exe	sub_40dcc5
 ContractJackServer.exe	sub_40dce0
 ContractJackServer.exe	sub_40dd6a
 ContractJackServer.exe	sub_40dd80
 ContractJackServer.exe	sub_40ddc0
+ContractJackServer.exe	sub_40de20
 ContractJackServer.exe	sub_40dea0
 ContractJackServer.exe	sub_40e030
 ContractJackServer.exe	sub_40e2d0
@@ -6439,6 +6461,7 @@ ContractJackServer.exe	sub_40ea70
 ContractJackServer.exe	sub_40ea90
 ContractJackServer.exe	sub_40eaf0
 ContractJackServer.exe	sub_40ec00
+ContractJackServer.exe	sub_40ec20
 ContractJackServer.exe	sub_40ec70
 ContractJackServer.exe	sub_40ece0
 ContractJackServer.exe	sub_40ede0
@@ -6524,7 +6547,9 @@ ContractJackServer.exe	sub_410e30
 ContractJackServer.exe	sub_410ed0
 ContractJackServer.exe	sub_410ef0
 ContractJackServer.exe	sub_4112a0
+ContractJackServer.exe	sub_411310
 ContractJackServer.exe	sub_4115c0
+ContractJackServer.exe	sub_411630
 ContractJackServer.exe	sub_4118e0
 ContractJackServer.exe	sub_411950
 ContractJackServer.exe	sub_4119a0
@@ -18700,6 +18725,7 @@ Object.lto	sub_100f3280
 Object.lto	sub_100f3330
 Object.lto	sub_100f34a0
 Object.lto	sub_100f3600
+Object.lto	sub_100f36c0
 Object.lto	sub_100f3700
 Object.lto	sub_100f3770
 Object.lto	sub_100f37e5
@@ -18734,6 +18760,7 @@ Object.lto	sub_100f4860
 Object.lto	sub_100f49c0
 Object.lto	sub_100f49cc
 Object.lto	sub_100f4ab0
+Object.lto	sub_100f4b20
 Object.lto	sub_100f4e30
 Object.lto	sub_100f4e80
 Object.lto	sub_100f4ed0
@@ -19432,6 +19459,7 @@ Object.lto	sub_1011a8e0
 Object.lto	sub_1011a900
 Object.lto	sub_1011a950
 Object.lto	sub_1011a960
+Object.lto	sub_1011a980
 Object.lto	sub_1011a9d0
 Object.lto	sub_1011aab0
 Object.lto	sub_1011ada0
@@ -19457,6 +19485,8 @@ Object.lto	sub_1011b650
 Object.lto	sub_1011b6b0
 Object.lto	sub_1011b720
 Object.lto	sub_1011b7a0
+Object.lto	sub_1011b8a0
+Object.lto	sub_1011b930
 Object.lto	sub_1011b970
 Object.lto	sub_1011ba10
 Object.lto	sub_1011bc10
@@ -20421,6 +20451,7 @@ Object.lto	sub_1014b72c
 Object.lto	sub_1014b810
 Object.lto	sub_1014b8b0
 Object.lto	sub_1014b920
+Object.lto	sub_1014b960
 Object.lto	sub_1014bc70
 Object.lto	sub_1014bcc0
 Object.lto	sub_1014bce0
@@ -21149,6 +21180,8 @@ Object.lto	sub_10171e10
 Object.lto	sub_10171e1c
 Object.lto	sub_10171f00
 Object.lto	sub_10171f70
+Object.lto	sub_101722d0
+Object.lto	sub_101725e0
 Object.lto	sub_101728f0
 Object.lto	sub_10172940
 Object.lto	sub_101729d0
