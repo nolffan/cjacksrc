@@ -8739,8 +8739,6 @@
 #define IDS_CJ_2940                             2940
 #define IDS_CJ_2941                             2941
 #define IDS_CJ_2942                             2942
-#define IDS_CJ_143                              143
-#define IDS_CJ_144                              144
 
 // Next default values for new objects
 // 

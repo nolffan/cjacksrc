@@ -677,7 +677,6 @@ void CDestructible::AddProgressiveDamage(DamageStruct & damage)
 
 		if (hDamager == m_hObject)
 		{
-			pPlayer->GetPlayerScore()->RemoveTag();
 		}
 		else
 		{
@@ -687,18 +686,15 @@ void CDestructible::AddProgressiveDamage(DamageStruct & damage)
 				{
 					// The player is either stupid or a jack-ass so penalize him and the team...
 				
-					pPlayer->GetPlayerScore()->RemoveTag();
 				}
 				else
 				{
 					// The player tagged another player of a different team so this is valid...
 
-					pPlayer->GetPlayerScore()->AddTag();
 				}	
 			}
 			else
 			{
-				pPlayer->GetPlayerScore()->AddTag();
 			}
 		}
 

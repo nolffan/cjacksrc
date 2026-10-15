@@ -48,6 +48,8 @@
 #define IDS_TEAMDEATHMATCH              140
 #define IDS_DOOMSDAY                    141
 #define IDS_ROUNDS                      142
+#define IDS_DEMOLITION                  143
+#define IDS_WEAPONSSTAY                 144
 
 // Next default values for new objects
 // 

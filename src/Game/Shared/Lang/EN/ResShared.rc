@@ -96,8 +96,8 @@ BEGIN
     IDS_TEAMDEATHMATCH      "Team Deathmatch"
     IDS_DOOMSDAY            "Doomsday"
     IDS_ROUNDS              "Rounds"
-    IDS_CJ_143              "Demolition"
-    IDS_CJ_144              "Weapons stay"
+    IDS_DEMOLITION                 "Demolition"
+    IDS_WEAPONSSTAY                "Weapons stay"
 END
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////

@@ -14,12 +14,396 @@
 #define ARRAY_LEN(array) (sizeof((array)) / sizeof((array)[0]))
 #define DEFAULT_SESSION ""
 
-namespace
-{
 
-#ifdef _CLIENTBUILD
-	int nDefTeamID[2] = {IDS_TEAM1_NAME,IDS_TEAM2_NAME};
-#endif
+// RETAIL: Contract J.A.C.K.'s game options, reconstructed from Object.lto
+// (ProfileUtils.obj, 0x1011a900..0x1011c490).
+
+BaseGameOptions* ServerGameOptions::GetCurrentOptions( ) const
+{
+	ServerGameOptions* pThis = const_cast< ServerGameOptions* >( this );
+	switch( m_eGameType )
+	{
+		case eGameTypeSingle:			return &pThis->m_SP;
+		case eGameTypeCooperative:		return &pThis->m_Coop;
+		case eGameTypeTeamDeathmatch:	return &pThis->m_TeamDM;
+		case eGameTypeDoomsDay:			return &pThis->m_DD;
+		case eGameTypeDemolition:		return &pThis->m_Demolition;
+		case eGameTypeDeathmatch:
+		default:						return &pThis->m_DM;
+	}
+}
+
+const char*	ServerGameOptions::GetCampaignName() const
+{
+	return GetCurrentOptions( )->m_sCampaignName.c_str( );
+}
+
+const char*	ServerGameOptions::GetSessionName() const
+{
+	return GetCurrentOptions( )->m_sSessionName.c_str( );
+}
+
+uint8 ServerGameOptions::GetMaxPlayers() const
+{
+	return GetCurrentOptions( )->m_nMaxPlayers;
+}
+
+int ServerGameOptions::GetGameTypeStringID() const
+{
+	switch (m_eGameType)
+	{
+		case eGameTypeCooperative:		return IDS_COOPERATIVE;
+		case eGameTypeDeathmatch:		return IDS_DEATHMATCH;
+		case eGameTypeTeamDeathmatch:	return IDS_TEAMDEATHMATCH;
+		case eGameTypeDoomsDay:			return IDS_DOOMSDAY;
+		case eGameTypeDemolition:		return IDS_DEMOLITION;
+		default:						return 0;
+	};
+}
+
+/************************************************************************************
+**** Base game options
+************************************************************************************/
+
+void BaseGameOptions::Clear( )
+{
+	m_sSessionName = "";
+	m_sCampaignName = DEFAULT_CAMPAIGN;
+
+	m_nMaxPlayers = 8;
+	m_nRunSpeed = 130;
+	m_nScoreLimit = 50;
+	m_nTimeLimit = 10;
+	m_nRounds = 1;
+	m_bFriendlyFire = true;
+	m_bWeaponsStay = false;
+
+	m_nFragScore = 2;
+	m_nRevivingScore = 1;
+
+	m_nNumTeams = 2;
+
+	char szTemp[32] = {0};
+	for(int i = 0; i < MAX_TEAMS; ++i )
+	{
+		m_nTeamModel[i] = i;
+		sprintf( szTemp, "Team %i", i+1 );
+		m_sTeamName[i] = szTemp;
+	}
+
+	m_nDeviceCompletedScore = 10;
+	m_nLightPiecePlacedScore = 3;
+	m_nHeavyPiecePlacedScore = 5;
+	m_nPieceRemovedScore = 2;
+}
+
+bool BaseGameOptions::LoadFromBute( CButeMgr& bute )
+{
+	char const* szTagName = GetName( );
+	std::string sAttName = "";
+
+	char szString[256];
+	bute.GetString( szTagName, "SessionName", m_sSessionName.c_str( ), szString, ARRAY_LEN( szString ));
+	m_sSessionName = szString;
+
+	bute.GetString( szTagName, "CampaignName", DEFAULT_CAMPAIGN, szString, ARRAY_LEN( szString ));
+	m_sCampaignName = szString;
+
+	m_nMaxPlayers = (uint8)bute.GetInt( szTagName, "MaxPlayers", m_nMaxPlayers );
+	m_nRunSpeed = (uint8)bute.GetInt(szTagName,"RunSpeed",m_nRunSpeed);
+	m_nScoreLimit = (uint8)bute.GetInt(szTagName,"ScoreLimit",m_nScoreLimit);
+	m_nTimeLimit = (uint8)bute.GetInt(szTagName,"TimeLimit",m_nTimeLimit);
+	m_nRounds = (uint8)bute.GetInt( szTagName, "Rounds", m_nRounds );
+	m_bFriendlyFire = bute.GetBool(szTagName,"FriendlyFire",m_bFriendlyFire);
+	m_bWeaponsStay = bute.GetBool(szTagName,"WeaponsStay",m_bWeaponsStay);
+	m_bUseSkills = bute.GetBool(szTagName,"UseSkills",m_bUseSkills);
+	m_nDifficulty = (uint8)bute.GetInt(szTagName,"MPDifficulty",m_nDifficulty);
+	m_fPlayerDiffFactor = bute.GetFloat(szTagName,"MPPlayerDiffFactor",m_fPlayerDiffFactor);
+
+	m_nFragScore = (uint8)bute.GetInt(szTagName,"FragScore", m_nFragScore);
+	m_nRevivingScore = ( uint8 )bute.GetInt( szTagName, "ReviveScore", m_nRevivingScore );
+
+	m_nNumTeams = (uint8)bute.GetInt( szTagName, "NumTeams", m_nNumTeams );
+
+	char szAttName[32] = {0};
+	for( int i = 0; i < MAX_TEAMS; ++i )
+	{
+		sprintf( szAttName, "Team%iModel", i );
+		m_nTeamModel[i] = bute.GetInt( szTagName, szAttName, m_nTeamModel[i] );
+
+		sprintf( szAttName, "Team%iName", i );
+		bute.GetString( szTagName, szAttName, m_sTeamName[i].c_str(), szString, ARRAY_LEN( szString ));
+		m_sTeamName[i] = szString;
+	}
+
+	m_nDeviceCompletedScore = (uint8)bute.GetInt(szTagName,"DeviceCompletedScore", m_nDeviceCompletedScore);
+	m_nLightPiecePlacedScore = (uint8)bute.GetInt(szTagName,"LightPiecePlacedScore", m_nLightPiecePlacedScore);
+	m_nHeavyPiecePlacedScore = (uint8)bute.GetInt(szTagName,"HeavyPiecePlacedScore", m_nHeavyPiecePlacedScore);
+	m_nPieceRemovedScore = (uint8)bute.GetInt(szTagName,"PieceRemovedScore", m_nPieceRemovedScore);
+
+	return true;
+}
+
+bool BaseGameOptions::SaveToBute( CButeMgr& bute )
+{
+	char const* szTagName = GetName( );
+
+	bute.SetString( szTagName, "SessionName", m_sSessionName.c_str());
+	bute.SetString( szTagName, "CampaignName", m_sCampaignName.c_str( ));
+
+	bute.SetInt(szTagName,"MaxPlayers",(int)m_nMaxPlayers);
+	bute.SetInt(szTagName,"RunSpeed",m_nRunSpeed);
+	bute.SetInt(szTagName,"ScoreLimit",m_nScoreLimit);
+	bute.SetInt(szTagName,"TimeLimit",m_nTimeLimit);
+	bute.SetInt(szTagName,"Rounds", m_nRounds );
+	bute.SetBool(szTagName,"FriendlyFire",m_bFriendlyFire);
+	bute.SetBool(szTagName,"WeaponsStay",m_bWeaponsStay);
+	bute.SetBool(szTagName,"UseSkills",m_bUseSkills);
+	bute.SetInt(szTagName,"MPDifficulty",m_nDifficulty);
+	bute.SetFloat(szTagName,"MPPlayerDiffFactor",m_fPlayerDiffFactor);
+
+	bute.SetInt(szTagName,"FragScore",m_nFragScore);
+	bute.SetInt( szTagName, "ReviveScore", m_nRevivingScore );
+
+	bute.SetInt( szTagName, "NumTeams", m_nNumTeams );
+	
+	char szAttName[32] = {0};
+	for( int i = 0; i < MAX_TEAMS; ++i )
+	{
+		sprintf( szAttName, "Team%iModel", i );
+		bute.SetInt( szTagName, szAttName, m_nTeamModel[i] );
+
+		sprintf( szAttName, "Team%iName", i );
+		bute.SetString( szTagName, szAttName, m_sTeamName[i].c_str() );
+	}
+
+	bute.SetInt(szTagName,"DeviceCompletedScore",m_nDeviceCompletedScore);
+	bute.SetInt(szTagName,"LightPiecePlacedScore",m_nLightPiecePlacedScore);
+	bute.SetInt(szTagName,"HeavyPiecePlacedScore",m_nHeavyPiecePlacedScore);
+	bute.SetInt(szTagName,"PieceRemovedScore",m_nPieceRemovedScore);
+
+	return true;
+}
+
+BaseGameOptions& BaseGameOptions::Copy( BaseGameOptions const& other )
+{
+	if( &other == this )
+		return *this;
+
+	m_sSessionName = other.m_sSessionName;
+	m_sCampaignName = other.m_sCampaignName;
+
+	// RETAIL: not the skills, the difficulty or the player difficulty factor
+	m_nMaxPlayers = other.m_nMaxPlayers;
+	m_nRunSpeed = other.m_nRunSpeed;
+	m_nScoreLimit = other.m_nScoreLimit;
+	m_nTimeLimit = other.m_nTimeLimit;
+	m_nRounds = other.m_nRounds;
+	m_bFriendlyFire = other.m_bFriendlyFire;
+	m_bWeaponsStay = other.m_bWeaponsStay;
+
+	m_nFragScore = other.m_nFragScore;
+	m_nRevivingScore = other.m_nRevivingScore;
+
+	m_nNumTeams = other.m_nNumTeams;
+	for(int i = 0; i < MAX_TEAMS; ++i )
+	{
+		m_nTeamModel[i] = other.m_nTeamModel[i];
+		m_sTeamName[i] = other.m_sTeamName[i];
+	}
+
+	m_nDeviceCompletedScore = other.m_nDeviceCompletedScore;
+	m_nLightPiecePlacedScore = other.m_nLightPiecePlacedScore;
+	m_nHeavyPiecePlacedScore = other.m_nHeavyPiecePlacedScore;
+	m_nPieceRemovedScore = other.m_nPieceRemovedScore;
+
+	return *this;
+}
+
+/************************************************************************************
+**** The game types' defaults
+************************************************************************************/
+
+void CoopGameOptions::Clear( )
+{
+	BaseGameOptions::Clear( );
+
+	m_nMaxPlayers = 4;
+	m_bUseSkills = true;
+	m_bFriendlyFire = true;
+	m_nDifficulty = 1;
+	m_fPlayerDiffFactor = 1.0f;
+}
+
+void DMGameOptions::Clear( )
+{
+	BaseGameOptions::Clear( );
+
+	m_nMaxPlayers = 8;
+	m_nRunSpeed = 130;
+	m_nScoreLimit = 25;
+	m_nTimeLimit = 10;
+	m_nRounds = 1;
+	m_nFragScore = 1;
+}
+
+void TeamDMGameOptions::Clear( )
+{
+	BaseGameOptions::Clear( );
+
+	m_nMaxPlayers = 8;
+	m_nRunSpeed = 130;
+	m_nScoreLimit = 50;
+	m_nTimeLimit = 10;
+	m_nRounds = 1;
+	m_bFriendlyFire = true;
+	m_nFragScore = 1;
+	m_nRevivingScore = 1;
+}
+
+void DemolitionGameOptions::Clear( )
+{
+	BaseGameOptions::Clear( );
+
+	m_nMaxPlayers = 8;
+	m_nRunSpeed = 130;
+	m_nRounds = 2;
+	m_bFriendlyFire = true;
+	m_bWeaponsStay = true;
+	m_nFragScore = 1;
+	m_nRevivingScore = 1;
+}
+
+void DoomsdayGameOptions::Clear( )
+{
+	BaseGameOptions::Clear( );
+
+	m_nMaxPlayers = 8;
+	m_nRunSpeed = 130;
+	m_nTimeLimit = 20;
+	m_nRounds = 1;
+	m_bFriendlyFire = true;
+	m_nFragScore = 1;
+
+	m_nDeviceCompletedScore = 10;
+	m_nLightPiecePlacedScore = 3;
+	m_nHeavyPiecePlacedScore = 5;
+	m_nPieceRemovedScore = 2;
+	m_nRevivingScore = 1;
+}
+
+/************************************************************************************
+**** Server game options
+************************************************************************************/
+
+bool ServerGameOptions::IsDefaultCampaign() const
+{
+	return (stricmp(GetCampaignName(), DEFAULT_CAMPAIGN ) == 0);
+}
+
+void ServerGameOptions::SetCampaignName(const char*	pszName)
+{
+	GetCurrentOptions( )->m_sCampaignName = pszName;
+}
+
+void ServerGameOptions::SetSessionName(const char*	pszName)
+{
+	GetCurrentOptions( )->m_sSessionName = pszName;
+}
+
+BaseGameOptions::BaseGameOptions( )
+{
+}
+
+// for transmitting options that may change mid game
+void DMGameOptions::Write( ILTMessage_Write *pMsg )
+{
+	pMsg->Writeuint8(m_nRunSpeed);
+	pMsg->Writeuint8(m_nScoreLimit);
+	pMsg->Writeuint8(m_nTimeLimit);
+	pMsg->Writeuint8(m_nRounds );
+	pMsg->Writeuint8(m_nFragScore);
+	pMsg->Writebool(m_bWeaponsStay);
+}
+
+void DMGameOptions::Read( ILTMessage_Read *pMsg )
+{
+	m_nRunSpeed = pMsg->Readuint8();
+	m_nScoreLimit = pMsg->Readuint8();
+	m_nTimeLimit = pMsg->Readuint8();
+	m_nRounds = pMsg->Readuint8();
+	m_nFragScore = pMsg->Readuint8();
+	m_bWeaponsStay = pMsg->Readbool();
+}
+
+void TeamDMGameOptions::Write( ILTMessage_Write *pMsg )
+{
+	pMsg->Writeuint8(m_nRunSpeed);
+	pMsg->Writeuint8(m_nTimeLimit);
+	pMsg->Writeuint8(m_nScoreLimit);
+	pMsg->Writeuint8(m_nRounds );
+	pMsg->Writebool(m_bFriendlyFire);
+	pMsg->Writeuint8(m_nFragScore);
+	pMsg->Writebool(m_bWeaponsStay);
+}
+
+void TeamDMGameOptions::Read( ILTMessage_Read *pMsg )
+{
+	m_nRunSpeed = pMsg->Readuint8();
+	m_nTimeLimit = pMsg->Readuint8();
+	m_nScoreLimit = pMsg->Readuint8();
+	m_nRounds = pMsg->Readuint8();
+	m_bFriendlyFire = pMsg->Readbool();
+	m_nFragScore = pMsg->Readuint8();
+	m_bWeaponsStay = pMsg->Readbool();
+}
+
+void DemolitionGameOptions::Write( ILTMessage_Write *pMsg )
+{
+	pMsg->Writeuint8(m_nRunSpeed);
+	pMsg->Writeuint8(m_nRounds );
+	pMsg->Writebool(m_bFriendlyFire);
+	pMsg->Writeuint8(m_nFragScore);
+	pMsg->Writebool(m_bWeaponsStay);
+}
+
+void DemolitionGameOptions::Read( ILTMessage_Read *pMsg )
+{
+	m_nRunSpeed = pMsg->Readuint8();
+	m_nRounds = pMsg->Readuint8();
+	m_bFriendlyFire = pMsg->Readbool();
+	m_nFragScore = pMsg->Readuint8();
+	m_bWeaponsStay = pMsg->Readbool();
+}
+
+void DoomsdayGameOptions::Write( ILTMessage_Write *pMsg )
+{
+	pMsg->Writeuint8(m_nRunSpeed);
+	pMsg->Writeuint8(m_nTimeLimit);
+	pMsg->Writeuint8(m_nRounds );
+	pMsg->Writebool(m_bFriendlyFire);
+	pMsg->Writeuint8(m_nFragScore);
+	pMsg->Writeuint8(m_nDeviceCompletedScore);
+	pMsg->Writeuint8(m_nLightPiecePlacedScore);
+	pMsg->Writeuint8(m_nHeavyPiecePlacedScore);
+	pMsg->Writeuint8(m_nPieceRemovedScore);
+	pMsg->Writeuint8(m_nRevivingScore);
+	pMsg->Writebool(m_bWeaponsStay);
+}
+
+void DoomsdayGameOptions::Read( ILTMessage_Read *pMsg )
+{
+	m_nRunSpeed = pMsg->Readuint8();
+	m_nTimeLimit = pMsg->Readuint8();
+	m_nRounds = pMsg->Readuint8();
+	m_bFriendlyFire = pMsg->Readbool();
+	m_nFragScore = pMsg->Readuint8();
+	m_nDeviceCompletedScore = pMsg->Readuint8();
+	m_nLightPiecePlacedScore = pMsg->Readuint8();
+	m_nHeavyPiecePlacedScore = pMsg->Readuint8();
+	m_nPieceRemovedScore = pMsg->Readuint8();
+	m_nRevivingScore = pMsg->Readuint8();
+	m_bWeaponsStay = pMsg->Readbool();
 }
 
 ServerGameOptions::ServerGameOptions( )
@@ -54,7 +438,9 @@ void ServerGameOptions::Clear( )
 	m_DM.Clear();
 	m_TeamDM.Clear();
 	m_DD.Clear();
-	
+	m_Demolition.Clear();
+
+	m_nServerStatus = 0;
 }
 
 static void StringSetToDelimitedString( StringSet const& sSet, std::string& sDelimitedString, char const* pszDelimiter )
@@ -136,6 +522,7 @@ bool ServerGameOptions::LoadFromBute( CButeMgr& bute )
 	m_DM.LoadFromBute( bute );
 	m_TeamDM.LoadFromBute( bute );
 	m_DD.LoadFromBute( bute );
+	m_Demolition.LoadFromBute( bute );
 
 	
 	return true;
@@ -174,6 +561,7 @@ bool ServerGameOptions::SaveToBute( CButeMgr& bute )
 	m_DM.SaveToBute( bute );
 	m_TeamDM.SaveToBute( bute );
 	m_DD.SaveToBute( bute );
+	m_Demolition.SaveToBute( bute );
 
 	return true;
 }
@@ -210,751 +598,10 @@ ServerGameOptions& ServerGameOptions::Copy( ServerGameOptions const& other )
 	m_DM.Copy(other.m_DM);
 	m_TeamDM.Copy(other.m_TeamDM);
 	m_DD.Copy(other.m_DD);
+	m_Demolition.Copy(other.m_Demolition);
 
 	return *this;
 }
-
-bool ServerGameOptions::IsDefaultCampaign() const
-{
-	return (stricmp(GetCampaignName(), DEFAULT_CAMPAIGN ) == 0);
-}
-
-const char*	ServerGameOptions::GetCampaignName() const
-{
-
-	switch (m_eGameType)
-	{
-	case eGameTypeCooperative:
-		return m_Coop.m_sCampaignName.c_str();
-		break;
-	case eGameTypeDeathmatch:
-		return m_DM.m_sCampaignName.c_str();
-		break;
-	case eGameTypeTeamDeathmatch:
-		return m_TeamDM.m_sCampaignName.c_str();
-		break;
-	case eGameTypeDoomsDay:
-		return m_DD.m_sCampaignName.c_str();
-		break;
-		
-	};
-
-	return DEFAULT_CAMPAIGN;
-}
-void ServerGameOptions::SetCampaignName(const char*	pszName)
-{
-	switch (m_eGameType)
-	{
-	case eGameTypeCooperative:
-		m_Coop.m_sCampaignName = pszName;
-		break;
-	case eGameTypeDeathmatch:
-		m_DM.m_sCampaignName = pszName;
-		break;
-	case eGameTypeTeamDeathmatch:
-		m_TeamDM.m_sCampaignName = pszName;
-		break;
-	case eGameTypeDoomsDay:
-		m_DD.m_sCampaignName = pszName;
-		break;
-	};
-}
-
-
-
-const char*	ServerGameOptions::GetSessionName() const
-{
-	switch (m_eGameType)
-	{
-	case eGameTypeCooperative:
-		return m_Coop.m_sSessionName.c_str();
-		break;
-	case eGameTypeDeathmatch:
-		return m_DM.m_sSessionName.c_str();
-		break;
-	case eGameTypeTeamDeathmatch:
-		return m_TeamDM.m_sSessionName.c_str();
-		break;
-	case eGameTypeDoomsDay:
-		return m_DD.m_sSessionName.c_str();
-		break;
-		
-	};
-
-
-	return DEFAULT_SESSION;
-}
-void ServerGameOptions::SetSessionName(const char*	pszName)
-{
-	switch (m_eGameType)
-	{
-	case eGameTypeCooperative:
-		m_Coop.m_sSessionName = pszName;
-		break;
-	case eGameTypeDeathmatch:
-		m_DM.m_sSessionName = pszName;
-		break;
-	case eGameTypeTeamDeathmatch:
-		m_TeamDM.m_sSessionName = pszName;
-		break;
-	case eGameTypeDoomsDay:
-		m_DD.m_sSessionName = pszName;
-		break;
-	};
-}
-
-
-uint8 ServerGameOptions::GetMaxPlayers() const
-{
-	switch (m_eGameType)
-	{
-		case eGameTypeCooperative:
-		{
-			return m_Coop.m_nMaxPlayers;
-		}
-		break;
-
-		case eGameTypeDeathmatch:
-		{	
-			return m_DM.m_nMaxPlayers;
-		}
-		break;
-		
-		case eGameTypeTeamDeathmatch:
-		{
-			return m_TeamDM.m_nMaxPlayers;
-		}
-		break;
-
-		case eGameTypeDoomsDay:
-		{
-			return m_DD.m_nMaxPlayers;
-		}
-		break;
-		
-		default:
-		{
-			return 0;
-		}
-		break;
-	};
-}
-
-int ServerGameOptions::GetGameTypeStringID() const
-{
-	switch (m_eGameType)
-	{
-		case eGameTypeCooperative:
-		{
-			return IDS_COOPERATIVE;
-		}
-		break;
-
-		case eGameTypeDeathmatch:
-		{	
-			return IDS_DEATHMATCH;
-		}
-		break;
-		
-		case eGameTypeTeamDeathmatch:
-		{
-			return IDS_TEAMDEATHMATCH;
-		}
-		break;
-
-		case eGameTypeDoomsDay:
-		{
-			return IDS_DOOMSDAY;
-		}
-		break;
-		
-		default:
-		{
-			return 0;
-		}
-		break;
-	};
-}
-
-/************************************************************************************
-**** Cooperative game options
-************************************************************************************/
-
-CoopGameOptions::CoopGameOptions( )
-{
-}
-
-void CoopGameOptions::Clear( )
-{
-	m_sSessionName = "";
-	m_sCampaignName = DEFAULT_CAMPAIGN;
-
-	m_nMaxPlayers = 4;
-	m_bUseSkills = true;
-	m_bFriendlyFire = true;
-	m_nDifficulty = 1;
-	m_fPlayerDiffFactor = 1.0f;
-}
-
-bool CoopGameOptions::LoadFromBute( CButeMgr& bute )
-{
-	char const szTagName[] = "Cooperative";
-	std::string sAttName = "";
-
-	char szString[256];
-	bute.GetString( szTagName, "SessionName", m_sSessionName.c_str( ), szString, ARRAY_LEN( szString ));
-	m_sSessionName = szString;
-
-	bute.GetString( szTagName, "CampaignName", DEFAULT_CAMPAIGN, szString, ARRAY_LEN( szString ));
-	m_sCampaignName = szString;
-
-	m_nMaxPlayers = (uint8)bute.GetInt( szTagName, "MaxPlayers", 4 );
-	m_bUseSkills = bute.GetBool(szTagName,"UseSkills",true);
-	m_bFriendlyFire = bute.GetBool(szTagName,"FriendlyFire",true);
-	m_nDifficulty = (uint8)bute.GetInt(szTagName,"MPDifficulty",1);
-	m_fPlayerDiffFactor = bute.GetFloat(szTagName,"MPPlayerDiffFactor",0.1f);
-
-	return true;
-}
-
-bool CoopGameOptions::SaveToBute( CButeMgr& bute )
-{
-	char const szTagName[] = "Cooperative";
-
-	bute.SetString( szTagName, "SessionName", m_sSessionName.c_str());
-	bute.SetString( szTagName, "CampaignName", m_sCampaignName.c_str( ));
-
-	bute.SetInt(szTagName,"MaxPlayers",(int)m_nMaxPlayers);
-	bute.SetBool(szTagName,"UseSkills",m_bUseSkills);
-	bute.SetBool(szTagName,"FriendlyFire",m_bFriendlyFire);
-	bute.SetInt(szTagName,"MPDifficulty",(int)m_nDifficulty);
-	bute.SetFloat(szTagName,"MPPlayerDiffFactor",m_fPlayerDiffFactor);
-
-	return true;
-}
-
-CoopGameOptions& CoopGameOptions::Copy( CoopGameOptions const& other )
-{
-	if( &other == this )
-		return *this;
-
-	m_sSessionName = other.m_sSessionName;
-	m_sCampaignName = other.m_sCampaignName;
-
-	m_nMaxPlayers = other.m_nMaxPlayers;
-	m_bUseSkills = other.m_bUseSkills;
-	m_bFriendlyFire = other.m_bFriendlyFire;
-	m_nDifficulty = other.m_nDifficulty;
-	m_fPlayerDiffFactor = other.m_fPlayerDiffFactor;
-
-	return *this;
-}
-
-
-/************************************************************************************
-**** Deathmatch game options
-************************************************************************************/
-
-DMGameOptions::DMGameOptions( )
-{
-}
-
-void DMGameOptions::Clear( )
-{
-	m_sSessionName = "";
-	m_sCampaignName = DEFAULT_CAMPAIGN;
-
-	m_nMaxPlayers = 8;
-	m_nRunSpeed = 130;
-	m_nScoreLimit = 25;
-	m_nTimeLimit = 10;
-	m_nRounds = 1;
-
-	m_nFragScore = 2;
-	m_nTagScore = 1;
-}
-
-
-bool DMGameOptions::LoadFromBute( CButeMgr& bute )
-{
-	char const szTagName[] = "Deathmatch";
-	std::string sAttName = "";
-
-	char szString[256];
-	bute.GetString( szTagName, "SessionName", m_sSessionName.c_str( ), szString, ARRAY_LEN( szString ));
-	m_sSessionName = szString;
-
-	bute.GetString( szTagName, "CampaignName", DEFAULT_CAMPAIGN, szString, ARRAY_LEN( szString ));
-	m_sCampaignName = szString;
-
-	m_nMaxPlayers = (uint8)bute.GetInt( szTagName, "MaxPlayers", 16 );
-	m_nRunSpeed = (uint8)bute.GetInt(szTagName,"RunSpeed",130);
-	m_nScoreLimit = (uint8)bute.GetInt(szTagName,"ScoreLimit",25);
-	m_nTimeLimit = (uint8)bute.GetInt(szTagName,"TimeLimit",10);
-	m_nRounds = (uint8)bute.GetInt( szTagName, "Rounds", 0 );
-
-	m_nFragScore = bute.GetInt(szTagName,"FragScore", 2);
-	m_nTagScore = bute.GetInt(szTagName,"TagScore", 1);
-
-	return true;
-}
-
-bool DMGameOptions::SaveToBute( CButeMgr& bute )
-{
-	char const szTagName[] = "Deathmatch";
-
-	bute.SetString( szTagName, "SessionName", m_sSessionName.c_str());
-	bute.SetString( szTagName, "CampaignName", m_sCampaignName.c_str( ));
-
-	bute.SetInt(szTagName,"MaxPlayers",(int)m_nMaxPlayers);
-	bute.SetInt(szTagName,"RunSpeed",m_nRunSpeed);
-	bute.SetInt(szTagName,"ScoreLimit",m_nScoreLimit);
-	bute.SetInt(szTagName,"TimeLimit",m_nTimeLimit);
-	bute.SetInt(szTagName,"Rounds",m_nRounds);
-
-	bute.SetInt(szTagName,"FragScore",m_nFragScore);
-	bute.SetInt(szTagName,"TagScore",m_nTagScore);
-
-	return true;
-}
-
-// for transmitting options that may change mid game
-void DMGameOptions::Write( ILTMessage_Write *pMsg )
-{
-
-	pMsg->Writeuint8(m_nRunSpeed);
-	pMsg->Writeuint8(m_nScoreLimit);
-	pMsg->Writeuint8(m_nTimeLimit);
-	pMsg->Writeuint8(m_nRounds );
-
-	pMsg->Writeuint8(m_nFragScore);
-	pMsg->Writeuint8(m_nTagScore);
-
-}
-
-// for transmitting options that may change mid game
-void DMGameOptions::Read( ILTMessage_Read *pMsg )
-{
-	m_nRunSpeed = pMsg->Readuint8();
-	m_nScoreLimit = pMsg->Readuint8();
-	m_nTimeLimit = pMsg->Readuint8();
-	m_nRounds = pMsg->Readuint8();
-
-	m_nFragScore = pMsg->Readuint8();
-	m_nTagScore = pMsg->Readuint8();
-
-}
-
-
-DMGameOptions& DMGameOptions::Copy( DMGameOptions const& other )
-{
-	if( &other == this )
-		return *this;
-
-	m_sSessionName = other.m_sSessionName;
-	m_sCampaignName = other.m_sCampaignName;
-
-	m_nMaxPlayers = other.m_nMaxPlayers;
-	m_nRunSpeed = other.m_nRunSpeed;
-	m_nScoreLimit = other.m_nScoreLimit;
-	m_nTimeLimit = other.m_nTimeLimit;
-	m_nRounds = other.m_nRounds;
-	m_nFragScore = other.m_nFragScore;
-	m_nTagScore = other.m_nTagScore;
-	
-	return *this;
-}
-
-
-
-/************************************************************************************
-**** TeamDeathmatch game options
-************************************************************************************/
-
-TeamDMGameOptions::TeamDMGameOptions( )
-{
-
-}
-
-void TeamDMGameOptions::Clear( )
-{
-	m_sSessionName = "";
-	m_sCampaignName = DEFAULT_CAMPAIGN;
-
-	m_nMaxPlayers = 16;
-	m_nRunSpeed = 130;
-	m_nScoreLimit = 50;
-	m_nTimeLimit = 10;
-	m_nRounds = 1;
-	m_bFriendlyFire = true;
-
-	m_nNumTeams = 2;
-
-	char szTemp[32] = {0};
-	for(int i = 0; i < MAX_TEAMS; ++i )
-	{
-		m_nTeamModel[i] = i;
-		sprintf( szTemp, "Team %i", i+1 );
-		m_sTeamName[i] = szTemp;
-	}
-
-	m_nFragScore = 2;
-	m_nTagScore = 1;
-	m_nRevivingScore = 1;
-}
-
-bool TeamDMGameOptions::LoadFromBute( CButeMgr& bute )
-{
-	char const szTagName[] = "TeamDM";
-	std::string sAttName = "";
-
-	char szString[256];
-	bute.GetString( szTagName, "SessionName", m_sSessionName.c_str( ), szString, ARRAY_LEN( szString ));
-	m_sSessionName = szString;
-
-	bute.GetString( szTagName, "CampaignName", DEFAULT_CAMPAIGN, szString, ARRAY_LEN( szString ));
-	m_sCampaignName = szString;
-
-	m_nMaxPlayers = (uint8)bute.GetInt( szTagName, "MaxPlayers", 16 );
-	m_nRunSpeed = (uint8)bute.GetInt(szTagName,"RunSpeed",130);
-	m_nScoreLimit = (uint8)bute.GetInt(szTagName,"ScoreLimit",100);
-	m_nTimeLimit = (uint8)bute.GetInt(szTagName,"TimeLimit",10);
-	m_nRounds = (uint8)bute.GetInt( szTagName, "Rounds", 1 );
-	m_bFriendlyFire = bute.GetBool(szTagName,"FriendlyFire",true);	
-
-	m_nNumTeams = bute.GetInt( szTagName, "NumTeams", 2 );
-
-	char szAttName[32] = {0};
-	char szTemp[32] = {0};
-	for( int i = 0; i < MAX_TEAMS; ++i )
-	{
-		int defModel = i;
-		sprintf( szTemp, "Team %i", i+1 );
-#ifdef _CLIENTBUILD
-		defModel = g_pModelButeMgr->GetTeamDefaultModel(i);
-		LoadString(nDefTeamID[i],szTemp,sizeof(szTemp));
-#endif
-
-		sprintf( szAttName, "Team%iModel", i );
-		m_nTeamModel[i] = bute.GetInt( szTagName, szAttName, defModel );
-
-		sprintf( szAttName, "Team%iName", i );
-		bute.GetString( szTagName, szAttName, szTemp, szString, ARRAY_LEN( szString ));
-		m_sTeamName[i] = szString;
-	}
-
-	m_nFragScore = bute.GetInt(szTagName,"FragScore", 2);
-	m_nTagScore = bute.GetInt(szTagName,"TagScore", 1);
-
-	m_nRevivingScore = ( uint8 )bute.GetInt( szTagName, "ReviveScore", 1 );
-
-	return true;
-}
-
-bool TeamDMGameOptions::SaveToBute( CButeMgr& bute )
-{
-	char const szTagName[] = "TeamDM";
-
-	bute.SetString( szTagName, "SessionName", m_sSessionName.c_str());
-	bute.SetString( szTagName, "CampaignName", m_sCampaignName.c_str( ));
-
-
-	bute.SetInt(szTagName,"MaxPlayers",(int)m_nMaxPlayers);
-	bute.SetInt(szTagName,"RunSpeed",m_nRunSpeed);
-	bute.SetInt(szTagName,"ScoreLimit",m_nScoreLimit);
-	bute.SetInt(szTagName,"TimeLimit",m_nTimeLimit);
-	bute.SetInt(szTagName,"Rounds", m_nRounds );
-	bute.SetBool(szTagName,"FriendlyFire",m_bFriendlyFire);
-
-	
-	bute.SetInt( szTagName, "NumTeams", m_nNumTeams );
-	
-	char szAttName[32] = {0};
-	for( int i = 0; i < MAX_TEAMS; ++i )
-	{
-		sprintf( szAttName, "Team%iModel", i );
-		bute.SetInt( szTagName, szAttName, m_nTeamModel[i] );
-
-		sprintf( szAttName, "Team%iName", i );
-		bute.SetString( szTagName, szAttName, m_sTeamName[i].c_str() );
-	}
-
-	bute.SetInt(szTagName,"FragScore",m_nFragScore);
-	bute.SetInt(szTagName,"TagScore",m_nTagScore);
-
-	bute.SetInt( szTagName, "ReviveScore", m_nRevivingScore );
-
-	return true;
-
-}
-
-
-// for transmitting options that may change mid game
-void TeamDMGameOptions::Write( ILTMessage_Write *pMsg )
-{
-
-	pMsg->Writeuint8(m_nRunSpeed);
-	pMsg->Writeuint8(m_nTimeLimit);
-	pMsg->Writeuint8(m_nScoreLimit);
-	pMsg->Writeuint8(m_nRounds );
-	pMsg->Writebool(m_bFriendlyFire);
-
-	pMsg->Writeuint8(m_nFragScore);
-	pMsg->Writeuint8(m_nTagScore);
-
-}
-
-// for transmitting options that may change mid game
-void TeamDMGameOptions::Read( ILTMessage_Read *pMsg )
-{
-	m_nRunSpeed = pMsg->Readuint8();
-	m_nTimeLimit = pMsg->Readuint8();
-	m_nScoreLimit = pMsg->Readuint8();
-	m_nRounds = pMsg->Readuint8();
-	m_bFriendlyFire = pMsg->Readbool();
-
-	m_nFragScore = pMsg->Readuint8();
-	m_nTagScore = pMsg->Readuint8();
-
-}
-
-
-TeamDMGameOptions& TeamDMGameOptions::Copy( TeamDMGameOptions const& other )
-{
-	if( &other == this )
-		return *this;
-
-	m_sSessionName = other.m_sSessionName;
-	m_sCampaignName = other.m_sCampaignName;
-
-	m_nMaxPlayers = other.m_nMaxPlayers;
-	m_nRunSpeed = other.m_nRunSpeed;
-	m_nScoreLimit = other.m_nScoreLimit;
-	m_nTimeLimit = other.m_nTimeLimit;
-	m_nRounds = other.m_nRounds;
-	m_bFriendlyFire = other.m_bFriendlyFire;
-
-	m_nNumTeams = other.m_nNumTeams;
-
-	for(int i = 0; i < MAX_TEAMS; ++i )
-	{
-		m_nTeamModel[i] = other.m_nTeamModel[i];
-		m_sTeamName[i] = other.m_sTeamName[i];
-	}
-
-	m_nFragScore = other.m_nFragScore;
-	m_nTagScore = other.m_nTagScore;
-
-	m_nRevivingScore = other.m_nRevivingScore;
-
-	return *this;
-}
-
-
-/************************************************************************************
-**** Cooperative game options
-************************************************************************************/
-
-DoomsdayGameOptions::DoomsdayGameOptions( )
-{
-}
-
-
-void DoomsdayGameOptions::Clear( )
-{
-	m_sSessionName = "";
-	m_sCampaignName = DEFAULT_CAMPAIGN;
-
-	m_nMaxPlayers = 16;
-	m_nRunSpeed = 130;
-	m_nTimeLimit = 20;
-	m_nRounds = 1;
-	m_bFriendlyFire = true;
-
-	m_nNumTeams = 2;
-
-	char szTemp[32] = {0};
-	for(int i = 0; i < MAX_TEAMS; ++i )
-	{
-		m_nTeamModel[i] = i;
-		sprintf( szTemp, "Team %i", i+1 );
-		m_sTeamName[i] = szTemp;
-	}
-
-	m_nFragScore = 2;
-	m_nTagScore = 1;
-	m_nDeviceCompletedScore = 10;
-	m_nLightPiecePlacedScore = 3;
-	m_nHeavyPiecePlacedScore = 5;
-	m_nPieceRemovedScore = 2;
-	m_nRevivingScore = 1;
-}
-
-bool DoomsdayGameOptions::LoadFromBute( CButeMgr& bute )
-{
-	char const szTagName[] = "Doomsday";
-	std::string sAttName = "";
-
-	char szString[256];
-	bute.GetString( szTagName, "SessionName", m_sSessionName.c_str( ), szString, ARRAY_LEN( szString ));
-	m_sSessionName = szString;
-
-	bute.GetString( szTagName, "CampaignName", DEFAULT_CAMPAIGN, szString, ARRAY_LEN( szString ));
-	m_sCampaignName = szString;
-
-	m_nMaxPlayers = (uint8)bute.GetInt( szTagName, "MaxPlayers", 16 );
-	m_nRunSpeed = (uint8)bute.GetInt(szTagName,"RunSpeed",130);
-	m_nTimeLimit = (uint8)bute.GetInt(szTagName,"TimeLimit",20);
-	m_nRounds = (uint8)bute.GetInt(szTagName, "Rounds", 1 );
-	m_bFriendlyFire = bute.GetBool(szTagName,"FriendlyFire",true);	
-
-	m_nNumTeams = bute.GetInt( szTagName, "NumTeams", 2 );
-
-	char szAttName[32] = {0};
-	char szTemp[32] = {0};
-	for( int i = 0; i < MAX_TEAMS; ++i )
-	{
-		int defModel = i;
-		sprintf( szTemp, "Team %i", i+1 );
-#ifdef _CLIENTBUILD
-		defModel = g_pModelButeMgr->GetTeamDefaultModel(i);
-		LoadString(nDefTeamID[i],szTemp,sizeof(szTemp));
-#endif
-
-		sprintf( szAttName, "Team%iModel", i );
-		m_nTeamModel[i] = bute.GetInt( szTagName, szAttName, defModel );
-
-		sprintf( szAttName, "Team%iName", i );
-		bute.GetString( szTagName, szAttName, szTemp, szString, ARRAY_LEN( szString ));
-		m_sTeamName[i] = szString;
-	}
-
-	m_nFragScore = bute.GetInt(szTagName,"FragScore", 2);
-	m_nTagScore = bute.GetInt(szTagName,"TagScore", 1);
-
-	m_nDeviceCompletedScore = ( uint8 )bute.GetInt( szTagName, "DeviceCompletedScore", 10 );
-	m_nLightPiecePlacedScore = ( uint8 )bute.GetInt( szTagName, "LightPiecePlacedScore", 3 );
-	m_nHeavyPiecePlacedScore = ( uint8 )bute.GetInt( szTagName, "HeavyPiecePlacedScore", 5 );
-	m_nPieceRemovedScore = ( uint8 )bute.GetInt( szTagName, "PieceRemovedScore", 2 );
-	m_nRevivingScore = ( uint8 )bute.GetInt( szTagName, "ReviveScore", 1 );
-
-	return true;
-}
-
-
-// for transmitting options that may change mid game
-void DoomsdayGameOptions::Write( ILTMessage_Write *pMsg )
-{
-
-	pMsg->Writeuint8(m_nRunSpeed);
-	pMsg->Writeuint8(m_nTimeLimit);
-	pMsg->Writeuint8(m_nRounds );
-	pMsg->Writebool(m_bFriendlyFire);
-
-	pMsg->Writeuint8(m_nFragScore);
-	pMsg->Writeuint8(m_nTagScore);
-
-	pMsg->Writeuint8( m_nDeviceCompletedScore );
-	pMsg->Writeuint8( m_nLightPiecePlacedScore );
-	pMsg->Writeuint8( m_nHeavyPiecePlacedScore );
-	pMsg->Writeuint8( m_nPieceRemovedScore );
-	pMsg->Writeuint8( m_nRevivingScore );
-
-}
-
-// for transmitting options that may change mid game
-void DoomsdayGameOptions::Read( ILTMessage_Read *pMsg )
-{
-	m_nRunSpeed = pMsg->Readuint8();
-	m_nTimeLimit = pMsg->Readuint8();
-	m_nRounds = pMsg->Readuint8();
-	m_bFriendlyFire = pMsg->Readbool();
-
-	m_nFragScore = pMsg->Readuint8();
-	m_nTagScore = pMsg->Readuint8();
-
-	m_nDeviceCompletedScore = pMsg->Readuint8();
-	m_nLightPiecePlacedScore = pMsg->Readuint8();
-	m_nHeavyPiecePlacedScore = pMsg->Readuint8();
-	m_nPieceRemovedScore = pMsg->Readuint8();
-	m_nRevivingScore = pMsg->Readuint8();
-
-}
-
-bool DoomsdayGameOptions::SaveToBute( CButeMgr& bute )
-{
-	char const szTagName[] = "Doomsday";
-
-	bute.SetString( szTagName, "SessionName", m_sSessionName.c_str());
-	bute.SetString( szTagName, "CampaignName", m_sCampaignName.c_str( ));
-
-	bute.SetInt(szTagName,"MaxPlayers",(int)m_nMaxPlayers);
-	bute.SetInt(szTagName,"RunSpeed",m_nRunSpeed);
-	bute.SetInt(szTagName,"TimeLimit",m_nTimeLimit);
-	bute.SetInt(szTagName,"Rounds", m_nRounds );
-	bute.SetBool(szTagName,"FriendlyFire",m_bFriendlyFire);
-
-	bute.SetInt( szTagName, "NumTeams", m_nNumTeams );
-	
-	char szAttName[32] = {0};
-	for( int i = 0; i < MAX_TEAMS; ++i )
-	{
-		sprintf( szAttName, "Team%iModel", i );
-		bute.SetInt( szTagName, szAttName, m_nTeamModel[i] );
-
-		sprintf( szAttName, "Team%iName", i );
-		bute.SetString( szTagName, szAttName, m_sTeamName[i].c_str() );
-	}
-
-	bute.SetInt(szTagName,"FragScore",m_nFragScore);
-	bute.SetInt(szTagName,"TagScore",m_nTagScore);
-
-	bute.SetInt( szTagName, "DeviceCompletedScore", m_nDeviceCompletedScore );
-	bute.SetInt( szTagName, "LightPiecePlacedScore", m_nLightPiecePlacedScore );
-	bute.SetInt( szTagName, "HeavyPiecePlacedScore", m_nHeavyPiecePlacedScore );
-	bute.SetInt( szTagName, "PieceRemovedScore", m_nPieceRemovedScore );
-	bute.SetInt( szTagName, "ReviveScore", m_nRevivingScore );
-
-	return true;
-
-}
-
-
-DoomsdayGameOptions& DoomsdayGameOptions::Copy( DoomsdayGameOptions const& other )
-{
-	if( &other == this )
-		return *this;
-
-	m_sSessionName = other.m_sSessionName;
-	m_sCampaignName = other.m_sCampaignName;
-
-	m_nMaxPlayers = other.m_nMaxPlayers;
-	m_nRunSpeed = other.m_nRunSpeed;
-	m_nTimeLimit = other.m_nTimeLimit;
-	m_nRounds = other.m_nRounds;
-	m_bFriendlyFire = other.m_bFriendlyFire;
-
-	m_nNumTeams = other.m_nNumTeams;
-
-	for(int i = 0; i < MAX_TEAMS; ++i )
-	{
-		m_nTeamModel[i] = other.m_nTeamModel[i];
-		m_sTeamName[i] = other.m_sTeamName[i];
-	}
-
-	m_nFragScore = other.m_nFragScore;
-	m_nTagScore = other.m_nTagScore;
-
-	m_nDeviceCompletedScore = other.m_nDeviceCompletedScore;
-	m_nLightPiecePlacedScore = other.m_nLightPiecePlacedScore;
-	m_nHeavyPiecePlacedScore = other.m_nHeavyPiecePlacedScore;
-	m_nPieceRemovedScore = other.m_nPieceRemovedScore;
-	m_nRevivingScore = other.m_nRevivingScore;
-
-	return *this;
-
-}
-
 
 /***********************************************************************************/
 
@@ -982,6 +629,7 @@ static const char szCampaignDirs[g_knNumGameTypes][32] =
 	"\\DM_Campaigns\\",
 	"\\TDM_Campaigns\\",
 	"\\DD_Campaigns\\",
+	"\\DE_Campaigns\\",
 };
 
 

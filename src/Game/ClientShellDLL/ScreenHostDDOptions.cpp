@@ -163,7 +163,6 @@ void    CScreenHostDDOptions::OnFocus(LTBOOL bFocus)
 		m_bFriendlyFire = pProfile->m_ServerGameOptions.GetDoomsday().m_bFriendlyFire;
 
 		m_nFragScore = (int)pProfile->m_ServerGameOptions.GetDoomsday().m_nFragScore;
-		m_nTagScore = (int)pProfile->m_ServerGameOptions.GetDoomsday().m_nTagScore;
 		m_nRevivingScore = (int)pProfile->m_ServerGameOptions.GetDoomsday().m_nRevivingScore;
 		m_nDeviceCompletedScore = (int)pProfile->m_ServerGameOptions.GetDoomsday().m_nDeviceCompletedScore;
 		m_nHeavyPiecePlacedScore = (int)pProfile->m_ServerGameOptions.GetDoomsday().m_nHeavyPiecePlacedScore;
@@ -189,7 +188,6 @@ void    CScreenHostDDOptions::OnFocus(LTBOOL bFocus)
 		pProfile->m_ServerGameOptions.GetDoomsday().m_bFriendlyFire = !!m_bFriendlyFire;
 
 		pProfile->m_ServerGameOptions.GetDoomsday().m_nFragScore = (uint8)m_nFragScore;
-		pProfile->m_ServerGameOptions.GetDoomsday().m_nTagScore = (uint8)m_nTagScore;
 		pProfile->m_ServerGameOptions.GetDoomsday().m_nRevivingScore = (uint8)m_nRevivingScore;
 		pProfile->m_ServerGameOptions.GetDoomsday().m_nDeviceCompletedScore = (uint8)m_nDeviceCompletedScore;
 		pProfile->m_ServerGameOptions.GetDoomsday().m_nHeavyPiecePlacedScore = (uint8)m_nHeavyPiecePlacedScore;

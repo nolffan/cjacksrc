@@ -28,8 +28,6 @@ public:
 #ifndef _CLIENTBUILD
 	void	AddFrag();
 	void	RemoveFrag();
-	void	AddTag();
-	void	RemoveTag();
 	void	AddBonus(int nBonus);
 	void	UpdateClients(HCLIENT hClients = LTNULL);
 #endif

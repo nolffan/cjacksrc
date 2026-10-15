@@ -21,6 +21,7 @@ enum GameType
 	eGameTypeDeathmatch,
 	eGameTypeTeamDeathmatch,
 	eGameTypeDoomsDay,
+	eGameTypeDemolition,	// RETAIL: Contract J.A.C.K.'s
 	g_knNumGameTypes
 };
 

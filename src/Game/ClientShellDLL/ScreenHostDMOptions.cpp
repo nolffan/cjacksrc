@@ -118,7 +118,6 @@ void    CScreenHostDMOptions::OnFocus(LTBOOL bFocus)
 		m_nRounds = (int)pProfile->m_ServerGameOptions.GetDeathmatch().m_nRounds;
 
 		m_nFragScore = (int)pProfile->m_ServerGameOptions.GetDeathmatch().m_nFragScore;
-		m_nTagScore = (int)pProfile->m_ServerGameOptions.GetDeathmatch().m_nTagScore;
 		
 		m_pMaxPlayers->Enable(!g_pPlayerMgr->IsPlayerInWorld());
 
@@ -136,7 +135,6 @@ void    CScreenHostDMOptions::OnFocus(LTBOOL bFocus)
 		pProfile->m_ServerGameOptions.GetDeathmatch().m_nRounds = (uint8)m_nRounds;
 
 		pProfile->m_ServerGameOptions.GetDeathmatch().m_nFragScore = (uint8)m_nFragScore;
-		pProfile->m_ServerGameOptions.GetDeathmatch().m_nTagScore = (uint8)m_nTagScore;
 		
 		pProfile->Save();
 

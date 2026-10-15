@@ -145,7 +145,6 @@ void    CScreenHostTDMOptions::OnFocus(LTBOOL bFocus)
 		m_bFriendlyFire = pProfile->m_ServerGameOptions.GetTeamDeathmatch().m_bFriendlyFire;
 
 		m_nFragScore = (int)pProfile->m_ServerGameOptions.GetTeamDeathmatch().m_nFragScore;
-		m_nTagScore = (int)pProfile->m_ServerGameOptions.GetTeamDeathmatch().m_nTagScore;
 
 		m_pTeam1Name->SetString(pProfile->m_ServerGameOptions.GetTeamDeathmatch().m_sTeamName[0].c_str());
 		m_pTeam2Name->SetString(pProfile->m_ServerGameOptions.GetTeamDeathmatch().m_sTeamName[1].c_str());
@@ -167,7 +166,6 @@ void    CScreenHostTDMOptions::OnFocus(LTBOOL bFocus)
 		pProfile->m_ServerGameOptions.GetTeamDeathmatch().m_bFriendlyFire = !!m_bFriendlyFire;
 
 		pProfile->m_ServerGameOptions.GetTeamDeathmatch().m_nFragScore = (uint8)m_nFragScore;
-		pProfile->m_ServerGameOptions.GetTeamDeathmatch().m_nTagScore = (uint8)m_nTagScore;
 		
 		pProfile->Save();
 

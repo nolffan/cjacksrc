@@ -333,6 +333,82 @@ LTRESULT CGameServerShell::OnServerInitialized()
 	
 	srand(time(NULL));
 
+	// RETAIL: the rest is Contract J.A.C.K.'s: the server tells its host
+	// (through the game options it was given) how its start went, and a
+	// multiplayer server publishes itself through GameSpy (Object.lto
+	// 0x100df9cd..0x100dfd4b).
+	ServerGameOptions** ppServerGameOptions = NULL;
+	uint32 dwLen = sizeof( ServerGameOptions* );
+	g_pLTServer->GetGameInfo((void**)&ppServerGameOptions, &dwLen);
+	ServerGameOptions* pHostOptions = ( ppServerGameOptions && *ppServerGameOptions ) ? *ppServerGameOptions : &m_ServerGameOptions;
+
+	if( !IsMultiplayerGame( ))
+	{
+		pHostOptions->m_nServerStatus = 1;
+		return LT_OK;
+	}
+
+	char szIP[16];
+	uint16 nPort = 0;
+	if( g_pLTServer->GetTcpIpAddress( szIP, sizeof( szIP ), nPort ) != LT_OK )
+	{
+		pHostOptions->m_nServerStatus = 2;
+		return LT_ERROR;
+	}
+
+	IGameSpyServer::StartupInfo startupInfo;
+	startupInfo.m_nGameType = eGameSpyGameType_Retail;
+	startupInfo.m_sIP = szIP;
+	startupInfo.m_nPort = nPort;
+	// The game's own socket, which retail gets from the engine (its
+	// ILTServer, vtable offset 0x118): GameSpy binds its own until the
+	// engine's interface has it.
+	startupInfo.m_hSocket = 0;
+	startupInfo.m_bPublic = !m_ServerGameOptions.m_bLANOnly;
+	startupInfo.m_sUnused = g_pVersionMgr->GetNetRegion( );
+	startupInfo.m_sVersion = g_pVersionMgr->GetVersion( );
+
+	m_pGameSpyServer = IGameSpyServer::Create( startupInfo );
+	if( !m_pGameSpyServer )
+	{
+		pHostOptions->m_nServerStatus = 2;
+		return LT_ERROR;
+	}
+
+	m_pGameSpyServer->RegisterKey( "hostname" );
+	m_pGameSpyServer->RegisterKey( "mapname" );
+	m_pGameSpyServer->RegisterKey( "numplayers" );
+	m_pGameSpyServer->RegisterKey( "maxplayers" );
+	m_pGameSpyServer->RegisterKey( "gametype" );
+	m_pGameSpyServer->RegisterKey( "gamemode" );
+	m_pGameSpyServer->RegisterKey( "password" );
+	m_pGameSpyServer->RegisterKey( "fraglimit" );
+	m_pGameSpyServer->RegisterKey( "timelimit" );
+	m_pGameSpyServer->RegisterKey( "player_" );
+	m_pGameSpyServer->RegisterKey( "frags_" );
+	m_pGameSpyServer->RegisterKey( "ping_" );
+	m_pGameSpyServer->RegisterKey( "modname" );
+	m_pGameSpyServer->RegisterKey( "options" );
+
+	m_pGameSpyServer->SetServerProperty( "hostname", m_ServerGameOptions.GetSessionName( ));
+	m_pGameSpyServer->SetServerProperty( "gametype", GameTypeToString( m_ServerGameOptions.m_eGameType ));
+	m_pGameSpyServer->SetServerProperty( "gamemode", "openplaying" );
+
+	char szMaxPlayers[32];
+	sprintf( szMaxPlayers, "%d", m_ServerGameOptions.GetCurrentOptions( )->m_nMaxPlayers );
+	m_pGameSpyServer->SetServerProperty( "maxplayers", szMaxPlayers );
+	m_pGameSpyServer->SetServerProperty( "password", m_ServerGameOptions.m_bUsePassword ? "1" : "0" );
+	m_pGameSpyServer->SetServerProperty( "modname", m_ServerGameOptions.m_sModName.c_str( ));
+	m_pGameSpyServer->SetNumPlayers( 0 );
+	m_pGameSpyServer->SetNumTeams( 0 );
+
+	if( !m_pGameSpyServer->Publish( ))
+	{
+		pHostOptions->m_nServerStatus = 2;
+		return LT_ERROR;
+	}
+
+	pHostOptions->m_nServerStatus = 1;
 	return LT_OK;
 }
 

@@ -24,6 +24,7 @@ class ServerMissionSettings
 		{ 
 			m_bUseSkills = false;
 			m_bFriendlyFire = false;
+			m_bWeaponsStay = false;
 			m_nMPDifficulty = 0;
 			m_fPlayerDiffFactor = 0.0f;
 			m_nRunSpeed = 100;
@@ -31,7 +32,6 @@ class ServerMissionSettings
 			m_nTimeLimit = 0;
 			m_nRounds = 1;
 			m_nFragScore = 0;
-			m_nTagScore = 0;
 			m_nReviveScore = 0;
 		};
 
@@ -42,6 +42,7 @@ class ServerMissionSettings
 			{
 				m_bUseSkills = other.m_bUseSkills;
 				m_bFriendlyFire = other.m_bFriendlyFire;
+				m_bWeaponsStay = other.m_bWeaponsStay;
 				m_nMPDifficulty = other.m_nMPDifficulty;
 				m_fPlayerDiffFactor = other.m_fPlayerDiffFactor;
 				m_nRunSpeed = other.m_nRunSpeed;
@@ -49,7 +50,6 @@ class ServerMissionSettings
 				m_nTimeLimit = other.m_nTimeLimit;
 				m_nRounds = other.m_nRounds;
 				m_nFragScore = other.m_nFragScore;
-				m_nTagScore = other.m_nTagScore;
 				m_nReviveScore = other.m_nReviveScore;
 			}
 
@@ -59,6 +59,7 @@ class ServerMissionSettings
 
 		bool			m_bUseSkills;			// are skills used?
 		bool			m_bFriendlyFire;		// can players on the same team hurt each other?
+		bool			m_bWeaponsStay;			// RETAIL: Contract J.A.C.K.'s: do picked up weapons stay?
 		uint8			m_nMPDifficulty;		// difficulty level of the game
 		float			m_fPlayerDiffFactor;	// how much each additional player increases difficulty
 		uint8			m_nRunSpeed;			// what percentage of the single player runspeed is used (100 = x1, 200 = x2, etc.)
@@ -66,7 +67,6 @@ class ServerMissionSettings
 		uint8			m_nTimeLimit;			// how many minutes before the round ends
 		uint8			m_nRounds;				// how many rounds before switching to the next mission
 		uint8			m_nFragScore;			// points awarded for killing a player
-		uint8			m_nTagScore;			// points awarded for a non-lethal tag
 		uint8			m_nReviveScore;			// points awarded for reviving a teammate
 };
 

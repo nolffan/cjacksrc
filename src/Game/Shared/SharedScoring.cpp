@@ -110,17 +110,6 @@ void CPlayerScore::RemoveFrag()
 	AddBonus( -g_pServerMissionMgr->GetServerSettings().m_nFragScore );
 }
 
-void CPlayerScore::AddTag()
-{
-	m_nTags++;
-	AddBonus( g_pServerMissionMgr->GetServerSettings().m_nTagScore );
-}
-
-void CPlayerScore::RemoveTag()
-{
-	m_nTags--;
-	AddBonus( -g_pServerMissionMgr->GetServerSettings().m_nTagScore );
-}
 
 
 void CPlayerScore::AddBonus(int nBonus)
