@@ -173,6 +173,17 @@ extern char *g_ReturnErrString;
     if (g_DebugLevel >= debugLevel) \
         dsi_PrintToConsole toPrint; }
 
+// A lot like RETURN_ERROR, but it doesn't return the error value (as the
+// 2006 tree has it; Contract J.A.C.K.'s UDP driver uses it)
+#define GENERATE_ERROR(debugLevel, fnName, err, errorString)\
+{\
+    dsi_OnReturnError(err);\
+    if (g_DebugLevel >= debugLevel)\
+    {\
+        dsi_PrintToConsole(g_ReturnErrString, #fnName, #err, errorString); \
+    }\
+}
+
 #define RETURN_ERROR_PARAM(debugLevel, fnName, err, param) { \
     dsi_OnReturnError(err);\
     if (g_DebugLevel >= debugLevel) \

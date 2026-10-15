@@ -201,11 +201,10 @@ CUDPConn::EIncomingPacketResult CUDPConn::HandleIncomingPacket(const CPacket_Rea
 	}
 
 	// Track it
+	// RETAIL: by period (server.dll 0x1004a590)
 	uint32 nCurTime = timeGetTime();
-	uint32 nTimeSinceLastRecv = nCurTime - m_nLastRecvTime;
 	m_nLastRecvTime = nCurTime;
-
-	m_aIncomingBandwidthHistory.push(CBandwidthPeriod(cPacket.Size(), nTimeSinceLastRecv));
+	AddBandwidthPeriod(m_aIncomingBandwidthHistory, GetUDPPacketSize(cPacket.Size()), nCurTime);
 	AccumulateHistory(m_aIncomingBandwidthHistory);
 
 	CPacket_Read cReadPacket(cPacket);
@@ -852,6 +851,7 @@ void CUDPConn::WriteUnguaranteed(CPacket_Write &cPacket)
 	// Dump any unguaranteed stuff that's taking too long to send
 	uint32 nDropDelay = LTMAX((uint32)m_fCurPing, k_nPingDelay) * k_nUnguaranteedDropDelay;
 	uint32 nCurTime = timeGetTime();
+	uint32 nNumDropped = 0;
 	while (!m_cOutgoingUnguaranteedTimeQueue.empty())
 	{
 		uint32 nCurDelay = nCurTime - m_cOutgoingUnguaranteedTimeQueue.front();
@@ -863,7 +863,12 @@ void CUDPConn::WriteUnguaranteed(CPacket_Write &cPacket)
 		m_nOutgoingUSize -= cFrontPacket.Size() + GetSizeIndicatorSize(cFrontPacket.Size());
 		--m_nOutgoingUCount;
 		m_cOutgoingUnguaranteedQueue.pop_front(s_cPacketTrash);
+		++nNumDropped;
 	}
+
+	// RETAIL: track how much is dropped (server.dll 0x10047428)
+	float fDropRate = (nNumDropped) ? ((float)m_cOutgoingUnguaranteedQueue.size() / (float)nNumDropped) : 0.0f;
+	m_aUnguaranteedDropHistory.push(fDropRate);
 	
 	// Write the unguaranteed portion
 	if (m_cOutgoingUnguaranteedQueue.empty() || IsFlowControlBlocked(GetUDPPacketSize(cPacket.Size())))
@@ -1207,11 +1212,11 @@ void CUDPConn::UpdatePing()
 
 void CUDPConn::UpdateBandwidth()
 {
+	// RETAIL: by period (server.dll 0x10047a80)
 	uint32 nCurTime = timeGetTime();
-	uint32 nTimeSinceLastIncoming = nCurTime - m_nLastRecvTime;
-	if (nTimeSinceLastIncoming >= k_nBandwidthTrackingMaxPeriod)
+	if ((nCurTime - m_nLastRecvTime) >= k_nBandwidthTrackingMaxPeriod)
 	{
-		m_aIncomingBandwidthHistory.push(CBandwidthPeriod(0, nTimeSinceLastIncoming));
+		AddBandwidthPeriod(m_aIncomingBandwidthHistory, 0, nCurTime);
 		AccumulateHistory(m_aIncomingBandwidthHistory);
 		m_nLastRecvTime = nCurTime;
 	}
@@ -1354,13 +1359,11 @@ float CUDPConn::GetPacketLoss() const
 
 bool CUDPConn::SendPacket(const CPacket_Read &cPacket)
 {
+	// RETAIL: by period (server.dll 0x10047fe0)
 	uint32 nCurTime = timeGetTime();
-	uint32 nTimeSinceLastSend = nCurTime - m_nLastSendTime;
 	m_nLastSendTime = nCurTime;
-
 	uint32 nRealPacketSize = GetUDPPacketSize(cPacket.Size());
-
-	m_aOutgoingBandwidthHistory.push(CBandwidthPeriod(nRealPacketSize, nTimeSinceLastSend));
+	AddBandwidthPeriod(m_aOutgoingBandwidthHistory, nRealPacketSize, nCurTime);
 	AccumulateHistory(m_aOutgoingBandwidthHistory);
 
 	UpdateOutgoingFlowControl(0, nCurTime);
@@ -1388,15 +1391,47 @@ bool CUDPConn::SendPacket(const CPacket_Read &cPacket)
 	return CUDPDriver::SendTo(m_Socket, CPacket_Read(cFingerprintPacket), &m_RemoteAddr);
 }
 
+// RETAIL: the totals end at the present (server.dll 0x100478a0)
 void CUDPConn::AccumulateHistory(TBandwidthHistory &cHistory)
 {
+	uint32 nCurTime = timeGetTime();
 	cHistory.end()->m_nSize = 0;
-	cHistory.end()->m_nTime = 0;
+	cHistory.end()->m_nTime = (cHistory.empty()) ? nCurTime : 0;
 	TBandwidthHistory::const_iterator iCurPeriod = cHistory.begin();
 	for (; iCurPeriod != cHistory.end(); ++iCurPeriod)
 	{
 		*cHistory.end() += *iCurPeriod;
 	}
+	cHistory.end()->m_nTime -= nCurTime;
+}
+
+// RETAIL: a period stays open while it is young, else is closed with its
+// duration and a new one opened (server.dll 0x100468b0)
+void CUDPConn::AddBandwidthPeriod(TBandwidthHistory &cHistory, uint32 nSize, uint32 nCurTime)
+{
+	// Add to the current period if it's still open
+	if (!cHistory.empty() && ((cHistory.back().m_nTime - nCurTime) < k_nBandwidthTrackingMaxPeriod))
+	{
+		cHistory.back().m_nSize += nSize;
+		return;
+	}
+	// Close the current period (start time -> duration)
+	if (!cHistory.empty())
+		cHistory.back().m_nTime = nCurTime - cHistory.back().m_nTime;
+	// Open a new one
+	cHistory.push(CBandwidthPeriod(nSize, nCurTime));
+}
+
+// RETAIL: the mean of the drop history (server.dll 0x10047820)
+float CUDPConn::GetUnguaranteedDropRate() const
+{
+	float fTotal = 0.0f;
+	TUnguaranteedDropHistory::const_iterator iCurEntry = m_aUnguaranteedDropHistory.begin();
+	for (; iCurEntry != m_aUnguaranteedDropHistory.end(); ++iCurEntry)
+	{
+		fTotal += *iCurEntry;
+	}
+	return fTotal / (float)m_aUnguaranteedDropHistory.size();
 }
 
 void CUDPConn::ResetFlowControl()
@@ -1858,6 +1893,7 @@ CUDPDriver::CUDPDriver()
 	SAFE_STRCPY(m_Name, "internet");
 	m_DriverFlags = NETDRIVER_TCPIP;
 	m_nCurPingID = 0;
+	m_hThread_Listen = 0;	// RETAIL: 0x1004a210
 	memset(&m_cGUID, 0, sizeof(m_cGUID));
 }
 
@@ -1911,18 +1947,17 @@ bool CUDPDriver::Init()
 }
 
 
-void CUDPDriver::Term2(bool bFullShutdown)
+void CUDPDriver::Term2(bool bFullShutdown, bool bShutdownSocket)
 {
 	// Close down any connections.
 	m_cCS_Connections.Enter();
 	MDeleteAndRemoveElements(m_Connections);
 	m_cCS_Connections.Leave();
 
-	if (m_Socket != INVALID_SOCKET)
+	// RETAIL: the 2006 tree's choice (0x1004b2e0)
+	if (bShutdownSocket)
 	{
 		StopThread_Listen();
-		closesocket(m_Socket);
-		m_Socket = INVALID_SOCKET;
 	}
 
 	// Get rid of the query stuff.
@@ -1971,7 +2006,7 @@ void CUDPDriver::Term()
 
 	m_cCS_Connections.Leave();
 
-	Term2(true);
+	Term2(true, true);
 }
 
 
@@ -2413,8 +2448,9 @@ LTRESULT CUDPDriver::GetMaxConnections(uint32 &nMaxConnections)
 
 void CUDPDriver::FlushInternalQueues()
 {
-	FlushDisconnectQueue();
+	// RETAIL: the 2006 tree's order (server.dll 0x1004bdf0)
 	FlushConnectQueue();
+	FlushDisconnectQueue();
 	FlushUnknownMessageQueue();
 }
 
@@ -2501,12 +2537,6 @@ void CUDPDriver::Update()
 {
 	CWinSync_CSAuto cConnProtect(m_cCS_Connections);
 
-	// Note : retail has the three flushes here, each called out of line in
-	// server.dll and FlushConnectQueue inlined in Lithtech.exe, and still
-	// calls FlushInternalQueues from Term and GetPacket. Writing the three
-	// calls here matches both Updates, but then the exe's Term inlines
-	// deque::pop_front, which retail's calls out of line (0x48e540); no
-	// way found of having both.
 	FlushInternalQueues();
 
 	// Update the connections
@@ -2557,7 +2587,7 @@ LTRESULT CUDPDriver::HostSession(NetHost* pHost)
 	char portStr[64];
 
 	// Clear everything we've got so far..
-	Term2(false);
+	Term2(false, true);
 
 	port = (uint16)pHost->m_Port;
 	if(port == 0)
@@ -2598,7 +2628,7 @@ LTRESULT CUDPDriver::JoinSession(NetSession *pNetSession)
 
 	pSession = (CUDPSession*)pNetSession;
 	ASSERT(pSession->m_pDriver == this); // Make sure we're the right driver.
-	return ReallyJoinSession(&pSession->m_Addr);
+	return ReallyJoinSession(true, &pSession->m_Addr);
 }
 
 
@@ -2962,60 +2992,41 @@ bool CUDPDriver::GetLocalIpAddress(char* sBuffer, uint32 dwBufferSize, uint16 &h
 }
 
 
-LTRESULT CUDPDriver::ReallyJoinSession(sockaddr_in *addr)
+// RETAIL: the 2006 tree's, on the 2002 locks (server.dll 0x1004b500)
+LTRESULT CUDPDriver::ReallyJoinSession( bool bOpenNewSocket, sockaddr_in *addr )
 {
 	uint32 startTime, curTime, lastSendTime;
-	sockaddr_in localInfo, queryAddr, senderAddr, myAddr;
+	sockaddr_in queryAddr, senderAddr, myAddr;
 	int status;
 	socklen_t size;
 	CUDPConn *pConn;
 	char addrStr[128];
 
-
-
 	// Remember the remote address, then get rid of all our connections and stuff.
-	queryAddr = *addr;
-	Term2(false);
-
-	SOCKET theSocket = LTNULL;
-
-	// Try to bind to some port to talk thru (when you specify
-	// 0, it tries to find one for you).
-	udp_SetupLocalSockaddr(&localInfo, (u_short)g_CV_IPClientPort);
+	queryAddr = ( *addr );
+	Term2(false, bOpenNewSocket);
 
 	// In case we return an error.
 	LTSNPrintF(addrStr, sizeof(addrStr), ADDR_PRINTF, EXPAND_ADDR(*addr));
 
-	int32 bindPort = udp_GetFirstClientPort();
-	int32 bindAttempts = 0;
-
-	while (!theSocket)
+	if ( bOpenNewSocket )
 	{
-		udp_SetupLocalSockaddr(&localInfo, (u_short)bindPort);
-		theSocket = udp_BindToPort(&localInfo, &localInfo);
-		//
-		if (theSocket == INVALID_SOCKET)
+		LTRESULT ltRes = OpenSocket( NULL );
+		if ( ltRes != LT_OK )
 		{
-			if (bindPort == 0)
-			{
-				if(g_CV_UDPDebug)
-				{
-					dsi_ConsolePrint("UDP: Error: bind to port 0 failed!");
-				}
-				RETURN_ERROR_PARAM(2, CUDPDriver::JoinSession, LT_CANTBINDTOPORT, addrStr);
-			}
-
-			if(g_CV_UDPDebug)
-			{
-				dsi_ConsolePrint("UDP: Bind to port %d failed.  Trying next port.", (int)bindPort);
-			}
-			bindPort = udp_GetNextClientPort(++bindAttempts); // last port to try is always port 0
+			return ltRes;
 		}
 	}
+
+	// Tell the listen thread to pause.
+	m_hEvent_Thread_Listen_Pause.Set( );
 	
-	if(g_CV_UDPDebug)
+	// RETAIL: the Win32 wait the 2006 tree has commented out (0x1004b639)
+	// Stop here until we need to shutdown or the thread has confirmed it is paused.
+	HANDLE aEvents[] = { m_hEvent_Thread_Listen_Shutdown.GetEvent( ), m_hEvent_Thread_Listen_Paused.GetEvent( )};
+	if( WaitForMultipleObjects( 2, aEvents, FALSE, INFINITE ) == WAIT_OBJECT_0 )
 	{
-		dsi_ConsolePrint("UDP: Joining on port %d", ntohs(localInfo.sin_port));
+		return LT_OK;
 	}
 
 	CPacket_Write cConnectionPacket_Write;
@@ -3029,6 +3040,9 @@ LTRESULT CUDPDriver::ReallyJoinSession(sockaddr_in *addr)
 	// Send off and wait for a response.
 	startTime = timeGetTime();
 	lastSendTime = startTime - CONN_SEND_INTERVAL;
+	bool bConnected = false;
+	LTRESULT ltRes = LT_TIMEOUT;
+
 	do
 	{
 		curTime = timeGetTime();
@@ -3042,13 +3056,13 @@ LTRESULT CUDPDriver::ReallyJoinSession(sockaddr_in *addr)
 					EXPAND_ADDR(queryAddr));
 			}
 
-			SendTo(theSocket, cConnectionPacket, &queryAddr);
+			SendTo(m_Socket, cConnectionPacket, &queryAddr);
 			lastSendTime = curTime;
 		}
 
 		// See if we've gotten a response yet.
 		CPacket_Read cResponsePacket;
-		if (!udp_RecvFromSocket(theSocket, &cResponsePacket, &senderAddr))
+		if (!udp_RecvFromSocket(m_Socket, &cResponsePacket, &senderAddr))
 			continue;
 
 		if (cResponsePacket.Readuint32() != UNCONNECTED_DATA_TOKEN)
@@ -3072,14 +3086,18 @@ LTRESULT CUDPDriver::ReallyJoinSession(sockaddr_in *addr)
 		if (!bAccept)
 		{
 			bool bServerFull = cResponsePacket.Readbool();
-			closesocket(theSocket);
+			StopThread_Listen();
 			if (bServerFull)
 			{
-				RETURN_ERROR_PARAM(2, CUDPDriver::JoinSession, LT_REJECTED, addrStr);
+				GENERATE_ERROR(2, CUDPDriver::JoinSession, LT_REJECTED, addrStr);
+				ltRes = LT_REJECTED;
+				break;
 			}
 			else
 			{
-				RETURN_ERROR_PARAM(2, CUDPDriver::JoinSession, LT_NOTSAMEGUID, addrStr);
+				GENERATE_ERROR(2, CUDPDriver::JoinSession, LT_NOTSAMEGUID, addrStr);
+				ltRes = LT_NOTSAMEGUID;
+				break;
 			}
 		}
 
@@ -3095,16 +3113,17 @@ LTRESULT CUDPDriver::ReallyJoinSession(sockaddr_in *addr)
 
 		LT_MEM_TRACK_ALLOC(pConn = new CUDPConn,LT_MEM_TYPE_NETWORKING);
 		if (!pConn)
+		{
+			ltRes = LT_ERROR;
 			break;
+		}
 		pConn->m_RemoteAddr = senderAddr;
-		pConn->m_Socket = theSocket;
+		pConn->m_Socket = m_Socket;
 		pConn->m_pDriver = this;
 		
 		if(m_pNetMgr->NewConnectionNotify(pConn))
 		{
 			m_Connections.AddHead(pConn, &pConn->m_Node);
-			m_Socket = theSocket;
-			StartThread_Listen();
 
 			if(g_CV_UDPDebug)
 			{
@@ -3121,7 +3140,8 @@ LTRESULT CUDPDriver::ReallyJoinSession(sockaddr_in *addr)
 				}
 			}
 
-			return LT_OK;
+			bConnected = true;
+			break;
 		}
 		else
 		{
@@ -3130,10 +3150,19 @@ LTRESULT CUDPDriver::ReallyJoinSession(sockaddr_in *addr)
 
 	} while ((curTime - startTime) < CONN_WAIT_TIME);
 
-	RETURN_ERROR_PARAM(2, CUDPDriver::JoinSession, LT_TIMEOUT, addrStr);
+	// Tell listen thread it can go now.
+	m_hEvent_Thread_Listen_Pause.Set( );
+
+	if ( !bConnected )
+	{
+		GENERATE_ERROR(2, CUDPDriver::JoinSession, ltRes, addrStr);
+		return ltRes;
+	}
+
+	return LT_OK;
 }
 
-LTRESULT CUDPDriver::ConnectTCP( const char* sAddress)
+LTRESULT CUDPDriver::ConnectTCP(bool bOpenNewSocket, const char* sAddress)
 {
 	sockaddr_in addr;
 
@@ -3142,7 +3171,45 @@ LTRESULT CUDPDriver::ConnectTCP( const char* sAddress)
 		RETURN_ERROR(1, ConnectTCP, LT_CANTBINDTOPORT);
 	}
 
-	return ReallyJoinSession(&addr);
+	return ReallyJoinSession(bOpenNewSocket, &addr);
+}
+
+// RETAIL: the 2006 tree's (server.dll 0x1004c290)
+LTRESULT CUDPDriver::OpenSocket( SOCKET* phSocket )
+{
+	StopThread_Listen( );
+
+	int32 bindPort = udp_GetFirstClientPort();
+	int32 bindAttempts = 0;
+
+	while( m_Socket == INVALID_SOCKET )
+	{
+		sockaddr_in cAddr;
+		udp_SetupLocalSockaddr(&cAddr, (u_short)bindPort);
+		m_Socket = udp_BindToPort(&cAddr, &cAddr);
+		if (m_Socket == INVALID_SOCKET)
+		{
+			if( bindPort == 0 )
+			{
+				RETURN_ERROR_PARAM(2, CUDPDriver::OpenSocket, LT_ERROR, "Can't bind to port");
+			}
+			if( g_CV_UDPDebug )
+			{
+				dsi_ConsolePrint("UDP: Bind to port %d failed.  Trying next port.", (int)bindPort);
+			}
+			bindPort = udp_GetNextClientPort(++bindAttempts); // last port to try is always port 0
+		}
+	}
+
+	// Tell them about their socket.
+	if( phSocket )
+	{
+		*phSocket = m_Socket;
+	}
+
+	// Start listening to traffic.
+	StartThread_Listen();
+	return LT_OK;
 }
 
 
@@ -3222,44 +3289,34 @@ LTRESULT CUDPDriver::RemovePing(uint32 nPingID)
 	return LT_OK;
 }
 
+// RETAIL: the 2006 tree's (server.dll 0x10047ec0)
 LTRESULT CUDPDriver::SendPing(const char *pAddr, uint16 nPort, uint32 nID)
 {
-	sockaddr_in cPingAddr;
-	if (!udp_BuildSockaddrFromString(pAddr, &cPingAddr))
-		return LT_ERROR;
-	cPingAddr.sin_port = htons((u_short)nPort);
+	sockaddr_in cAddr;
 
-	// Make sure we have a socket...
-	if (m_Socket == INVALID_SOCKET)
+	LTRESULT ltRes = OpenSocket( NULL );
+	if ( ltRes != LT_OK )
 	{
-		int32 bindPort = udp_GetFirstClientPort();
-		int32 bindAttempts = 0;
-
-		while (m_Socket == INVALID_SOCKET)
-		{
-			sockaddr_in cAddr;
-			udp_SetupLocalSockaddr(&cAddr, (u_short)bindPort);
-			m_Socket = udp_BindToPort(&cAddr, &cAddr);
-			if (m_Socket == INVALID_SOCKET)
-			{
-				if (bindPort == 0)
-				{
-					RETURN_ERROR_PARAM(2, CUDPDriver::SendPing, LT_ERROR, "Can't bind to port");
-				}
-				bindPort = udp_GetNextClientPort(++bindAttempts); // last port to try is always port 0
-			}
-		}
-		// Make sure we'll get the response...
-		StartThread_Listen();
+		return ltRes;
 	}
+
+	if (!udp_BuildSockaddrFromString(pAddr, &cAddr))
+	{
+		return LT_ERROR;
+	}
+
+	cAddr.sin_port = htons((u_short)nPort);
 
 	// Send the ping
 	CPacket_Write cPing;
 	cPing.Writeuint32(UNCONNECTED_DATA_TOKEN);
 	cPing.WriteBits(UNCONNECTED_MSG_PING, UNCONNECTED_MSG_BITS);
 	cPing.WriteBits(nID, k_nPing_Bits);
-	if (!SendTo(m_Socket, CPacket_Read(cPing), &cPingAddr))
+
+	if (!SendTo(m_Socket, CPacket_Read(cPing), &cAddr))
+	{
 		return LT_ERROR;
+	}
 
 	return LT_OK;
 }
@@ -3273,6 +3330,10 @@ void CUDPDriver::UpdateGUID(LTGUID &cGUID)
 
 void CUDPDriver::StartThread_Listen()
 {
+	// RETAIL: once (0x1004bdb0)
+	if (m_hThread_Listen)
+		return;
+
 	ASSERT(m_Socket != INVALID_SOCKET);
 	unsigned long nThreadID;
 	m_hThread_Listen = CreateThread(NULL, 0, ThreadBootstrap_Listen, (void *)this, 0, &nThreadID);
@@ -3283,14 +3344,23 @@ void CUDPDriver::StopThread_Listen()
 {
 	// Signal the shutdown
 	m_hEvent_Thread_Listen_Shutdown.Set();
+
 	// Closing the socket is the only way to release the thread...  :(
-	closesocket(m_Socket);
+	// RETAIL: and it is closed here (0x10046320)
+	if (m_Socket != INVALID_SOCKET)
+	{
+		closesocket(m_Socket);
+		m_Socket = INVALID_SOCKET;
+	}
+
 	// Wait for it to shut down
 	WaitForSingleObject(m_hThread_Listen, INFINITE);
 	// Clean up
 	CloseHandle(m_hThread_Listen);
 	m_hThread_Listen = 0;
 	m_hEvent_Thread_Listen_Shutdown.Clear();
+	m_hEvent_Thread_Listen_Pause.Clear();
+	m_hEvent_Thread_Listen_Paused.Clear();
 }
 
 unsigned long CUDPDriver::ThreadBootstrap_Listen(void *pUserData)
@@ -3324,6 +3394,22 @@ uint32 CUDPDriver::Thread_Listen()
 			if (m_hEvent_Thread_Listen_Shutdown.IsSet())
 			{
 				break;
+			}
+			// RETAIL: the 2006 tree's pause, with the Win32 wait (0x1004afd6)
+			// Check if we need to pause.
+			else if (m_hEvent_Thread_Listen_Pause.IsSet())
+			{
+				// Clear the pause event.
+				m_hEvent_Thread_Listen_Pause.Clear();
+				// Tell main thread we're paused.
+				m_hEvent_Thread_Listen_Paused.Set();
+				// Stop here until we're told to shutdown or resume.
+				HANDLE aEvents[] = { m_hEvent_Thread_Listen_Shutdown.GetEvent(), m_hEvent_Thread_Listen_Pause.GetEvent() };
+				if (WaitForMultipleObjects(2, aEvents, FALSE, INFINITE) == WAIT_OBJECT_0)
+					break;
+				// Done with the pause.
+				m_hEvent_Thread_Listen_Paused.Clear();
+				m_hEvent_Thread_Listen_Pause.Clear();
 			}
 			// Go to sleep if there's nothing waiting on the line
 			else if (nRecvStatus == WSAEWOULDBLOCK)

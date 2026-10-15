@@ -157,6 +157,7 @@ public:
 	virtual uint32		GetIncomingBandwidthUsage() const;
 	virtual uint32		GetTransportOverhead() const;
 	virtual float		GetPacketLoss() const;
+	virtual float		GetUnguaranteedDropRate() const;	// RETAIL: 0x10047820
 	
 	virtual float GetPing() { return m_fReportedPing; }
 
@@ -373,6 +374,14 @@ private:
 	typedef CStaticFIFO<bool, k_nPacketLossTrackingQueueSize> TPacketLossHistory;
 	TPacketLossHistory m_aPacketLossHistory;
 
+	// RETAIL: the share of unguaranteed packets dropped, per write (+0x2a8)
+	enum { k_nUnguaranteedDropTrackingQueueSize = 100 };
+	typedef CStaticFIFO<float, k_nUnguaranteedDropTrackingQueueSize> TUnguaranteedDropHistory;
+	TUnguaranteedDropHistory m_aUnguaranteedDropHistory;
+
+	// RETAIL: add to a bandwidth history (0x100468b0)
+	void AddBandwidthPeriod(TBandwidthHistory &cHistory, uint32 nSize, uint32 nCurTime);
+
 	void AccumulateHistory(TBandwidthHistory &cHistory);
 
 	// An out of order packet
@@ -522,7 +531,7 @@ public:
 
     virtual bool Init();
 
-    void Term2(bool bFullShutdown);
+    void Term2(bool bFullShutdown, bool bShutdownSocket);
     virtual void Term();
 
     
@@ -579,8 +588,9 @@ public:
     virtual LTRESULT JoinSession(NetSession *pSession);
 
     virtual bool GetLocalIpAddress(char* sBuffer, uint32 dwBufferSize, uint16 &hostPort);
-    LTRESULT ReallyJoinSession(sockaddr_in *addr);
-    virtual LTRESULT ConnectTCP( const char* sAddress );
+    LTRESULT ReallyJoinSession(bool bOpenNewSocket, sockaddr_in *addr);
+    virtual LTRESULT ConnectTCP(bool bOpenNewSocket, const char* sAddress);
+    virtual LTRESULT OpenSocket(SOCKET* phSocket);	// RETAIL: 0x1004c290
     virtual LTRESULT SendTcpIp(const CPacket_Read &cMsg, const char *sAddr, uint32 port);
 
 	virtual LTRESULT StartPing(const char *pAddr, uint16 nPort, uint32 *pPingID);
@@ -629,6 +639,9 @@ private:
 	HANDLE m_hThread_Listen;
 	CWinSync_Event m_cEvent_Thread_Listen_Ready;
 	CWinSync_Event m_hEvent_Thread_Listen_Shutdown;
+	// RETAIL: the 2006 tree's pause handshake (the constructor makes four events)
+	CWinSync_Event m_hEvent_Thread_Listen_Pause;
+	CWinSync_Event m_hEvent_Thread_Listen_Paused;
 
 
 

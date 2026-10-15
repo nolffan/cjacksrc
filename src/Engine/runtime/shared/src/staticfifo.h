@@ -35,7 +35,9 @@ public:
 	// Is the queue empty?
 	bool empty() const { return m_pBegin == m_pEnd; }
 	// How many entries are active in the queue?
-	bool size() const { return (m_pBegin < m_pEnd) ? (m_pEnd - m_pBegin) : ((k_nQueueSize - (m_pBegin - m_aQueue)) + (m_pEnd - m_aQueue)); }
+	// cjacksrc: a count, not the 2006 tree's bool (CUDPConn's drop rate
+	// divides by it, server.dll 0x10047820)
+	size_t size() const { return (m_pBegin < m_pEnd) ? (m_pEnd - m_pBegin) : ((k_nQueueSize - (m_pBegin - m_aQueue)) + (m_pEnd - m_aQueue)); }
 
 	//////////////////////////////////////////////////////////////////////////////
 	// Manipulation
