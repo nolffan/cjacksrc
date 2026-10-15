@@ -13,7 +13,10 @@
 // 0x100085e0); LTMemAlloc, LTMemFree and LTMemReAlloc a jump to the
 // runtime's through its import (/MD); then the constructor (`mov eax,ecx;
 // ret`, LTMemInit inlined) and the destructor (`ret`), all 16 bytes apart.
-// Nothing calls any of them but the initializer's own.
+// The sound driver calls none of them but the initializer's own; the engine
+// (Lithtech.exe 0x49f600, server.dll 0x1005dbf0, the same bytes) allocates
+// through LTMemAlloc from dalloc and links ltmemstats.obj, ltmemtrack.obj and
+// ltmemheap.obj after this object.
 
 #include "stdafx.h"
 #ifdef _WIN32
