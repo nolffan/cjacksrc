@@ -121,7 +121,7 @@ SOURCE="$(InputPath)"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /GX /O2 /I "..\shared" /I "..\..\Engine\sdk\inc" /I "..\..\libs\mfcstub" /I "..\..\libs\stdlith" /I "..\..\libs\butemgr" /I "..\..\libs\cryptmgr" /I "..\..\libs\lith" /I "..\libs\ltguimgr" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "NOPS2" /D "_FINAL" /Yu"stdafx.h" /FD /Zm1000 /c
-# ADD CPP /nologo /MT /W3 /GX /O2 /I "..\shared" /I "..\..\Engine\sdk\inc" /I "..\..\libs\mfcstub" /I "..\..\libs\stdlith" /I "..\..\libs\butemgr" /I "..\..\libs\cryptmgr" /I "..\..\libs\lith" /I "..\libs\ltguimgr" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "NOPS2" /D "_FINAL" /D "MEMTRACK_CLIENTFX" /Yu"stdafx.h" /FD /Zm1000 /c
+# ADD CPP /nologo /MT /W3 /O2 /I "..\shared" /I "..\..\Engine\sdk\inc" /I "..\..\libs\mfcstub" /I "..\..\libs\stdlith" /I "..\..\libs\butemgr" /I "..\..\libs\cryptmgr" /I "..\..\libs\lith" /I "..\libs\ltguimgr" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "NOPS2" /D "_FINAL" /D "MEMTRACK_CLIENTFX" /Yu"stdafx.h" /FD /Zm1000 /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "NDEBUG"

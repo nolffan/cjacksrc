@@ -88,7 +88,7 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "..\built\Final\MFCStub"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W3 /GX /O2 /I "..\stdlith" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_FINAL" /FR /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GX /O2 /I "..\stdlith" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_FINAL" /FR /YX /FD /c
+# ADD CPP /nologo /MD /W3 /O2 /I "..\stdlith" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_FINAL" /FR /YX /FD /c
 # ADD BASE RSC /l 0x409
 # ADD RSC /l 0x409
 BSC32=bscmake.exe

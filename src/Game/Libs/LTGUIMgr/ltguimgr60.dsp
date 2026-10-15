@@ -89,7 +89,7 @@ LIB32=xilink6.exe -lib
 # PROP Intermediate_Dir "..\..\built\Final\libs\LTGuiMgr"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W3 /GX /Zi /O2 /I "..\..\..\Engine\sdk\inc" /I "..\..\..\Engine\sdk\inc\compat" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_LITHTECH2" /D "LT15_COMPAT" /D "_FINAL" /YX /FD /Zm1000 /c
-# ADD CPP /nologo /MD /W3 /GX /GS /Zi /O2 /I "..\..\..\Engine\sdk\inc" /I "..\..\..\Engine\sdk\inc\compat" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_LITHTECH2" /D "LT15_COMPAT" /D "_FINAL" /YX /FD /Zm1000 /c
+# ADD CPP /nologo /MD /W3 /GS /Zi /O2 /I "..\..\..\Engine\sdk\inc" /I "..\..\..\Engine\sdk\inc\compat" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_LITHTECH2" /D "LT15_COMPAT" /D "_FINAL" /YX /FD /Zm1000 /c
 # ADD BASE RSC /l 0x409
 # ADD RSC /l 0x409
 BSC32=bscmake.exe

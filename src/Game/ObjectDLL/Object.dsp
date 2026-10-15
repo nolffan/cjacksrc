@@ -33,7 +33,7 @@ RSC=rc.exe
 # PROP Intermediate_Dir "..\built\Final\ObjectDLL"
 # PROP Ignore_Export_Lib 1
 # PROP Target_Dir ""
-# ADD CPP /nologo /MD /W3 /GR /GX /O2 /I ".\\" /I "..\Shared" /I "..\Shared\TO2" /I "..\..\Engine\sdk\inc" /I "..\..\libs\stdlith" /I "..\..\libs\butemgr" /I "..\..\libs\cryptmgr" /I "..\..\libs\lith" /I "..\..\libs\mfcstub" /I "..\..\libs\regmgr" /I "..\Libs" /I "..\Libs\GameSpy" /D "NDEBUG" /D "_NOLFBUILD" /D "USE_INTEL_COMPILER" /D "WIN32" /D "_WINDOWS" /D "NOPS2" /D "_SERVERBUILD" /D "_FINAL" /D "MEMTRACK_SERVER" /Yu"stdafx.h" /FD /Zm1000 /c
+# ADD CPP /nologo /MD /W3 /GR /O2 /I ".\\" /I "..\Shared" /I "..\Shared\TO2" /I "..\..\Engine\sdk\inc" /I "..\..\libs\stdlith" /I "..\..\libs\butemgr" /I "..\..\libs\cryptmgr" /I "..\..\libs\lith" /I "..\..\libs\mfcstub" /I "..\..\libs\regmgr" /I "..\Libs" /I "..\Libs\GameSpy" /D "NDEBUG" /D "_NOLFBUILD" /D "USE_INTEL_COMPILER" /D "WIN32" /D "_WINDOWS" /D "NOPS2" /D "_SERVERBUILD" /D "_FINAL" /D "MEMTRACK_SERVER" /Yu"stdafx.h" /FD /Zm1000 /c
 # ADD RSC /l 0x409 /d "NDEBUG"
 LINK32=link.exe
 # ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /machine:I386 /out:"..\built\Final\ObjectDLL\Object.lto"

@@ -141,7 +141,7 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "..\built\Final\ButeMgr"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W3 /GX /O2 /I "..\stdlith" /I "..\mfcstub" /I "..\cryptmgr" /I "..\lith" /D "NDEBUG" /D "_NOMFC" /D "WIN32" /D "_WINDOWS" /D "_FINAL" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GX /O2 /I "..\stdlith" /I "..\mfcstub" /I "..\cryptmgr" /I "..\lith" /D "NDEBUG" /D "_NOMFC" /D "WIN32" /D "_WINDOWS" /D "_FINAL" /YX /FD /c
+# ADD CPP /nologo /MD /W3 /O2 /I "..\stdlith" /I "..\mfcstub" /I "..\cryptmgr" /I "..\lith" /D "NDEBUG" /D "_NOMFC" /D "WIN32" /D "_WINDOWS" /D "_FINAL" /YX /FD /c
 # ADD BASE RSC /l 0x409
 # ADD RSC /l 0x409
 BSC32=bscmake.exe

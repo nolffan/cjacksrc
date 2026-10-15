@@ -16,9 +16,9 @@ the attribution is the header's own testimony.
 | `GameSpy.dll` | 2003-10-31 | 29 / 18 | the C objects are GameSpy's SDK (22) and msvcrt.lib's; the C++ ones Monolith's wrapper, WONAPI.lib's CD key check and msvcrt/msvcprt's | `msvc-7.10-3077`: the wrapper `/MD /Ox /GF` (no `/Gy`, no `/GX`, no `NDEBUG`), WONAPI `/MD /O2 /GX /GR` |
 | `ContractJack.exe` | 2003-10-31 | 15 / 28 | 9 objects of tool 0x27, build 8491 (not yet identified); MFC 7.1 as a DLL | -- |
 | `ContractJackServer.exe` | 2003-10-31 | 15 / 28 | the same 9 of 0x27/8491 | -- |
-| `CShell.dll` | 2003-10-31 | 9 / 306 | 3 import descriptors of lib 7.00.9210 (the DirectX 8.1 SDK's `dinput8.lib`) | msvc-7.10-3077, `/MD /O2 /GX /GR` (LTGUIMgr `/GS`): provisional, below |
-| `Object.lto` | 2003-10-31 | 7 / 348 | | msvc-7.10-3077, `/MD /O2 /GX /GR`: provisional |
-| `ClientFx.fxd` | 2003-10-14 | 115 / 41 | `libcmt.lib` statically: most C objects are the CRT's | msvc-7.10-3077, `/MT /O2 /GX`: provisional |
+| `CShell.dll` | 2003-10-31 | 9 / 306 | 3 import descriptors of lib 7.00.9210 (the DirectX 8.1 SDK's `dinput8.lib`) | msvc-7.10-3077, `/MD /O2 /GR`, no `/GX` (LTGUIMgr `/GS`): provisional, below |
+| `Object.lto` | 2003-10-31 | 7 / 348 | | msvc-7.10-3077, `/MD /O2 /GR`, no `/GX`: provisional |
+| `ClientFx.fxd` | 2003-10-14 | 115 / 41 | `libcmt.lib` statically: most C objects are the CRT's | msvc-7.10-3077, `/MT /O2`, no `/GX`: provisional |
 | `CRes.dll`, `SRes.dll` | | 67 / 3 | resources and `libcmt.lib` | msvc-7.10-3077: both retail's but for the time stamp |
 
 The rows at builds 2067 and 2179 (tools 0x5d and 0x69) in every binary come
@@ -56,3 +56,12 @@ with Visual C++ .NET 2003's own libraries: a test program built with
   LTGUIMgr's slider; Object.lto has none). `/O2` vs `/Ox` and the other
   code-generation switches are not yet proven: SndDrv.dll turned out to
   be `/Ox /GF`.
+* None of the game DLLs, nor the libraries they link (ButeMgr, CryptMgr,
+  Lib_Lith, Lib_StdLith, MFCStub, RegMgr, LTGUIMgr), has `/GX`: a
+  destructor such as `CLTGUIWindow::~CLTGUIWindow` (CShell 0x1011e560) or
+  `CMenuMgr::~CMenuMgr` (0x10084230) destroys its members with no
+  exception frame, and the images have few frames at all (CShell.dll 136,
+  Object.lto 205, ClientFx.fxd 9, against 855, 1613 and 79 with `/GX`):
+  those left are the STL's explicit try blocks. Dropping `/GX` took the
+  identical functions from 3,603 to 4,555 in CShell.dll, 5,848 to 7,610 in
+  Object.lto and 285 to 393 in ClientFx.fxd.
