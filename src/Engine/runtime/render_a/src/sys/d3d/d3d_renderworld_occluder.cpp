@@ -406,6 +406,8 @@ PolySide COccludee::SplitOutline2D(const LTPlane &cPlane, const COutline &sInput
 		return Intersect;
 }
 
+// RETAIL: each case breaks out of the switch and the loop goes on over
+// every outline (Lithtech.exe 0x4f3360); the fear tree left after the first.
 PolySide COccludee::SplitPlane(const LTPlane &cPlane, bool bSplitOccluded)
 {
 	// Split the outlines into visible and occluded portions
@@ -426,21 +428,21 @@ PolySide COccludee::SplitPlane(const LTPlane &cPlane, bool bSplitOccluded)
 			{
 				case FrontSide : 
 					++iCurOutline;
-					goto endLoop;
+					break;
 				case BackSide : 
 					if ((iCurOutline + 1) != m_aVisible.end())
 						*iCurOutline = m_aVisible.back();
 					m_aVisible.pop_back();
 					ASSERT(sOccluded.size() > 2);
 					m_aOccluded.push_back(sOccluded);
-					goto endLoop;
+					break;
 				case Intersect :
 					ASSERT(sVisible.size() > 2);
 					*iCurOutline = sVisible;
 					++iCurOutline;
 					ASSERT(sOccluded.size() > 2);
 					m_aOccluded.push_back(sOccluded);
-					goto endLoop;
+					break;
 			}
 		}
 	}
@@ -461,22 +463,21 @@ PolySide COccludee::SplitPlane(const LTPlane &cPlane, bool bSplitOccluded)
 					m_aOccluded.pop_back();
 					ASSERT(sVisible.size() > 2);
 					m_aVisible.push_back(sVisible);
-					goto endLoop;
+					break;
 				case BackSide :
 					++iCurOutline;
-					goto endLoop;
+					break;
 				case Intersect :
 					ASSERT(sOccluded.size() > 2);
 					*iCurOutline = sOccluded;
 					++iCurOutline;
 					ASSERT(sVisible.size() > 2);
 					m_aVisible.push_back(sVisible);
-					goto endLoop;
+					break;
 			}
 		}
 	}
 
-	endLoop:
 	if (m_aVisible.empty())
 		return BackSide;
 	if (m_aOccluded.empty())
@@ -484,6 +485,8 @@ PolySide COccludee::SplitPlane(const LTPlane &cPlane, bool bSplitOccluded)
 	return Intersect;
 }
 
+// RETAIL: each case breaks out of the switch and the loop goes on over
+// every outline (Lithtech.exe 0x4f36f0); the fear tree left after the first.
 PolySide COccludee::SplitPlane2D(const LTPlane &cPlane, bool bSplitOccluded)
 {
 	// Split the outlines into visible and occluded portions
@@ -510,14 +513,14 @@ PolySide COccludee::SplitPlane2D(const LTPlane &cPlane, bool bSplitOccluded)
 					m_aVisible.pop_back();
 					ASSERT(sOccluded.size() > 2);
 					m_aOccluded.push_back(sOccluded);
-					goto endLoop;
+					break;
 				case Intersect :
 					ASSERT(sVisible.size() > 2);
 					*iCurOutline = sVisible;
 					++iCurOutline;
 					ASSERT(sOccluded.size() > 2);
 					m_aOccluded.push_back(sOccluded);
-					goto endLoop;
+					break;
 			}
 		}
 	}
@@ -536,7 +539,7 @@ PolySide COccludee::SplitPlane2D(const LTPlane &cPlane, bool bSplitOccluded)
 					m_aOccluded.pop_back();
 					ASSERT(sVisible.size() > 2);
 					m_aVisible.push_back(sVisible);
-					goto endLoop;
+					break;
 				case BackSide :
 					++iCurOutline;
 					break;
@@ -546,12 +549,11 @@ PolySide COccludee::SplitPlane2D(const LTPlane &cPlane, bool bSplitOccluded)
 					++iCurOutline;
 					ASSERT(sVisible.size() > 2);
 					m_aVisible.push_back(sVisible);
-					goto endLoop;
+					break;
 			}
 		}
 	}
 
-	endLoop:
 	if (m_aVisible.empty())
 		return BackSide;
 	if (m_aOccluded.empty())
@@ -666,7 +668,7 @@ PolySide COccluder::Occlude(COccludee &cOccludee) const
 		else
 		{
 			cOccludee.m_aVisible.insert(cOccludee.m_aVisible.end(), cOccludee.m_aOccluded.begin(), cOccludee.m_aOccluded.end());
-			cOccludee.m_aOccluded.clear();
+			cOccludee.m_aOccluded.resize(0);	// RETAIL: 0x4f3ad3
 		}
 		return FrontSide;
 	}
@@ -695,9 +697,10 @@ PolySide COccluder::Occlude2D(COccludee &cOccludee) const
 		else
 		{
 			cOccludee.m_aVisible.insert(cOccludee.m_aVisible.end(), cOccludee.m_aOccluded.begin(), cOccludee.m_aOccluded.end());
-			cOccludee.m_aOccluded.clear();
+			cOccludee.m_aOccluded.resize(0);	// RETAIL: 0x4f3ad3
 		}
-		return FrontSide;
+		// RETAIL: in front only if the box is entirely in front (0x4f3c31)
+		return GetAABBPlaneSideFront(m_ePolyPlaneCorner, m_cPolyPlane, cOccludee.m_vMin, cOccludee.m_vMax) ? FrontSide : Intersect;
 	}
 
 	TPlaneList::const_iterator iCurPlane = m_aEdgePlanes.begin();

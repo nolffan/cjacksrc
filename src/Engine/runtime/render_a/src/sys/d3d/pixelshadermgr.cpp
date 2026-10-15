@@ -88,10 +88,10 @@ CPixelShaderMgr::CPixelShaderMgr()
 
 CPixelShaderMgr::~CPixelShaderMgr()
 {
+	// RETAIL: FreeShader tests the slot itself (0x4ca8d9)
 	for(uint32 nCurrShader = 0; nCurrShader < m_PixelShaders.size(); nCurrShader++)
 	{
-		if(m_PixelShaders[nCurrShader])
-			FreeShader(nCurrShader);
+		FreeShader(nCurrShader);
 	}
 }
 
@@ -247,11 +247,10 @@ bool CPixelShaderMgr::SetPixelShaderConstants(uint32 nNumConstants, const float*
 //installs the specified shader into the device
 bool CPixelShaderMgr::InstallPixelShader(const CPixelShaderHandle& hShader) const
 {
-	SPixelShader* pShader = m_PixelShaders[hShader.m_nHandle];
-
-	if(pShader->m_bCreated)
+	// RETAIL: the vector element read twice (0x4ca7c9)
+	if(m_PixelShaders[hShader.m_nHandle]->m_bCreated)
 	{
-		if(SUCCEEDED(PD3DDEVICE->SetPixelShader(pShader->m_hShader)))
+		if(SUCCEEDED(PD3DDEVICE->SetPixelShader(m_PixelShaders[hShader.m_nHandle]->m_hShader)))
 			return true;
 	}
 
@@ -280,13 +279,13 @@ bool CPixelShaderMgr::ReleasePixelShader(const CPixelShaderHandle& hShader)
 //frees the shader in the specified slot of the list
 void CPixelShaderMgr::FreeShader(uint32 nShader)
 {
-	SPixelShader* pShader = m_PixelShaders[nShader];
-	if(!pShader)
+	// RETAIL: the vector element read each time (0x4ca80e)
+	if(!m_PixelShaders[nShader])
 		return;
 
-	if(pShader->m_bCreated)
+	if(m_PixelShaders[nShader]->m_bCreated)
 	{
-		PD3DDEVICE->DeletePixelShader(pShader->m_hShader);
+		PD3DDEVICE->DeletePixelShader(m_PixelShaders[nShader]->m_hShader);
 	}
 
 	delete m_PixelShaders[nShader];

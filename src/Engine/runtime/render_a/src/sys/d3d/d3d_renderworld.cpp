@@ -579,7 +579,7 @@ bool CD3D_RenderWorld::DrawAggregateShader(uint32 nNumFrustumPlanes, const LTPla
 
 	// Now we need to find all intersecting render blocks
 	static TRBList aVisibleRBs;
-	aVisibleRBs.clear();
+	aVisibleRBs.resize(0);	// RETAIL: 0x4a8e81
 
 	GetFrustumRBList(Params, aVisibleRBs);
 

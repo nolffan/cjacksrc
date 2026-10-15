@@ -28,10 +28,10 @@ public:
 	// (server.dll 0x1004f8e0, emitted in world_blocker_data.obj)
 	void CollideWithPoly(const WorldPoly *pPoly, const LTVector &vStart, const LTVector &vOffset, SCollideResult *pResult) const
 	{
+		pResult->m_bCollision = false;	// RETAIL: first (Lithtech.exe 0x48bda2)
 		pResult->m_fTime = 1.0f;
 		pResult->m_pObject = LTNULL;
 		pResult->m_pObjectNode = LTNULL;
-		pResult->m_bCollision = false;
 		float fPlaneProjection = -1.0f;
 		PolySide nStartSide = GetPlaneSide(*pPoly->GetPlane(), vStart, &fPlaneProjection);
 		LTVector vEnd = vStart + vOffset;

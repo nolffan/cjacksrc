@@ -1187,7 +1187,6 @@ public:
     StartGameRequest() {
         m_Type = STARTGAME_NORMAL;
         m_WorldName[0] = 0;
-        m_hSocket = (uint32)-1;
         m_TCPAddress[0] = 0;
         m_RecordFilename[0] = 0;
         m_PlaybackFilename[0] = 0;
@@ -1197,6 +1196,7 @@ public:
         m_pNetSession = LTNULL;
         m_pClientData = LTNULL;
         m_ClientDataLen = 0;
+        m_hSocket = (uint32)-1;	// cjacksrc: set last (Lithtech.exe 0x419826)
     }
 
     int m_Type;
