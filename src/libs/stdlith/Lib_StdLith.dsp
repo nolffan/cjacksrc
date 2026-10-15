@@ -88,7 +88,7 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "..\built\Final\Lib_StdLith"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W3 /GX /O2 /I ".\\" /I "..\zlib" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /FR /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GX /O2 /Ob2 /I ".\\" /I "..\zlib" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_FINAL" /FR /YX /FD /c
+# ADD CPP /nologo /MD /W3 /O2 /Ob2 /I ".\\" /I "..\zlib" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_FINAL" /FR /YX /FD /c
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
 # ADD RSC /l 0x409 /d "NDEBUG"
 BSC32=bscmake.exe
