@@ -98,13 +98,17 @@ inline void LTStrCpy(char *pDest, const char *pSrc, uint32 destBytes)
 /*!
 Safe string concatination (strncat doesn't always null terminate, but this does).
 */
+// cjacksrc: Contract J.A.C.K.'s engine copies after the string's end, and
+// only when there is room (server.dll 0x1000a97a), where NOLF2's appended
+// with strncat whatever the length
 inline void LTStrCat(char *pDest, const char *pSrc, uint32 destBytes) 
 {
-    if (destBytes == 0)
-        return;
-
-    strncat(pDest, pSrc, destBytes - 1);
-    pDest[destBytes - 1] = '\0';
+    uint32 nDestLen = strlen(pDest);
+    if (nDestLen < destBytes)
+    {
+        strncpy(&pDest[nDestLen], pSrc, destBytes - nDestLen - 1);
+        pDest[destBytes - 1] = '\0';
+    }
 }
 
 /*!
@@ -1174,6 +1178,7 @@ public:
     StartGameRequest() {
         m_Type = STARTGAME_NORMAL;
         m_WorldName[0] = 0;
+        m_hSocket = (uint32)-1;
         m_TCPAddress[0] = 0;
         m_RecordFilename[0] = 0;
         m_PlaybackFilename[0] = 0;
@@ -1187,6 +1192,12 @@ public:
 
     int m_Type;
     char m_WorldName[MAX_SGR_STRINGLEN];
+
+//! cjacksrc: Contract J.A.C.K.'s: a socket for the client to join with, or
+//! -1 for a new one (CClientMgr::StartGame passes whether it is -1 to
+//! ConnectTCP, Lithtech.exe 0x40f68c; server.dll's StartWorld reads the
+//! fields after it 4 bytes further, 0x10038bf1)
+    uint32 m_hSocket;
 
 //! TCP/IP address, if any.
     char m_TCPAddress[MAX_SGR_STRINGLEN];
