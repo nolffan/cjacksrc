@@ -569,37 +569,60 @@ with std::sort, shadow queueing with a weighted tween slot, render style
 loading in CJ's file layout (a render pass's Direct3D data without the
 structure's padding), the back-buffer sync under LockableBackBuffer, ATI's
 MultiPassLightMatch/Use0WeightsForDisable, WM_FONTCHANGE broadcasts.
-**SDK change for the game:** `ltbasedefs.h`'s LTStrCat is `__forceinline`
-only under DIRECTENGINE_COMPILE or __D3DREND (the engine's projects); the
-game's code still sees the plain inline.
+**SDK change for the game:** `ltbasedefs.h`'s LTStrCat returns at once
+when `destBytes` is 0, but only under DIRECTENGINE_COMPILE or __D3DREND
+(the engine's projects); worth trying in the game's code too (round 3
+replaced round 2's `__forceinline`, which retail's out-of-line copy at
+0x419760 disproved).
+
+**Round 3** (on master's 239fb1d): `tools/demoimports.py` maps SecuROM's
+91 import calls rewritten as a direct call into a `.rjes` dispatcher plus
+a junk byte, and `tools/progress.py` scores against every mapped site put
+back as `ff 15 <slot>` (the Lithtech.exe target's `iat_calls`), so
+RunClientApp and the like can match (tools commits on the tools clone's
+master: demoimports, then progress). Then CJ's forms of
+d3d_BlitToScreen3D (NOLF2's old whole-tile blit, no m_bUseOld in
+BlitRequest), the D3D format tables (W11V11U10), RunClientApp's window
+icons, ps_UpdateParticleBoundingBox, FillPacketFromInfo's new-object
+rotation and prediction cap, cis_MaskedDraw (16-bit only), the music
+manager (no COM set-up in its thread). Retail bugs listed and fixed under
+CJACK_MODERN: ShowVersionInfo calls a NULL GetVersionInfoExt (EN-3), the
+music thread's handle leaks (EN-4), a failed transition segment crashes
+(EN-5); client.cpp's NOLF2SRC_MODERN blocks are CJACK_MODERN (EN-2).
+**The game against the engine** (master's game DLLs built with this
+engine): every interface holder the game's DLLs define is implemented by
+the engine or a game DLL (ILTModelClient through `implements_also`), with
+the same versions; every ILTClient/ILTServer function pointer is set but
+ILTServer's GetPointAreas, Set/GetModelNodeHideStatus (none of which the
+game calls) and the two ILTClient ones retail leaves NULL; the engine's
+own holders without an implementation are retail's too, except
+ILTMath.Default, which retail does not have (CLTClient::Math, still to be
+looked at). Note: out/exp/try.sh compiling kernel's de_file.cpp alone
+makes cl.exe spin (the full build is fine).
 
 **Where it stands / next** (stopped here: score recorded at
-`Lithtech.exe` 6,713 identical, 91.0%; `server.dll` 2,717, 95.2%;
+`Lithtech.exe` 6,796 identical, 93.6%; `server.dll` 2,718, 95.6%;
 SndDrv.dll 225) (breadth first, per module, with `tools/fndiff.py`,
 `o2gap.py`, `vtabcheck.py`, `uncovered.py`; `progress.py --nears=<target>`
 pairs some rows wrongly where a function's CSV extent is split, so check
-each with fndiff against the retail address first):
+each with fndiff against the retail address first; fndiff on
+`--image=out/spdemo/Lithtech-readable.exe` reads SecuROM's calls put
+back):
+- structural nears not yet done: BuildDeviceList, DrawDynamicParticles
+  (block order), COccludee::SplitPlane, d3d_OptimizeSurface,
+  CClientMgr::Render (its CSV row is split), CD3DDrawPrim::DrawPrim
+  (POLYF4), CModelMgr::ForEach, UpdateSendTimeWithAttachments,
+  CServerEvent::DecrementRefCount, LTMemHeapInit (inlining), CLTClient::Math
+  and the ILTMath holder retail lacks;
 - nears left as register allocation only (tried, no source shape found):
   CD3D_RenderWorld::Draw, CPlayerMover::Collide/_Poly/StairStep,
-  MoveObject, RotateWorldModel, QueueShadows, LoadLightGroup, SSubLM::Load,
-  the light-group stream operator, CPixelShaderMgr::FreeShader;
-- RunClientApp, InstallPixelShader and a few others call through
-  SecuROM's API thunks in the demo image (`call 0x612bf0` plus a junk
-  byte): `tools/demoimports.py` should resolve those six-byte calls too;
-- d3d_BlitToScreen3D (989 bytes against 1,085; d3d_BlitToScreen no longer
-  calls the _Old form, which is now unused): CJ's tile clipping loop;
-- d3d_utils (d3d_GetColorMasks, d3d_D3DFormatToString), BuildDeviceList,
-  ps_UpdateParticleBoundingBox, DrawDynamicParticles, con_WriteHistory,
-  cc_SaveConfigFile, CClientShell::Term, CSoundMgr::Term, df_FindNext,
-  input_TrackDevice, GetFrameOccluders, AllocShader,
-  d3d_RenderWorldWithAggregate, COccludee::SplitPlane;
-- server: SendAllObjectsUnguaranteed, FillPacketFromInfo,
-  UpdateSendTimeWithAttachments, CServerEvent::DecrementRefCount;
-- client.cpp keeps nolf2src's NOLF2SRC_MODERN blocks (never compiled
-  here): to become CJACK_MODERN when the modern build is taken up;
-- the two Lightmap_Texture-style SortSections were fixed by dropping the
-  textured lightmap sections' constructors; watch the modern build for
-  code that relied on them.
+  MoveObject, RotateWorldModel, QueueShadows, LoadLightGroup,
+  SSubLM::Load, the light-group stream operator, CPixelShaderMgr::
+  FreeShader, ps_UpdateParticleBoundingBox (x operand order),
+  SendAllObjectsUnguaranteed, CD3DDrawPrim::SetCamera, the DrawPolyGrid
+  imul order;
+- the textured lightmap sections have no constructors now (round 2);
+  watch the modern build for code that relied on them.
 
 ### 11. release
 

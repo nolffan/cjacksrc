@@ -698,7 +698,10 @@ static void con_ShowVersionInfo(int argc, char *argv[])
 {
 	// Sanity checks
 	IFBREAKRETURN(ilt_client == NULL);
+#ifdef CJACK_MODERN
 	if (ilt_client->GetVersionInfoExt == NULL ) return; 
+#endif
+	// RETAIL: no test for the function (Lithtech.exe 0x41a395)
 
 	LTVERSIONINFOEXT info;
 

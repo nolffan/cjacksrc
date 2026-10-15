@@ -46,3 +46,20 @@ modes at any size; our Bink player on FFmpeg in place of RAD's
   world only among equal base sections, so the sort gets a strict weak
   ordering (`RETAIL_BUGS.md`; src/Engine/runtime/render_a/src/sys/d3d/
   d3d_rendershader_base.h).
+* **EN-2: the window keeps its renderer.** In a window the game no longer
+  shuts its renderer down and brings it back when it loses the focus (a
+  reload of every texture and a black window meanwhile; only a full-screen
+  device needs it); it pauses, unless the console variable
+  RunInBackground is set, when it plays on behind other windows
+  (src/Engine/runtime/kernel/src/sys/win/client.cpp; nolf2src's M-G41).
+* **EN-3: ShowVersionInfo.** ILTClient's GetVersionInfoExt and
+  GetPerformanceInfo are set, and the console command tests the first
+  before calling it (`RETAIL_BUGS.md`; src/Engine/runtime/client/src/
+  clientde_impl.cpp, consolecommands.cpp).
+* **EN-4: the music thread's handle.** CLTDirectMusicMgr::Term closes the
+  notification thread's handle (`RETAIL_BUGS.md`; src/Engine/runtime/
+  kernel/src/sys/win/ltdirectmusic_impl.cpp).
+* **EN-5: a failed transition segment.** CLTDirectMusicMgr::ChangeIntensity
+  tests the transition's segment state before using it, as NOLF2's does
+  (`RETAIL_BUGS.md`; src/Engine/runtime/kernel/src/sys/win/
+  ltdirectmusic_impl.cpp).

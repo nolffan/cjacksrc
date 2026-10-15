@@ -505,7 +505,7 @@ bool FillPacketFromInfo(Client *pClient, LTObject *pObj, ObjInfo *pInfo, CPacket
     // If it's a new object the client will teleport it automatically.
     if (changeFlags & CF_NEWOBJECT)
     {
-        changeFlags |= CF_POSITION;
+        changeFlags |= CF_POSITION|CF_ROTATION;	// RETAIL: and its rotation (server.dll 0x100354bd)
         changeFlags &= ~CF_TELEPORT;
 		changeFlags &= ~CF_FILENAMES;
 
@@ -677,7 +677,8 @@ bool FillPacketFromInfo(Client *pClient, LTObject *pObj, ObjInfo *pInfo, CPacket
 			vObjectVelocity.Init();
 		}
 		// Otherwise turn it on
-		else
+		// RETAIL: not for a new or teleported object (server.dll 0x10035836)
+		else if ((changeFlags & (CF_NEWOBJECT|CF_TELEPORT)) == 0)
 		{
 			pInfo->m_ChangeFlags |= CF_POSITION_PREDICTIONCAP;
 		}

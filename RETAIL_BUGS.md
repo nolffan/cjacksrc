@@ -144,6 +144,41 @@ world in a way that triggers it.
 Fixed in the modern build: src/Engine/runtime/render_a/src/sys/d3d/
 d3d_rendershader_base.h, MODERN.md EN-1.
 
+### The ShowVersionInfo console command calls a null function
+
+Lithtech.exe 0x41a360 (con_ShowVersionInfo, src/Engine/runtime/client/src/
+consolecommands.cpp) and 0x40bcd0 (CLTClient::InitFunctionPointers,
+clientde_impl.cpp). ILTClient's GetVersionInfoExt and GetPerformanceInfo
+are never set (the engine leaves them NULL), yet ShowVersionInfo calls
+GetVersionInfoExt without testing it, as NOLF2's did: typing the command
+in the console crashes the game.
+
+Fixed in the modern build: src/Engine/runtime/client/src/clientde_impl.cpp
+and consolecommands.cpp, MODERN.md EN-3.
+
+### The music manager leaks its notification thread's handle
+
+Lithtech.exe 0x43b2a0 (CLTDirectMusicMgr::Term, src/Engine/runtime/kernel/
+src/sys/win/ltdirectmusic_impl.cpp). Term tells the DirectMusic
+notification thread to exit and waits for it, but never closes the
+thread's handle, which Init makes each time: one handle leaks for each
+time the music manager is shut down (NOLF2's closes it). Nothing shows.
+
+Fixed in the modern build: src/Engine/runtime/kernel/src/sys/win/
+ltdirectmusic_impl.cpp, MODERN.md EN-4.
+
+### A failed transition segment crashes the music manager
+
+Lithtech.exe 0x43b720 (CLTDirectMusicMgr::ChangeIntensity, src/Engine/
+runtime/kernel/src/sys/win/ltdirectmusic_impl.cpp). When an intensity
+change plays a transition segment, the segment state PlaySegment returns
+is queried for IDirectMusicSegmentState8 without a test: if DirectMusic
+fails to play the segment, the state is NULL and the game crashes. NOLF2's
+code tests it (a fix marked "[kml]").
+
+Fixed in the modern build: src/Engine/runtime/kernel/src/sys/win/
+ltdirectmusic_impl.cpp, MODERN.md EN-5.
+
 ## NOLF2's bugs Contract J.A.C.K. no longer has
 
 (none checked yet)

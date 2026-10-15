@@ -116,6 +116,8 @@ TARGETS = [
          # for the encrypted pages (tools/demoimports.py).
          app=[(0x00401000, 0x0051de34), (0x00539a80, 0x0054987e)],
          encrypted=[(0x00536000, 0x0053b000)],
+         # SecuROM's rewritten import calls, put back for scoring
+         iat_calls="progress/engine/Lithtech-iat-calls.csv",
          # the CRT's `jmp [_purecall]` thunk is in the encrypted pages (the
          # demo's, at retail's address)
          purecall=0x00538534,
