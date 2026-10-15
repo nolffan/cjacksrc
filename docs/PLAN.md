@@ -318,34 +318,64 @@ dedicated server (package 7).
   CDMButeMgr, CDoomsdayPieceFX, CHierarchicalButeMgr, CMenuIntel,
   CMenuInventory, CMenuKeys, CMenuPlayer, CScreenJoinLAN,
   CScreenPlayerSkills, CSkillCtrl, CSkillPopup, CTO2VersionMgr,
-  CVersionMgr. CClientWeapon has 79 virtual functions to our 66 (many of
-  NOLF2's non-virtual ones made virtual, for CVehicleWeapon).
-  DoomsDayDevice and DoomsDayPiece derive from PropType and add 2 and 3
-  virtuals (carrying? 0x100c7b90, 0x100c7840; 0x100c8c80, 0x100c8df0,
-  0x100c8f30); VolumeEffect is a GameBase with two virtuals of its own
+  CVersionMgr. VolumeEffect is a GameBase with two virtuals of its own
   (0x1015e880, 0x1015e8a0). CHUDBombTarget keeps a timer per bomb
   (0x8c-byte entries; SetTimer 0x10051740 takes an index one past the end
   too: a candidate retail bug), fed by the display-timer message's types
   3 and up.
 - **Layouts still to change**: CInterfaceMgr is right but for a few
-  members in the middle; CPlayerMgr (+8), CGameClientShell (+8/+24),
-  CCharacterFX (+8 from 0x90), CVehicleMgr (+4), CHUDMgr (+868 at
+  members in the middle; CGameClientShell (+8/+24),
+  CCharacterFX (+8 from 0x90), CVehicleMgr (see below), CHUDMgr (+868 at
   0x3a04), StartGameRequest-like copies in the join screens; LTGUIMgr's
   edit control has two members more (0x180 from Create, 0x184 a
   character filter called from HandleChar, 0x101243c0); KeyFramer's
   other HSTRINGs are still HSTRINGs in retail.
-- **Where it stopped / next**: breadth first by near count. Next: the
-  chassis classes (Chassis.cpp, ChassisPiece.cpp from NOLF2's DoomsDay
-  files, DoomsDayDevice/Piece as their subclasses, ChassisFX and
-  ChassisPieceFX on the client) and CJ's CHUDCarrying with them; the
-  layouts of CPlayerMgr (two new members after the fire jitter, 0x6c
-  and 0x70; +8 later), CGameClientShell, CCharacterFX, CVehicleMgr (CJ's
-  holds a CVehicleWeapon at 0x2140) and WEAPON (AutoTarget*, ShowChooser
-  before the heat fields); CClientWeapon's virtual order (79 slots);
-  then CJ's connection flow (handshake on the client records, GameSpy's
-  CD key check, FinishClientConnect), the GameSpy server browser and
-  Demolition. The launcher and the dedicated server are the apps
-  package's.
+- **Done this round**: Chassis and ChassisPiece (Object.lto
+  0x100abf80..0x100af950) with DoomsDayDevice/DoomsDayPiece on them, all
+  but a few editor-plugin functions byte-identical; ChassisFX and
+  ChassisPieceFX on the client (CDoomsdayPieceFX is gone), the SFX ids up
+  to 60 (60, CAimMagnetFX, still to write) and their list sizes;
+  CPlayerMgr's layout (the last fire time and recoil after the jitter,
+  UpdatePlayerInfo's send-less-often members, the carried chassis piece);
+  CClientWeapon's 79 virtual functions and its heat (0x158..0x160,
+  CreateHeatFX, RemoveHeatFX, UpdateHeat); WEAPON's and CWeaponMgr's CJ
+  members in their retail places; CVehicleWeapon (0x1010c810..0x1010cf45)
+  and CVehicleMgr's copy of it. The chassis's update message is a retail
+  bug (RETAIL_BUGS.md, MODERN.md GAME-2).
+- **Where it stopped / next**: breadth first by near count.
+  - **Connection flow** (not started in code). Retail OnAddClient
+    (Object.lto 0x100e04b0) does what NOLF2's OnClientEnterWorld did
+    first: a banned client gets MID_HANDSHAKE 7 and is marked kicked
+    (ClientData 0x28; KickClientData 0x100dadd0 marks it and stamps
+    0x19508, which the update (0x100dd560, "AutoBootTime") uses to boot
+    kicked and inactive clients); in multiplayer it reads the
+    NetClientData (0x51 bytes) there, kicks a bad model, makes the
+    unique name (GenerateUniqueName into ClientData 0xc) and sets the
+    client name to the player GUID (then GetClientInfoFlags, unused);
+    then it sends MID_HANDSHAKE_HELLO with the version, the session name
+    and the string at 0x18050 (state 1), or in single player calls
+    FinishClientConnect (state 3). ProcessHandshake (0x100de370) works on
+    ClientData, not the player object, with GameSpy's CD key check
+    between (state 2; callbacks 0x100dd48f, 0x100dd530) and
+    FinishClientConnect at the end; OnClientEnterWorld (0x100de0c0) then
+    only reads the model id and makes or reuses the player. The client's
+    handshake (ClientMultiplayerMgr) must read the hello's two strings.
+    Do server and client together, so multiplayer keeps working.
+  - CJ's CHUDCarrying (0xa4 bytes: the chassis pieces' carrying and
+    pickup icons, 0x84; a list of pieces, 0x94, add 0x10052570, remove
+    0x100522d0; Render 0x100520a0 uses CanCarryObject's FX, 0x1009b830).
+  - CVehicleMgr's earlier members (+4 at 0x18, +8 at 0x130, +44 before
+    m_hCurJumpVolume) and its use of the weapon (SetPhysicsModel
+    0x10107b50, UpdateWeaponModel's vehicle branch 0x1009ee04).
+  - CPlayerMgr's CJ code: StartWeaponRecoil (CamRecoil* console
+    variables, 0x10099ce0), UpdatePlayerInfo's caching (0x1009f725).
+  - CGameClientShell (+8/+24), CCharacterFX (+8 from 0x90), CHUDMgr.
+  - The GameSpy server browser, Demolition (BaseGameOptions and its
+    subclasses, CDemolitionMissionMgr, the host options screen), AimMagnet
+    and GunMount.
+  - From the coordinator: try the engine's LTStrCat early return in the
+    game's own copies; GAME_NAME's string sits in another object's data
+    in all four images.
 - **Tools** (not committed, one-offs under out/): rtti.py (vtables by
   RTTI), vtcmp.py (a class's vtable, retail beside ours), ctorcmp.py
   (constructor store offsets aligned), place.py (the scoreboard's
