@@ -27,10 +27,6 @@
 ADD_MENU(NONE,GenericMenu)
 ADD_MENU(SYSTEM,MenuSystem)
 ADD_MENU(MISSION,MenuMission)
-ADD_MENU(INVENTORY,MenuInventory)
-ADD_MENU(KEYS,MenuKeys)
-ADD_MENU(INTEL,MenuIntel)
-ADD_MENU(PLAYER,MenuPlayer)
 
 //this must be the last id
 ADD_MENU(UNASSIGNED,GenericMenu)

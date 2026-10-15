@@ -553,27 +553,11 @@ SOURCE=.\MarkSFX.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\MenuIntel.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\MenuInventory.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\MenuKeys.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\MenuMgr.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=.\MenuMission.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\MenuPlayer.cpp
 # End Source File
 # Begin Source File
 
@@ -1642,27 +1626,11 @@ SOURCE=.\MenuEnum.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\MenuIntel.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\MenuInventory.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\MenuKeys.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\MenuMgr.h
 # End Source File
 # Begin Source File
 
 SOURCE=.\MenuMission.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\MenuPlayer.h
 # End Source File
 # Begin Source File
 

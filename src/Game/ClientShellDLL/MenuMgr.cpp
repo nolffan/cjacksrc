@@ -59,10 +59,6 @@ LTBOOL CMenuMgr::Init()
 	//add menus here
 	m_MenuArray.push_back(&m_MenuSystem);
 	m_MenuArray.push_back(&m_MenuMission);
-	m_MenuArray.push_back(&m_MenuInventory);
-	m_MenuArray.push_back(&m_MenuKeys);
-	m_MenuArray.push_back(&m_MenuIntel);
-	m_MenuArray.push_back(&m_MenuPlayer);
 
 	//init menus
 	MenuArray::iterator iter = m_MenuArray.begin();
@@ -95,6 +91,8 @@ LTBOOL CMenuMgr::Init()
 
 
 	LTIntPt size = g_pLayoutMgr->GetPoint(pTag,"BarSize");
+	// RETAIL: 0x100846b2 the bar's text is right-aligned, ending at BarTextOffset
+	uint16 nBarTextOffset = (uint16)g_pLayoutMgr->GetInt(pTag,"BarTextOffset");
 	uint8 fontFace = (uint8)g_pLayoutMgr->GetInt(pTag,"BarFont");
 	uint8 fontSize = (uint8)g_pLayoutMgr->GetInt(pTag,"BarFontSize");
 	m_nBarPos = g_pLayoutMgr->GetInt(pTag,"BarPosition");
@@ -111,8 +109,8 @@ LTBOOL CMenuMgr::Init()
 	
 	CUIFont* pFont = g_pInterfaceResMgr->GetFont(fontFace);
 	
-	LTIntPt offset(nBarSpacing,(size.y-fontSize)/2);
-	for (uint8 i =0; i < m_MenuArray.size(); i++)
+	LTIntPt offset(nBarTextOffset,(size.y-fontSize)/2);
+	for (int i =0; i < (int)m_MenuArray.size(); i++)
 	{
 		CLTGUITextCtrl *pCtrl = debug_new(CLTGUITextCtrl);
 		CBaseMenu *pMenu = m_MenuArray[i];
@@ -120,7 +118,15 @@ LTBOOL CMenuMgr::Init()
 		pCtrl->SetColors(g_nSelectColor,argbBlack,argbWhite);
 		pCtrl->SetParam1(pMenu->GetMenuID());
 		m_MenuBar.AddControl(pCtrl,offset);
-		offset.x += nBarSpacing + pCtrl->GetWidth();
+	}
+
+	offset.x += m_MenuBar.GetBasePos().x;
+	offset.y += m_MenuBar.GetBasePos().y;
+	for (int n = (int)m_MenuArray.size()-1; n >= 0; n--)
+	{
+		CLTGUICtrl *pCtrl = m_MenuBar.GetControl(n);
+		offset.x -= pCtrl->GetBaseWidth() + nBarSpacing;
+		pCtrl->SetBasePos(offset);
 	}
 
     return LTTRUE;
@@ -943,9 +949,6 @@ void CMenuMgr::EnableMenus()
 	bool bSPMenus = IsCoopMultiplayerGameType();
 
 	m_MenuMission.Enable(bSPMenus);
-	m_MenuKeys.Enable(bSPMenus);
-	m_MenuIntel.Enable(bSPMenus);
-	m_MenuPlayer.Enable(bSPMenus);
 
 }
 

@@ -15,10 +15,6 @@
 #include "InterfaceResMgr.h"
 #include "MenuSystem.h"
 #include "MenuMission.h"
-#include "MenuInventory.h"
-#include "MenuKeys.h"
-#include "MenuIntel.h"
-#include "MenuPlayer.h"
 
 
 // These flags are used in CMenuMgr::EnableMenuBar and need to correspond to each
@@ -151,10 +147,6 @@ private:
 
 	CMenuSystem		m_MenuSystem;
 	CMenuMission	m_MenuMission;
-	CMenuInventory	m_MenuInventory;
-	CMenuKeys		m_MenuKeys;
-	CMenuIntel		m_MenuIntel;
-	CMenuPlayer		m_MenuPlayer;
 
 	CMenuSlide		m_MenuSlide;
 	CMenuSlide		m_BarSlide;
