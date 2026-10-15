@@ -291,10 +291,6 @@ uint32 Body::EngineMessageFn(uint32 messageID, void *pData, LTFLOAT fData)
 		{
 			uint32 dwRet = Prop::EngineMessageFn(messageID, pData, fData);
 
-			// Set up the animator
-
-			m_Animator.Init(m_hObject);
-
             SetNextUpdate(s_fUpdateDelta);
 
             // g_pCommonLT->SetObjectFlags(m_hObject, OFT_User, USRFLG_SPY_VISION, USRFLG_SPY_VISION);
@@ -1268,10 +1264,6 @@ void Body::Update()
 		g_pLTServer->RemoveObject( m_hObject );
 	}
 
-	// Update the animator
-
-	m_Animator.Update();
-
 	// Make sure our hit box is in the correct position...
 
 	UpdateHitBox();
@@ -1470,6 +1462,9 @@ void Body::UpdateClientHitBox()
 
 void Body::HandleDamage(const DamageStruct& damage)
 {
+	// RETAIL: 0x100955c0 the client twitches the body (no CAnimatorBody)
+	bool bTwitch = false;
+
 	if ( damage.eType == DT_GADGET_DECAYPOWDER )
 	{
 		if ( m_eBodyState == kState_BodyNormal )
@@ -1486,7 +1481,7 @@ void Body::HandleDamage(const DamageStruct& damage)
 
 	        if ( g_pLTServer->GetModelPlaybackState(m_hObject) & MS_PLAYDONE )
 			{
-				m_Animator.Twitch();
+				bTwitch = true;
 			}
 		}
 	}
@@ -1499,6 +1494,7 @@ void Body::HandleDamage(const DamageStruct& damage)
 	cMsg.WriteObject(m_hObject);
 	cMsg.Writeuint8(BFX_DAMAGEFX_MSG);
 	cMsg.Writeuint8(damage.eType);
+	cMsg.Writebool(bTwitch);
 	g_pLTServer->SendToClient(cMsg.Read(), LTNULL, MESSAGE_GUARANTEED);
 }
 
@@ -1853,53 +1849,6 @@ void Body::Load(ILTMessage_Read *pMsg, uint32 dwLoadFlags)
 	SetNextUpdate(s_fUpdateDelta);
 }
 
-// ----------------------------------------------------------------------- //
-//
-//	ROUTINE:	CAnimatorBody::Init
-//
-//	PURPOSE:	Initialize the animator
-//
-// ----------------------------------------------------------------------- //
-
-void CAnimatorBody::Init(HOBJECT hObject)
-{
-	CAnimator::Init(hObject);
-
-	// Set up our twitch ani
-
-	m_eAniTrackerTwitch = AddAniTracker("Twitch");
-    m_eAniTwitch = AddAni("Twitch");
-
-	EnableAniTracker(m_eAniTrackerTwitch);
-    LoopAniTracker(m_eAniTrackerTwitch, LTFALSE);
-}
-
-// ----------------------------------------------------------------------- //
-//
-//	ROUTINE:	CAnimatorBody::Update
-//
-//	PURPOSE:	Update the animator
-//
-// ----------------------------------------------------------------------- //
-
-void CAnimatorBody::Update()
-{
-	CAnimator::Update();
-}
-
-// ----------------------------------------------------------------------- //
-//
-//	ROUTINE:	CAnimatorBody::Twitch
-//
-//	PURPOSE:	Blend in a twitch animation (if we're not currently doing so)
-//
-// ----------------------------------------------------------------------- //
-
-void CAnimatorBody::Twitch()
-{
-    LoopAniTracker(m_eAniTrackerTwitch, LTFALSE);
-	SetAni(m_eAniTwitch, m_eAniTrackerTwitch);
-}
 
 // ----------------------------------------------------------------------- //
 

@@ -22,6 +22,30 @@
 
 class CRagDoll;
 
+// RETAIL: Contract J.A.C.K. twitches a body on the client (CShell
+// 0x1000d6a0..0x1000d737), where NOLF2's server did.
+class CAnimatorBody : public CAnimator
+{
+	public :
+
+		// Ctors/Dtors/etc
+
+		void Init(HOBJECT hObject);
+
+		// Updates
+
+		void Update();
+
+		// Methods
+
+		void Twitch();
+
+	protected :
+
+		AniTracker			m_eAniTrackerTwitch;	// Our twitch ani tracker
+		Ani					m_eAniTwitch;			// Our twitch ani
+};
+
 class CBodyFX : public CSpecialFX
 {
 	public :
@@ -104,6 +128,7 @@ class CBodyFX : public CSpecialFX
 		CHitBox				m_HitBox;
 		
 		float				m_fCreateTime;	// Time stamp of when this body was created.
+		CAnimatorBody		m_Animator;		// RETAIL: 0xc4
 };
 
 #endif

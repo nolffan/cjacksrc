@@ -39,27 +39,7 @@ struct BODYINITSTRUCT
 	bool			bCanRevive;
 };
 
-class CAnimatorBody : public CAnimator
-{
-	public :
-
-		// Ctors/Dtors/etc
-
-		void Init(HOBJECT hObject);
-
-		// Updates
-
-		void Update();
-
-		// Methods
-
-		void Twitch();
-
-	protected :
-
-		AniTracker			m_eAniTrackerTwitch;	// Our twitch ani tracker
-		Ani					m_eAniTwitch;			// Our twitch ani
-};
+// RETAIL: Contract J.A.C.K. has no CAnimatorBody: a body does not twitch.
 
 class Body : public Prop, public IHitBoxUser
 {
@@ -159,7 +139,6 @@ class Body : public Prop, public IHitBoxUser
 		// Hide the body and it's associated objects.
 		void		HideBody( bool bHide );
 
-		virtual CAnimator* GetAnimator() { return &m_Animator; }
 
 		// Get the complete list of all bodies.
 		typedef std::vector< Body* > BodyList;
@@ -243,7 +222,6 @@ class Body : public Prop, public IHitBoxUser
 		EnumAIStateType		m_eBodyState;
 		EnumAIStateType		m_eBodyStatePrevious;
 		CBodyState*			m_pState;
-		CAnimatorBody		m_Animator;
 
 		uint32				m_cSpears;
 		LTObjRefNotifier	m_ahSpears[kMaxSpears];

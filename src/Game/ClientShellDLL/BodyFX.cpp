@@ -110,6 +110,8 @@ LTBOOL CBodyFX::Init(SFXCREATESTRUCT* psfxCreateStruct)
     if (!CSpecialFX::Init(psfxCreateStruct)) return LTFALSE;
 
 	m_bs = *((BODYCREATESTRUCT*)psfxCreateStruct);
+
+	m_Animator.Init(m_bs.hServerObj);
 	
 	// Play a deathfx on the body based on the damage type that killed the character... 
 	
@@ -392,6 +394,10 @@ LTBOOL CBodyFX::Update()
 	if(m_bHidden)
 		g_pLTClient->Common()->SetObjectFlags(m_hServerObject, OFT_Flags, 0, FLAG_VISIBLE);
 
+	// Update the animator
+
+	m_Animator.Update();
+
 	// Update our hitbox...
 
 	m_HitBox.Update();
@@ -535,6 +541,12 @@ LTBOOL CBodyFX::OnServerMessage(ILTMessage_Read *pMsg)
 		case BFX_DAMAGEFX_MSG:
 		{
 			CreateDamageFX((DamageType)pMsg->Readuint8());
+
+			// RETAIL: 0x1000f430 the server says when to twitch
+			if (pMsg->Readbool() && !g_pVersionMgr->IsLowViolence())
+			{
+				m_Animator.Twitch();
+			}
 		}
 		break;
 
@@ -955,4 +967,53 @@ void CBodyFX::UpdateAttachments()
 void CBodyFX::RemoveClientAssociation( )
 {
 	m_bs.nClientId = (uint8)-1;
+}
+
+
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	CAnimatorBody::Init
+//
+//	PURPOSE:	Initialize the animator
+//
+// ----------------------------------------------------------------------- //
+
+void CAnimatorBody::Init(HOBJECT hObject)
+{
+	CAnimator::Init(hObject);
+
+	// Set up our twitch ani
+
+	m_eAniTrackerTwitch = AddAniTracker("Twitch");
+    m_eAniTwitch = AddAni("Twitch");
+
+	EnableAniTracker(m_eAniTrackerTwitch);
+    LoopAniTracker(m_eAniTrackerTwitch, LTFALSE);
+}
+
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	CAnimatorBody::Update
+//
+//	PURPOSE:	Update the animator
+//
+// ----------------------------------------------------------------------- //
+
+void CAnimatorBody::Update()
+{
+	CAnimator::Update();
+}
+
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	CAnimatorBody::Twitch
+//
+//	PURPOSE:	Blend in a twitch animation (if we're not currently doing so)
+//
+// ----------------------------------------------------------------------- //
+
+void CAnimatorBody::Twitch()
+{
+    LoopAniTracker(m_eAniTrackerTwitch, LTFALSE);
+	SetAni(m_eAniTwitch, m_eAniTrackerTwitch);
 }

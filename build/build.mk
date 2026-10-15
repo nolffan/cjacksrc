@@ -224,6 +224,10 @@ $(foreach w,$(WORKSPACES),$(eval $(call workspace,$(firstword $(subst :, ,$(w)))
 .PHONY: all game
 all game: $(WANTED)
 
+# A DLL's import library is written by the DLL's link; a project that
+# links it (CShell.dll and Object.lto link GameSpy.lib) depends on the DLL.
+src/Game/built/Final/libs/GameSpy/GameSpy.lib: src/Game/built/Final/libs/GameSpy/GameSpy.dll ;
+
 # ---------------------------------------------------------------------------
 # The rules all compiles and tools share
 
