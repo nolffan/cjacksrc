@@ -519,6 +519,12 @@ struct WEAPON
 	bool	bServerRestricted;
 	bool	bCanServerRestrict;
 
+	// RETAIL: Contract J.A.C.K.'s weapon heat (WEAPON 0x1c0..0x1c8, read
+	// at CShell 0x1011384f; their place in the struct is still to set)
+	float	fHeatFactor;			// Heat added per shot
+	float	fHeatDissipationRate;	// Heat lost per second
+	float	fHeatOverheatTime;		// How long an overheated weapon stays unusable
+
 private:
 
 	int		nNameId;

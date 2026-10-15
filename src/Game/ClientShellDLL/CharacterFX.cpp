@@ -12,6 +12,7 @@
 
 #include "stdafx.h"
 #include "CharacterFX.h"
+#include "ChassisButeMgr.h"
 #include "GameClientShell.h"
 #include "ParticleTrailFX.h"
 #include "SmokeFX.h"
@@ -2146,6 +2147,14 @@ LTBOOL CCharacterFX::OnServerMessage(ILTMessage_Read *pMsg)
 		case CFX_CARRY:
 		{
 			m_cs.nCarrying = pMsg->Readuint8();
+
+			// RETAIL: 0x1001626a the chassis piece carried, by id
+			uint8 nPieceId = pMsg->Readuint8();
+			if( nPieceId != CHASSISBMGR_INVALID_ID )
+				m_cs.pChassisPiece = ChassisButeMgr::Instance( ).GetPiece( nPieceId );
+			else
+				m_cs.pChassisPiece = LTNULL;
+
 			UpdateCarrying();
 		}
 		break;

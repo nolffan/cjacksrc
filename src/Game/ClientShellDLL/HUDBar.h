@@ -23,6 +23,9 @@ public:
 	void Update(float x,float y, float fillW, float maxW, float h);
 	void Render();
 
+	// RETAIL: 0x10050d30 the bar's colour
+	void SetColor(uint32 nColor);
+
 private:
 	bool		m_bInitted;
 

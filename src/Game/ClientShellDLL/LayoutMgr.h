@@ -267,6 +267,14 @@ public:
 	int			GetDisplayMeterHeight(int nLayout);
 	float		GetDisplayMeterScale(int nLayout);
 	void		GetDisplayMeterTexture(int nLayout, char *pBuf, int nBufLen);
+
+	// RETAIL: Contract J.A.C.K.'s weapon heat bar
+	void		GetWeaponHeatTex(int nLayout, char *pBuf, int nBufLen);
+	int			GetWeaponHeatBarHeight(int nLayout);
+	float		GetWeaponHeatBarScale(int nLayout);
+	LTIntPt		GetWeaponHeatBasePos(int nLayout);
+	void		GetWeaponHeatColors(int nLayout, LTVector* pvCool, LTVector* pvWarm, LTVector* pvHot,
+								LTVector* pvOverheat);
     
 	LTVector    GetSpyVisionModelColor();
     LTVector    GetSpyVisionLightScale();

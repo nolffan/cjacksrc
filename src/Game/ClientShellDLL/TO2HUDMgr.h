@@ -19,7 +19,6 @@
 #include "HUDCrosshair.h"
 #include "HUDCompass.h"
 #include "HUDHiding.h"
-#include "HUDCarrying.h"
 #include "HUDHealth.h"
 #include "HUDDamageDir.h"
 #include "HUDChooser.h"
@@ -50,7 +49,6 @@ protected:
 	CHUDCrosshair		m_Crosshair;
 	CHUDCompass			m_Compass;
 	CHUDHiding			m_Hiding;
-	CHUDCarrying		m_Carrying;
 	CHUDObjectives		m_Objectives;
 	CHUDHealth			m_Health;
 	CHUDDamageDir		m_DamageDir;
@@ -61,6 +59,9 @@ protected:
 	CHUDProgressBar		m_ProgressBar;
 	CHUDRespawn			m_Respawn;
 	CHUDDoomsday		m_Doomsday;
+
+	// RETAIL: 0x70d8, a second bomb timer display that Init never registers
+	CHUDBombTarget		m_UnusedBombTarget;
 
 };
 

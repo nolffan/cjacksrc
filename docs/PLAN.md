@@ -279,16 +279,30 @@ server are not in the workspace yet (their resources first).
   player name is the server shell's (GenerateUniqueName 0x100dc160), not
   CPlayerObj's. RETAIL_BUGS.md: GetCommandName always answers its error
   string (fixed in the modern build, GAME-1).
-- **Scores** (recorded): CShell.dll 4,916 identical of 6,555, Object.lto
-  8,112 of 9,770 (1.28 MB), ClientFx.fxd 429 of 451. The runtime
-  boundaries are pinned from our maps. Also done since the first record:
+- **Scores** (recorded): CShell.dll 5,024 identical of 6,555, Object.lto
+  8,142 of 9,769 (1.29 MB), ClientFx.fxd 429 of 451. The runtime
+  boundaries are pinned from our maps. Done since the round before:
   Body has no animator (CJ has no server CAnimatorBody; the client's
-  CBodyFX twitches the body when the server's damage message says so).
-- **Chassis.** CHARCREATESTRUCT carries a chassis piece (0x5c, sent as
-  its id, 0xff for none, looked up in the ChassisButeMgr at 0x100ae430),
-  a dword (0x60) and a byte (0x64, 0xff); CCharacter::SetCarrying takes
-  the piece too (0xc84, saved by name). Waits for ChassisButeMgr
-  ("attributes\chassis.txt").
+  CBodyFX twitches the body when the server's damage message says so);
+  VolumeEffect is a GameBase with Save/Load virtuals; LTGUIMgr's edit
+  control has a character filter (0x184) a message box can set;
+  ChassisButeMgr (both DLLs, attributes\chassis.txt) and the chassis
+  piece a character carries (CHARCREATESTRUCT 0x5c, CCharacter 0xc84);
+  DebugCPrint; CHUDBombTarget and CHUDWeaponHeat (new HUDLayout keys,
+  WEAPON's heat fields) and CHUDMgr's members as retail has them.
+- **Chassis.** Contract J.A.C.K. turned NOLF2's Doomsday into a general
+  "chassis": Chassis (Object vtable 0x101b907c: PropType + 2 virtuals,
+  0x100ac470, 0x100ac700) and ChassisPiece (0x101b924c: PropType + 3,
+  0x100af200, 0x100af340, 0x100aee50, and its own SetNextUpdate
+  0x100ae850), with plugins, between CharacterMgr and ClientLightFX in
+  Object.lto's order; DoomsDayDevice and DoomsDayPiece derive from them
+  (0x100c7690..0x100c9030). Our DoomsDay* are still NOLF2's, matched by
+  the scoreboard to the Chassis code. ChassisButeMgr is done; the two
+  bytes after the piece in CHARCREATESTRUCT (0x60, 0x64) are not
+  identified. CHUDCarrying in CJ shows the chassis pieces' carrying and
+  pickup icons and a list of pieces (0x94, 16-byte entries; add
+  0x10052570, remove 0x100522d0) beside its own; CPlayerMgr keeps the
+  carried piece (0x17c) and CanCarryObject returns the target's FX.
 - **Classes still to change** (RTTI, retail vs ours). Object.lto has
   AINodeSniper, AimMagnet (+plugin), BaseGameOptions and its
   Singleplayer/DM/TeamDM/Coop/Demolition/Doomsday subclasses,
@@ -320,13 +334,18 @@ server are not in the workspace yet (their resources first).
   edit control has two members more (0x180 from Create, 0x184 a
   character filter called from HandleChar, 0x101243c0); KeyFramer's
   other HSTRINGs are still HSTRINGs in retail.
-- **Where it stopped / next**: breadth first by near count (CShell:
-  InterfaceMgr, PlayerMgr, GameClientShell, VehicleMgr, ScreenJoin,
-  CharacterFX, ClientWeapon; Object: PlayerObj, Character, AI states,
-  GameServerShell): the layouts above, CClientWeapon's virtuals, the
-  DoomsDay/VolumeEffect virtuals, then CJ's connection flow and GameSpy
-  browser, CHUDBombTarget and Demolition; the launcher and the dedicated
-  server (ContractJack.exe, ContractJackServer.exe) are not started.
+- **Where it stopped / next**: breadth first by near count. Next: the
+  chassis classes (Chassis.cpp, ChassisPiece.cpp from NOLF2's DoomsDay
+  files, DoomsDayDevice/Piece as their subclasses, ChassisFX and
+  ChassisPieceFX on the client) and CJ's CHUDCarrying with them; the
+  layouts of CPlayerMgr (two new members after the fire jitter, 0x6c
+  and 0x70; +8 later), CGameClientShell, CCharacterFX, CVehicleMgr (CJ's
+  holds a CVehicleWeapon at 0x2140) and WEAPON (AutoTarget*, ShowChooser
+  before the heat fields); CClientWeapon's virtual order (79 slots);
+  then CJ's connection flow (handshake on the client records, GameSpy's
+  CD key check, FinishClientConnect), the GameSpy server browser and
+  Demolition. The launcher and the dedicated server are the apps
+  package's.
 - **Tools** (not committed, one-offs under out/): rtti.py (vtables by
   RTTI), vtcmp.py (a class's vtable, retail beside ours), ctorcmp.py
   (constructor store offsets aligned), place.py (the scoreboard's

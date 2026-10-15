@@ -131,3 +131,10 @@ void CHUDBar::Update(float x,float y, float fillW, float maxW, float h)
 		}
 	}
 }
+
+void CHUDBar::SetColor(uint32 nColor)
+{
+	g_pDrawPrim->SetRGBA(&m_Poly[0],nColor);
+	g_pDrawPrim->SetRGBA(&m_Poly[1],nColor);
+	g_pDrawPrim->SetRGBA(&m_Poly[2],nColor);
+}

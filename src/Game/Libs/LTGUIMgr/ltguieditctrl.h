@@ -88,6 +88,11 @@ public:
 	};
 	void			SetInputMode(eInputMode mode)	{ m_eInputMode = mode;}
 
+	// RETAIL: Contract J.A.C.K.'s filter for typed characters (CShell
+	// 0x101243c0): it returns the character to add, or 0 to refuse it.
+	typedef unsigned char (*FilterFn)(unsigned char c);
+	void			SetFilter(FilterFn pFilterFn)	{ m_pFilterFn = pFilterFn;}
+
 
 protected:
 	// Add a character to the end
@@ -131,6 +136,7 @@ protected:
 
 	// Receives a message when the "enter" key is pressed.
 	CLTGUICommandHandler	*m_pCommandHandler;
+	FilterFn		m_pFilterFn;
 };
 
 #endif // !defined(_LTGUIEDITCTRL_H_)

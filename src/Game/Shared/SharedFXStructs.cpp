@@ -12,6 +12,7 @@
 
 #include "stdafx.h"
 #include "SharedFXStructs.h"
+#include "ChassisButeMgr.h"
 #include "VersionMgr.h"
 
 /////////////////////////////////////////////////////////////////////////////
@@ -59,6 +60,9 @@ void CHARCREATESTRUCT::Write(ILTMessage_Write *pMsg)
 
 	// type of thing player is carrying
 	pMsg->Writeuint8( nCarrying);
+	pMsg->Writeuint8( pChassisPiece ? pChassisPiece->m_nId : CHASSISBMGR_INVALID_ID );
+	pMsg->Writeuint8( nExtra60 );
+	pMsg->Writeuint8( nExtra64 );
 
 }
 
@@ -109,23 +113,17 @@ void CHARCREATESTRUCT::Read(ILTMessage_Read *pMsg)
 	bCanWake		= pMsg->Readbool();
 	bTracking		= pMsg->Readbool();
 
-#ifdef _CLIENTBUILD
 	bRadarVisible	= pMsg->Readbool();
 	nCarrying		= pMsg->Readuint8();
-#else  // _CLIENTBUILD
-	if( g_pVersionMgr->GetCurrentSaveVersion( ) > CVersionMgr::kSaveVersion__1_1 )
-	{
-		bRadarVisible	= pMsg->Readbool();
-	}
-	
 
-	if( g_pVersionMgr->GetCurrentSaveVersion( ) > CVersionMgr::kSaveVersion__1_2 )
-	{
-		nCarrying		= pMsg->Readuint8();
-	}
-	
+	uint8 nPieceId	= pMsg->Readuint8();
+	if( nPieceId != CHASSISBMGR_INVALID_ID )
+		pChassisPiece = ChassisButeMgr::Instance( ).GetPiece( nPieceId );
+	else
+		pChassisPiece = LTNULL;
 
-#endif //_CLIENTBUILD
+	nExtra60		= pMsg->Readuint8();
+	nExtra64		= pMsg->Readuint8();
 
 
 }

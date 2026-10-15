@@ -75,7 +75,6 @@ LTBOOL CTO2HUDMgr::Init()
 	m_itemArray.push_back(&m_Air);
 	m_itemArray.push_back(&m_Compass);
 	m_itemArray.push_back(&m_Hiding);
-	m_itemArray.push_back(&m_Carrying);
 	m_itemArray.push_back(&m_Health);
 	m_itemArray.push_back(&m_DamageDir);
 	m_itemArray.push_back(&m_Distance);

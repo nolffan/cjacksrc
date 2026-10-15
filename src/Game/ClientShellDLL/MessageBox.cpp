@@ -180,6 +180,7 @@ void CMessageBox::Show(const char *pString, MBCreate* pCreate, uint8 nFontSize, 
 	{
 		m_pEdit->SetText(pCreate->pString);
 		m_pEdit->SetInputMode(pCreate->eInput);
+		m_pEdit->SetFilter(pCreate->pEditFilter);
 		m_pEdit->SetMaxLength(pCreate->nMaxChars);
 
 		m_pEdit->Show(LTTRUE);
@@ -231,7 +232,7 @@ void CMessageBox::Show(const char *pString, MBCreate* pCreate, uint8 nFontSize, 
 	offset.y = kIndent;
 	m_Dlg.SetControlOffset(m_pText,offset);
 
-	m_bNoEscape = !!pCreate->bNoEscape;
+	m_bNoEscape = (pCreate->nFlags & MBF_NOESCAPE) != 0;
 
 
 	switch (m_eType)
