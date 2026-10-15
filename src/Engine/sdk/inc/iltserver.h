@@ -575,6 +575,15 @@ Used for: Client Management
 		virtual LTRESULT GetClientAddr(HCLIENT hClient, uint8 pAddr[4], uint16 *pPort) = 0;
 
 /*!
+cjacksrc: Contract J.A.C.K.'s: let a connected client go on to enter the
+world (CLIENT_CONNECTED -> CLIENT_WAITINGTOENTERWORLD; server.dll
+0x100397f0). The engine no longer does it by itself.
+
+Used for: Client Management
+*/
+		virtual LTRESULT FinishClientConnect(HCLIENT hClient) = 0;
+
+/*!
 \param hClient Client to modify.
 
 \param dwClientFlags Client info flags (a combination of the \b CIF_
@@ -1178,6 +1187,14 @@ Used for: Object.
     virtual LTRESULT SetNetFlags(HOBJECT hObj, uint32 flags)=0;
 
 /*!
+cjacksrc: Contract J.A.C.K.'s: set the object's unguaranteed data, sent to
+the clients with its unguaranteed updates (server.dll 0x1003a100).
+
+Used for: Object.
+*/
+    virtual LTRESULT SetObjectUnguaranteedData(HOBJECT hObj, uint32 nData)=0;
+
+/*!
 \param hObj The object to modify.
 
 \param state The object state (a combination of \b OBJSTATE_ defines).
@@ -1478,6 +1495,14 @@ Access the engine's save file version.
 Used for: Misc.
 */
     virtual LTRESULT GetSaveFileVersion( uint32& nSaveFileVersion ) = 0;
+
+/*!
+cjacksrc: Contract J.A.C.K.'s: the internet driver's socket (server.dll
+0x1003bc10; the name is ours).
+
+Used for: Networking.
+*/
+    virtual LTRESULT GetUDPSocket(uint32 *phSocket) = 0;
 
 /*!
 Load world

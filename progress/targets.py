@@ -95,31 +95,46 @@ TARGETS = [
          built="src/Engine/built/Final/Lithtech/Lithtech.exe", optional=True,
          cites=True, cited_src=["src/Engine/runtime"],
          # SecuROM-wrapped, as NOLF2's was: .rjes and .obfzv sections, no
-         # `jmp [IAT]` thunk anywhere (every import call redirected), and
-         # .text 0x536000..0x53b000 encrypted on disc (five 4 KB pages of
-         # 7.1 to 7.7 bits of entropy a byte, against 5 to 5.5 for the code
-         # around them). The engine's own code runs from .text's start to
-         # D3DX (provisional: libscan.py's first d3dx8.lib hit,
-         # d3dxmath.obj's WithinEpsilon at 0x51de34), which runs to the
-         # encrypted pages; the runtime's static code is not found outside
-         # them. Past them, 0x53b000.. are the .text$x funclets. The 1.1
-         # demo-era engines of the single- and multiplayer demos (October
-         # 2003) are unprotected, and stand in for the encrypted pages.
-         app=[(0x00401000, 0x0051de34)],
+         # `jmp [IAT]` thunk outside the encrypted pages (every import call
+         # redirected: progress/engine/Lithtech-iat-calls.csv), and .text
+         # 0x536000..0x53b000 encrypted on disc (five 4 KB pages of 7.1 to
+         # 7.7 bits of entropy a byte, against 5 to 5.5 for the code around
+         # them). Pinned from our .map (src/Engine/built/Final/Lithtech/
+         # Lithtech.map), which links the same pieces in the same order:
+         # the engine's own objects, then its libraries (ltmem, StdLith,
+         # RezMgr, the renderer, the sound loader, the UI), up to D3DX
+         # (d3dxmath.obj's WithinEpsilon at 0x51de34; libscan.py finds 340
+         # of d3dx8.lib's functions in one run 0x51de34..0x538527, the
+         # encrypted pages inside it: no engine code is encrypted). Then
+         # msvcprt's operator new[] thunk (0x538414), msvcrt.lib's static
+         # members (__chkstk 0x538420 .. __SEH_prolog) and the import
+         # thunks, the .text$x funclets, and from 0x539a80 the dynamic
+         # initializers and atexit destructors of every object (the lowest
+         # entry of the __xc_a table at .data 0x568190), to 0x54987e:
+         # engine code again, the second range. The single-player demo's
+         # unprotected engine (2003-10-10, the same Rich header) stands in
+         # for the encrypted pages (tools/demoimports.py).
+         app=[(0x00401000, 0x0051de34), (0x00539a80, 0x0054987e)],
          encrypted=[(0x00536000, 0x0053b000)],
+         # the CRT's `jmp [_purecall]` thunk is in the encrypted pages (the
+         # demo's, at retail's address)
+         purecall=0x00538534,
          # D3DX, statically linked from the DirectX 8.1 SDK's d3dx8.lib
          # (cl 13.00.9178: the Rich header's 68 objects of tool 0x1d), as in
-         # NOLF2's engine; 313 of its functions sit in one run from
-         # 0x51de34, after the engine's own code. A few of its inline vector
-         # operators compiled into the engine's objects are the engine's.
+         # NOLF2's engine, after the engine's libraries. A few of its inline
+         # vector operators compiled into the engine's objects are the
+         # engine's.
          third_party=["d3dx8.lib"]),
     dict(label="server.dll", what="the engine's server", kind="image",
          shipped=REFERENCE + "/server.dll", stem="server",
          built="src/Engine/built/Final/server/server.dll", optional=True,
          cites=True, cited_src=["src/Engine/runtime"],
-         # provisional: an import thunk at 0x10064024, then msvcrt.lib from
-         # __ftol2 (0x10064030)
-         app=[(0x10001000, 0x10064024)]),
+         # pinned from our .map: the own objects, ltmem, RezMgr and StdLith,
+         # then msvcprt's import thunk (0x10064024) and msvcrt.lib from
+         # __ftol2 (0x10064030), the .text$x funclets, and from 0x10064900
+         # the dynamic initializers and atexit destructors (the lowest
+         # entry of the __xc_a table, .data 0x10073000) to 0x10069f9b
+         app=[(0x10001000, 0x10064024), (0x10064900, 0x10069f9b)]),
     dict(label="SndDrv.dll", what="the sound driver", kind="image",
          shipped=REFERENCE + "/SndDrv.dll", stem="SndDrv",
          built="src/Engine/built/Final/snddrv/SndDrv.dll", optional=True,
