@@ -60,12 +60,14 @@ static char THIS_FILE[] = __FILE__;
 #define LD_QUIT_Y			205
 #define LD_PUBLISHERWEB_X	14
 #define LD_PUBLISHERWEB_Y	187
-#define LD_COMPANYWEB_X		76
-#define LD_COMPANYWEB_Y		187
+// RETAIL: the company's and Sierra's web buttons at the bottom; no
+// publisher or LithTech button (CLauncherDlg::OnInitDialog, 0x40813a)
+#define LD_COMPANYWEB_X		242
+#define LD_COMPANYWEB_Y		205
 #define LD_LITHTECHWEB_X	76
 #define LD_LITHTECHWEB_Y	210
-#define LD_SIERRAWEB_X		147
-#define LD_SIERRAWEB_Y		198
+#define LD_SIERRAWEB_X		10
+#define LD_SIERRAWEB_Y		205
 
 #define LD_CUSTOMIZE_X		413
 #define LD_CUSTOMIZE_Y		61
@@ -116,6 +118,7 @@ BEGIN_MESSAGE_MAP(CLauncherDlg, CMoveDialog)
 	ON_BN_CLICKED(IDC_LITHTECHWEB, OnLithtechWeb)
 	ON_BN_CLICKED(IDC_SIERRAWEB, OnSierraWeb)
 	ON_BN_CLICKED(IDC_CUSTOM, OnCustomize)
+	ON_WM_CTLCOLOR()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -148,9 +151,7 @@ BOOL CLauncherDlg::OnInitDialog()
 	AddButton(IDC_OPTIONS,LD_OPTIONS_X,LD_OPTIONS_Y);
 	AddButton(IDC_UNINSTALL,LD_UNINSTALL_X,LD_UNINSTALL_Y);
 	AddButton(IDC_QUIT,LD_QUIT_X,LD_QUIT_Y);
-	AddButton( IDC_PUBLISHERWEB, LD_PUBLISHERWEB_X, LD_PUBLISHERWEB_Y, IDC_WEBHAND );
 	AddButton( IDC_COMPANYWEB, LD_COMPANYWEB_X, LD_COMPANYWEB_Y, IDC_WEBHAND );
-	AddButton( IDC_LITHTECHWEB, LD_LITHTECHWEB_X, LD_LITHTECHWEB_Y, IDC_WEBHAND );
 	AddButton( IDC_SIERRAWEB, LD_SIERRAWEB_X, LD_SIERRAWEB_Y, IDC_WEBHAND );
 	
 	// Check for the custom directory before creating this button...
@@ -759,6 +760,26 @@ BOOL CLauncherDlg::OnCommand(WPARAM wParam, LPARAM lParam)
 
 // ----------------------------------------------------------------------- //
 //
+//	ROUTINE:	CLauncherDlg::OnCtlColor
+//
+//	PURPOSE:	WM_CTLCOLOR handler
+//
+//	RETAIL: 0x407100, white on black
+//
+// ----------------------------------------------------------------------- //
+
+HBRUSH CLauncherDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor) 
+{
+	HBRUSH hbr = CMoveDialog::OnCtlColor(pDC, pWnd, nCtlColor);
+
+	pDC->SetBkColor(RGB(0,0,0));
+	pDC->SetTextColor(RGB(255,255,255));
+
+	return hbr;
+}
+
+// ----------------------------------------------------------------------- //
+//
 //	ROUTINE:	CLauncherDlg::OnDestroy
 //
 //	PURPOSE:	Clean-up time... bitch.
@@ -1088,11 +1109,18 @@ BOOL CLauncherDlg::LaunchGame(DWORD dwAction)
 
 	if (theApp.m_bRestoreDefaults)
 	{	
+		// RETAIL: the default gamma is 1.04 (0x407d9e)
+		char szGamma[8] = "";
+		sprintf( szGamma, "%0.2f", 1.04f );
+
 		sNewCmdLine += " +HardwareCursor 1";
 		sNewCmdLine += " +VSyncOnFlip 1";
-		sNewCmdLine += " +GammaR 1.0";
-		sNewCmdLine += " +GammaG 1.0";
-		sNewCmdLine += " +GammaB 1.0";
+		sNewCmdLine += " +GammaR ";
+		sNewCmdLine += szGamma;
+		sNewCmdLine += " +GammaG ";
+		sNewCmdLine += szGamma;
+		sNewCmdLine += " +GammaB ";
+		sNewCmdLine += szGamma;
 	}
 
 

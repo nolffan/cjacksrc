@@ -76,9 +76,9 @@ public:
 	BOOL	m_bDisableJoysticks;			// Disables Joysticks
 	BOOL	m_bDisableTripleBuffering;		// Disables triple buffering
 	BOOL	m_bDisableHardwareCursor;		// Disables the hardware cursor
-	BOOL	m_bEnableScreenshots;			// RETAIL: a lockable back buffer (F8 screenshots, no FSAA)
 	BOOL	m_bDisableHardwareSound;		// Disables hardware 3D sound
 	BOOL	m_bDisableSoundFilters;			// Disables filtering of sounds in-game
+	BOOL	m_bEnableScreenshots;			// RETAIL: a lockable back buffer (F8 screenshots, no FSAA)
 
 	BOOL	m_bGoMultiHost;					// Jump right into a multiplayer host game
 	BOOL	m_bGoMultiJoin;					// Jump right into a multiplayer join game
@@ -109,8 +109,8 @@ public:
 	int		MessageBox(UINT nIDText, UINT nIDCaption, DWORD dwType = MB_OK);
 
 	// Registry helpers
-	BOOL	GetRegistryBool(char *szField);
-	DWORD	GetRegistryDWord(char *szField);
+	BOOL	GetRegistryBool(char *szField, BOOL bDefault = FALSE);
+	DWORD	GetRegistryDWord(char *szField, DWORD dwDefault = 0);
 	BOOL	OpenRegistryKey();
 
 	// CD functions

@@ -25,7 +25,7 @@ RSC=rc.exe
 # PROP Intermediate_Dir "..\..\built\Final\Launcher"
 # PROP Ignore_Export_Lib 1
 # PROP Target_Dir ""
-# ADD CPP /nologo /MD /W3 /O2 /I ".\\" /I "..\\" /I "..\..\Shared" /I "..\..\..\Engine\sdk\inc" /I "..\..\..\libs\regmgr" /I "..\..\..\libs\regmgr32" /I "..\..\..\libs\lith" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /D "_FINAL" /Yu"stdafx.h" /FD /c
+# ADD CPP /nologo /MD /W3 /Ox /GF /I ".\\" /I "..\\" /I "..\..\Shared" /I "..\..\..\Engine\sdk\inc" /I "..\..\..\libs\regmgr" /I "..\..\..\libs\regmgr32" /I "..\..\..\libs\lith" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /D "_FINAL" /Yu"stdafx.h" /FD /c
 # ADD RSC /l 0x409 /i "res\lang\en\\" /i "..\..\built\retail\Launcher" /d "NDEBUG" /d "_AFXDLL"
 LINK32=link.exe
 # ADD LINK32 /nologo /subsystem:windows /machine:I386 /out:"..\..\built\Final\Launcher\ContractJack.exe"

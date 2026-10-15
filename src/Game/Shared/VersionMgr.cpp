@@ -81,6 +81,13 @@ const uint32 CVersionMgr::GetSaveVersion()
 	return s_nBuildNumber;
 }
 
+// RETAIL: Object.lto 0x1015ccb0, ContractJack.exe 0x40a890: an empty member
+// function of two arguments between GetSaveVersion and GetVersion; what it
+// was is not known (our name, as its arguments' types)
+void CVersionMgr::Unknown( uint32 /*nArg1*/, uint32 /*nArg2*/ )
+{
+}
+
 // RETAIL: Object.lto 0x1015ccc0, CShell.dll 0x1010cfc0
 const char* CVersionMgr::GetVersion()
 {
@@ -152,6 +159,10 @@ CVersionMgr::CVersionMgr()
 
 // NOLF2's, which Contract J.A.C.K. has no use for (WON's server directory
 // and the build GUID of the cheat codes): to be taken out with their users.
+// Only the client still has them: the launcher and the dedicated server,
+// which compile this file without /Gy, have none (ContractJack.exe goes from
+// GetVersion's 0x40a8a0 and Update's 0x40a8b0 to the constructor 0x40a8c0).
+#if defined(_CLIENTBUILD)
 const char* CVersionMgr::GetNetVersion()
 {
 	return s_szNetVersion;
@@ -166,3 +177,4 @@ const LTGUID* CVersionMgr::GetBuildGuid()
 {
 	return &GAMEGUID;
 }
+#endif // _CLIENTBUILD

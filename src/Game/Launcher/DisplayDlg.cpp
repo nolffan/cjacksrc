@@ -25,8 +25,9 @@ static char THIS_FILE[] = __FILE__;
 // Button and image coordinates
 /////////////////////////////////////////////
 
-#define DD_CLOSE_X					579
-#define DD_CLOSE_Y					1
+// RETAIL: 0x403a9b
+#define DD_CLOSE_X					577
+#define DD_CLOSE_Y					6
 #define DD_OK_X						194
 #define DD_OK_Y						349
 #define DD_CANCEL_X					306

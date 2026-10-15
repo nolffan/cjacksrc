@@ -26,7 +26,7 @@ RSC=rc.exe
 # PROP Intermediate_Dir "..\built\Final\ServerApp"
 # PROP Ignore_Export_Lib 1
 # PROP Target_Dir ""
-# ADD CPP /nologo /MD /W3 /GR /GX /O2 /I ".\\" /I "..\..\Engine\sdk\inc" /I "..\shared" /I "..\shared\lang\en" /I "..\..\libs\regmgr" /I "..\..\libs\regmgr32" /I "..\..\libs\lith" /I "..\..\libs\butemgr" /I "..\..\libs\cryptmgr" /I "..\..\libs\stdlith" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /D "_FINAL" /Yu"stdafx.h" /FD /c
+# ADD CPP /nologo /MD /W3 /GR /Ox /GF /I ".\\" /I "..\..\Engine\sdk\inc" /I "..\shared" /I "..\shared\lang\en" /I "..\..\libs\regmgr" /I "..\..\libs\regmgr32" /I "..\..\libs\lith" /I "..\..\libs\butemgr" /I "..\..\libs\cryptmgr" /I "..\..\libs\stdlith" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /D "_FINAL" /Yu"stdafx.h" /FD /c
 # ADD RSC /l 0x409 /i ".\\" /i "res\lang\en" /i "..\shared" /i "..\shared\lang\en" /i "..\built\retail\ServerApp" /d "NDEBUG" /d "_REG" /d "_AFXDLL"
 LINK32=link.exe
 # ADD LINK32 winmm.lib /nologo /subsystem:windows /machine:I386 /out:"..\built\Final\ServerApp\ContractJackServer.exe"
