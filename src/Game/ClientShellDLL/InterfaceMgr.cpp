@@ -1075,6 +1075,7 @@ void CInterfaceMgr::UpdatePatchInfo()
 				mb.eType = LTMB_YESNO;
 				mb.pFn = NewPatchCallBack;
 				mb.pData = this;
+				mb.bNoEscape = LTTRUE;
 				ShowMessageBox( IDS_NEW_VERSION, &mb, 0, LTTRUE );
 			}
 

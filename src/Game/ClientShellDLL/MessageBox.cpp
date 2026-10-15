@@ -58,7 +58,7 @@ CMessageBox::CMessageBox()
 	m_pCancel = LTNULL;
 
 	m_pData = LTNULL;
-
+	m_bNoEscape = false;
 }
 
 CMessageBox::~CMessageBox()
@@ -231,6 +231,8 @@ void CMessageBox::Show(const char *pString, MBCreate* pCreate, uint8 nFontSize, 
 	offset.y = kIndent;
 	m_Dlg.SetControlOffset(m_pText,offset);
 
+	m_bNoEscape = !!pCreate->bNoEscape;
+
 
 	switch (m_eType)
 	{
@@ -387,8 +389,11 @@ LTBOOL CMessageBox::HandleKeyDown(int key, int rep)
 		}
 	case VK_ESCAPE:
 		{
-			Close(LTFALSE);
-			handled = LTTRUE;
+			if (!m_bNoEscape)
+			{
+				Close(LTFALSE);
+				handled = LTTRUE;
+			}
 			break;
 		}
 	default:

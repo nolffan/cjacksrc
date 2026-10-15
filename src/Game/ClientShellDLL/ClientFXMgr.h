@@ -134,7 +134,8 @@
 			// Member Variables
 
 			EFXLOD							m_eDetailLevel;
-			LTFLOAT							m_dDetailDistSqr[3];
+			// RETAIL: one distance for every detail level (CShell 0x1001c94e)
+			LTFLOAT							m_fDetailDistSqr;
 
 			ILTClient					   *m_pClientDE;
 			static ILTClient			   *s_pClientDE;

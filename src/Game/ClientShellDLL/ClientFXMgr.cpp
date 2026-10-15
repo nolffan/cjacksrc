@@ -283,9 +283,7 @@ void CLIENTFX_INSTANCE::RemoveAllEffects()
 CClientFXMgr::CClientFXMgr()
 {
 	m_eDetailLevel		= FXLOD_HIGH;
-	m_dDetailDistSqr[FXLOD_LOW]	= FXLOD_DIST_LOW * FXLOD_DIST_LOW;
-	m_dDetailDistSqr[FXLOD_MED]	= FXLOD_DIST_MED * FXLOD_DIST_MED;
-	m_dDetailDistSqr[FXLOD_HIGH]	= FXLOD_DIST_HIGH * FXLOD_DIST_HIGH;
+	m_fDetailDistSqr	= FXLOD_DIST_HIGH * FXLOD_DIST_HIGH;
 	m_nPrevSystemTime	= 0;
 	m_nSystemTimeBase	= GetTickCount();
 	m_bPaused			= false;
@@ -521,7 +519,7 @@ bool CClientFXMgr::UpdateInstanceSuspended(const LTVector& vCameraPos, CLIENTFX_
 
 			//see if they are outside or inside the range.
 			// Really close FX should always be in range...
-			if( fDistToEffectSqr > m_dDetailDistSqr[m_eDetailLevel] )
+			if( fDistToEffectSqr > m_fDetailDistSqr )
 			{
 				bSuspendInstance	= true;
 
@@ -1707,9 +1705,7 @@ void CClientFXMgr::SetDisableDistances( float fLow, float fMed, float fHigh )
 
 void CClientFXMgr::SetDisableDistance( int nLOD, float fDistance )
 {
-	nLOD = LTCLAMP(nLOD, FXLOD_LOW, FXLOD_HIGH);
-
-	m_dDetailDistSqr[nLOD] = fDistance * fDistance;
+	m_fDetailDistSqr = fDistance * fDistance;
 
 }
 
