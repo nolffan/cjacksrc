@@ -179,6 +179,9 @@ public:
 	
 	virtual void		ClearFiring();
 
+	// cjacksrc: RETAIL: 0x10029c30 the weapon's heat.
+	virtual LTFLOAT		GetHeat() const { return m_fHeat; }
+
 
 protected:
 
@@ -189,8 +192,8 @@ protected:
 	//
 
 	// Create the weapon model and 
-	bool          CreateWeaponModel();
-	void          RemoveWeaponModel();
+	virtual bool          CreateWeaponModel();
+	virtual void          RemoveWeaponModel();
 
 	// general model create (used for weapon, mods, etc)
 	HOBJECT       CreateModelObject( HOBJECT hOldObj, ObjectCreateStruct *createStruct );
@@ -219,10 +222,10 @@ protected:
 	// play model animations
 	void          PlayAnimation( uint32 dwAni, bool bReset = true,
 	                             float fRate = 1.0f,  bool bLooping = false);
-	bool          PlaySelectAnimation();
-	bool          PlayDeselectAnimation();
-	bool          PlayReloadAnimation();
-	bool          PlayIdleAnimation();
+	virtual bool          PlaySelectAnimation();
+	virtual bool          PlayDeselectAnimation();
+	virtual bool          PlayReloadAnimation();
+	virtual bool          PlayIdleAnimation();
 	virtual bool  PlayFireAnimation( bool bResetAni );
 
 	// selet animation
@@ -244,16 +247,16 @@ protected:
 	LTFLOAT       GetNextIdleTime() const;
 
 	// pre fire animation
-	bool          IsPreFireAni( uint32 dwAni ) const;
-	uint32        GetPreFireAni() const;
+	virtual bool          IsPreFireAni( uint32 dwAni ) const;
+	virtual uint32        GetPreFireAni() const;
 
 	// fire animation
-	bool          IsFireAni( uint32 dwAni , bool bCheckNormalOnly = false) const;
-	uint32        GetFireAni( FireType eFireType=FT_NORMAL_FIRE ) const;
+	virtual bool          IsFireAni( uint32 dwAni , bool bCheckNormalOnly = false) const;
+	virtual uint32        GetFireAni( FireType eFireType=FT_NORMAL_FIRE ) const;
 
 	// post fire
-	bool          IsPostFireAni( uint32 dwAni ) const;
-	uint32        GetPostFireAni() const;
+	virtual bool          IsPostFireAni( uint32 dwAni ) const;
+	virtual uint32        GetPostFireAni() const;
 
 	// are we using alt fire animations
 	bool          CanUseAltFireAnis() const;
@@ -473,6 +476,12 @@ protected:
 	
 	// Is the weapon supposed to be paused...
 	bool			m_bPaused;
+
+	// cjacksrc: Contract J.A.C.K.'s weapons heat up as they fire
+	// (RETAIL: 0x10024225, 0x10029c30).
+	LTFLOAT			m_fHeat;
+	LTFLOAT			m_fLastHeatTime;
+	CLIENTFX_LINK	m_HeatFX;
 };
 
 

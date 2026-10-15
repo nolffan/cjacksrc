@@ -193,6 +193,7 @@ CClientWeapon::CClientWeapon() :
 	, m_KeyframedClientFX()
 	, m_bControllingFlashLight( false )
 	, m_bPaused( false )
+	, m_fHeat( 0.0f )
 {
 	int i;
 
