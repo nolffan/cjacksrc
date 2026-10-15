@@ -1082,10 +1082,6 @@ SOURCE=.\TO2ScreenMgr.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\Shared\TO2\TO2VersionMgr.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\TracerFX.cpp
 # End Source File
 # Begin Source File
@@ -2175,10 +2171,6 @@ SOURCE=.\TO2PlayerStats.h
 # Begin Source File
 
 SOURCE=.\TO2ScreenMgr.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\Shared\TO2\TO2VersionMgr.h
 # End Source File
 # Begin Source File
 

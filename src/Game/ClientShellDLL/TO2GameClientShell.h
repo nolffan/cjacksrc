@@ -16,7 +16,7 @@
 #include "GameClientShell.h"
 #include "TO2InterfaceMgr.h"
 #include "TO2PlayerMgr.h"
-#include "TO2VersionMgr.h"
+#include "VersionMgr.h"
 #include "TO2ClientWeaponAllocator.h"
 #include "TO2MissionButeMgr.h"
 
@@ -45,7 +45,7 @@ class CTO2GameClientShell : public CGameClientShell
 
 	private:
 		CTO2InterfaceMgr			m_InterfaceMgr;		// Interface manager
-		CTO2VersionMgr				m_VersionMgr;		// Same as g_pVersionMgr
+		CVersionMgr					m_VersionMgr;		// Same as g_pVersionMgr
 		CTO2PlayerMgr				m_PlayerMgr;		// Interface manager
 		CTO2MissionButeMgr			m_MissionButeMgr;	// Same as g_pMissionButeMgr
 

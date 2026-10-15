@@ -41,7 +41,8 @@
 #include "AICentralKnowledgeMgr.h"
 #include "ServerTrackedNodeMgr.h"
 #include "GlobalServerMgr.h"
-#include "iserverdir.h"
+#include "IGameSpy.h"
+#include "GameStartPoint.h"
 #include "ObjectTemplateMgr.h"
 #include "LiteObjectMgr.h"
 #include "GameBaseLite.h"
@@ -346,6 +347,13 @@ LTRESULT CGameServerShell::OnServerInitialized()
 void CGameServerShell::OnServerTerm()
 {
 	CAssertMgr::Disable();
+
+	// RETAIL: GameSpy's server goes with the server (Object.lto 0x100d9bd0)
+	if( m_pGameSpyServer )
+	{
+		IGameSpyServer::Delete( m_pGameSpyServer );
+		m_pGameSpyServer = NULL;
+	}
 }
 
 
@@ -366,9 +374,10 @@ CGameServerShell::CGameServerShell() :
 	, m_pAIClassFactory( 0 )
 	, m_pServerTrackedNodeMgr( 0 )
 	, m_pGlobalMgr( 0 )
-	, m_pServerDir( 0 )
 	, m_pCharacterMgr( 0 )
 	, m_bCachedLevelFiles( false )
+	, m_nLastPublishTime( 0 )
+	, m_pGameSpyServer( 0 )
 {
 	m_aCurMessageSourceAddr[0] = 0;
 	m_aCurMessageSourceAddr[1] = 0;
@@ -387,6 +396,8 @@ CGameServerShell::CGameServerShell() :
 	// Note : ctor stuff is now all handled by ::OnServerInitialized
 
 	m_pServerMissionMgr = NULL;
+
+	m_nLastClientTime = GetTickCount( );
 }
 
 
@@ -438,13 +449,6 @@ CGameServerShell::~CGameServerShell()
 	{
 		debug_delete( m_pGlobalMgr );
 		m_pGlobalMgr = 0;
-	}
-
-	// Get rid of the serverdir, if we have one
-	if( m_pServerDir )
-	{
-		delete m_pServerDir;
-	  	m_pServerDir = 0;
 	}
 
 	// Get rid of the object template mgr
@@ -1660,43 +1664,6 @@ void CGameServerShell::HandleMultiplayerUpdate (HCLIENT hSender, ILTMessage_Read
 	}
 } 
 
-// ----------------------------------------------------------------------- //
-//
-//	ROUTINE:	CGameServerShell::HandleMultiplayerServerDir ()
-//
-//	PURPOSE:	Handle messages sent through the server directory interface
-//
-// ----------------------------------------------------------------------- //
-
-void CGameServerShell::HandleMultiplayerServerDir (HCLIENT hSender, ILTMessage_Read *pMsg)
-{
-	// Only handle this message if we actually have a server directory
-	if (!m_pServerDir)
-		return;
-
-	uint8 aNumericAddr[4];
-	char aSourceAddr[16];
-	uint16 nSourcePort;
-
-	// Get the address and port of where this came from
-	if (!hSender)
-	{
-		GetCurMessageSource(aNumericAddr, &nSourcePort);
-	}
-	else
-	{
-		g_pLTServer->GetClientAddr(hSender, aNumericAddr, &nSourcePort);
-	}
-	// Convert the address portion
-	sprintf(aSourceAddr, "%d.%d.%d.%d", 
-		(uint32)aNumericAddr[0],
-		(uint32)aNumericAddr[1],
-		(uint32)aNumericAddr[2],
-		(uint32)aNumericAddr[3]);
-
-	// Let the server directory handle it
-	m_pServerDir->HandleNetMessage(*CLTMsgRef_Read(pMsg->SubMsg(pMsg->Tell())), aSourceAddr, nSourcePort);
-} 
 
 // ----------------------------------------------------------------------- //
 //
@@ -3616,6 +3583,9 @@ void CGameServerShell::Update(LTFLOAT timeElapsed)
 		// Update multiplayer stuff...
 		UpdateMultiplayer();
 	}
+
+	// RETAIL: CTO2GameServerShell::Update's, merged (Object.lto 0x100e0496)
+	m_VersionMgr.Update();
 }
 
 
@@ -4681,23 +4651,14 @@ void CGameServerShell::ShowMultiplayerSummary()
 
 LTRESULT CGameServerShell::ProcessPacket(ILTMessage_Read *pMsg, uint8 senderAddr[4], uint16 senderPort)
 {
-	if (pMsg->Size() >= 16)
+	// RETAIL: the packets the engine does not know are GameSpy's queries
+	// (Object.lto 0x100dad60)
+	if( m_pGameSpyServer )
 	{
-		// Skip the engine-side portion of the message header
-		CLTMsgRef_Read cSubMsg(pMsg->SubMsg(8));
-
-		// Remember what address this came from
-		SetCurMessageSource(senderAddr, senderPort);
-
-		cSubMsg->SeekTo(0);
-		uint8 messageID = cSubMsg->Readuint8();
-		
-		switch (messageID)
-		{
-			case MID_MULTIPLAYER_SERVERDIR:		HandleMultiplayerServerDir		(NULL, cSubMsg);	break;
-			default:
-				break;
-		}
+		uint32 nLen = pMsg->Size( ) / 8;
+		uint8* pData = ( uint8* )alloca( nLen );
+		pMsg->ReadData( pData, nLen * 8 );
+		m_pGameSpyServer->HandleNetMessage( pData, nLen, senderAddr, senderPort );
 	}
 
 	return(LT_OK);
@@ -5047,24 +5008,6 @@ void CGameServerShell::ServerAppPostStartWorld( )
 }
 
 
-// --------------------------------------------------------------------------- //
-//
-//	ROUTINE:	CGameServerShell::SetServerDir
-//
-//	PURPOSE:	Change the server directory object
-//
-// --------------------------------------------------------------------------- //
-
-void CGameServerShell::SetServerDir(IServerDirectory *pDir)
-{ 
-	if( m_pServerDir )
-	{
-		// No leaking, please...
-		delete m_pServerDir; 
-	}
-
-	m_pServerDir = pDir; 
-}
 
 // --------------------------------------------------------------------------- //
 //
@@ -5525,4 +5468,61 @@ ClientData* CGameServerShell::GetClientData( HCLIENT hClient )
 	}
 
 	return NULL;
+}
+
+
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	CGameServerShell::CreatePlayer()
+//
+//	PURPOSE:	Create the player object, and associated it with the client.
+//
+// ----------------------------------------------------------------------- //
+
+CPlayerObj* CGameServerShell::CreatePlayer(HCLIENT hClient, ModelId ePlayerModelId )
+{
+	ObjectCreateStruct theStruct;
+	INIT_OBJECTCREATESTRUCT(theStruct);
+
+    theStruct.m_Rotation.Init();
+	VEC_INIT(theStruct.m_Pos);
+	theStruct.m_Flags = 0;
+
+    HCLASS hClass = g_pLTServer->GetClass("CPlayerObj");
+
+	GameStartPoint* pStartPoint = FindStartPoint(LTNULL);
+	if (pStartPoint)
+	{
+		g_pLTServer->GetObjectPos(pStartPoint->m_hObject, &(theStruct.m_Pos));
+	}
+
+	CPlayerObj* pPlayer = NULL;
+	if (hClass)
+	{
+		theStruct.m_UserData = ePlayerModelId; //pStartPoint->GetPlayerModelId();
+        pPlayer = (CPlayerObj*) g_pLTServer->CreateObject(hClass, &theStruct);
+	}
+
+	return pPlayer;
+}
+
+
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	CGameServerShell::IsCapNumberOfBodies()
+//
+//	PURPOSE:	Cap the number of bodies in a radius.
+//
+// ----------------------------------------------------------------------- //
+
+bool CGameServerShell::IsCapNumberOfBodies( )
+{
+	switch( GetGameType( ))
+	{
+		case eGameTypeCooperative:
+		case eGameTypeSingle:
+			return true;
+		default:
+			return false;
+	}
 }

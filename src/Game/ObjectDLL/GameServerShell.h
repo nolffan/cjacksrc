@@ -28,6 +28,8 @@
 #include "MusicMgr.h"
 #include "MsgIds.h"
 #include "ProfileUtils.h"
+#include "VersionMgr.h"
+#include "TO2MissionButeMgr.h"
 
 #define MAX_CLIENTS		MAX_MULTI_PLAYERS
 #define MAX_TIME_RAMPS	12
@@ -40,7 +42,7 @@ class CPlayerObj;
 class GameStartPoint;
 class CAIClassFactory;
 class CServerTrackedNodeMgr;
-class IServerDirectory;
+class IGameSpyServer;
 class CObjectTemplateMgr;
 class CLiteObjectMgr;
 class CServerMissionMgr;
@@ -99,9 +101,15 @@ struct ClientData
 };
 
 
+// RETAIL: Contract J.A.C.K. has no CTO2GameServerShell: its CGameServerShell
+// is the server shell itself (the interface, the version and mission
+// managers, the published server), as its RTTI and vtable (Object.lto
+// 0x101bfeac) show.
 class CGameServerShell : public IServerShellStub
 {
 	public :
+
+		declare_interface(CGameServerShell);
 
         CGameServerShell();
 		virtual ~CGameServerShell();
@@ -164,12 +172,8 @@ class CGameServerShell : public IServerShellStub
 		LTRESULT	ProcessPacket(ILTMessage_Read *pMsg, uint8 senderAddr[4], uint16 senderPort);
 
 		GameStartPoint* FindStartPoint(CPlayerObj* pPlayer);
-		virtual bool DropInventoryObject(Body* pBody) = 0;
+		virtual bool DropInventoryObject(Body* pBody) { return false; }
 
-		// Server directory access
-		// Note : The server directory is owned by this object once you pass it in.
-		IServerDirectory *GetServerDir() { return m_pServerDir; }
-		void		SetServerDir(IServerDirectory *pDir);
 
 		// Get/Set the source address of the message which is currently being processed
 		void		SetCurMessageSource(const uint8 aAddr[4], uint16 nPort);
@@ -184,10 +188,10 @@ class CGameServerShell : public IServerShellStub
 		const CLiteObjectMgr *GetLiteObjectMgr() const { return m_pLiteObjectMgr; }
 
 		// Cap the number of bodies in a radius.
-		virtual bool	IsCapNumberOfBodies( ) { return false; }
+		virtual bool	IsCapNumberOfBodies( );
 		
 		// Are we able to use the radar functionality
-		virtual bool	ShouldUseRadar( ) { return false; }
+		virtual bool	ShouldUseRadar( ) { return true; }
 
 		// Get the min music mood for the current level.
 		CMusicMgr::Mood	GetMinMusicMood() const { return m_eMinMusicMood; }
@@ -248,7 +252,6 @@ class CGameServerShell : public IServerShellStub
 		void		HandlePlayerTaunt				(HCLIENT, ILTMessage_Read*);
 		void		HandlePlayerTeleport			(HCLIENT, ILTMessage_Read*);
 		void		HandleMultiplayerUpdate			(HCLIENT, ILTMessage_Read*);
-		void		HandleMultiplayerServerDir		(HCLIENT, ILTMessage_Read*);
 		void		HandleMultiplayerInit			(HCLIENT, ILTMessage_Read*);
 		void		HandleMultiplayerPlayerUpdate	(HCLIENT, ILTMessage_Read*);
 		void        HandleHandshake					(HCLIENT, ILTMessage_Read*);
@@ -309,7 +312,7 @@ class CGameServerShell : public IServerShellStub
 		void HandleUpdateServerOptions(ILTMessage_Read *pMsg);
 		void HandleConsoleCmdMsg(HCLIENT hSender, ILTMessage_Read *pMsg);
 
-		virtual CPlayerObj* CreatePlayer(HCLIENT hClient, ModelId ePlayerModelId) = 0;
+		virtual CPlayerObj* CreatePlayer(HCLIENT hClient, ModelId ePlayerModelId);
 		void RespawnPlayer(CPlayerObj* pPlayer, HCLIENT hClient);
 
 		void UpdateBoundingBoxes();
@@ -427,9 +430,6 @@ class CGameServerShell : public IServerShellStub
 
 		LTBOOL IsPositionOccupied(LTVector & vPos, CPlayerObj* pPlayer);
 
-		// Server directory interface
-		IServerDirectory*	m_pServerDir;
-
 		// Current message source
 		uint8		m_aCurMessageSourceAddr[4];
 		uint16		m_nCurMessageSourcePort;
@@ -461,8 +461,19 @@ class CGameServerShell : public IServerShellStub
 
 		CMusicMgr::Mood	m_eMinMusicMood;
 
+		// RETAIL: CTO2GameServerShell's members, and GameSpy's server
+		CVersionMgr			m_VersionMgr;		// Same as g_pVersionMgr
+		CTO2MissionButeMgr	m_MissionButeMgr;	// Same as g_pMissionButeMgr
+
+		uint32				m_nLastPublishTime;
+		IGameSpyServer*		m_pGameSpyServer;
+
 		typedef std::vector< ClientData* > ClientDataList;
 		ClientDataList	m_ClientDataList;
+
+		// RETAIL: a GetTickCount() time (Object.lto 0x100dade1, 0x100e1b89),
+		// named here
+		uint32				m_nLastClientTime;
 };
 
 extern class CGameServerShell* g_pGameServerShell;
