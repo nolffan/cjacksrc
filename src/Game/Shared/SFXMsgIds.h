@@ -82,7 +82,10 @@
 #define SFX_RADAROBJECT_ID			56
 #define SFX_ACTIVATEOBJECT_ID		57
 #define SFX_DOOMSDAYPIECE_ID		58
-#define SFX_TOTAL_NUMBER			58	// Important that this is the same as the last FX defined...
+#define SFX_CHASSISPIECE_ID			58	// cjacksrc: Contract J.A.C.K.'s chassis pieces have the DoomsDay pieces' id
+#define SFX_CHASSIS_ID				59
+#define SFX_AIMMAGNET_ID			60	// cjacksrc: Contract J.A.C.K.'s, still to come
+#define SFX_TOTAL_NUMBER			60	// Important that this is the same as the last FX defined...
 
 // Shared fx related stuff...
 
@@ -129,6 +132,7 @@
 	#define	CFX_CARRY_NONE					0
 	#define	CFX_CARRY_BODY					1
 	#define	CFX_CARRY_DD_TRAN				2					
+	#define	CFX_CARRY_CHASSISPIECE			2	// cjacksrc: Contract J.A.C.K. carries chassis pieces; the piece is sent with it
 	#define	CFX_CARRY_DD_BATT				3
 	#define	CFX_CARRY_DD_CORE				4					
 

@@ -14,7 +14,8 @@
 #include "TO2InterfaceMgr.h"
 #include "TO2PlayerMgr.h"
 #include "GameClientShell.h"
-#include "DoomsdayPieceFX.h"
+#include "ChassisPieceFX.h"
+#include "ChassisButeMgr.h"
 
 //******************************************************************************************
 //**
@@ -144,8 +145,13 @@ void CHUDDoomsday::Update()
 		m_nTeam[i] = INVALID_TEAM;
 	}
 
+	// RETAIL: 0x10057bfb the pieces are chassis pieces, known by their ids.
+	static uint8 s_nTransmitterId = ChassisButeMgr::Instance( ).GetPieceId( "Doomsday_transmitter" );
+	static uint8 s_nBatteriesId = ChassisButeMgr::Instance( ).GetPieceId( "Doomsday_batteries" );
+	static uint8 s_nCoreId = ChassisButeMgr::Instance( ).GetPieceId( "Doomsday_core" );
+
 	//step through each doomsday piece in the world
-	CSpecialFXList* pList = g_pGameClientShell->GetSFXMgr()->GetFXList(SFX_DOOMSDAYPIECE_ID);
+	CSpecialFXList* pList = g_pGameClientShell->GetSFXMgr()->GetFXList(SFX_CHASSISPIECE_ID);
 	if (pList)
 	{
 		int nNumDD = pList->GetSize();
@@ -153,30 +159,23 @@ void CHUDDoomsday::Update()
 		{
 			if ((*pList)[i])
 			{
-				CDoomsdayPieceFX* pDDP = (CDoomsdayPieceFX*)(*pList)[i];
-				int nIcon = kNumDDIcons;
+				ChassisPieceFX* pDDP = (ChassisPieceFX*)(*pList)[i];
+				int nIcon;
 
 				// find out which icon matched the piece
-				switch (pDDP->GetType())
-				{
-					case kDoomsDay_transmitter:
-						nIcon = eDD_Transmitter;
-						break;
-					case kDoomsDay_battery:
-						nIcon = eDD_Battery;
-						break;
-					case kDoomsDay_Core:
-						nIcon = eDD_Core;
-						break;
-				}
+				uint8 nId = pDDP->GetChassisPiece() ? pDDP->GetChassisPiece()->m_nId : CHASSISBMGR_INVALID_ID;
+				if (nId == s_nTransmitterId)
+					nIcon = eDD_Transmitter;
+				else if (nId == s_nBatteriesId)
+					nIcon = eDD_Battery;
+				else if (nId == s_nCoreId)
+					nIcon = eDD_Core;
+				else
+					continue;
 
-				// if we've got a match (which should be always)
-				if (nIcon < kNumDDIcons)
-				{
-					//set the status for the icon
-					m_bBlink[nIcon] = pDDP->IsCarried();
-					m_nTeam[nIcon] = pDDP->GetTeam();
-				}
+				//set the status for the icon
+				m_bBlink[nIcon] = pDDP->IsCarried();
+				m_nTeam[nIcon] = pDDP->GetTeam();
 			}
 
 		}

@@ -123,6 +123,14 @@ SOURCE=..\Shared\ChassisButeMgr.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\ChassisFX.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\ChassisPieceFX.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\CheatMgr.cpp
 # End Source File
 # Begin Source File
@@ -237,10 +245,6 @@ SOURCE=.\DebugLineFX.cpp
 
 SOURCE=..\Shared\DebugNew.cpp
 # SUBTRACT CPP /YX /Yc /Yu
-# End Source File
-# Begin Source File
-
-SOURCE=.\DoomsdayPieceFX.cpp
 # End Source File
 # Begin Source File
 
@@ -1226,6 +1230,14 @@ SOURCE=..\Shared\ChassisButeMgr.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\ChassisFX.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\ChassisPieceFX.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\CheatMgr.h
 # End Source File
 # Begin Source File
@@ -1331,10 +1343,6 @@ SOURCE=.\DebrisFX.h
 # Begin Source File
 
 SOURCE=.\DebugLineFX.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\DoomsdayPieceFX.h
 # End Source File
 # Begin Source File
 

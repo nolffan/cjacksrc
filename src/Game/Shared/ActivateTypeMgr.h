@@ -151,6 +151,10 @@ class CActivateTypeHandler : public ILTObjRefReceiver
 		void	InheritObject( HOBJECT hObj );
 		void	DisownObject( HOBJECT hObj );
 
+		// cjacksrc: Contract J.A.C.K.'s chassis and chassis pieces send
+		// the id in their SFX messages.
+		uint8	GetId( ) const { return m_nId; }
+
 		
 	protected: // Members...
 

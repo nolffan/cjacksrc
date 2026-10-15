@@ -42,6 +42,9 @@ modes at any size; our Bink player on FFmpeg in place of RAD's
 * **GAME-1: GetCommandName.** Returns the name it finds instead of always
   its error string (`RETAIL_BUGS.md`;
   src/Game/ClientShellDLL/ProfileMgr.cpp).
+* **GAME-2: the chassis's update.** The update a chassis sends the
+  clients names SFX_CHASSIS_ID and the chassis, as every special-fx
+  message does (`RETAIL_BUGS.md`; src/Game/ObjectDLL/Chassis.cpp).
 * **EN-1: the world shaders' section order.** The sections compare by
   world only among equal base sections, so the sort gets a strict weak
   ordering (`RETAIL_BUGS.md`; src/Engine/runtime/render_a/src/sys/d3d/

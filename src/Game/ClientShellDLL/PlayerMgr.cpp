@@ -11,6 +11,7 @@
 
 #include "stdafx.h"
 #include "PlayerMgr.h"
+#include "ChassisPieceFX.h"
 #include "AttachButeMgr.h"
 #include "BodyFX.h"
 #include "CMoveMgr.h"
@@ -42,7 +43,6 @@
 #include "PolyGridFX.h"
 #include "PlayerViewAttachmentMgr.h"
 #include "LTEulerAngles.h"
-#include "DoomsDayPieceFX.h"
 
 CPlayerMgr* g_pPlayerMgr = NULL;
 
@@ -5463,21 +5463,11 @@ uint8 CPlayerMgr::CanCarryObject()
 		}
 
 
-		CDoomsdayPieceFX* const pFX = (CDoomsdayPieceFX*)g_pGameClientShell->GetSFXMgr()->FindSpecialFX(SFX_DOOMSDAYPIECE_ID, GetTargetMgr()->GetTargetObject());
+		// RETAIL: 0x1009b830 the pieces carried are chassis pieces.
+		ChassisPieceFX* const pFX = (ChassisPieceFX*)g_pGameClientShell->GetSFXMgr()->FindSpecialFX(SFX_CHASSISPIECE_ID, GetTargetMgr()->GetTargetObject());
 		if( pFX )
 		{
-			switch (pFX->GetType())
-			{
-			case kDoomsDay_transmitter:
-				return (CFX_CARRY_DD_TRAN);
-				break;
-			case kDoomsDay_battery:
-				return (CFX_CARRY_DD_BATT);
-				break;
-			case kDoomsDay_Core:
-				return (CFX_CARRY_DD_CORE);
-				break;
-			}
+			return CFX_CARRY_CHASSISPIECE;
 		}
 
 	}

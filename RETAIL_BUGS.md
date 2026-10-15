@@ -28,9 +28,9 @@ too, since Contract J.A.C.K. was built from the same code: check each
 against the retail binary before listing it. Those Contract J.A.C.K. no
 longer has go at the end, so nobody looks again.
 
-**Fixed so far** (in the modern build): four -- the two GameSpy handle
-bugs (MODERN.md GS-1), GetCommandName (GAME-1) and the world shaders' section
-order (EN-1).
+**Fixed so far** (in the modern build): five -- the two GameSpy handle
+bugs (MODERN.md GS-1), GetCommandName (GAME-1), the chassis's update
+(GAME-2) and the world shaders' section order (EN-1).
 
 ## Format
 
@@ -143,6 +143,21 @@ world in a way that triggers it.
 
 Fixed in the modern build: src/Engine/runtime/render_a/src/sys/d3d/
 d3d_rendershader_base.h, MODERN.md EN-1.
+
+### A chassis's update to the clients does not say what it is for
+
+Object.lto 0x100aca0f (Chassis::CreateSFXMessage,
+src/Game/ObjectDLL/Chassis.cpp). The chassis sends the clients a
+MID_SFX_MESSAGE with its team, drop-zone radius and activate type, but
+without the SFX id (SFX_CHASSIS_ID) and the object that every such message
+starts with, so a client takes the team for the SFX id and part of the
+radius for the object, finds no special fx and drops the message. The
+special-fx message the chassis is created with is right; only the update
+is lost. It is sent when the chassis is created or loaded, before any
+client could use it, so nothing shows in the game.
+
+Fixed in the modern build: src/Game/ObjectDLL/Chassis.cpp, MODERN.md
+GAME-2.
 
 ## NOLF2's bugs Contract J.A.C.K. no longer has
 

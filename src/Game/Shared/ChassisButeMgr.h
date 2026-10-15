@@ -69,9 +69,10 @@ class ChassisButeMgr : public CGameButeMgr
 		CHASSISPIECE const*	GetPiece( char const* pszName );
 		uint8				GetPieceId( char const* pszName );
 
-	private :
-
 		typedef std::vector< CHASSISPIECE* > PieceList;
+		PieceList const&	GetPieceList( ) const { return m_Pieces; }
+
+	private :
 
 		bool		m_bInitialized;
 		PieceList	m_Pieces;
