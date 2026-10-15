@@ -17,13 +17,8 @@ define_holder(ILTRenderStyles, g_pRenderStylesInterface);
 
 CD3DRenderStyle::CD3DRenderStyle()
 {
+	// RETAIL: no Direct3D options until they are set (0x4d1e24)
 	m_pD3DOptions												= NULL;
-	m_pD3DOptions = new RSD3DOptions;
-	if(m_pD3DOptions)
-	{
-		memset(m_pD3DOptions, 0, sizeof(RSD3DOptions));
-	}
-
 
 	m_pNext														= NULL;
 }
@@ -133,8 +128,11 @@ bool CD3DRenderStyle::Load_LTBData(ILTStream* pFileStream)
 				// Vertex shaders aren't supported any more, but the data is still in the file
 				bool bUseVertexShader;
 				pFileStream->Read(&bUseVertexShader, sizeof(bUseVertexShader));
-				D3DRenderPass.bUseVertexShader = false;
-				pFileStream->Read(&D3DRenderPass.bExpandForSkinning, sizeof(D3DRenderPass) - offsetof(RSD3DRenderPass, bExpandForSkinning));
+				// RETAIL: Contract J.A.C.K.'s files hold the skinning flag and
+				// then the rest from the first register on, without the
+				// structure's padding between them (0x4d1a74)
+				pFileStream->Read(&D3DRenderPass.bExpandForSkinning, sizeof(D3DRenderPass.bExpandForSkinning));
+				pFileStream->Read(&D3DRenderPass.ConstVector_ConstReg1, sizeof(D3DRenderPass) - offsetof(RSD3DRenderPass, ConstVector_ConstReg1));
 
 				if (!SetRenderPass_D3DOptions(i, &D3DRenderPass))
 				{
@@ -213,8 +211,7 @@ bool CD3DRenderStyle::CopyRenderStyle(CRenderStyle* pSrcRenderStyle)
 	// Dynamic Lighting...
 	m_LightingMaterial		= pSrcD3DRenderStyle->m_LightingMaterial;
 
-	//
-	pSrcRenderStyle->GetDirect3D_Options(m_pD3DOptions);
+	// RETAIL: the Direct3D options are not copied (0x4d1e4a)
 
 	// Render Passes...
 	for (list<CD3DRenderPass>::iterator it = pSrcD3DRenderStyle->m_RenderPasses.begin(); it != pSrcD3DRenderStyle->m_RenderPasses.end(); ++it)
@@ -295,6 +292,12 @@ void CD3DRenderStyle::SetDefaults()
 
 	LT_MEM_TRACK_ALLOC(m_RenderPasses.push_back(RenderPass), LT_MEM_TYPE_RENDERER);
 
+	// RETAIL: and no Direct3D options (0x4d2234)
+	if (m_pD3DOptions)
+	{
+		delete m_pD3DOptions;
+		m_pD3DOptions = NULL;
+	}
 }
 
 bool CD3DRenderStyle::Compile()

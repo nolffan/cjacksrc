@@ -289,12 +289,10 @@ void d3d_BlitToScreen(BlitRequest *pRequest)
 	}
 	
 	// Can this be drawn as an optimized 2D surface?
+	// RETAIL: no old 3D blit to choose (0x4e15c9)
 	if (pRSurface->m_pTiles && g_bInOptimized2D && g_Device.IsIn3D()) 
 	{
-		if (pRequest->m_bUseOld)
-			d3d_BlitToScreen3D_Old(pRequest); 
-		else
-			d3d_BlitToScreen3D(pRequest); 
+		d3d_BlitToScreen3D(pRequest); 
 	}
 	else 
 	{
@@ -633,12 +631,36 @@ void d3d_MakeCubicEnvMap(const char* pszPrefix, uint32 nSize, const SceneDesc& I
 }
 
 
+// RETAIL: with a lockable back buffer, lock and unlock a pixel of it before
+// the frame is presented, which makes the driver finish drawing it first
+// (Lithtech.exe 0x4e1650)
+static void d3d_SyncBackBuffer()
+{
+	LPDIRECT3DSURFACE8 pBackBuffer;
+	if (FAILED(PD3DDEVICE->GetBackBuffer(0, D3DBACKBUFFER_TYPE_MONO, &pBackBuffer)))
+		return;
+
+	D3DLOCKED_RECT LockedRect;
+	RECT rLock;
+	rLock.left		= 0;
+	rLock.top		= 0;
+	rLock.right		= 1;
+	rLock.bottom	= 1;
+	if (SUCCEEDED(pBackBuffer->LockRect(&LockedRect, &rLock, D3DLOCK_READONLY)))
+		pBackBuffer->UnlockRect();
+
+	pBackBuffer->Release();
+}
+
 void d3d_SwapBuffers(uint flags)
 {
 	CSAccess cLoadRenderCSLock(&g_Device.GetLoadRenderCS());
 	
 	if (!PD3DDEVICE)
 		return;
+
+	if (g_CV_LockableBackBuffer.m_Val)
+		d3d_SyncBackBuffer();
 
 	if ((flags & FLIPSCREEN_DIRTY) != 0) 
 	{
