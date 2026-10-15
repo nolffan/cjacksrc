@@ -67,6 +67,7 @@ protected:
 	afx_msg void OnLithtechWeb();
 	afx_msg void OnSierraWeb();
 	afx_msg void OnCustomize();
+	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

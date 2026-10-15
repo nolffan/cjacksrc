@@ -42,17 +42,20 @@ static char THIS_FILE[] = __FILE__;
 #define OD_DISABLEMOVIES_Y				(OD_ROW_Y_START + 2*OD_ROW_Y_OFFSET)
 #define	OD_DISABLEHARDWARESOUND_X		OD_COLUMN_1_X
 #define	OD_DISABLEHARDWARESOUND_Y		(OD_ROW_Y_START + 3*OD_ROW_Y_OFFSET)
-#define OD_DISABLEANIMATEDLOADSCREEN_X	OD_COLUMN_1_X
-#define OD_DISABLEANIMATEDLOADSCREEN_Y	(OD_ROW_Y_START + 4*OD_ROW_Y_OFFSET)
+// RETAIL: Contract J.A.C.K. has no animated load screen option; triple
+// buffering moved to the first column, and "Enable Screenshots" is last in
+// the second (COptionsDlg::COptionsDlg, 0x408da0)
+#define OD_DISABLETRIPLEBUFFERING_X		OD_COLUMN_1_X
+#define OD_DISABLETRIPLEBUFFERING_Y		(OD_ROW_Y_START + 4*OD_ROW_Y_OFFSET)
 
-#define OD_DISABLETRIPLEBUFFERING_X		OD_COLUMN_2_X
-#define OD_DISABLETRIPLEBUFFERING_Y		OD_ROW_Y_START
 #define OD_DISABLEJOYSTICKS_X			OD_COLUMN_2_X
-#define OD_DISABLEJOYSTICKS_Y			(OD_ROW_Y_START + OD_ROW_Y_OFFSET)
+#define OD_DISABLEJOYSTICKS_Y			OD_ROW_Y_START
 #define OD_DISABLEHARDWARECURSOR_X		OD_COLUMN_2_X
-#define OD_DISABLEHARDWARECURSOR_Y		(OD_ROW_Y_START + 2*OD_ROW_Y_OFFSET)
+#define OD_DISABLEHARDWARECURSOR_Y		(OD_ROW_Y_START + OD_ROW_Y_OFFSET)
 #define OD_DISABLESOUNDFILTERS_X		OD_COLUMN_2_X
-#define OD_DISABLESOUNDFILTERS_Y		(OD_ROW_Y_START + 3*OD_ROW_Y_OFFSET)
+#define OD_DISABLESOUNDFILTERS_Y		(OD_ROW_Y_START + 2*OD_ROW_Y_OFFSET)
+#define OD_ENABLESCREENSHOTS_X			OD_COLUMN_2_X
+#define OD_ENABLESCREENSHOTS_Y			(OD_ROW_Y_START + 3*OD_ROW_Y_OFFSET)
 
 #define OD_RESTOREDEFAULTSETTINGS_X		OD_COLUMN_1_X
 #define OD_RESTOREDEFAULTSETTINGS_Y		219
@@ -157,10 +160,6 @@ BOOL COptionsDlg::OnInitDialog()
 	if(pCheckBox)
 		pCheckBox->SetCheck(theApp.m_bDisableHardwareCursor);
 	
-	pCheckBox = (CTextCheckBox*)AddTextCheckBox(IDC_OD_DISABLEANIMATEDLOADSCREEN,OD_DISABLEANIMATEDLOADSCREEN_X,OD_DISABLEANIMATEDLOADSCREEN_Y, IDS_OD_DISABLEANIMATEDLOADSCREENS, &m_HelpText,IDS_HELP_DISABLEANIMATEDLOADSCREEN);
-	if(pCheckBox)
-		pCheckBox->SetCheck(theApp.m_bDisableAnimatedLoadScreen);
-	
 	pCheckBox = (CTextCheckBox*)AddTextCheckBox(IDC_OD_DISABLEHARDWARESOUND,OD_DISABLEHARDWARESOUND_X,OD_DISABLEHARDWARESOUND_Y, IDS_OD_DISABLEHARDWARESOUND, &m_HelpText,IDS_HELP_DISABLEHARDWARESOUND);
 	if(pCheckBox)
 		pCheckBox->SetCheck(theApp.m_bDisableHardwareSound);
@@ -168,6 +167,10 @@ BOOL COptionsDlg::OnInitDialog()
 	pCheckBox = (CTextCheckBox*)AddTextCheckBox(IDC_OD_DISABLESOUNDFILTERS,OD_DISABLESOUNDFILTERS_X,OD_DISABLESOUNDFILTERS_Y, IDS_OD_DISABLESOUNDFILTERS, &m_HelpText,IDS_HELP_DISABLESOUNDFILTERS);
 	if(pCheckBox)
 		pCheckBox->SetCheck(theApp.m_bDisableSoundFilters);
+	
+	pCheckBox = (CTextCheckBox*)AddTextCheckBox(IDC_OD_ENABLESCREENSHOTS,OD_ENABLESCREENSHOTS_X,OD_ENABLESCREENSHOTS_Y, IDS_OD_ENABLESCREENSHOTS, &m_HelpText,IDS_HELP_ENABLESCREENSHOTS);
+	if(pCheckBox)
+		pCheckBox->SetCheck(theApp.m_bEnableScreenshots);
 	
 	pCheckBox = (CTextCheckBox*)AddTextCheckBox(IDC_OD_RESTOREDEFAULTSETTINGS,OD_RESTOREDEFAULTSETTINGS_X,OD_RESTOREDEFAULTSETTINGS_Y, IDS_OD_RESTOREDEFAULTS, &m_HelpText,IDS_HELP_RESTOREDEFAULTS);
 	if(pCheckBox)
@@ -265,14 +268,14 @@ void COptionsDlg::OnOK()
 	pCheckBox = (CTextCheckBox*)GetDlgItem(IDC_OD_DISABLEHARDWARECURSOR);
 	theApp.m_bDisableHardwareCursor = pCheckBox->GetCheck();
 
-	pCheckBox = (CTextCheckBox*)GetDlgItem(IDC_OD_DISABLEANIMATEDLOADSCREEN);
-	theApp.m_bDisableAnimatedLoadScreen = pCheckBox->GetCheck();
-
 	pCheckBox = (CTextCheckBox*)GetDlgItem(IDC_OD_DISABLEHARDWARESOUND);
 	theApp.m_bDisableHardwareSound = pCheckBox->GetCheck();
 
 	pCheckBox = (CTextCheckBox*)GetDlgItem(IDC_OD_DISABLESOUNDFILTERS);
 	theApp.m_bDisableSoundFilters = pCheckBox->GetCheck();
+
+	pCheckBox = (CTextCheckBox*)GetDlgItem(IDC_OD_ENABLESCREENSHOTS);
+	theApp.m_bEnableScreenshots = pCheckBox->GetCheck();
 
 	pCheckBox = (CTextCheckBox*)GetDlgItem(IDC_OD_RESTOREDEFAULTSETTINGS);
 	theApp.m_bRestoreDefaults = pCheckBox->GetCheck();

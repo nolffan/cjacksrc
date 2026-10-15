@@ -215,7 +215,7 @@ $$(error tools/dsp2mk.py failed on $(1): $$(file <$(DEPDIR)/dsp2mk-$(basename $(
 endif
 include $(DEPDIR)/$(basename $(notdir $(1))).mk
 # (a wanted project the workspace does not have yet is skipped, as
-# dsp2mk.py skips it: the launcher and the dedicated server come later)
+# dsp2mk.py skips it)
 WANTED += $$(filter $$(PROJECTS),$(subst $(comma), ,$(2)))
 endif
 endef
@@ -227,6 +227,8 @@ all game: $(WANTED)
 # A DLL's import library is written by the DLL's link; a project that
 # links it (CShell.dll and Object.lto link GameSpy.lib) depends on the DLL.
 src/Game/built/Final/libs/GameSpy/GameSpy.lib: src/Game/built/Final/libs/GameSpy/GameSpy.dll ;
+# (and the dedicated server, ContractJackServer.exe, links server.dll's)
+src/Engine/built/Final/server/server.lib: src/Engine/built/Final/server/server.dll ;
 
 # ---------------------------------------------------------------------------
 # The rules all compiles and tools share

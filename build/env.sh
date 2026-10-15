@@ -64,6 +64,7 @@ cjacksrc_release_tree() {
     rm -rf "$tree/build" "$tree/tools"
     tar -C "$REPO" -cf - --exclude='__pycache__' --exclude=.git build tools | tar -C "$tree" -xf -
     [ -L "$tree/toolchains" ] || ln -s ../../toolchains "$tree/toolchains"
+    [ -L "$tree/rez" ] || ln -s ../../rez "$tree/rez"
     ( cd "$tree" && CJACKSRC_IN_RELEASE_TREE=1 bash "build/$script" "$@" ) || rc=$?
     python3 "$REPO/tools/releasesrc.py" outputs "$tree/src" "$REPO/src" || exit 1
     exit $rc

@@ -88,7 +88,7 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "..\built\Final\RegMgr32"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /D "_FINAL" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /D "_FINAL" /YX /FD /c
+# ADD CPP /nologo /MD /W3 /Ox /GF /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /D "_FINAL" /YX /FD /c
 # ADD BASE RSC /l 0x409 /d "_AFXDLL"
 # ADD RSC /l 0x409 /d "_AFXDLL"
 BSC32=bscmake.exe

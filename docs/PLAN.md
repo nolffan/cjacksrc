@@ -77,7 +77,7 @@ Every one is Visual C++ .NET 2003 (13.10.3077): `progress/COMPILERS.md`.
 | 4 | `game`: `CShell.dll`, `Object.lto`, `ClientFx.fxd` from NOLF2's source release toward Contract J.A.C.K. -- first the shared code (with Build 69's TO2/TRON as the later reference), then Contract J.A.C.K.'s own (its weapons, its missions' objects, its HUD and menus), placed by the scoreboard | 2 | |
 | 5 | `gamespy`: `GameSpy.dll`: Monolith's wrapper from the image, GameSpy's SDK rolled back to 2003 | 2 | builds, retail's exports and behaviour (`build/gamespytest.sh`); 163/181 of Monolith's functions identical (below) |
 | 6 | `engine`: `Lithtech.exe` and `server.dll` from the Jupiter tree, trimmed to 2003, D3D8; the demos' engine for the SecuROM pages and the imports (a `demoimports.py` for these demos) | 2 | in progress: both build; `Lithtech.exe` 83.3%, `server.dll` 93.1% identical; converging (below) |
-| 7 | `apps`: the launcher `ContractJack.exe` and the dedicated server `ContractJackServer.exe` from NOLF2's Launcher and ServerApp | 2 | |
+| 7 | `apps`: the launcher `ContractJack.exe` and the dedicated server `ContractJackServer.exe` from NOLF2's Launcher and ServerApp | 2 | both build with retail's resources; `ContractJack.exe` 284/344 identical (98.9%), `ContractJackServer.exe` 550/644 (98.0%): what is left is ButeMgr's register allocation and EH funclets (below) |
 | 8 | `boot`: the built binaries in the game under Wine, to the menu, a level, saving and loading (`make test`, tools/playtest.sh) | 3-7 | |
 | 9 | `match`: byte-matching, module by module, ratcheted by `make progress` | 3-7 | |
 | 10 | `modern`: the modern build (`CJACK_MODERN`): fixes (`RETAIL_BUGS.md`), widescreen, our Bink player on FFmpeg, as nolf2src's | 8 | |
@@ -174,8 +174,8 @@ Done.
 
 ### 4. game
 
-The game DLLs build (`src/Game/TO2.dsw`); the launcher and the dedicated
-server are not in the workspace yet (their resources first).
+The game DLLs build (`src/Game/TO2.dsw`); so do the launcher and the
+dedicated server (package 7).
 
 - **Tree.** nolf2src's `src/Game` as its release build compiles it, with
   `src/libs` (ButeMgr, CryptMgr, RegMgr, RegMgr32, lith, stdlith, MFCStub,
@@ -623,6 +623,87 @@ back):
   imul order;
 - the textured lightmap sections have no constructors now (round 2);
   watch the modern build for code that relied on them.
+
+### 7. apps
+
+`ContractJack.exe` and `ContractJackServer.exe` build from NOLF2's
+Launcher and ServerApp in `src/Game/TO2.dsw` (`Launcher`, `ServerApp`),
+Final-only projects written for this project, with NOLF2's sources in
+NOLF2's file order. Recorded: the launcher 284 of 344 functions identical (98.9% of its bytes), the dedicated server
+550 of 644 (98.0%); the shared code it brought along (below) took CShell.dll to 4,937 and Object.lto to 8,133.
+
+- **Flags** (`progress/COMPILERS.md`): both `/MD /Ox /GF` -- no `/Gy`: the
+  retail images keep functions nothing calls (each dialog's
+  `GetThisMessageMap` beside `GetMessageMap`, CVersionMgr's unused
+  members) -- the launcher without `/GX` or `/GR`, the server's own
+  objects with `/GR` and without `/GX`. regmgr32.lib without `/GX`;
+  ButeMgrMfcDll and CryptMgrMfcDll are NOLF2's "Final MFC DLL"
+  configurations as projects of their own (`/O2 /GX`, MFC in a DLL). The
+  server links server.dll's import library. Rich header's 9 objects of
+  0x27/8491: AliasObj 7.0, from `mfc71.lib`.
+- **Resources**: retail's, 101 of the launcher's and 18 of the server's,
+  byte for byte (`tools/rsrcdiff.py`). The scripts restate Contract
+  J.A.C.K.'s dialogs, strings and version resources (VS.NET 2003's
+  `VALUE` form, no explicit `\0`); the art (76 bitmaps, 8 waves, icons,
+  cursor, splash) is written out of the retail images at build time by
+  `build/appres.py` into `src/Game/built/retail/` (`build/compile.sh`
+  runs it; the release tree gets a `rez` link for it). NOLF2's server art
+  is gone from the tree. Open question for the `release` package: the
+  public archive carries the built programs, so their art too.
+- **Scoreboard** (`progress/targets.py`, from our maps): each image's own
+  code up to the import thunks of the MFC functions called without
+  dllimport (launcher 0x40b8dc, server 0x41441c), and as second ranges the
+  dynamic initializers and atexit destructors of their own objects before
+  the ATL module's. `progress/extent-splits.csv` names the starts the
+  enumeration misses (uncalled functions after int3 padding: 41 and 49).
+- **Launcher** (from the retail code): hardware sound off by default;
+  "Enable Screenshots" (`+lockablebackbuffer`) in place of the animated
+  load screen, the options laid out anew; registry reads with a default;
+  the disc check files as literals; `+JOIN` and `+MOD <mod>` on the
+  command line in place of NOLF2's `-GO*`; the company and Sierra web
+  buttons only; an OnCtlColor on the main dialog; the restore-defaults
+  gamma 1.04; dialog positions. Its stdafx.h includes the SDK headers the
+  server's does, and it compiles the shared `VersionMgr.cpp` (CVersionMgr,
+  GAMEGUID).
+- **Dedicated server**: the players list without NOLF2's tags column; a
+  failed LoadBinaries reports the game server's status; "Retail" as a
+  literal; SCMD's game options listing with Contract J.A.C.K.'s types and
+  options.
+- **Shared code the game DLLs compile too** (their gains are in their
+  rows): VersionMgr.cpp (NOLF2's GetNetVersion/GetNetGameName/
+  GetBuildGuid for the client only, the empty two-argument member at
+  Object.lto 0x1015ccb0, the GUID-named exported int all four images
+  export), ProfileUtils.cpp (FixPlayerName, GetMaxPlayersForBandwidth,
+  the game type ids' case order), ScmdConsole.cpp, and ButeMgr: its key
+  hash is `5 * hash + tolower(c)`, and its string holder is a
+  `stdext::hash_set<std::string>` (case sensitive, the standard library's
+  hash and less) whose strings the items point to.
+- **Retail bugs** (`RETAIL_BUGS.md`, fixed under `CJACK_MODERN`, MODERN.md
+  APPS-1..3): the launcher's path overrun, its find handles, the server
+  console's formats.
+- **Where it stops**: the launcher's code is all placed (the 60 `small`
+  rows are relocation-only); its 2 unplaced are CustomizeDlg's EH
+  funclets, which retail keeps in `.text$x` beyond the scored range. The
+  server's nears are two register allocations in ButeMgr (a hash_map's
+  `lower_bound`, CButeMgr's constructor: which of the three CString
+  members stay in registers); its unplaced are ButeMgr's EH funclets.
+  Whole files: the imports are retail's in order (the server links
+  `server.lib` before `winmm.lib`); RegMgr and regmgr32 are `/Ox /GF`
+  (every image that links CRegMgr imports `RegDeleteKeyA`, used only by
+  its uncalled members), which gives the launcher's `.text` retail's
+  exact size and `.data` retail's bytes; what still moves code is which
+  copy of a folded COMDAT the linker keeps (the launcher's first object
+  ends Serialize/AssertValid/OnMouseMove in retail, AssertValid/
+  OnMouseMove/Serialize in ours), the `.rdata` order, and the server's
+  `.text`, 0xc0 bytes short. Data-only literals checked against the
+  retail strings: the server's application name `ContractJackServer`,
+  its registry key `Contract Jack`, its log `server.log`, the launcher's
+  `CJ Modification %i`.
+- **For the game package**: RegMgr is now `/Ox /GF` (CShell.dll and
+  Object.lto import RegDeleteKeyA/RegDeleteValueA as retail does; no
+  score change); VersionMgr.cpp's NOLF2 network strings are client-only;
+  ButeMgr's string holder change and hash (above) gained 13 and 12
+  functions in CShell.dll and Object.lto.
 
 ### 11. release
 
