@@ -44,8 +44,6 @@ extern bool g_bLAN;
 CScreenMain::CScreenMain()
 {
     m_pResume = LTNULL;
-    m_pGameType = LTNULL;
-	m_pGameTypeFrame = LTNULL;
 
 }
 
@@ -55,9 +53,12 @@ CScreenMain::~CScreenMain()
 
 
 // Build the screen
+// RETAIL: CShell.dll 0x100d1d60. Contract J.A.C.K.'s main menu: single player,
+// continue, multiplayer, options, profile and quit -- no LAN item and no game
+// type list (the multiplayer screens choose the game type) -- and the
+// version text from the string table with the mod's name.
 LTBOOL CScreenMain::Build()
 {
-
 	char szTmp[1024];
 	FormatString(IDS_SINGLEPLAYER,szTmp,sizeof(szTmp));
 
@@ -66,67 +67,23 @@ LTBOOL CScreenMain::Build()
 	m_pResume = AddTextItem(IDS_CONTINUE_GAME, CMD_CONTINUE_GAME, IDS_HELP_CONTINUE_GAME);
 	m_pResume->Enable(LTFALSE);
 
-	CLTGUITextCtrl* pMP = AddTextItem(IDS_MULTIPLAYER, CMD_MULTI_PLAYER, IDS_HELP_MULTIPLAYER);
-	// RETAIL: 0x100d1e2e Contract J.A.C.K.'s main menu has no LAN item:
-	// multiplayer covers both.
-	CLTGUITextCtrl* pOptions = AddTextItem(IDS_OPTIONS, CMD_OPTIONS, IDS_HELP_OPTIONS);
-	CLTGUITextCtrl* pCtrl = AddTextItem(IDS_PROFILE, CMD_PROFILE, IDS_HELP_PROFILE);
-
-#ifdef _TO2DEMO
-	pMP->Enable( LTFALSE );
-#endif
+	AddTextItem(IDS_MULTIPLAYER, CMD_MULTI_PLAYER, IDS_HELP_MULTIPLAYER);
+	AddTextItem(IDS_OPTIONS, CMD_OPTIONS, IDS_HELP_OPTIONS);
+	AddTextItem(IDS_PROFILE, CMD_PROFILE, IDS_HELP_PROFILE);
 
 	AddTextItem(IDS_EXIT, CMD_QUIT, IDS_HELP_EXIT, s_BackPos);
 
 
-	char szFrame[128];
-	g_pLayoutMgr->GetScreenCustomString((eScreenID)m_nScreenID,"FrameTexture",szFrame,sizeof(szFrame));
-	HTEXTURE hFrame = g_pInterfaceResMgr->GetTexture(szFrame);
-
-	LTRect rect = g_pLayoutMgr->GetScreenCustomRect((eScreenID)m_nScreenID,"GameTypeRect");
-	int nHeight = (rect.bottom - rect.top);
-	int nWidth = (rect.right - rect.left);
-	LTIntPt pos = LTIntPt(rect.left,rect.top);
-
-	m_pGameTypeFrame = debug_new(CLTGUIFrame);
-	m_pGameTypeFrame->Create(hFrame,nWidth,nHeight,LTTRUE);
-	m_pGameTypeFrame->SetBasePos(pos);
-	m_pGameTypeFrame->Show(LTFALSE);
-	AddControl(m_pGameTypeFrame);
-
-
-	nWidth -= 16;
-	m_pGameType = AddList(pos,nHeight, LTTRUE, nWidth);
-	if (m_pGameType)
-	{
-		m_pGameType->SetIndent(LTIntPt(8,8));
-		m_pGameType->SetFrameWidth(2);
-		m_pGameType->Show(LTFALSE);
-
-
-		CLTGUITextCtrl *pCtrl = CreateTextItem(IDS_COOPERATIVE,	CMD_COOP, 0);
-		m_pGameType->AddControl(pCtrl);
-
-		pCtrl = CreateTextItem(IDS_DEATHMATCH, CMD_DM, 0);
-		m_pGameType->AddControl(pCtrl);
-
-		pCtrl = CreateTextItem(IDS_TEAMDEATHMATCH, CMD_TEAM_DM, 0);
-		m_pGameType->AddControl(pCtrl);
-
-		pCtrl = CreateTextItem(IDS_DOOMSDAY, CMD_DOOM, 0);
-		m_pGameType->AddControl(pCtrl);
-	}
-
-
 	// Put the version number at versionpos, but don't let it clip off the edge.
-	pos = g_pLayoutMgr->GetScreenCustomPoint((eScreenID)m_nScreenID,"VersionPos");
+	LTIntPt pos = g_pLayoutMgr->GetScreenCustomPoint((eScreenID)m_nScreenID,"VersionPos");
 	uint8 nFont = g_pLayoutMgr->GetHelpFont();
-	
-	std::string sVersion = g_pVersionMgr->GetVersion();
-	sVersion += " - ";
-	sVersion += g_pClientMultiplayerMgr->GetModName();
-	
-	pCtrl= AddTextItem( const_cast<char*>(sVersion.c_str()),LTNULL,LTNULL,pos,LTTRUE,nFont);
+
+	char szVersion[256];
+	g_pVersionMgr->GetDisplayVersion( szVersion, sizeof( szVersion ));
+	strcat( szVersion, " - " );
+	strcat( szVersion, g_pClientMultiplayerMgr->GetModName() );
+
+	CLTGUITextCtrl* pCtrl = AddTextItem( szVersion,LTNULL,LTNULL,pos,LTTRUE,nFont);
 	pCtrl->SetFont(LTNULL,g_pLayoutMgr->GetHelpSize());
 	uint16 nUnScaledWidth = pCtrl->GetBaseWidth();
 	if( pos.x + nUnScaledWidth >= 640 )
@@ -139,11 +96,6 @@ LTBOOL CScreenMain::Build()
 		pos.y = 480 - nUnScaledHeight;
 	}
 	pCtrl->SetBasePos(pos);
-
-
-	//Build multiplayer screen to force construction of DM mission file
-	CScreenMulti *pMulti = (CScreenMulti *)m_pScreenMgr->GetScreenFromID(SCREEN_ID_MULTI);
-	pMulti->Build();
 
 
 	// Make sure to call the base class
@@ -176,11 +128,6 @@ void CScreenMain::OnFocus(LTBOOL bFocus)
 		// "continue game" and "quick load" assumes sp.
 		g_pGameClientShell->SetGameType( eGameTypeSingle );
 
-		m_pGameType->Show(LTFALSE);
-		m_pGameType->SetSelection(kNoSelection);
-		m_pGameTypeFrame->Show(LTFALSE);
-
-
 		// Initialize to the sp mission bute.
 		if( !g_pMissionButeMgr->Init( MISSION_DEFAULT_FILE ))
 		{
@@ -191,7 +138,8 @@ void CScreenMain::OnFocus(LTBOOL bFocus)
 		g_pClientSaveLoadMgr->SetUseMultiplayerFolders( false );
 		g_pClientMultiplayerMgr->SetupServerSinglePlayer( );
 
-		m_pResume->Enable( g_pClientSaveLoadMgr->CanContinueGame() );
+		if( m_pResume )
+			m_pResume->Enable( g_pClientSaveLoadMgr->CanContinueGame() );
 
 		// We don't go thru the main screen when joining from command line, so disable it if
 		// we get here.
@@ -202,6 +150,9 @@ void CScreenMain::OnFocus(LTBOOL bFocus)
 }
 
 
+// RETAIL: CShell.dll 0x100d2110. Multiplayer goes to the multiplayer screen
+// once the missions file the multiplayer screen writes is there; the game
+// types are chosen there.
 uint32 CScreenMain::OnCommand(uint32 dwCommand, uint32 dwParam1, uint32 dwParam2)
 {
 	switch(dwCommand)
@@ -212,8 +163,29 @@ uint32 CScreenMain::OnCommand(uint32 dwCommand, uint32 dwParam1, uint32 dwParam2
 			break;
 		}
 
-	case CMD_DM:
+	case CMD_MULTI_PLAYER:
 		{
+			g_bLAN = false;
+
+			char path[256];
+			std::string sFN = _getcwd(path,sizeof(path));
+			sFN += "\\";
+			sFN += MISSION_DM_FILE;
+
+			if (!CWinUtil::FileExist(sFN.c_str()))
+			{
+				MBCreate mb;
+				g_pInterfaceMgr->ShowMessageBox(IDS_NO_DM_MAPS,&mb);
+				return 0;
+			}
+
+			m_pScreenMgr->SetCurrentScreen(SCREEN_ID_MULTI);
+		} break;
+
+	case CMD_MULTI_PLAYER_LAN:
+		{
+			g_bLAN = true;
+
 			char path[256];
 			std::string sFN = _getcwd(path,sizeof(path));
 			sFN += "\\";
@@ -227,84 +199,9 @@ uint32 CScreenMain::OnCommand(uint32 dwCommand, uint32 dwParam1, uint32 dwParam2
 			}
 
 			g_pGameClientShell->SetGameType( eGameTypeDeathmatch);
-
-			if (!g_bLAN)
-				g_pInterfaceResMgr->DrawMessage(IDS_INTERNET);
 			m_pScreenMgr->SetCurrentScreen(SCREEN_ID_MULTI);
 		} break;
 
-	case CMD_TEAM_DM:
-		{
-			char path[256];
-			std::string sFN = _getcwd(path,sizeof(path));
-			sFN += "\\";
-			sFN += MISSION_DM_FILE;
-
-			if (!CWinUtil::FileExist(sFN.c_str()))
-			{
-				MBCreate mb;
-				g_pInterfaceMgr->ShowMessageBox(IDS_NO_DM_MAPS,&mb);
-				return 0;
-			}
-
-			g_pGameClientShell->SetGameType( eGameTypeTeamDeathmatch );
-
-			if (!g_bLAN)
-				g_pInterfaceResMgr->DrawMessage(IDS_INTERNET);
-			m_pScreenMgr->SetCurrentScreen(SCREEN_ID_MULTI);
-		} break;
-
-	case CMD_COOP:
-		{
-			g_pGameClientShell->SetGameType(eGameTypeCooperative);
-			if (!g_bLAN)
-				g_pInterfaceResMgr->DrawMessage(IDS_INTERNET);
-			m_pScreenMgr->SetCurrentScreen(SCREEN_ID_MULTI);
-		} break;
-
-	case CMD_DOOM:
-		{
-			char path[256];
-			std::string sFN = _getcwd(path,sizeof(path));
-			sFN += "\\";
-			sFN += MISSION_DD_FILE;
-
-			if (!CWinUtil::FileExist(sFN.c_str()))
-			{
-				MBCreate mb;
-				g_pInterfaceMgr->ShowMessageBox(IDS_NO_DM_MAPS,&mb);
-				return 0;
-			}
-
-			g_pGameClientShell->SetGameType( eGameTypeDoomsDay);
-
-			if (!g_bLAN)
-				g_pInterfaceResMgr->DrawMessage(IDS_INTERNET);
-			m_pScreenMgr->SetCurrentScreen(SCREEN_ID_MULTI);
-		} break;
-
-	case CMD_MULTI_PLAYER:
-		{
-#ifndef _TO2DEMO
-			g_bLAN = false;
-			m_pGameType->Show(LTTRUE);
-			m_pGameTypeFrame->Show(LTTRUE);
-			SetSelection(GetIndex(m_pGameType));
-#endif
-			break;
-
-		}
-	case CMD_MULTI_PLAYER_LAN:
-		{
-#ifndef _TO2DEMO
-			g_bLAN = true;
-			m_pGameType->Show(LTTRUE);
-			m_pGameTypeFrame->Show(LTTRUE);
-			SetSelection(GetIndex(m_pGameType));
-#endif
-			break;
-
-		}
 	case CMD_OPTIONS:
 		{
 			m_pScreenMgr->SetCurrentScreen(SCREEN_ID_OPTIONS);
@@ -371,16 +268,5 @@ LTBOOL   CScreenMain::Render(HSURFACE hDestSurf)
 
 void CScreenMain::Escape()
 {
-	if (m_pGameType->IsVisible())
-	{
-		m_pGameType->SetSelection(kNoSelection);
-		m_pGameType->Show(LTFALSE);
-		m_pGameTypeFrame->Show(LTFALSE);
-
-		SetSelection(0);
-		g_pInterfaceMgr->RequestInterfaceSound(IS_SELECT);
-		return;
-	}
-	
 	CBaseScreen::Escape();
 }

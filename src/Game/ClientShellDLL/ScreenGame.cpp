@@ -42,7 +42,6 @@ CScreenGame::CScreenGame()
 	m_nWeaponSway = 0;
 	m_nMsgDur = 0;
 	m_bAutoWeaponSwitch = LTTRUE;
-	m_bLoadScreenTips = LTTRUE;
 	m_bVehicleContour = LTTRUE;
 }
 
@@ -142,9 +141,7 @@ LTBOOL CScreenGame::Build()
 	pToggle->SetOnString(szYes);
 	pToggle->SetOffString(szNo);
 
-	pToggle = AddToggle(IDS_LOAD_TIPS, IDS_HELP_LOAD_TIPS, kGap, &m_bLoadScreenTips );
-	pToggle->SetOnString(LoadTempString(IDS_ON));
-	pToggle->SetOffString(LoadTempString(IDS_OFF));
+	// RETAIL: no load screen tips toggle (CShell.dll 0x100c1350)
 
 	pToggle = AddToggle(IDS_CONTOUR, IDS_HELP_CONTOUR, kGap, &m_bVehicleContour );
 	pToggle->SetOnString(LoadTempString(IDS_ON));
@@ -189,7 +186,6 @@ void CScreenGame::OnFocus(LTBOOL bFocus)
 		m_nWeaponSway = pProfile->m_nWeaponSway;
 		m_nMsgDur = pProfile->m_nMsgDur;
 		m_bAutoWeaponSwitch = pProfile->m_bAutoWeaponSwitch;
-		m_bLoadScreenTips = pProfile->m_bLoadScreenTips;
 		m_bVehicleContour = pProfile->m_bVehicleContour;
 
 		m_pDifficultyCtrl->Enable( !(g_pLTClient->IsConnected() && IsMultiplayerGame())	);
@@ -209,7 +205,6 @@ void CScreenGame::OnFocus(LTBOOL bFocus)
 		pProfile->m_nWeaponSway = m_nWeaponSway;
 		pProfile->m_nMsgDur = m_nMsgDur;
 		pProfile->m_bAutoWeaponSwitch = m_bAutoWeaponSwitch;
-		pProfile->m_bLoadScreenTips = m_bLoadScreenTips;
 		pProfile->m_bVehicleContour = m_bVehicleContour;
 
 		pProfile->ApplyGameOptions();

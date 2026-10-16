@@ -46,12 +46,7 @@ namespace
 extern bool g_bLAN;
 
 //local butemgr for use reading DM mission configurations
-class CDMButeMgr : public CGameButeMgr
-{
-	public :
-        virtual LTBOOL	Init(const char* szAttributeFile);
-		CButeMgr*	GetButeMgr() {return &m_buteMgr;}
-};
+#include "DMButeMgr.h"
 
 // ----------------------------------------------------------------------- //
 //
@@ -218,7 +213,8 @@ LTBOOL CScreenMulti::Build()
 	m_pStatusCtrl = AddTextItem(FormatTempString(IDS_STATUS_STRING,szTmp), 0, 0, pos, LTTRUE);
 	m_pStatusCtrl->SetFont(NULL, nMOTDSize);
 
-	CreateDMMissionFile();
+	// RETAIL: the game client shell writes the missions file
+	g_pGameClientShell->CreateMPMissionFile();
 //	CreateTDMMissionFile();
 	// cjacksrc: RETAIL: CShell 0x1004c1ca: the one file has them all.
 //	CreateDDMissionFile();

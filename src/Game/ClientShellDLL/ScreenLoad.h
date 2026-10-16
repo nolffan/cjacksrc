@@ -45,7 +45,7 @@ protected:
 	void	ClearSavedLevelLists();
 	void	ParseSaveString(char const* pszWorldName, char const* pszTitle, time_t const& saveTime, SaveGameData *pSG, bool bUserName);
 	CLTGUIColumnCtrl* BuildSaveControls( char const* pszIniKey, uint32 nCommandId, uint32 nControlHelpStringId, 
-									bool bUserName );
+									bool bUserName , LTIntPt pos = kDefaultPos );
 
 };
 

@@ -41,9 +41,6 @@ protected:
 
 	CLTGUITextCtrl* m_pResume;
 
-	CLTGUIListCtrl* m_pGameType;
-	CLTGUIFrame*	m_pGameTypeFrame;
-
 };
 
 #endif // _SCREEN_MAIN_H_

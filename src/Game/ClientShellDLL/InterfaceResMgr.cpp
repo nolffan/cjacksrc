@@ -311,7 +311,8 @@ LTBOOL CInterfaceResMgr::InitFonts()
 			m_FontArray.push_back(pFont);
 		else
 		{
-			g_pLTClient->CPrint("Failed to create font <%s> at size %d.",szFontName,nPtSize);
+			// RETAIL: a debug print (CShell.dll 0x1006cddf)
+			DebugCPrint(1,"Failed to create font <%s> at size %d.",szFontName,nPtSize);
 		}
 	}
 
@@ -507,7 +508,9 @@ CUIFont* CInterfaceResMgr::CreateFont(char const* pszFontFile, char const* pszFo
 	//this will set the width of the space character for proportional fonts
 	if (pFont)
 	{
-		//[dlj] This is now handled programmatically in cuiformattedpolystring_impl		pFont->SetDefCharWidth((ptSize/4));
+		// RETAIL: Contract J.A.C.K. sets the space's width again (CShell.dll
+		// 0x1006c859); without it the briefing's text is spaced out wider
+		pFont->SetDefCharWidth((ptSize/4));
 		pFont->SetDefColor(argbBlack);
 	}
 
@@ -515,7 +518,8 @@ CUIFont* CInterfaceResMgr::CreateFont(char const* pszFontFile, char const* pszFo
 	{
 		uint32 w,h;
 		g_pTexInterface->GetTextureDims(pFont->GetTexture(),w,h);
-		g_pLTClient->CPrint("Created font <%s> using a %dX%d texture.",pszFontFace,w,h);
+		// RETAIL: a debug print (CShell.dll 0x1006c8a2)
+		DebugCPrint(1,"Created font <%s> using a %dX%d texture.",pszFontFace,w,h);
 
 	}
 

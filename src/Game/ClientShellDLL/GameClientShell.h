@@ -150,6 +150,11 @@ public:
 	bool		LauncherServerApp( char const* pszProfileFile );
 	bool		LaunchPatchUpdater( char const* pszURL );
 
+	// RETAIL: CShell.dll 0x1004adb0, called once the game has initialized:
+	// writes the multiplayer missions file (MPMissions.txt) from the
+	// deathmatch, demolition and doomsday worlds in the resources.
+	void		CreateMPMissionFile();
+
 protected :
     uint32      OnEngineInitialized(RMode *pMode, LTGUID *pAppGuid);
 	void		OnEngineTerm();

@@ -16,6 +16,7 @@
 #include "ClientServerShared.h"
 #if defined(_CLIENTBUILD)
 #include "ClientResShared.h"
+#include "ClientRes.h"	// RETAIL: IDS_CJ_1432, the menu's version
 #endif
 
 // RETAIL: Contract J.A.C.K.'s game GUID (CShell.dll's data at 0x101504a0)
@@ -177,6 +178,19 @@ CVersionMgr::CVersionMgr()
 // which compile this file without /Gy, have none (ContractJack.exe goes from
 // GetVersion's 0x40a8a0 and Update's 0x40a8b0 to the constructor 0x40a8c0).
 #if defined(_CLIENTBUILD)
+// RETAIL: CShell.dll 0x1010d130: the version the main menu shows, from the
+// string table ("v1.1"); GetVersion's "CJ v1.1" is the save files' and the
+// servers'
+void CVersionMgr::GetDisplayVersion( char* pszVersion, uint32 nLen )
+{
+	char const* pszDisplay = LoadTempString( IDS_CJ_1432 );
+	if( nLen )
+	{
+		strncpy( pszVersion, pszDisplay, nLen - 1 );
+		pszVersion[nLen - 1] = '\0';
+	}
+}
+
 const char* CVersionMgr::GetNetVersion()
 {
 	return s_szNetVersion;
