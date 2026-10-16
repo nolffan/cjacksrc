@@ -220,6 +220,19 @@ driver crashes instead of running silent.
 Fixed in the modern build: src/Engine/runtime/sound/src/soundmgr.cpp,
 MODERN.md EN-7.
 
+### DrawPrim sets a viewport of undefined size
+
+Lithtech.exe 0x41c1f0 (CD3DDrawPrim::SetCamera, src/Engine/runtime/
+render_b/src/sys/d3d/d3ddrawprim.cpp). When the draw-prim camera's
+rectangle (or, with no camera, the screen) differs from the current
+viewport, SetCamera stores the new size in its saved viewport but builds
+the viewport it passes to SetViewport with only the position and depth
+range: its Width and Height are whatever the stack held. Direct3D either
+refuses the call or clips draw-prim output to a nonsense rectangle.
+
+Fixed in the modern build: src/Engine/runtime/render_b/src/sys/d3d/
+d3ddrawprim.cpp, MODERN.md EN-8.
+
 ### The launcher's own path can overrun a buffer
 
 ContractJack.exe 0x40669d (CLauncherApp::InitInstance,

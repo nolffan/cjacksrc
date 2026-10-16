@@ -81,3 +81,7 @@ modes at any size; our Bink player on FFmpeg in place of RAD's
 * **EN-7: no sound driver.** SoundSys leaves the driver null when no driver
   can be made, rather than calling Term through the null pointer
   (`RETAIL_BUGS.md`; src/Engine/runtime/sound/src/soundmgr.cpp).
+* **EN-8: DrawPrim's viewport.** CD3DDrawPrim::SetCamera gives the viewport
+  it sets the camera's (or the screen's) width and height
+  (`RETAIL_BUGS.md`; src/Engine/runtime/render_b/src/sys/d3d/
+  d3ddrawprim.cpp).

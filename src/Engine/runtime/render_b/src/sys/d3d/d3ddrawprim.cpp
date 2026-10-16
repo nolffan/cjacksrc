@@ -324,13 +324,15 @@ void CD3DDrawPrim::SetCamera(LPDIRECT3DDEVICE8 pDevice)
 			vp.X = pCamera->m_Left;
 			vp.Y = pCamera->m_Top;
 
-			// Retail stores the camera's size into the saved viewport (which
-			// PopRenderStates restores) and leaves vp.Width/Height unset; use
-			// the camera's size for both.
+			// RETAIL: the camera's size goes into the saved viewport (which
+			// PopRenderStates restores) and vp.Width/Height are left unset
+			// (Lithtech.exe 0x41c296; RETAIL_BUGS.md, MODERN.md EN-8)
 			m_PrevViewport.Width  = pCamera->m_Right - pCamera->m_Left;
 			m_PrevViewport.Height = pCamera->m_Bottom - pCamera->m_Top;
+#ifdef CJACK_MODERN
 			vp.Width  = m_PrevViewport.Width;
 			vp.Height = m_PrevViewport.Height;
+#endif
 
 			PD3DDEVICE->SetViewport(&vp);
 
@@ -348,11 +350,13 @@ void CD3DDrawPrim::SetCamera(LPDIRECT3DDEVICE8 pDevice)
 			vp.X = 0;
 			vp.Y = 0;
 
-			// As above: retail writes the size into the saved viewport.
+			// As above: retail writes the size into the saved viewport only.
 			m_PrevViewport.Width  = g_ScreenWidth;
 			m_PrevViewport.Height = g_ScreenHeight;
+#ifdef CJACK_MODERN
 			vp.Width  = g_ScreenWidth;
 			vp.Height = g_ScreenHeight;
+#endif
 
 			PD3DDEVICE->SetViewport(&vp);
 
