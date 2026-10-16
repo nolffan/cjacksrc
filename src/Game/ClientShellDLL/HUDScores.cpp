@@ -213,11 +213,9 @@ void CHUDScores::Update()
 			sprintf(szTmp,"%d",pCI->sScore.GetFrags());
 			m_Columns[nTeam][ndx].GetPolyString(2)->SetText(szTmp);
 
-			sprintf(szTmp,"%d",pCI->sScore.GetTags());
-			m_Columns[nTeam][ndx].GetPolyString(3)->SetText(szTmp);
-
+			// RETAIL: CShell 0x10060ace: no tags column.
 			sprintf(szTmp,"%d",pCI->nPing);
-			m_Columns[nTeam][ndx].GetPolyString(4)->SetText(szTmp);
+			m_Columns[nTeam][ndx].GetPolyString(3)->SetText(szTmp);
 
 			if (nLocalID == pCI->nID)
 			{
@@ -327,10 +325,10 @@ void CHUDScores::UpdateLayout()
 	uint16 nCol1 = g_pLayoutMgr->GetInt(pTag,"NameColumn");
 	uint16 nCol2 = g_pLayoutMgr->GetInt(pTag,"ScoreColumn");
 	uint16 nCol3 = g_pLayoutMgr->GetInt(pTag,"KillColumn");
-	uint16 nCol4 = g_pLayoutMgr->GetInt(pTag,"TagColumn");
+	// cjacksrc: RETAIL: CShell 0x10061272: Contract J.A.C.K. shows no tags.
 	uint16 nCol5 = g_pLayoutMgr->GetInt(pTag,"PingColumn");
 
-	m_nFrameWidth = (nCol1+nCol2+nCol3+nCol4+nCol5) + 16;
+	m_nFrameWidth = (nCol1+nCol2+nCol3+nCol5) + 16;
 
 	if (!m_bControlsInited)
 	{
@@ -353,7 +351,6 @@ void CHUDScores::UpdateLayout()
 			m_Header[team].AddColumn(LoadTempString(IDS_SCORE_PLAYERS), (nCol1-8), LTFALSE);
 			m_Header[team].AddColumn(LoadTempString(IDS_SCORE_SCORE), nCol2, LTFALSE);
 			m_Header[team].AddColumn(LoadTempString(IDS_SCORE_KILLS), nCol3, LTFALSE);
-			m_Header[team].AddColumn(LoadTempString(IDS_SCORE_TAGS), nCol4, LTFALSE);
 			m_Header[team].AddColumn(LoadTempString(IDS_SCORE_PING), nCol5, LTFALSE);
 
 			for (int i = 0; i < kMaxPlayers; i++)
@@ -363,7 +360,6 @@ void CHUDScores::UpdateLayout()
 				m_Columns[team][i].AddColumn("<player name>", nCol1, LTTRUE);
 				m_Columns[team][i].AddColumn("<Score>", nCol2, LTTRUE);
 				m_Columns[team][i].AddColumn("<Frags>", nCol3, LTTRUE);
-				m_Columns[team][i].AddColumn("<Tags>", nCol4, LTTRUE);
 				m_Columns[team][i].AddColumn("<Ping>", nCol5, LTTRUE);
 				m_Columns[team][i].Show(LTFALSE);
 

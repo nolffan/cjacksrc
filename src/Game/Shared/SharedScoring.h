@@ -34,13 +34,13 @@ public:
 
 	int32	GetScore() {return m_nScore;}
 	int32	GetFrags() {return m_nFrags;}
-	int32	GetTags() {return m_nTags;}
 
 private:
 	uint32	m_nClientID;
 	int32	m_nScore;
 	int32	m_nFrags;
-	int32	m_nTags;
+	// cjacksrc: RETAIL: Object 0x101472c0: Contract J.A.C.K. keeps no
+	// tags.
 
 	bool	m_bInitted;
 };

@@ -290,7 +290,9 @@ class CInterfaceMgr
         LTBOOL      AllowCameraMovement();
 		LTBOOL		AllowCameraRotation();
 
-        virtual void UpdatePlayerStats(uint8 nThing, uint8 nType1, uint8 nType2, LTFLOAT fAmount);
+        // cjacksrc: RETAIL: CShell 0x1006a280: reads the message itself (a
+        // pickup's message carries more).
+        virtual void UpdatePlayerStats(ILTMessage_Read *pMsg);
 
 		void		ScreenDimsChanged();
 

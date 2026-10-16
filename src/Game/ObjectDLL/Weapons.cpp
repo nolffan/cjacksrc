@@ -322,6 +322,7 @@ LTBOOL CWeapons::AddWeapon(LPBASECLASS pObject, HOBJECT hSender, ILTMessage_Read
 							cMsg.Writeuint8(WMGR_INVALID_ID);
 							cMsg.Writeuint8(pWeapon->nDefaultAmmoId);
 							cMsg.Writefloat(static_cast<float>(GetAmmoCount(pWeapon->nDefaultAmmoId)));
+							cMsg.Writebool(pPlayer->GetActivatePickup());
 							g_pLTServer->SendToClient(cMsg.Read(), hClient, MESSAGE_GUARANTEED);
 						}
 					}
@@ -386,6 +387,7 @@ LTBOOL CWeapons::AddWeapon(LPBASECLASS pObject, HOBJECT hSender, uint8 nWeaponId
                 cMsg.Writeuint8(nWeaponId);
                 cMsg.Writeuint8(nAmmoId);
                 cMsg.Writefloat((LTFLOAT)GetAmmoCount(nAmmoId));
+                cMsg.Writebool(pPlayer->GetActivatePickup());
 				g_pLTServer->SendToClient(cMsg.Read(), hClient, MESSAGE_GUARANTEED);
 			}
 
@@ -411,6 +413,7 @@ LTBOOL CWeapons::AddWeapon(LPBASECLASS pObject, HOBJECT hSender, uint8 nWeaponId
 				cMsg.Writeuint8(nWeaponId);
 				cMsg.Writeuint8(WMGR_INVALID_ID);
 				cMsg.Writefloat(0.0f);
+				cMsg.Writebool(pPlayer->GetActivatePickup());
 				g_pLTServer->SendToClient(cMsg.Read(), hClient, MESSAGE_GUARANTEED);
 			}
 		}
@@ -514,6 +517,7 @@ LTBOOL CWeapons::AddAmmoBox(LPBASECLASS pObject, HOBJECT hSender, ILTMessage_Rea
 						cMsg.Writeuint8(WMGR_INVALID_ID);
 						cMsg.Writeuint8(nAmmoId[i]);
 						cMsg.Writefloat((LTFLOAT)GetAmmoCount(nAmmoId[i]));
+						cMsg.Writebool(pPlayer->GetActivatePickup());
 						g_pLTServer->SendToClient(cMsg.Read(), hClient, MESSAGE_GUARANTEED);
 					}
 				}
@@ -831,6 +835,7 @@ void CWeapons::ObtainMod(uint8 nWeaponId, uint8 nModId, bool bNotifyClient,
             cMsg.Writeuint8(true);
             cMsg.Writeuint8(nModId);
             cMsg.Writefloat(bDisplayMsg ? 1.0f : 0.0f);
+            cMsg.Writebool(pPlayer->GetActivatePickup());
 			g_pLTServer->SendToClient(cMsg.Read(), hClient, MESSAGE_GUARANTEED);
 		}
 	}

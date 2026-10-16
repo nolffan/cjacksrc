@@ -67,13 +67,13 @@ LTBOOL CScreenMain::Build()
 	m_pResume->Enable(LTFALSE);
 
 	CLTGUITextCtrl* pMP = AddTextItem(IDS_MULTIPLAYER, CMD_MULTI_PLAYER, IDS_HELP_MULTIPLAYER);
-	CLTGUITextCtrl* pMPLan = AddTextItem(IDS_MULTIPLAYER_LAN, CMD_MULTI_PLAYER_LAN, IDS_HELP_MULTIPLAYER_LAN);
+	// RETAIL: 0x100d1e2e Contract J.A.C.K.'s main menu has no LAN item:
+	// multiplayer covers both.
 	CLTGUITextCtrl* pOptions = AddTextItem(IDS_OPTIONS, CMD_OPTIONS, IDS_HELP_OPTIONS);
 	CLTGUITextCtrl* pCtrl = AddTextItem(IDS_PROFILE, CMD_PROFILE, IDS_HELP_PROFILE);
 
 #ifdef _TO2DEMO
 	pMP->Enable( LTFALSE );
-	pMPLan->Enable( LTFALSE );
 #endif
 
 	AddTextItem(IDS_EXIT, CMD_QUIT, IDS_HELP_EXIT, s_BackPos);

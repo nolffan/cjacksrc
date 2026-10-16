@@ -395,7 +395,10 @@ bool PickupItem::OnTrigger(HOBJECT hSender, const CParsedMsg &cMsg)
 
 			SetPlayerObj(hSender);
 
+			// RETAIL: Object 0x10105705: the player activated us.
+			pPlayer->SetActivatePickup( true );
 			ObjectTouch(hSender);
+			pPlayer->SetActivatePickup( false );
 		}
 		else
 		{

@@ -33,6 +33,13 @@
 #include "timer.h"
 #include "WaveFn.h"
 
+// cjacksrc: Contract J.A.C.K.'s CRes strings (ClientRes/TO2/ClientRes.h's
+// IDS_CJ_536, IDS_CJ_1440 to IDS_CJ_1442).
+#define IDS_CJ_SECRET			536		// "You found a secret." 
+#define IDS_CJ_CDKEYREJECTED	1440	// "CD-Key verification failed."
+#define IDS_CJ_BADFILES			1441	// "Invalid game assets."
+#define IDS_CJ_BANNED			1442	// "You have been banned from the server."
+
 CInterfaceMgr*  g_pInterfaceMgr = LTNULL;
 
 #define IM_SPLASH_SOUND		"Interface\\Menu\\Snd\\theme_mp3.wav"
@@ -1656,12 +1663,7 @@ LTBOOL CInterfaceMgr::OnMessage(uint8 messageID, ILTMessage_Read *pMsg)
 	{
 		case MID_PLAYER_INFOCHANGE :
 		{
-            uint8 nThing    = pMsg->Readuint8();
-            uint8 nType1    = pMsg->Readuint8();
-            uint8 nType2    = pMsg->Readuint8();
-            LTFLOAT fAmount  = pMsg->Readfloat();
-
-			UpdatePlayerStats(nThing, nType1, nType2, fAmount);
+			UpdatePlayerStats(pMsg);
 
             return LTTRUE;
 		}
@@ -1725,8 +1727,10 @@ LTBOOL CInterfaceMgr::OnMessage(uint8 messageID, ILTMessage_Read *pMsg)
 		{
             uint8 nGearId = pMsg->Readuint8();
 			bool bPickedUp = pMsg->Readbool();
+			// RETAIL: CShell 0x100678c0: whether the player activated it.
+			bool bShowFail = pMsg->Readbool();
 
-			g_pGameClientShell->HandleGearPickup(nGearId, bPickedUp);
+			g_pGameClientShell->HandleGearPickup(nGearId, bPickedUp, bShowFail);
 
 			if (bPickedUp)
 			{
@@ -2444,9 +2448,13 @@ LTBOOL CInterfaceMgr::OnEvent(uint32 dwEventID, uint32 dwParam)
 // ----------------------------------------------------------------------- //
 
 // ABM TODO move this function out of base class into TronInterfaceMgr.
-void CInterfaceMgr::UpdatePlayerStats(uint8 nThing, uint8 nType1,
-                                      uint8 nType2, LTFLOAT fAmount)
+void CInterfaceMgr::UpdatePlayerStats(ILTMessage_Read *pMsg)
 {
+    uint8 nThing    = pMsg->Readuint8();
+    uint8 nType1    = pMsg->Readuint8();
+    uint8 nType2    = pMsg->Readuint8();
+    LTFLOAT fAmount  = pMsg->Readfloat();
+
 	switch (nThing)
 	{
 		case IC_WEAPON_OBTAIN_ID :
@@ -2457,13 +2465,17 @@ void CInterfaceMgr::UpdatePlayerStats(uint8 nThing, uint8 nType1,
 
 		case IC_WEAPON_PICKUP_ID :
 		{
+			// RETAIL: CShell 0x1006a2e8: whether the player activated the
+			// pickup.
+			bool bShowFail = pMsg->Readbool();
+
 			if (nType2 != WMGR_INVALID_ID)
 			{
-				GetPlayerStats( )->UpdateAmmo(nType1, nType2, (uint32)fAmount, LTTRUE);
+				GetPlayerStats( )->UpdateAmmo(nType1, nType2, (uint32)fAmount, LTTRUE, LTTRUE, bShowFail);
 			}
 			else
 			{
-				g_pGameClientShell->HandleWeaponPickup(nType1,false);
+				g_pGameClientShell->HandleWeaponPickup(nType1, false, bShowFail);
 			}
 		}
 		break;
@@ -2472,10 +2484,12 @@ void CInterfaceMgr::UpdatePlayerStats(uint8 nThing, uint8 nType1,
 		{
 			bool bPickedUp = (bool) !!(nType1);
 			bool bDisplayMsg = (bool) !!(fAmount);
+			// RETAIL: CShell 0x1006a37e.
+			bool bShowFail = pMsg->Readbool();
 
 			if (bDisplayMsg)
 			{
-				g_pGameClientShell->HandleModPickup(nType2, bPickedUp);
+				g_pGameClientShell->HandleModPickup(nType2, bPickedUp, bShowFail);
 			}
 
 			if (bPickedUp)
@@ -2551,6 +2565,16 @@ void CInterfaceMgr::UpdatePlayerStats(uint8 nThing, uint8 nType1,
 		case IC_PARAMETER_ID :
 		{
             GetPlayerStats( )->UpdateObjectives(nThing, nType1, (uint32)fAmount);
+		}
+		break;
+
+		// RETAIL: CShell 0x1006a578: the player found a secret.
+		case IC_SECRET_ID :
+		{
+            GetPlayerStats( )->UpdateObjectives(nThing, nType1, (uint32)fAmount);
+			g_pTransmission->Show(IDS_CJ_SECRET);
+			g_pChatMsgs->AddMessage(IDS_CJ_SECRET, kMsgTransmission);
+			g_pClientSoundMgr->PlayInterfaceSound("Interface\\Snd\\secret.wav");
 		}
 		break;
 
@@ -5875,11 +5899,19 @@ void CInterfaceMgr::Disconnected(uint32 nDisconnectFlag)
 			nMsgId = IDS_NETERR_NOTSAMEGUID;
 			break;
 		case eDisconnect_WrongPassword:
+			// RETAIL: CShell 0x1006983b: back to the multiplayer screen.
 			nMsgId = IDS_NETERR_WRONGPASS;
-			if (g_bLAN)
-				destination = SCREEN_ID_JOIN_LAN;
-			else
-				destination = SCREEN_ID_JOIN;
+			break;
+
+		// RETAIL: CShell 0x10069849: Contract J.A.C.K.'s handshake failures.
+		case eDisconnect_BadFiles:
+			nMsgId = IDS_CJ_BADFILES;
+			break;
+		case eDisconnect_CDKeyRejected:
+			nMsgId = IDS_CJ_CDKEYREJECTED;
+			break;
+		case eDisconnect_Banned:
+			nMsgId = IDS_CJ_BANNED;
 			break;
 
 		case 0 : // Avoid the warning..

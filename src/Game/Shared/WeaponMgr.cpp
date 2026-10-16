@@ -35,6 +35,7 @@ extern CGameClientShell* g_pGameClientShell;
 #define WMGR_WEAPONORDER_FIRSTPLAYER		"FirstPlayerWeapon"
 #define WMGR_WEAPONORDER_LASTPLAYER			"LastPlayerWeapon"
 #define WMGR_WEAPONORDER_CLASS				"EndOfClass"
+#define WMGR_WEAPONORDER_HOLSTER			"HolsterWeapon"
 
 #define WMGR_AUTOSWITCH_WEAPON				"AutoSwitchWeapon"
 
@@ -271,6 +272,34 @@ void GetStringIfExist( CButeMgr &buteMgr, const char *szTagName, const char *szA
 
 // ----------------------------------------------------------------------- //
 //
+//	ROUTINE:	CWeaponMgr::GetFileCRC()
+//
+//	PURPOSE:	RETAIL: CShell 0x10111510, Object 0x10160f70: the CRC a
+//				multiplayer handshake compares; the sum of the attribute
+//				file's, the override file's and each weapon's player-view
+//				model's.
+//
+// ----------------------------------------------------------------------- //
+
+uint32 CWeaponMgr::GetFileCRC()
+{
+	uint32 nCRC = CRC32::CalcRezFileCRC( s_AttributeFile );
+
+	if( !m_sOverrideFile.empty( ))
+		nCRC += CRC32::CalcRezFileCRC( m_sOverrideFile.c_str( ));
+
+	for( int nWeapon = 0; nWeapon < m_nNumWeapons; nWeapon++ )
+	{
+		WEAPON *pWeapon = m_pWeaponList[nWeapon];
+		if( pWeapon && pWeapon->szPVModel )
+			nCRC += CRC32::CalcRezFileCRC( pWeapon->szPVModel );
+	}
+
+	return nCRC;
+}
+
+// ----------------------------------------------------------------------- //
+//
 //	ROUTINE:	CWeaponMgr::CWeaponMgr()
 //
 //	PURPOSE:	Constructor
@@ -305,10 +334,9 @@ CWeaponMgr::CWeaponMgr()
 	m_nFirstPlayerWeapon = 0;
 	m_nLastPlayerWeapon = 0;
 
-	m_nFileCRC = 0;
-
 	m_sMPDefaults = "";
 	m_sMPSelectedWeapon = "";
+	m_pHolsterWeapon = LTNULL;
 	m_fVectorHalfDamageDist = 1000.0f;
 }
 
@@ -366,9 +394,6 @@ LTBOOL CWeaponMgr::Init(const char* szAttributeFile)
 	// Set up global pointer...
 
 	g_pWeaponMgr = this;
-
-	// CRC the attribute file
-	m_nFileCRC = CRC32::CalcRezFileCRC(szAttributeFile);
 
 	// Clear all our lists before we start...
 
@@ -675,6 +700,8 @@ LTBOOL CWeaponMgr::Init(const char* szAttributeFile)
 
 	m_nFirstPlayerWeapon = m_buteMgr.GetInt(WMGR_WEAPONORDER_TAG, WMGR_WEAPONORDER_FIRSTPLAYER);
 	m_nLastPlayerWeapon  = m_buteMgr.GetInt(WMGR_WEAPONORDER_TAG, WMGR_WEAPONORDER_LASTPLAYER);
+	// RETAIL: CShell 0x10115494: the weapon a holstering player carries.
+	m_pHolsterWeapon = GetWeapon( m_buteMgr.GetString( WMGR_WEAPONORDER_TAG, WMGR_WEAPONORDER_HOLSTER, "" ));
 
 
 	// Read in the weapon classes...
@@ -776,10 +803,9 @@ LTBOOL CWeaponMgr::LoadOverrideButes( const char *szAttributeFile /*=WEAPON_DEFA
 	if( !g_pWeaponMgr || !szAttributeFile ) return LTFALSE;
 	if( !Parse( szAttributeFile )) return LTFALSE;
 
-	// CRC the attribute file
-
-	uint32 nDefaultileCRC = CRC32::CalcRezFileCRC( WEAPON_DEFAULT_FILE );
-	m_nFileCRC = nDefaultileCRC & CRC32::CalcRezFileCRC( szAttributeFile );
+	// RETAIL: CShell 0x1011434e: Contract J.A.C.K. remembers the override
+	// file, which GetFileCRC sums in, unless it is the attribute file itself.
+	m_sOverrideFile = _stricmp( s_AttributeFile, szAttributeFile ) ? szAttributeFile : "";
 
 	char szName[WMGR_MAX_NAME_LENGTH] = {0};
 
