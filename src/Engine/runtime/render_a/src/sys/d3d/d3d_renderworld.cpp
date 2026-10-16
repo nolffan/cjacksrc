@@ -246,7 +246,7 @@ void CD3D_RenderWorld::DrawOccluder(const COccludee::COutline &cOutline)
 void CD3D_RenderWorld::StartFrame(const ViewParams& Params)
 {
 	GetShaderDrawRange().Reset();	// RETAIL: 0x4aaba0
-	m_aOccluderOutlines.clear();
+	m_aOccluderOutlines.resize(0);	// RETAIL: resize(0) (Lithtech.exe 0x4aaba0)
 	m_nOccludeCollectTime = 0;
 
 	// Don't do any occluder stuff if we're fiddling with console variables
@@ -266,7 +266,7 @@ void CD3D_RenderWorld::StartFrame(const ViewParams& Params)
 
 void CD3D_RenderWorld::GetFrameOccluders(const ViewParams& Params)
 {
-	m_aFrameOccluders.clear();
+	m_aFrameOccluders.resize(0);	// RETAIL: 0x4aa74d
 
 	if (g_CV_DebugRBNoOccluders.m_Val != 0.0f)
 		return;
@@ -1110,10 +1110,11 @@ CRenderShader *CD3D_RenderWorld::AllocShader(const CRBSection &cSection)
 			break;
 	}
 
+	// RETAIL: the shaders are the main world's (Lithtech.exe 0x4aacc0)
 	CRenderShader *pShader = 0;
 	do 
 	{
-		pShader = m_aShaders[eResult];
+		pShader = g_Device.m_pRenderWorld->m_aShaders[eResult];
 		if (!pShader)
 		{
 			switch (eResult)
@@ -1176,7 +1177,7 @@ CRenderShader *CD3D_RenderWorld::AllocShader(const CRBSection &cSection)
 		}
 		if (!pShader || !pShader->ValidateShader(cSection))
 		{
-			if (!m_aShaders[eResult])
+			if (!g_Device.m_pRenderWorld->m_aShaders[eResult])
 				delete pShader;
 			pShader = 0;
 			// Choose a more stable shader.. (Would rather this happened automatically...)
@@ -1225,7 +1226,7 @@ CRenderShader *CD3D_RenderWorld::AllocShader(const CRBSection &cSection)
 		}
 	} while (!pShader);
 
-	m_aShaders[eResult] = pShader;
+	g_Device.m_pRenderWorld->m_aShaders[eResult] = pShader;
 
 	return pShader;
 }
@@ -1246,7 +1247,7 @@ void CD3D_RenderWorld::DebugTri(const ViewParams& Params)
 		nIntersectionBlock = nIntersectLoop;
 
 		// Clear the current intersection list
-		aIntersections.clear();
+		aIntersections.resize(0);	// RETAIL: resize(0) (Lithtech.exe 0x4a9910)
 
 		// Find the closest intersection distance
 		float fClosestDist = aBlockIntersections[0].m_fDistance;
@@ -1293,7 +1294,7 @@ bool CD3D_RenderWorld::CastRay(
 	CD3D_RenderBlock::SRay sRay(vOrigin, vDir, fMinDist, fMaxDist);
 	static CD3D_RenderBlock::TIntersectionList aBlockIntersections;
 	static CD3D_RenderBlock::TIntersectionList aFinalIntersections;
-	aFinalIntersections.clear();
+	aFinalIntersections.resize(0);	// RETAIL: 0x4a9c00
 	CD3D_RenderBlock::EIntersectionType eIntersection;
 	if (bFirstIntersect)
 		eIntersection = CD3D_RenderBlock::eIntersectionType_First;
@@ -1303,7 +1304,7 @@ bool CD3D_RenderWorld::CastRay(
 	uint32 nIntersectionBlock = 0;
 	for (uint32 nIntersectLoop = 0; nIntersectLoop < m_nRenderBlockCount; ++nIntersectLoop)
 	{
-		aBlockIntersections.clear();
+		aBlockIntersections.resize(0);
 
 		uint32 nBlockTrisChecked;
 		if (!m_pRenderBlocks[nIntersectLoop].IntersectRay(sRay, aBlockIntersections, eIntersection, &nBlockTrisChecked))
@@ -1346,7 +1347,7 @@ bool CD3D_RenderWorld::CastRay(
 	}
 
 	// Don't leave anything lying around
-	aFinalIntersections.clear();
+	aFinalIntersections.resize(0);
 
 	return true;
 }

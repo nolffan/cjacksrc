@@ -142,7 +142,7 @@ void CClassData::DestroyObjectTickData()
 		delete(*iter);
 		iter++;
 	}
-	m_ObjectTickDataList.clear();
+	m_ObjectTickDataList.resize(0);	// RETAIL: server.dll 0x1000282c
 }
 
 void CClassData::ResetObjectAveMaxData()

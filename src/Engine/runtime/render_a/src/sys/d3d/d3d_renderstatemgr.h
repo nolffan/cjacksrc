@@ -82,6 +82,7 @@ public:
 	bool				SetRenderStyleTextures(CD3DRenderStyle* pRenderStyle, uint32 iRenderPass, SharedTexture** pTextureList);
 
 	void				SetBumpEnvMapMatrix(uint32 BumpEnvMapStage);
+	bool				SetVertexShaderConstants(CD3DRenderStyle* pRenderStyle, RSD3DRenderPass* pD3DOptions, uint32 iSkinBones);	// RETAIL: 0x504610
 	CD3DRenderStyle*	GetBackupRenderStyle()												{ return m_pBackupRenderStyle; }
 // NOTE: The texture list needs to change to be device independent...
 

@@ -551,8 +551,8 @@ static void CopyGlyphBitmapToPixelData( BITMAPINFO const& bmi, uint8 const* pDib
 	RECT rectSrc;
 	rectSrc.left = 0;
 	rectSrc.top = 0;
-	rectSrc.right = rectSrc.left + glyphMetrics.gmBlackBoxX;
-	rectSrc.bottom = rectSrc.top + glyphMetrics.gmBlackBoxY;
+	rectSrc.right = rectSrc.left + (int)glyphMetrics.gmBlackBoxX;	// RETAIL: signed (Lithtech.exe 0x5159d4)
+	rectSrc.bottom = rectSrc.top + (int)glyphMetrics.gmBlackBoxY;
 
 	int nDestYOffset = textMetric.tmAscent - glyphMetrics.gmptGlyphOrigin.y;
 
@@ -572,7 +572,7 @@ static void CopyGlyphBitmapToPixelData( BITMAPINFO const& bmi, uint8 const* pDib
 		uint16* pDestPos = ( uint16* )( pPixelData + (( y + nDestYOffset ) * nPixelDataPitch ));
 
 		// Copy this row.
-		for( int x = 0; x < glyphMetrics.gmBlackBoxX; x++ )
+		for( int x = 0; x < (int)glyphMetrics.gmBlackBoxX; x++ )
 		{
 			// The source is 24 bits.  Just take r and use it as the alpha value.
 			uint32 nVal = MulDiv( pSrcPos[0], 15, 255 );

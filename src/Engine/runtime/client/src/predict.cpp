@@ -83,6 +83,7 @@ Move player2 dist 15 0.03
 // Scale the server periods by this amount.. 1.1 looks good.
 static float g_fServerPeriodMultiplier = 1.1f;
 extern float g_CV_MaxExtrapolateTime;
+extern float g_CV_MaxExtrapolateDist;	// RETAIL: pd_Update (0x45e785)
 
 
 void pd_InitialServerUpdate(CClientShell *pShell, float gameTime)
@@ -338,6 +339,24 @@ void pd_Update(CClientShell *pShell)
 			{
 				newPos = predict_EvaluateCurve(pObj, pClientData, vGravity, fTimeOffset / g_CV_MaxExtrapolateTime, g_CV_MaxExtrapolateTime, LTTRUE);
 				newPos = (newPos + pObj->GetPos()) * 0.5f;
+			}
+
+			// RETAIL: an object predicted too far from where the server last put
+			// it is pulled back towards that place, the more the sooner after
+			// the update (Lithtech.exe 0x45e785)
+			if (g_CV_MaxExtrapolateDist > 0.0f)
+			{
+				LTVector vDiff = newPos - pClientData->m_LastUpdatePosServer;
+				float fDist = vDiff.Mag();
+				if (fDist > g_CV_MaxExtrapolateDist)
+				{
+					bTeleport = LTTRUE;
+					float fTime = (g_CV_MaxExtrapolateTime > 0.0f) ? g_CV_MaxExtrapolateTime : 1.0f;
+					float fPull = (float)exp(-(fTimeOffset / fTime) * fTimeOffset);
+					fPull = LTCLAMP(fPull, 0.0f, 1.0f);
+					vDiff.Norm();
+					newPos += vDiff * -(fPull * fDist);
+				}
 			}
 
 			LTVector vOldPos = pObj->GetPos();

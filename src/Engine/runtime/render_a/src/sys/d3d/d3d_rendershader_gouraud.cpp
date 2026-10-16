@@ -342,6 +342,10 @@ void CRenderShader_Gouraud_Texture::PreFlushBlock(CInternalSection &cSection)
 	// Setup texture effects
 	if (cSection.m_pTextureEffect)
 		cSection.m_pTextureEffect->Install(1, TSChannel_Base);					
+
+	// RETAIL: a fullbright section starts a new draw range (Lithtech.exe 0x4fba3d)
+	if (cSection.m_bFullbright)
+		GetShaderDrawRange().Reset();
 }
 
 void CRenderShader_Gouraud_Texture::PostFlushBlock(CInternalSection &cSection)
@@ -683,6 +687,10 @@ void CRenderShader_Gouraud_Detail::PreFlushBlock(CInternalSection &cSection)
 	// Setup texture effects
 	if (cSection.m_pTextureEffect)
 		cSection.m_pTextureEffect->Install(2, TSChannel_Base, TSChannel_Detail);					
+
+	// RETAIL: a fullbright section starts a new draw range (Lithtech.exe 0x4fba3d)
+	if (cSection.m_bFullbright)
+		GetShaderDrawRange().Reset();
 }
 
 void CRenderShader_Gouraud_Detail::PostFlushBlock(CInternalSection &cSection)
@@ -1081,6 +1089,10 @@ void CRenderShader_Gouraud_EnvMap::PreFlushBlock(CInternalSection &cSection)
 	// Setup texture effects
 	if (cSection.m_pTextureEffect)
 		cSection.m_pTextureEffect->Install(2, TSChannel_Base, TSChannel_EnvMap);
+
+	// RETAIL: a fullbright section starts a new draw range (Lithtech.exe 0x4fba3d)
+	if (cSection.m_bFullbright)
+		GetShaderDrawRange().Reset();
 }
 
 void CRenderShader_Gouraud_EnvMap::PostFlushBlock(CInternalSection &cSection)
@@ -1502,6 +1514,10 @@ void CRenderShader_Gouraud_EnvBumpMap::PreFlushBlock(CInternalSection &cSection)
 	// Setup texture effects
 	if (cSection.m_pTextureEffect)
 		cSection.m_pTextureEffect->Install(3, TSChannel_Base, TSChannel_Null, TSChannel_Base);
+
+	// RETAIL: a fullbright section starts a new draw range (Lithtech.exe 0x4fba3d)
+	if (cSection.m_bFullbright)
+		GetShaderDrawRange().Reset();
 }
 
 void CRenderShader_Gouraud_EnvBumpMap::PostFlushBlock(CInternalSection &cSection)

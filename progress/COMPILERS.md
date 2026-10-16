@@ -9,8 +9,8 @@ the attribution is the header's own testimony.
 
 | Binary | Link date | cl 13.10.3077 objects (C / C++) | Also | Built here with |
 |---|---|---|---|---|
-| `Lithtech.exe` | 2003-10-27 | 11 / 295 | 68 C++ and 3 C objects of cl 13.00.9178 and one of masm 6.14.8444: `d3dx8.lib` of the DirectX 8.1 SDK, as in NOLF2's engine | `/O2 /Ob2`, no `/GX`, `/GS`, `/GR` (below) |
-| `server.dll` | 2003-10-27 | 7 / 122 | | `/O2`, no `/GX`, `/GS`, `/GR` (below) |
+| `Lithtech.exe` | 2003-10-27 | 11 / 295 | 68 C++ and 3 C objects of cl 13.00.9178 and one of masm 6.14.8444: `d3dx8.lib` of the DirectX 8.1 SDK, as in NOLF2's engine | `/Ox /GF` (no `/Gy`), no `/GX`, `/GS`, `/GR` (below) |
+| `server.dll` | 2003-10-27 | 7 / 122 | | `/Ox /GF` (no `/Gy`), no `/GX`, `/GS`, `/GR` (below) |
 | `SndDrv.dll` | 2003-10-14 | 6 / 10 | one VC6 C++ object (12.00.8168) and one of cl 13.00.9178: EAX's GUIDs and the DirectX SDK's `dxguid.lib`, as in NOLF2's | -- |
 | `ltmsg.dll` | | 7 / 2 | resources and msvcrt's DLL entry | -- |
 | `GameSpy.dll` | 2003-10-31 | 29 / 18 | the C objects are GameSpy's SDK (22) and msvcrt.lib's; the C++ ones Monolith's wrapper, WONAPI.lib's CD key check and msvcrt/msvcprt's | `msvc-7.10-3077`: the wrapper `/MD /Ox /GF` (no `/Gy`, no `/GX`, no `NDEBUG`), WONAPI `/MD /O2 /GX /GR` |
@@ -86,6 +86,18 @@ against retail `server.dll` and the single-player demo's plaintext of
 - **`/O2`, both.** NOLF2's `server.dll` was `/O1`; Contract J.A.C.K.'s is
   `/O2` (its `.text` is 0x69000 bytes against NOLF2's 0x4d000). `/O2`
   implies `/Ob2` in VC .NET 2003.
+- **`/Ox /GF`, not `/O2`: no `/Gy`.** The code is `/O2`'s, but the images
+  keep functions nothing calls: CD3D_RenderWorld::CastRay (Lithtech.exe
+  0x4a9c00), CD3DRenderStateMgr::SetVertexShaderConstants (0x504610),
+  MaybeDrawConsole (0x40d0d0), r_GenericTextPrint (0x45ed90), and in
+  `server.dll` three more. Without `/Gy` an object's own functions are one
+  section and the link cannot drop them, as with GameSpy.dll, SndDrv.dll
+  and the launcher. So the engine's projects (Lithtech, server, D3DRender,
+  Lib_UI, Lib_ILTSound, Lib_RezMgr) are `/Ox /GF`: Lithtech.exe's
+  unwritten rows went from 39 to 28 and server.dll's from 12 to 9, with
+  no identical function lost; the unplaced counts rose (96 and 44): our
+  sources keep functions the shipped ones did not, or that pair
+  ambiguously.
 - **No `/GX` (`/EHsc`).** The own objects have only the EH frames of the
   standard library's own `try` blocks (48 `mov eax, fs:[0]` in the exe's
   own code, 34 in all of `server.dll`); with `/EHsc` every function with

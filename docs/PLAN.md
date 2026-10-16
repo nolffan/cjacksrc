@@ -696,32 +696,61 @@ CWorldParticleBlockerData::GetBlockersInAABB, si_SetObjectPos (moves only
 on a change of position), and `tools/fndiff.py` reads `--end` as decimal
 or `+size` as well as hex (tools clone commit 0f87cb5).
 
+**Round 6** (on master's 0b58af7). **The unplaced functions** (1,312 in
+Lithtech.exe, 451 in server.dll) were mostly not code to write: about
+1,100 are the five per-file initializers of math_phys.h's float
+constants (`PI_2`, `RADIANS_PER_DEGREE`...), which the shipped engine has
+in only 60 objects against our 230 (it was built with precompiled or
+otherwise shared headers we do not reproduce); most of the rest are
+exception handlers and small COMDATs. What did matter: **the
+enumeration splits functions** at pointers and jump targets inside them,
+so ten large reconstructions (CClientMgr::Init, input_ReadInput,
+pd_Update, DrawPrim GT4/FT4, InitLevel, CollideWithWorldModel_Poly,
+SendAllObjectsUnguaranteed, DrawDynamicParticles, StairStep,
+SetVertexShaderConstants) could not pair; `progress/Lithtech-screen-
+exclude.csv` and `server-screen-exclude.csv` name each interior row with
+its container ("NOT A FUNCTION: interior block of X (0x...)"), which took
+Lithtech.exe's unwritten rows from 115 to 19. **The engine's projects
+are /Ox /GF, no /Gy** (`progress/COMPILERS.md`): the shipped images keep
+uncalled functions (CastRay, SetVertexShaderConstants, MaybeDrawConsole,
+r_GenericTextPrint). Reconstructed: **the console's drawing** (2006
+tree's, Direct3D 8: Draw, DrawSmall, DrawTextLine(s), BorderedRectangle,
+CalcStringOffset, the command box's Draw, con_Draw/DrawSmall),
+CD3DRenderStateMgr::SetVertexShaderConstants (the 2003 render styles
+editor's copy), pd_Update's pull-back towards the server's position
+past MaxExtrapolateDist, the shaders' fullbright draw-range reset,
+AllocShader through the main world, DEBUG_PRINT for several console
+messages, resize(0) where CJ empties vectors (only where retail shows it:
+a blanket change lost 38 functions), and smaller ones. Retail bugs kept
+and fixed under CJACK_MODERN: batched POLYGT4 quads lose their vertex
+colours (EN-6), SoundSys calls Term through a null driver (EN-7),
+DrawPrim's viewport of undefined size (EN-8); EN-9 keeps the screen's
+aspect for the player-view model.
+
 **Where it stands / next** (stopped here: score recorded at
-`Lithtech.exe` 6,832 identical, 94.4%; `server.dll` 2,735, 96.1%;
+`Lithtech.exe` 6,877 identical, 96.1%; `server.dll` 2,741, 96.2%;
 SndDrv.dll 225) (breadth first, per module, with `tools/fndiff.py`,
 `o2gap.py`, `vtabcheck.py`, `uncovered.py`; `progress.py --nears=<target>`
 pairs some rows wrongly where a function's CSV extent is split, so check
 each with fndiff against the retail address first; fndiff on
 `--image=out/spdemo/Lithtech-readable.exe` reads SecuROM's calls put
-back; `vtabcheck.py` misses tables whose constructor is not placed, so
-interface tables were matched by their slots' placements instead):
+back; a split function's interior rows go into the screen-exclude files):
+- unwritten, small: Lithtech.exe 19 rows (2 KB: the C runtime's pieces,
+  folded thunks, CClassMgr's empty stubs at 0x403d70, 0x404730),
+  server.dll 7;
 - structural nears not yet done: DrawDynamicParticles (pEffect kept in a
-  register where retail reloads it; the failed-allocation return placed
-  out of line), CModelMgr::ForEach (retail calls the set iterator's _Inc
-  out of line; ours inlines it whatever the iterator form),
-  MarkSectionBreaks for Lightmap_Texture (retail inlines != into a call
-  of ==; ours calls != out of line, and writing == inlines it whole);
+  register), CModelMgr::ForEach (_Inc inlined), MarkSectionBreaks
+  (Lightmap_Texture, != inlined into ==), LoadLightGroup (push_front not
+  inlined in the exe's copy), LoadRenderStyle (retail calls string's
+  c_str out of line);
 - nears left as register allocation or scheduling only (tried, no source
-  shape found): MoveObject and RotateWorldModel (retail keeps 0 in a
-  register for its compares and stores), BuildDeviceList (four stack
-  slots), CreateDevice (esi and edi swapped),
-  CUIBitmapFont::BuildFontTable (three stack slots), MoveAttachment (the
-  MoveState zeroing interleaved), CD3D_RenderWorld::Draw,
-  CPlayerMover::Collide/_Poly/StairStep, QueueShadows, LoadLightGroup,
-  SSubLM::Load, the light-group stream operator,
-  ps_UpdateParticleBoundingBox (x operand order),
-  SendAllObjectsUnguaranteed, CD3DDrawPrim::SetCamera and
-  SetTransformMode, the DrawPolyGrid imul order;
+  shape found): MoveObject, RotateWorldModel, StairStep, Collide,
+  QueueShadows, d3d_RenderWorldWithAggregate, r_LoadSystemTexture,
+  CD3D_RenderWorld::Load and Draw, BuildDeviceList (four stack slots),
+  CreateDevice, BuildFontTable, MoveAttachment, LoadPixelShader,
+  SetObjectFlags, sm_AllocateID, SendAllObjectsUnguaranteed,
+  SetTransformMode, ps_UpdateParticleBoundingBox, the DrawPolyGrid imul
+  order;
 - the textured lightmap sections have no constructors now (round 2);
   watch the modern build for code that relied on them.
 
