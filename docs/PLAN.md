@@ -967,6 +967,10 @@ NOLF2's file order. Recorded: the launcher 284 of 344 functions identical (98.9%
   "CJ v1.1" (VersionMgr), so retail's ScreenMain shows it without its
   "CJ " and its mod name is "Retail" with no mod (the string "Retail" is
   next to "host"/"join" in CShell.dll's data); ours shows "CJ v1.1 - ".
+- On master 5dd804d (the game's join fixes, engine round 7) with mptest's
+  CD key: all three combinations join DE_Island and play (the client in
+  the level with its HUD and weapon): ours against ours, retail's client
+  DLLs on our engine against our server, ours against retail's server.
 - The control for multiplayer is Contract J.A.C.K.'s multiplayer demo
   (rez/demos/contractjack_demo_mp.exe: `rez/tools/sfxcab.py`, then
   `rez/tools/unshield/unshield x` on its data1.cab; Program_Files and
