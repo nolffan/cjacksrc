@@ -28,10 +28,8 @@
 
 //under multi
 #include "ScreenPlayer.h"
-#include "ScreenPlayerSkills.h"
 #include "ScreenHost.h"
 #include "ScreenJoin.h"
-#include "ScreenJoinLAN.h"
 #include "ScreenPlayerTeam.h"
 
 //under options
@@ -46,6 +44,7 @@
 #include "ScreenHostDMOptions.h"
 #include "ScreenHostTDMOptions.h"
 #include "ScreenHostDDOptions.h"
+#include "ScreenHostDemolitionOptions.h"
 #include "ScreenHostMission.h"
 #include "ScreenHostLevels.h"
 #include "ScreenHostWeapons.h"
@@ -172,6 +171,9 @@ void CTO2ScreenMgr::AddScreen(eScreenID screenID)
 	case SCREEN_ID_HOST_TDM_OPTIONS:
 		pScreen = debug_new(CScreenHostTDMOptions);
 		break;
+	case SCREEN_ID_HOST_DEMOLITION_OPTIONS:
+		pScreen = debug_new(CScreenHostDemolitionOptions);
+		break;
 	case SCREEN_ID_HOST_DD_OPTIONS:
 		pScreen = debug_new(CScreenHostDDOptions);
 		break;
@@ -190,14 +192,8 @@ void CTO2ScreenMgr::AddScreen(eScreenID screenID)
 	case SCREEN_ID_JOIN:
 		pScreen = debug_new(CScreenJoin);
 		break;
-	case SCREEN_ID_JOIN_LAN:
-		pScreen = debug_new(CScreenJoinLAN);
-		break;
 	case SCREEN_ID_PLAYER:
 		pScreen = debug_new(CScreenPlayer);
-		break;
-	case SCREEN_ID_PLAYER_SKILLS:
-		pScreen = debug_new(CScreenPlayerSkills);
 		break;
 	case SCREEN_ID_PLAYER_TEAM:
 		pScreen = debug_new(CScreenPlayerTeam);

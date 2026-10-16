@@ -234,6 +234,30 @@ bool CClientSaveLoadMgr::ReloadLevel( )
 
 // ----------------------------------------------------------------------- //
 //
+//  ROUTINE:	CClientSaveLoadMgr::LoadCheckpoint
+//
+//  PURPOSE:	Load the last checkpoint's save...
+//
+// ----------------------------------------------------------------------- //
+
+// RETAIL: CShell 0x10021100: Contract J.A.C.K.'s checkpoints
+bool CClientSaveLoadMgr::LoadCheckpoint( )
+{
+	if( !CanLoadGame( ) || !CheckpointSaveExists() ) 
+		return false;
+
+	g_pPlayerMgr->TurnOffAlternativeCamera(CT_FULLSCREEN);
+
+	CAutoMessage cMsg;
+	cMsg.Writeuint8( MID_LOAD_GAME );
+	cMsg.Writeuint8( kLoadGameTypeCheckpoint );
+	g_pLTClient->SendToServer( cMsg.Read(), MESSAGE_GUARANTEED );
+
+	return true;
+}
+
+// ----------------------------------------------------------------------- //
+//
 //  ROUTINE:	CClientSaveLoadMgr::ContinueGame
 //
 //  PURPOSE:	Load the last saved game...

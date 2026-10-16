@@ -19,11 +19,32 @@
 #include "WinUtil.h"
 #include "ClientSaveLoadMgr.h"
 #include "GameClientShell.h"
+#include "ResShared.h"
 
 static const int kMaxPortStrLen = 5;
 static const int kMaxBandwidthStrLen = 8;
 
 extern bool g_bLAN;
+
+// RETAIL: Contract J.A.C.K.'s string table has the connection toggle's
+// strings where NOLF2's skills toggle had its own (CRes.dll 806, 808).
+#define IDS_CJ_LAN_ONLY		806		// "LAN Only"
+#define IDS_CJ_INTERNET		808		// "Internet"
+
+// RETAIL: CShell 0x100c1ad0
+LTBOOL CScreenHost::LaunchGame()
+{
+	if( !g_pMissionMgr->StartGameNew( ))
+		return LTFALSE;
+
+	return LTTRUE;
+}
+
+// RETAIL: CShell 0x100c1af0
+void CScreenHost::ReadyLaunch(LTBOOL bReady)
+{
+	m_bReadyToLaunch = bReady;
+}
 
 namespace
 {
@@ -67,16 +88,19 @@ void LaunchCallBack(LTBOOL bReturn, void *pData);
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
+// RETAIL: CShell 0x100c1c40
 CScreenHost::CScreenHost()
 {
 	m_pName			= LTNULL;
 	m_pCampaign		= LTNULL;
 
-    m_pLoadCtrl = LTNULL;
 	m_pWeapons = LTNULL;
 
 	m_pPassword		= LTNULL;
 	m_pPassToggle	= LTNULL;
+
+	m_pLANToggle	= LTNULL;
+	m_bLAN			= LTFALSE;
 
 	m_pPort			= LTNULL;
 
@@ -101,6 +125,7 @@ CScreenHost::CScreenHost()
 	m_bAllowScmdCommands = LTFALSE;
 	m_bReadyToLaunch = LTFALSE;
 	m_bDedicated = LTFALSE;
+	m_nGameType = 0;
 
 }
 
@@ -109,11 +134,13 @@ CScreenHost::~CScreenHost()
 {
 }
 
+// RETAIL: CShell 0x100c1d90
 // Build the screen
 LTBOOL CScreenHost::Build()
 {
 	int kColumn0 = g_pLayoutMgr->GetScreenCustomInt(SCREEN_ID_HOST,"ColumnWidth");
 	int kColumn1 = (640 - GetPageLeft()) - kColumn0;
+	int kHalfColumn = kColumn0 / 2;
 
 	CreateTitle(IDS_TITLE_HOST);
 
@@ -122,7 +149,19 @@ LTBOOL CScreenHost::Build()
 	m_pName->AddColumn(LoadTempString(IDS_HOST_NAME), kColumn0);
 	m_pName->AddColumn("<host name>", kColumn1, LTTRUE);
 
-	m_pLoadCtrl = AddTextItem(IDS_LOADGAME,	CMD_LOAD_GAME, IDS_HELP_LOAD);
+	// RETAIL: the game type is chosen here
+	CLTGUICycleCtrl *pCycle = AddCycle(IDS_GAME_TYPE,IDS_HELP_GAME_TYPE,kColumn0,&m_nGameType);
+	pCycle->NotifyOnChange(CMD_GAME,this);
+	pCycle->AddString(LoadTempString(IDS_DEATHMATCH));
+	pCycle->AddString(LoadTempString(IDS_TEAMDEATHMATCH));
+	pCycle->AddString(LoadTempString(IDS_DOOMSDAY));
+	pCycle->AddString(LoadTempString(IDS_DEMOLITION));
+
+	// RETAIL: and whether the server is published to the internet
+	m_pLANToggle = AddToggle(IDS_SERVER_LAN,IDS_HELP_SERVER_LAN,kColumn0,&m_bLAN);
+	m_pLANToggle->NotifyOnChange(CMD_TOGGLE_LAN,this);
+	m_pLANToggle->SetOnString(LoadTempString(IDS_CJ_LAN_ONLY));
+	m_pLANToggle->SetOffString(LoadTempString(IDS_CJ_INTERNET));
 
 	m_pCampaign = AddColumnCtrl(CMD_CHOOSE_CAMPAIGN, IDS_HELP_CAMPAIGN_NAME);
 	m_pCampaign->AddColumn(LoadTempString(IDS_HOST_CAMPAIGN), kColumn0);
@@ -157,7 +196,8 @@ LTBOOL CScreenHost::Build()
 
 	m_pBandwidth = AddColumnCtrl(CMD_EDIT_BANDWIDTH, IDS_HELP_BANDWIDTH_EDIT);
 	m_pBandwidth->AddColumn(LoadTempString(IDS_BANDWIDTH_EDIT), kColumn0);
-	m_pBandwidth->AddColumn("<bandwidth>", kColumn1, LTTRUE);
+	m_pBandwidth->AddColumn("<bandwidth>", kHalfColumn, LTTRUE);
+	m_pBandwidth->AddColumn("<maxplayers>", kColumn0, LTTRUE);
 
 
 	AddTextItem(IDS_OPTIONS, CMD_OPTIONS, IDS_HELP_HOST_OPTIONS);
@@ -179,6 +219,438 @@ LTBOOL CScreenHost::Build()
 	return CBaseScreen::Build();
 }
 
+// RETAIL: CShell 0x100c2480
+void LaunchCallBack(LTBOOL bReturn, void *pData)
+{
+	CScreenHost *pThisScreen = (CScreenHost *)pData;
+	if (bReturn && pThisScreen)
+	{
+		pThisScreen->ReadyLaunch(LTTRUE);
+    }
+}
+
+// RETAIL: CShell 0x100c24a0
+void CScreenHost::UpdateBandwidth(bool bSetMaxPlayers)
+{
+	CUserProfile *pProfile = g_pProfileMgr->GetCurrentProfile();
+	pProfile->m_ServerGameOptions.m_nBandwidthServer = m_nBandwidth;
+
+	uint16 nBandwidth;
+	if ( m_nBandwidth >= eBandwidth_Custom )
+		nBandwidth = pProfile->m_ServerGameOptions.m_nBandwidthServerCustom;
+	else
+		nBandwidth = g_BandwidthServer[m_nBandwidth];
+
+	uint8 nMaxPlayers = pProfile->m_ServerGameOptions.GetMaxPlayersForBandwidth();
+
+	m_sBandwidth.Format( "%d", nBandwidth );
+	m_pBandwidth->SetString(1,m_sBandwidth);
+
+	char szMaxPlayers[32] = "";
+	sprintf( szMaxPlayers, "(%s: %d)", LoadTempString(IDS_MAX_PLAYERS), nMaxPlayers );
+	m_pBandwidth->SetString(2,szMaxPlayers);
+
+	if (!g_bLAN && bSetMaxPlayers)
+	{
+		pProfile->m_ServerGameOptions.GetDeathmatch().m_nMaxPlayers = nMaxPlayers;
+		pProfile->m_ServerGameOptions.GetDemolition().m_nMaxPlayers = nMaxPlayers;
+		pProfile->m_ServerGameOptions.GetDoomsday().m_nMaxPlayers = nMaxPlayers;
+		pProfile->m_ServerGameOptions.GetTeamDeathmatch().m_nMaxPlayers = nMaxPlayers;
+	}
+}
+
+
+// RETAIL: CShell 0x100c25c0
+void CScreenHost::HandleCallback(uint32 dwParam1, uint32 dwParam2)
+{
+	switch(dwParam2)
+	{
+	case CMD_EDIT_NAME:
+		{
+			const char* pszNewVal = (const char*)dwParam1;
+
+			if( pszNewVal[0] )
+			{
+				m_sSessionName = pszNewVal;
+			}
+			else
+			{
+				GetDefaultSessionName( m_eGameType, m_sSessionName.GetBuffer( MAX_SESSION_NAME ), MAX_SESSION_NAME );
+				m_sSessionName.ReleaseBuffer( );
+			}
+
+			m_sSessionName = m_sSessionName.Left( MAX_SESSION_NAME );
+			m_pName->SetString(1,m_sSessionName);
+		}
+		break;
+	case CMD_EDIT_PASS:
+		m_sPassword = ((char *)dwParam1);
+		m_sPassword = m_sPassword.Left( MAX_PASSWORD );
+		m_pPassword->SetString(1,m_sPassword);
+		break;
+	case CMD_EDIT_SCMDPASS:
+		m_sScmdPassword = ((char *)dwParam1);
+		m_sScmdPassword = m_sScmdPassword.Left( MAX_PASSWORD );
+		m_pScmdPassword->SetString(1,m_sScmdPassword);
+		break;
+	case CMD_EDIT_PORT:
+		{
+			char *pszPort = (char *)dwParam1;
+			uint16 nPort = (uint16)atoi(pszPort);
+			m_sPort = pszPort;
+			m_sPort = m_sPort.Left( kMaxPortStrLen );
+			m_pPort->SetString(1,m_sPort);
+
+			// Setup the host info.
+			g_pClientMultiplayerMgr->SetupServerHost( nPort, !!m_bLAN );
+		}
+		break;
+	case CMD_EDIT_BANDWIDTH:
+		{
+			char *pszBandwidth = (char *)dwParam1;
+			uint32 nBandwidth = (uint32)atoi(pszBandwidth);
+			if ( IsValidBandwidth(nBandwidth) )
+			{
+				m_sBandwidth = pszBandwidth;
+				m_sBandwidth = m_sBandwidth.Left( kMaxBandwidthStrLen );
+				m_nBandwidth = eBandwidth_Custom;
+				CUserProfile *pProfile = g_pProfileMgr->GetCurrentProfile();
+				pProfile->m_ServerGameOptions.m_nBandwidthServerCustom = (uint16)atol(m_sBandwidth);
+				m_pBandwidthCycle->UpdateData(LTFALSE);
+				UpdateBandwidth(true);
+			}
+			else
+			{
+				MBCreate mb;
+				g_pInterfaceMgr->ShowMessageBox(FormatTempString(IDS_BANDWIDTH_INVALID,GetMinimumBandwidth(),GetMaximumBandwidth()),&mb);
+			}
+		}
+		break;
+	}
+	UpdateData();
+}
+
+
+// RETAIL: CShell 0x100c28a0
+void CScreenHost::SaveOptions()
+{
+	CUserProfile *pProfile = g_pProfileMgr->GetCurrentProfile();
+
+	pProfile->m_ServerGameOptions.m_eGameType = m_eGameType;
+	pProfile->m_ServerGameOptions.m_bUsePassword = !!m_bUsePassword;
+	pProfile->m_ServerGameOptions.m_sPassword = m_sPassword;
+	pProfile->m_ServerGameOptions.m_sScmdPassword = m_sScmdPassword;
+	pProfile->m_ServerGameOptions.m_bAllowScmdCommands = !!m_bAllowScmdCommands;
+	pProfile->m_ServerGameOptions.m_nPort = (uint16)atoi(m_sPort);
+	pProfile->m_ServerGameOptions.m_nBandwidthServer = m_nBandwidth;
+	pProfile->m_ServerGameOptions.m_nBandwidthServerCustom = (uint16)atol(m_sBandwidth);
+	pProfile->m_ServerGameOptions.m_bDedicated = !!m_bDedicated;
+	pProfile->m_ServerGameOptions.m_bLANOnly = !!m_bLAN;
+
+	switch (m_eGameType)
+	{
+	case eGameTypeCooperative:
+		pProfile->m_ServerGameOptions.GetCoop().m_sSessionName = m_sSessionName;
+		pProfile->m_ServerGameOptions.GetCoop().m_sCampaignName = m_sCampaignName;
+		break;
+	case eGameTypeDeathmatch:
+		pProfile->m_ServerGameOptions.GetDeathmatch().m_sSessionName = m_sSessionName;
+		pProfile->m_ServerGameOptions.GetDeathmatch().m_sCampaignName = m_sCampaignName;
+		break;
+	case eGameTypeTeamDeathmatch:
+		pProfile->m_ServerGameOptions.GetTeamDeathmatch().m_sSessionName = m_sSessionName;
+		pProfile->m_ServerGameOptions.GetTeamDeathmatch().m_sCampaignName = m_sCampaignName;
+		break;
+	case eGameTypeDemolition:
+		pProfile->m_ServerGameOptions.GetDemolition().m_sSessionName = m_sSessionName;
+		pProfile->m_ServerGameOptions.GetDemolition().m_sCampaignName = m_sCampaignName;
+		break;
+	case eGameTypeDoomsDay:
+		pProfile->m_ServerGameOptions.GetDoomsday().m_sSessionName = m_sSessionName;
+		pProfile->m_ServerGameOptions.GetDoomsday().m_sCampaignName = m_sCampaignName;
+		break;
+		
+	};
+
+	pProfile->ApplyMultiplayer(!!m_bLAN);
+	pProfile->Save(true);
+}
+
+// RETAIL: CShell 0x100c2a50
+LTBOOL CScreenHost::OnLeft()
+{
+	CLTGUICtrl *pCtrl = GetSelectedControl();
+	if (pCtrl == m_pBandwidthCycle)
+	{
+		m_nBandwidth = m_pBandwidthCycle->GetSelIndex();
+		
+		if (!m_nBandwidth)
+			m_nBandwidth = eBandwidth_Custom-1;
+		else
+			--m_nBandwidth;
+			
+		m_pBandwidthCycle->SetSelIndex(m_nBandwidth);
+		UpdateBandwidth(true);
+        return LTTRUE;
+	}
+	return CBaseScreen::OnLeft();
+}
+
+// RETAIL: CShell 0x100c2ac0
+LTBOOL CScreenHost::OnRight()
+{
+	CLTGUICtrl *pCtrl = GetSelectedControl();
+	if (pCtrl == m_pBandwidthCycle)
+	{
+		m_nBandwidth = m_pBandwidthCycle->GetSelIndex();
+		++m_nBandwidth;
+		if (m_nBandwidth >= eBandwidth_Custom)
+			m_nBandwidth = 0;
+		m_pBandwidthCycle->SetSelIndex(m_nBandwidth);
+		UpdateBandwidth(true);
+        return LTTRUE;
+	}
+	return CBaseScreen::OnRight();
+}
+
+// RETAIL: CShell 0x100c2b20
+/******************************************************************/
+LTBOOL CScreenHost::OnLButtonUp(int x, int y)
+{
+	CLTGUICtrl *pCtrl = GetSelectedControl();
+	if (pCtrl == m_pBandwidthCycle)
+	{
+		m_nBandwidth = m_pBandwidthCycle->GetSelIndex();
+		++m_nBandwidth;
+		if (m_nBandwidth >= eBandwidth_Custom)
+			m_nBandwidth = 0;
+		m_pBandwidthCycle->SetSelIndex(m_nBandwidth);
+		UpdateBandwidth(true);
+        return LTTRUE;
+	}
+	return CBaseScreen::OnLButtonUp(x,y);
+}
+
+
+// RETAIL: CShell 0x100c2b90
+/******************************************************************/
+LTBOOL CScreenHost::OnRButtonUp(int x, int y)
+{
+	CLTGUICtrl *pCtrl = GetSelectedControl();
+	if (pCtrl == m_pBandwidthCycle)
+	{
+		m_nBandwidth = m_pBandwidthCycle->GetSelIndex();
+		if (!m_nBandwidth)
+			m_nBandwidth = eBandwidth_Custom-1;
+		else
+			--m_nBandwidth;
+		m_pBandwidthCycle->SetSelIndex(m_nBandwidth);
+		UpdateBandwidth(true);
+        return LTTRUE;
+	}
+	return CBaseScreen::OnRButtonUp(x,y);
+}
+
+// RETAIL: CShell 0x100c2c10
+void CScreenHost::HandleLaunch()
+{
+	m_bReadyToLaunch = LTFALSE;
+	UpdateData();
+
+	CUserProfile *pProfile = g_pProfileMgr->GetCurrentProfile();
+	SaveOptions();
+	
+	// Setup the host info.
+	g_pClientMultiplayerMgr->SetupServerHost( pProfile->m_ServerGameOptions.m_nPort, !!m_bLAN );
+	
+	if (!LaunchGame())
+	{
+		g_pInterfaceMgr->LoadFailed(SCREEN_ID_HOST);
+	}
+}
+
+
+// RETAIL: CShell 0x100c2c80
+bool CScreenHost::UpdateInterfaceSFX()
+{
+	if (m_bReadyToLaunch)
+		HandleLaunch();
+
+	CBaseScreen::UpdateInterfaceSFX();
+
+	return true;
+}
+
+
+// RETAIL: CShell 0x100c2ca0
+void CScreenHost::CreateDefaultCampaign()
+{
+	CUserProfile *pProfile = g_pProfileMgr->GetCurrentProfile();
+	std::string sFN = GetCampaignDir( g_pProfileMgr->GetCurrentProfileName( ), m_eGameType );
+
+
+	
+	if( !CWinUtil::DirExist( sFN.c_str( )))
+	{
+		if( !CWinUtil::CreateDir( sFN.c_str( )))
+		{
+			//TODO: error message
+			return;
+		}
+	}
+
+	sFN += DEFAULT_CAMPAIGN_FILE;
+
+	if (CWinUtil::FileExist(sFN.c_str()))
+	{
+		remove(sFN.c_str());
+	}
+
+	char szString[256];
+	char szNum[4];
+
+	sprintf(szNum, "%d", (IsCoopMultiplayerGameType() ? 0 : 1) );
+	CWinUtil::WinWritePrivateProfileString( "MissionList", "LoopMissions", szNum, sFN.c_str());
+
+	CWinUtil::WinWritePrivateProfileString( "MissionList", "MissionSourceFile", g_pMissionButeMgr->GetAttributeFile(), sFN.c_str());
+
+
+	uint16 nCount = 0;
+	bool bAdd =false;
+	for (int nMission = 0; nMission < g_pMissionButeMgr->GetNumMissions(); nMission++)
+	{
+		MISSION *pMission = g_pMissionButeMgr->GetMission(nMission);
+		if (pMission)
+		{
+			char szWorldTitle[MAX_PATH] = "";
+			_splitpath( pMission->aLevels[0].szLevel, NULL, NULL, szWorldTitle, NULL );
+
+			// RETAIL: Demolition's worlds are DE_, deathmatch plays them too
+			bAdd = false;
+			switch (m_eGameType)
+			{
+			case eGameTypeDeathmatch:
+			case eGameTypeTeamDeathmatch:
+				if (strnicmp(szWorldTitle,"DM_",3) == 0 || strnicmp(szWorldTitle,"DE_",3) == 0)
+				{
+					bAdd = true;
+				}
+				break;
+			case eGameTypeDemolition:
+				if (strnicmp(szWorldTitle,"DE_",3) == 0)
+				{
+					bAdd = true;
+				}
+				break;
+			case eGameTypeDoomsDay:
+				if (strnicmp(szWorldTitle,"DD_",3) == 0)
+				{
+					bAdd = true;
+				}
+				break;
+			default:
+				bAdd = true;
+				break;
+			}
+
+			if (bAdd)
+			{
+				sprintf(szString,"Mission%d",nCount);
+				sprintf(szNum,"%d",nMission);
+				CWinUtil::WinWritePrivateProfileString( "MissionList", szString, szNum, sFN.c_str());
+				nCount++;
+			}
+
+		}
+		
+	}
+
+	// Flush the file.
+	CWinUtil::WinWritePrivateProfileString( NULL, NULL, NULL, sFN.c_str());
+
+
+}
+
+
+// RETAIL: CShell 0x100c2f20: the game type from the screen's cycle
+void CScreenHost::UpdateGameType()
+{
+	CUserProfile *pProfile = g_pProfileMgr->GetCurrentProfile();
+	switch (m_nGameType)
+	{
+	case 0:
+		m_eGameType = eGameTypeDeathmatch;
+		break;
+	case 1:
+		m_eGameType = eGameTypeTeamDeathmatch;
+		break;
+	case 2:
+		m_eGameType = eGameTypeDoomsDay;
+		break;
+	case 3:
+		m_eGameType = eGameTypeDemolition;
+		break;
+	}
+	pProfile->m_ServerGameOptions.m_eGameType = m_eGameType;
+
+	
+	m_sSessionName = pProfile->m_ServerGameOptions.GetSessionName();
+	m_sCampaignName = pProfile->m_ServerGameOptions.GetCampaignName();
+
+	// If the session name isn't specified, then get the default.
+	if( m_sSessionName.GetLength() == 0 )
+	{
+		GetDefaultSessionName( m_eGameType, m_sSessionName.GetBuffer( MAX_SESSION_NAME ), MAX_SESSION_NAME );
+		m_sSessionName.ReleaseBuffer( );
+	}
+	m_pName->SetString(1,m_sSessionName);
+
+
+	CreateDefaultCampaign();
+	bool isDefault = (m_sCampaignName.CompareNoCase(DEFAULT_CAMPAIGN) == 0);
+	
+	if (!isDefault)
+	{
+		char const* pszCampaignFile = GetCampaignFile( pProfile->m_ServerGameOptions );
+
+		if (!CWinUtil::FileExist( pszCampaignFile ))
+		{
+			switch (m_eGameType)
+			{
+			case eGameTypeCooperative:
+				pProfile->m_ServerGameOptions.GetCoop().m_sCampaignName = DEFAULT_CAMPAIGN;
+				break;
+			case eGameTypeDeathmatch:
+				pProfile->m_ServerGameOptions.GetDeathmatch().m_sCampaignName = DEFAULT_CAMPAIGN;
+				break;
+			case eGameTypeTeamDeathmatch:
+				pProfile->m_ServerGameOptions.GetTeamDeathmatch().m_sCampaignName = DEFAULT_CAMPAIGN;
+				break;
+			case eGameTypeDemolition:
+				pProfile->m_ServerGameOptions.GetDemolition().m_sCampaignName = DEFAULT_CAMPAIGN;
+				break;
+			case eGameTypeDoomsDay:
+				pProfile->m_ServerGameOptions.GetDoomsday().m_sCampaignName = DEFAULT_CAMPAIGN;
+				break;
+				
+			}
+			isDefault = true;
+		}
+	}
+	
+	m_sCampaignName = m_sCampaignName.Left( MAX_SESSION_NAME );
+
+	if (isDefault)
+		m_pCampaign->SetString(1,LoadTempString(IDS_HOST_CAMPAIGN_DEFAULT));
+	else
+		m_pCampaign->SetString(1,m_sCampaignName);
+
+	g_pGameClientShell->SetGameType(m_eGameType);
+
+
+}
+
+// RETAIL: CShell 0x100c3100
 uint32 CScreenHost::OnCommand(uint32 dwCommand, uint32 dwParam1, uint32 dwParam2)
 {
 	if (dwCommand == CMD_OK)
@@ -255,6 +727,21 @@ uint32 CScreenHost::OnCommand(uint32 dwCommand, uint32 dwParam1, uint32 dwParam2
 			m_pScmdPassToggle->UpdateData();
 			m_pScmdPassword->Enable(m_bAllowScmdCommands);
 		} break;
+	case CMD_TOGGLE_LAN:
+		{
+			// RETAIL: a LAN game has no bandwidth to choose
+			m_pLANToggle->UpdateData();
+			m_pBandwidthCycle->Enable(!m_bLAN);
+			m_pBandwidth->Enable(!m_bLAN);
+			g_bLAN = !!m_bLAN;
+		} break;
+	case CMD_GAME:
+		{
+			// RETAIL: the game type cycle changed
+			UpdateData();
+			SaveOptions();
+			UpdateGameType();
+		} break;
 	case CMD_OPTIONS:
 		{
 			switch (m_eGameType)
@@ -267,6 +754,9 @@ uint32 CScreenHost::OnCommand(uint32 dwCommand, uint32 dwParam1, uint32 dwParam2
 				break;
 			case eGameTypeTeamDeathmatch:
 				g_pInterfaceMgr->SwitchToScreen(SCREEN_ID_HOST_TDM_OPTIONS);
+				break;
+			case eGameTypeDemolition:
+				g_pInterfaceMgr->SwitchToScreen(SCREEN_ID_HOST_DEMOLITION_OPTIONS);
 				break;
 			case eGameTypeDoomsDay:
 				g_pInterfaceMgr->SwitchToScreen(SCREEN_ID_HOST_DD_OPTIONS);
@@ -304,6 +794,7 @@ uint32 CScreenHost::OnCommand(uint32 dwCommand, uint32 dwParam1, uint32 dwParam2
 	return 1;
 };
 
+// RETAIL: CShell 0x100c3530
 // Change in focus
 void    CScreenHost::OnFocus(LTBOOL bFocus)
 {
@@ -311,23 +802,29 @@ void    CScreenHost::OnFocus(LTBOOL bFocus)
 		
 	if (bFocus)
 	{
-		// Turn off stuff the LAN screens doen't care about..
-		if (g_bLAN)
-		{
-			m_pBandwidthCycle->Show(LTFALSE);
-			m_pBandwidth->Show(LTFALSE);
-		}
-		else
-		{
-			m_pBandwidthCycle->Show(LTTRUE);
-			m_pBandwidth->Show(LTTRUE);
-		}
-
 		// Make sure we're disconnected from server.
 		if(g_pLTClient->IsConnected())
 		{
 			g_pInterfaceMgr->SetIntentionalDisconnect( true );
 			g_pClientMultiplayerMgr->ForceDisconnect();
+		}
+
+		// RETAIL: the profile's game type picks the cycle's
+		m_eGameType = pProfile->m_ServerGameOptions.m_eGameType;
+		switch (m_eGameType)
+		{
+		case eGameTypeTeamDeathmatch:
+			m_nGameType = 1;
+			break;
+		case eGameTypeDoomsDay:
+			m_nGameType = 2;
+			break;
+		case eGameTypeDemolition:
+			m_nGameType = 3;
+			break;
+		default:
+			m_nGameType = 0;
+			break;
 		}
 
 		UpdateGameType();
@@ -343,11 +840,15 @@ void    CScreenHost::OnFocus(LTBOOL bFocus)
 		m_bUsePassword = pProfile->m_ServerGameOptions.m_bUsePassword;
 		m_bAllowScmdCommands = pProfile->m_ServerGameOptions.m_bAllowScmdCommands;
 		m_bDedicated = pProfile->m_ServerGameOptions.m_bDedicated;
+		m_bLAN = pProfile->m_ServerGameOptions.m_bLANOnly;
+		g_bLAN = !!m_bLAN;
 
 		m_pPassword->Enable(m_bUsePassword);
 
 		m_pScmdPassword->Enable(m_bAllowScmdCommands);
 
+		m_pBandwidthCycle->Enable(!m_bLAN);
+		m_pBandwidth->Enable(!m_bLAN);
 
 		m_pPassword->SetString(1,m_sPassword);
 		m_pScmdPassword->SetString(1,m_sScmdPassword);
@@ -355,20 +856,12 @@ void    CScreenHost::OnFocus(LTBOOL bFocus)
 
 		m_pWeapons->Show(!IsCoopMultiplayerGameType( ));
 
-		if (!g_bLAN)
-			UpdateBandwidth();
+		UpdateBandwidth(false);
 
         UpdateData(LTFALSE);
 
-
-		// Switch save/load to use mp folders.
-		g_pClientSaveLoadMgr->SetUseMultiplayerFolders( true );
-
-		m_pLoadCtrl->Enable( g_pClientSaveLoadMgr->ReloadSaveExists() );
-		m_pLoadCtrl->Show(g_pGameClientShell->GetGameType() == eGameTypeCooperative);
-
 		// Setup the host info.
-		g_pClientMultiplayerMgr->SetupServerHost( pProfile->m_ServerGameOptions.m_nPort, g_bLAN );
+		g_pClientMultiplayerMgr->SetupServerHost( pProfile->m_ServerGameOptions.m_nPort, !!m_bLAN );
 	}
 	else
 	{
@@ -377,426 +870,8 @@ void    CScreenHost::OnFocus(LTBOOL bFocus)
 		SaveOptions();
 
 		// Setup the host info, so that loaded games have the correct settings
-		g_pClientMultiplayerMgr->SetupServerHost( pProfile->m_ServerGameOptions.m_nPort, g_bLAN );
+		g_pClientMultiplayerMgr->SetupServerHost( pProfile->m_ServerGameOptions.m_nPort, !!m_bLAN );
 
 	}
 	CBaseScreen::OnFocus(bFocus);
-}
-
-LTBOOL CScreenHost::OnLeft()
-{
-	CLTGUICtrl *pCtrl = GetSelectedControl();
-	if (pCtrl == m_pBandwidthCycle)
-	{
-		m_nBandwidth = m_pBandwidthCycle->GetSelIndex();
-		
-		if (!m_nBandwidth)
-			m_nBandwidth = eBandwidth_Custom-1;
-		else
-			--m_nBandwidth;
-			
-		m_pBandwidthCycle->SetSelIndex(m_nBandwidth);
-		UpdateBandwidth();
-        return LTTRUE;
-	}
-	return CBaseScreen::OnLeft();
-}
-
-LTBOOL CScreenHost::OnRight()
-{
-	CLTGUICtrl *pCtrl = GetSelectedControl();
-	if (pCtrl == m_pBandwidthCycle)
-	{
-		m_nBandwidth = m_pBandwidthCycle->GetSelIndex();
-		++m_nBandwidth;
-		if (m_nBandwidth >= eBandwidth_Custom)
-			m_nBandwidth = 0;
-		m_pBandwidthCycle->SetSelIndex(m_nBandwidth);
-		UpdateBandwidth();
-        return LTTRUE;
-	}
-	return CBaseScreen::OnRight();
-}
-
-/******************************************************************/
-LTBOOL CScreenHost::OnLButtonUp(int x, int y)
-{
-	CLTGUICtrl *pCtrl = GetSelectedControl();
-	if (pCtrl == m_pBandwidthCycle)
-	{
-		m_nBandwidth = m_pBandwidthCycle->GetSelIndex();
-		++m_nBandwidth;
-		if (m_nBandwidth >= eBandwidth_Custom)
-			m_nBandwidth = 0;
-		m_pBandwidthCycle->SetSelIndex(m_nBandwidth);
-		UpdateBandwidth();
-        return LTTRUE;
-	}
-	return CBaseScreen::OnLButtonUp(x,y);
-}
-
-
-/******************************************************************/
-LTBOOL CScreenHost::OnRButtonUp(int x, int y)
-{
-	CLTGUICtrl *pCtrl = GetSelectedControl();
-	if (pCtrl == m_pBandwidthCycle)
-	{
-		m_nBandwidth = m_pBandwidthCycle->GetSelIndex();
-		if (!m_nBandwidth)
-			m_nBandwidth = eBandwidth_Custom-1;
-		else
-			--m_nBandwidth;
-		m_pBandwidthCycle->SetSelIndex(m_nBandwidth);
-		UpdateBandwidth();
-        return LTTRUE;
-	}
-	return CBaseScreen::OnRButtonUp(x,y);
-}
-
-void CScreenHost::HandleLaunch()
-{
-	m_bReadyToLaunch = LTFALSE;
-	UpdateData();
-
-	CUserProfile *pProfile = g_pProfileMgr->GetCurrentProfile();
-	SaveOptions();
-	
-	// Setup the host info.
-	if( !g_pClientMultiplayerMgr->SetupServerHost( pProfile->m_ServerGameOptions.m_nPort, g_bLAN ))
-	{
-		// This should probably prevent them from starting the server if this function fails,
-		// But it never does...
-	}
-	
-	if (!LaunchGame())
-	{
-		g_pInterfaceMgr->LoadFailed(SCREEN_ID_HOST);
-	}
-}
-
-
-
-LTBOOL CScreenHost::LaunchGame()
-{
-	if( !g_pMissionMgr->StartGameNew( ))
-		return LTFALSE;
-
-	return LTTRUE;
-}
-
-
-void LaunchCallBack(LTBOOL bReturn, void *pData)
-{
-	CScreenHost *pThisScreen = (CScreenHost *)pData;
-	if (bReturn && pThisScreen)
-	{
-		pThisScreen->ReadyLaunch(LTTRUE);
-    }
-}
-
-
-bool CScreenHost::UpdateInterfaceSFX()
-{
-	if (m_bReadyToLaunch)
-		HandleLaunch();
-
-	CBaseScreen::UpdateInterfaceSFX();
-
-	return true;
-}
-
-
-void CScreenHost::ReadyLaunch(LTBOOL bReady)
-{
-	m_bReadyToLaunch = bReady;
-}
-
-void CScreenHost::UpdateBandwidth()
-{
-	CUserProfile *pProfile = g_pProfileMgr->GetCurrentProfile();
-	if ( m_nBandwidth >= eBandwidth_Custom )
-	{
-		m_sBandwidth.Format( "%d", pProfile->m_ServerGameOptions.m_nBandwidthServerCustom);
-		m_pBandwidth->SetString(1,m_sBandwidth);
-	}
-	else
-	{
-
-		m_sBandwidth.Format( "%d", g_BandwidthServer[m_nBandwidth]);
-		m_pBandwidth->SetString(1,m_sBandwidth);
-	}
-}
-
-
-void CScreenHost::HandleCallback(uint32 dwParam1, uint32 dwParam2)
-{
-	switch(dwParam2)
-	{
-	case CMD_EDIT_NAME:
-		{
-			const char* pszNewVal = (const char*)dwParam1;
-
-			if( pszNewVal[0] )
-			{
-				m_sSessionName = pszNewVal;
-			}
-			else
-			{
-				GetDefaultSessionName( m_eGameType, m_sSessionName.GetBuffer( MAX_SESSION_NAME ), MAX_SESSION_NAME );
-				m_sSessionName.ReleaseBuffer( );
-			}
-
-			m_sSessionName = m_sSessionName.Left( MAX_SESSION_NAME );
-			m_pName->SetString(1,m_sSessionName);
-		}
-		break;
-	case CMD_EDIT_PASS:
-		m_sPassword = ((char *)dwParam1);
-		m_sPassword = m_sPassword.Left( MAX_PASSWORD );
-		m_pPassword->SetString(1,m_sPassword);
-		break;
-	case CMD_EDIT_SCMDPASS:
-		m_sScmdPassword = ((char *)dwParam1);
-		m_sScmdPassword = m_sScmdPassword.Left( MAX_PASSWORD );
-		m_pScmdPassword->SetString(1,m_sScmdPassword);
-		break;
-	case CMD_EDIT_PORT:
-		{
-			char *pszPort = (char *)dwParam1;
-			uint16 nPort = (uint16)atoi(pszPort);
-			m_sPort = pszPort;
-			m_sPort = m_sPort.Left( kMaxPortStrLen );
-			m_pPort->SetString(1,m_sPort);
-
-			// Setup the host info.
-			g_pClientMultiplayerMgr->SetupServerHost( nPort, g_bLAN );
-		}
-		break;
-	case CMD_EDIT_BANDWIDTH:
-		{
-			char *pszBandwidth = (char *)dwParam1;
-			uint32 nBandwidth = (uint32)atoi(pszBandwidth);
-			if ( IsValidBandwidth(nBandwidth) )
-			{
-				m_sBandwidth = pszBandwidth;
-				m_sBandwidth = m_sBandwidth.Left( kMaxBandwidthStrLen );
-				m_nBandwidth = eBandwidth_Custom;
-				CUserProfile *pProfile = g_pProfileMgr->GetCurrentProfile();
-				pProfile->m_ServerGameOptions.m_nBandwidthServerCustom = (uint16)atol(m_sBandwidth);
-				m_pBandwidthCycle->UpdateData(LTFALSE);
-				UpdateBandwidth();
-			}
-			else
-			{
-				MBCreate mb;
-				g_pInterfaceMgr->ShowMessageBox(FormatTempString(IDS_BANDWIDTH_INVALID,GetMinimumBandwidth(),GetMaximumBandwidth()),&mb);
-			}
-		}
-		break;
-	}
-	UpdateData();
-}
-
-
-void CScreenHost::Escape()
-{
-	// Switch save/load to back to use sp folders.
-	g_pClientSaveLoadMgr->SetUseMultiplayerFolders( false );
-
-	// Initialize to the sp mission bute.
-	if( !g_pMissionButeMgr->Init( MISSION_DEFAULT_FILE ))
-	{
-		g_pLTClient->ShutdownWithMessage("Could not load mission bute %s.", MISSION_DEFAULT_FILE );
-		return;
-  	}
-
-	g_pClientMultiplayerMgr->SetupServerSinglePlayer( );
-
-	CBaseScreen::Escape();
-}
-
-
-
-void CScreenHost::UpdateGameType()
-{
-	CUserProfile *pProfile = g_pProfileMgr->GetCurrentProfile();
-	m_eGameType = g_pGameClientShell->GetGameType();
-	pProfile->m_ServerGameOptions.m_eGameType = m_eGameType;
-
-	
-	m_sSessionName = pProfile->m_ServerGameOptions.GetSessionName();
-	m_sCampaignName = pProfile->m_ServerGameOptions.GetCampaignName();
-
-	// If the session name isn't specified, then get the default.
-	if( m_sSessionName.GetLength() == 0 )
-	{
-		GetDefaultSessionName( m_eGameType, m_sSessionName.GetBuffer( MAX_SESSION_NAME ), MAX_SESSION_NAME );
-		m_sSessionName.ReleaseBuffer( );
-	}
-	m_pName->SetString(1,m_sSessionName);
-
-
-	CreateDefaultCampaign();
-	bool isDefault = (m_sCampaignName.CompareNoCase(DEFAULT_CAMPAIGN) == 0);
-	
-	if (!isDefault)
-	{
-		char const* pszCampaignFile = GetCampaignFile( pProfile->m_ServerGameOptions );
-
-		if (!CWinUtil::FileExist( pszCampaignFile ))
-		{
-			switch (m_eGameType)
-			{
-			case eGameTypeCooperative:
-				pProfile->m_ServerGameOptions.GetCoop().m_sCampaignName = DEFAULT_CAMPAIGN;
-				break;
-			case eGameTypeDeathmatch:
-				pProfile->m_ServerGameOptions.GetDeathmatch().m_sCampaignName = DEFAULT_CAMPAIGN;
-				break;
-			case eGameTypeTeamDeathmatch:
-				pProfile->m_ServerGameOptions.GetTeamDeathmatch().m_sCampaignName = DEFAULT_CAMPAIGN;
-				break;
-			case eGameTypeDoomsDay:
-				pProfile->m_ServerGameOptions.GetDoomsday().m_sCampaignName = DEFAULT_CAMPAIGN;
-				break;
-				
-			}
-			isDefault = true;
-		}
-	}
-	
-	m_sCampaignName = m_sCampaignName.Left( MAX_SESSION_NAME );
-
-	if (isDefault)
-		m_pCampaign->SetString(1,LoadTempString(IDS_HOST_CAMPAIGN_DEFAULT));
-	else
-		m_pCampaign->SetString(1,m_sCampaignName);
-
-	g_pGameClientShell->SetGameType(m_eGameType);
-
-
-}
-
-
-void CScreenHost::SaveOptions()
-{
-	CUserProfile *pProfile = g_pProfileMgr->GetCurrentProfile();
-
-	pProfile->m_ServerGameOptions.m_eGameType = m_eGameType;
-	pProfile->m_ServerGameOptions.m_bUsePassword = !!m_bUsePassword;
-	pProfile->m_ServerGameOptions.m_sPassword = m_sPassword;
-	pProfile->m_ServerGameOptions.m_sScmdPassword = m_sScmdPassword;
-	pProfile->m_ServerGameOptions.m_bAllowScmdCommands = !!m_bAllowScmdCommands;
-	pProfile->m_ServerGameOptions.m_nPort = (uint16)atoi(m_sPort);
-	pProfile->m_ServerGameOptions.m_nBandwidthServer = m_nBandwidth;
-	pProfile->m_ServerGameOptions.m_nBandwidthServerCustom = (uint16)atol(m_sBandwidth);
-	pProfile->m_ServerGameOptions.m_bDedicated = !!m_bDedicated;
-
-	switch (m_eGameType)
-	{
-	case eGameTypeCooperative:
-		pProfile->m_ServerGameOptions.GetCoop().m_sSessionName = m_sSessionName;
-		pProfile->m_ServerGameOptions.GetCoop().m_sCampaignName = m_sCampaignName;
-		break;
-	case eGameTypeDeathmatch:
-		pProfile->m_ServerGameOptions.GetDeathmatch().m_sSessionName = m_sSessionName;
-		pProfile->m_ServerGameOptions.GetDeathmatch().m_sCampaignName = m_sCampaignName;
-		break;
-	case eGameTypeTeamDeathmatch:
-		pProfile->m_ServerGameOptions.GetTeamDeathmatch().m_sSessionName = m_sSessionName;
-		pProfile->m_ServerGameOptions.GetTeamDeathmatch().m_sCampaignName = m_sCampaignName;
-		break;
-	case eGameTypeDoomsDay:
-		pProfile->m_ServerGameOptions.GetDoomsday().m_sSessionName = m_sSessionName;
-		pProfile->m_ServerGameOptions.GetDoomsday().m_sCampaignName = m_sCampaignName;
-		break;
-		
-	};
-
-	pProfile->ApplyMultiplayer(g_bLAN);
-	pProfile->Save(true);
-}
-
-
-
-void CScreenHost::CreateDefaultCampaign()
-{
-	CUserProfile *pProfile = g_pProfileMgr->GetCurrentProfile();
-	std::string sFN = GetCampaignDir( g_pProfileMgr->GetCurrentProfileName( ), g_pGameClientShell->GetGameType() );
-
-
-	
-	if( !CWinUtil::DirExist( sFN.c_str( )))
-	{
-		if( !CWinUtil::CreateDir( sFN.c_str( )))
-		{
-			//TODO: error message
-			return;
-		}
-	}
-
-	sFN += DEFAULT_CAMPAIGN_FILE;
-
-	if (CWinUtil::FileExist(sFN.c_str()))
-	{
-		remove(sFN.c_str());
-	}
-
-	char szString[256];
-	char szNum[4];
-
-	sprintf(szNum, "%d", (IsCoopMultiplayerGameType() ? 0 : 1) );
-	CWinUtil::WinWritePrivateProfileString( "MissionList", "LoopMissions", szNum, sFN.c_str());
-
-	CWinUtil::WinWritePrivateProfileString( "MissionList", "MissionSourceFile", g_pMissionButeMgr->GetAttributeFile(), sFN.c_str());
-
-
-	uint16 nCount = 0;
-	bool bAdd =false;
-	for (int nMission = 0; nMission < g_pMissionButeMgr->GetNumMissions(); nMission++)
-	{
-		MISSION *pMission = g_pMissionButeMgr->GetMission(nMission);
-		if (pMission)
-		{
-			char szWorldTitle[MAX_PATH] = "";
-			_splitpath( pMission->aLevels[0].szLevel, NULL, NULL, szWorldTitle, NULL );
-
-			bAdd = false;
-			switch (g_pGameClientShell->GetGameType())
-			{
-			case eGameTypeDeathmatch:
-			case eGameTypeTeamDeathmatch:
-				if (strnicmp(szWorldTitle,"DM_",3) == 0)
-				{
-					bAdd = true;
-				}
-				break;
-			case eGameTypeDoomsDay:
-				if (strnicmp(szWorldTitle,"DD_",3) == 0)
-				{
-					bAdd = true;
-				}
-				break;
-			default:
-				bAdd = true;
-				break;
-			}
-
-			if (bAdd)
-			{
-				sprintf(szString,"Mission%d",nCount);
-				sprintf(szNum,"%d",nMission);
-				CWinUtil::WinWritePrivateProfileString( "MissionList", szString, szNum, sFN.c_str());
-				nCount++;
-			}
-
-		}
-		
-	}
-
-	// Flush the file.
-	CWinUtil::WinWritePrivateProfileString( NULL, NULL, NULL, sFN.c_str());
-
-
 }

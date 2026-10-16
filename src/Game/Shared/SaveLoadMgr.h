@@ -30,11 +30,13 @@
 #define KEEPALIVE_FILENAME		"Kpalv.sav"
 #define TRANSITION_FILENAME		"Trans.sav"
 #define RELOADLEVEL_FILENAME	"Reload.sav"
+#define CHECKPOINT_FILENAME		"Checkpoint.sav"	// RETAIL: Contract J.A.C.K.'s checkpoints
 #define QUICKSAVE_FILENAME		"Quick.sav"
 #define SAVEGAMEINI_FILENAME	"Save1001.ini"  // v1.001
 #define QUICKSAVE_INIKEY		"SaveGame00"
 #define CONTINUE_INIKEY			"Continue"
 #define RELOADLEVEL_INIKEY		"Reload"
+#define CHECKPOINT_INIKEY		"CheckpointSave"
 #define SLOTSAVE_INIKEY			"SaveGame"
 #define SLOTSAVE_BASE			"Slot"
 
@@ -57,6 +59,8 @@ class CSaveLoadMgr
 
 		bool	QuickSaveExists();
 		bool	ReloadSaveExists();
+		// RETAIL: CShell 0x100b5330
+		bool	CheckpointSaveExists();
 		bool	CanContinueGame();
 		bool	SlotSaveExists( uint32 nSlot );
 
@@ -165,6 +169,15 @@ class CSaveLoadMgr
 			sprintf( szReloadSaveFile, "%s\\%s", GetRootSaveDir( pProfile ), RELOADLEVEL_FILENAME );
 
 			return szReloadSaveFile;
+		}
+
+		// RETAIL: CShell 0x100b58b0
+		char const* const GetCheckpointSaveFile( const char *pProfile = NULL ) const
+		{
+			static char szCheckpointSaveFile[MAX_PATH];
+			sprintf( szCheckpointSaveFile, "%s\\%s", GetRootSaveDir( pProfile ), CHECKPOINT_FILENAME );
+
+			return szCheckpointSaveFile;
 		}
 
 		char const* const GetKeepAliveFile( const char *pProfile = NULL ) const

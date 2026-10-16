@@ -438,6 +438,75 @@ bool CMissionMgr::FinishStartGameFromReload( )
 	return true;
 }
 
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	CMissionMgr::StartGameFromCheckpoint
+//
+//	PURPOSE:	Start the game from the last checkpoint.
+//
+// ----------------------------------------------------------------------- //
+// RETAIL: CShell 0x10088cb0 (and its finish 0x100891c0)
+bool CMissionMgr::StartGameFromCheckpoint( )
+{
+	// Check if there was a save available.
+	if( !g_pClientSaveLoadMgr->CheckpointSaveExists( ))
+		return false;
+
+	// Starting new game.
+	g_pInterfaceMgr->StartingNewGame( );
+
+	// Get the worldname for the save.
+	char szWorldName[MAX_PATH];
+	if( !g_pClientSaveLoadMgr->ReadSaveINI( CHECKPOINT_INIKEY, NULL, 0, 
+		szWorldName, ARRAY_LEN( szWorldName ),	NULL ))
+		return false;
+
+	// Starting new mission.
+	m_bNewMission = true;
+	m_bRestoringLevel = false;
+	m_bServerWaiting = true;
+	ClearMissionInfo( );
+
+	bool bOk = true;
+
+	// Set this as the level we'll be playing.
+	bOk = bOk && SetNewLevel( szWorldName );
+
+	if( !bOk )
+	{
+		g_pInterfaceMgr->LoadFailed( );
+		return false;
+	}
+
+	m_eStartGameState = eStartGameFromCheckpoint;
+
+	return true;
+}
+
+bool CMissionMgr::FinishStartGameFromCheckpoint( )
+{
+	m_eStartGameState = eStartGameStarted;
+
+	bool bOk = true;
+
+	// Make sure we have a server started.
+	bOk = bOk && g_pClientMultiplayerMgr->StartClientServer( );
+
+	// Send the start game message.
+	bOk = bOk && SendStartGameMessage( );
+
+	// Do the load.
+	bOk = bOk && g_pClientSaveLoadMgr->LoadCheckpoint( );
+
+	if( !bOk )
+	{
+		g_pInterfaceMgr->LoadFailed( );
+		return false;
+	}
+
+	return true;
+}
+
 
 // ----------------------------------------------------------------------- //
 //
@@ -767,6 +836,8 @@ bool CMissionMgr::FinishStartGame( )
 		return FinishStartGameFromSaveSlot();
 	case eStartGameFromReload:
 		return FinishStartGameFromReload( );
+	case eStartGameFromCheckpoint:
+		return FinishStartGameFromCheckpoint( );
 	case eStartGameFromContinue:
 		return FinishStartGameFromContinue( );
 	case eStartGameAsClient:

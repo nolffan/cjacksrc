@@ -26,6 +26,10 @@
 #include <stdio.h>
 #include <time.h>
 
+// RETAIL: Contract J.A.C.K.'s string table (CRes.dll 1444, 1445)
+#define IDS_CJ_CHECKPOINT		1444	// "Checkpoint"
+#define IDS_CJ_HELP_CHECKPOINT	1445	// "Load from the last checkpoint."
+
 namespace
 {
 	const int kMaxSave = SLMGR_MAX_SAVE_SLOTS;
@@ -80,7 +84,7 @@ void CScreenLoad::OnFocus(LTBOOL bFocus)
 
 uint32 CScreenLoad::OnCommand(uint32 dwCommand, uint32 dwParam1, uint32 dwParam2)
 {
-	if (dwCommand >= CMD_CUSTOM && dwCommand <= CMD_CUSTOM+1+kMaxSave)
+	if (dwCommand >= CMD_CUSTOM && dwCommand <= CMD_CUSTOM+2+kMaxSave)
 	{
 		bool bLoaded = true;
 
@@ -93,9 +97,13 @@ uint32 CScreenLoad::OnCommand(uint32 dwCommand, uint32 dwParam1, uint32 dwParam2
 		{
 			bLoaded = bLoaded && g_pMissionMgr->StartGameFromReload( );
 		}
+		else if (dwCommand == CMD_CUSTOM+2)
+		{
+			bLoaded = bLoaded && g_pMissionMgr->StartGameFromCheckpoint( );
+		}
 		else
 		{
-            uint32 slot = (dwCommand - CMD_CUSTOM) - 1;
+            uint32 slot = (dwCommand - CMD_CUSTOM) - 2;
 			bLoaded = bLoaded && g_pMissionMgr->StartGameFromSaveSlot( slot );
 		}
 
@@ -173,6 +181,16 @@ void CScreenLoad::BuildSavedLevelLists()
 		AddControl(BuildSaveControls( RELOADLEVEL_INIKEY, CMD_CUSTOM+1, IDS_HELP_RELOAD, false, m_nextPos ));
 		m_nextPos.x -= kIndent;
 	}
+
+	// RETAIL: Contract J.A.C.K.'s checkpoint save (CShell 0x100d1aa6)
+	if (g_pClientSaveLoadMgr->CheckpointSaveExists())
+	{
+		CLTGUITextCtrl *pCtrl = AddTextItem( IDS_CJ_CHECKPOINT,LTNULL,LTNULL,kDefaultPos,LTTRUE);
+		pCtrl->Enable(LTFALSE);
+		m_nextPos.x += kIndent;
+		AddControl(BuildSaveControls( CHECKPOINT_INIKEY, CMD_CUSTOM+2, IDS_CJ_HELP_CHECKPOINT, false, m_nextPos ));
+		m_nextPos.x -= kIndent;
+	}
 	
 	CLTGUITextCtrl *pCtrl = AddTextItem(IDS_LOAD_USERGAME,LTNULL,LTNULL,kDefaultPos,LTTRUE);
 	pCtrl->Enable(LTFALSE);
@@ -190,7 +208,7 @@ void CScreenLoad::BuildSavedLevelLists()
 	{
 		if (g_pClientSaveLoadMgr->SlotSaveExists( i+1 ))
 		{
-			CLTGUIColumnCtrl*  pColCtrl = BuildSaveControls( g_pClientSaveLoadMgr->GetSlotSaveKey( i+1 ), CMD_CUSTOM+2+i, IDS_HELP_LOADGAME, true );
+			CLTGUIColumnCtrl*  pColCtrl = BuildSaveControls( g_pClientSaveLoadMgr->GetSlotSaveKey( i+1 ), CMD_CUSTOM+3+i, IDS_HELP_LOADGAME, true );
 			pList->AddControl(pColCtrl);
 
 		}

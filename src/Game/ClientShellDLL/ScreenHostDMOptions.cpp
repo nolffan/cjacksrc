@@ -25,10 +25,16 @@ namespace
 }
 
 
+extern bool g_bLAN;
+
+// "Toggle whether or not weapons stay after picking them up."
+#define IDS_CJ_WEAPONSSTAY_HELP	1434
+
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
+// RETAIL: CShell 0x100c46b0
 CScreenHostDMOptions::CScreenHostDMOptions()
 {
 	m_nMaxPlayers = 8;
@@ -37,18 +43,20 @@ CScreenHostDMOptions::CScreenHostDMOptions()
 	m_nTimeLimit = 10;
 	m_nRounds = 1;
 
-	m_nFragScore = 2;
-	m_nTagScore = 1;
+	m_nFragScore = 1;
 
 	m_pMaxPlayers = NULL;
+	m_bWeaponsStay = LTFALSE;
 
 }
 
 
+// RETAIL: CShell 0x100c4710
 CScreenHostDMOptions::~CScreenHostDMOptions()
 {
 }
 
+// RETAIL: CShell 0x100c4720: no frag and tag scores, and weapons stay
 // Build the screen
 LTBOOL CScreenHostDMOptions::Build()
 {
@@ -88,21 +96,15 @@ LTBOOL CScreenHostDMOptions::Build()
 	pSlider->SetSliderIncrement( 1 );
 	pSlider->SetNumericDisplay( LTTRUE );
 
-	pSlider = AddSlider(IDS_FRAG_SCORE, IDS_FRAG_SCORE_HELP, kColumn, kSlider, -1, &m_nFragScore);
-	pSlider->SetSliderRange(0,3);
-	pSlider->SetSliderIncrement(1);
-	pSlider->SetNumericDisplay(LTTRUE);
-
-	pSlider = AddSlider(IDS_TAG_SCORE, IDS_TAG_SCORE_HELP, kColumn, kSlider, -1, &m_nTagScore);
-	pSlider->SetSliderRange(0,3);
-	pSlider->SetSliderIncrement(1);
-	pSlider->SetNumericDisplay(LTTRUE);
-
+	CLTGUIToggle* pToggle = AddToggle(IDS_WEAPONSSTAY,IDS_CJ_WEAPONSSTAY_HELP,kColumn,&m_bWeaponsStay);
+	pToggle->SetOnString(szYes);
+	pToggle->SetOffString(szNo);
 
  	// Make sure to call the base class
 	return CBaseScreen::Build();
 }
 
+// RETAIL: CShell 0x100c49b0
 // Change in focus
 void    CScreenHostDMOptions::OnFocus(LTBOOL bFocus)
 {
@@ -110,16 +112,34 @@ void    CScreenHostDMOptions::OnFocus(LTBOOL bFocus)
 		
 	if (bFocus)
 	{
+		m_pMaxPlayers->Enable(!g_pPlayerMgr->IsPlayerInWorld());
 
-		m_nMaxPlayers = (int)pProfile->m_ServerGameOptions.GetDeathmatch().m_nMaxPlayers;
+		// RETAIL: an internet game takes no more players than the server's
+		// bandwidth allows.
+		if (g_bLAN)
+		{
+			m_pMaxPlayers->SetSliderRange(2, 16);
+		}
+		else
+		{
+			int nMaxPlayers = pProfile->m_ServerGameOptions.GetMaxPlayersForBandwidth();
+			if (nMaxPlayers > 2)
+			{
+				m_pMaxPlayers->SetSliderRange(2, nMaxPlayers);
+			}
+			else
+			{
+				m_pMaxPlayers->SetSliderRange(1, 2);
+				m_pMaxPlayers->Enable(LTFALSE);
+			}
+			m_nMaxPlayers = LTMIN((int)pProfile->m_ServerGameOptions.GetDeathmatch().m_nMaxPlayers, nMaxPlayers);
+		}
+
 		m_nRunSpeed = (int)pProfile->m_ServerGameOptions.GetDeathmatch().m_nRunSpeed;
 		m_nScoreLimit = (int)pProfile->m_ServerGameOptions.GetDeathmatch().m_nScoreLimit;
 		m_nTimeLimit = (int)pProfile->m_ServerGameOptions.GetDeathmatch().m_nTimeLimit;
 		m_nRounds = (int)pProfile->m_ServerGameOptions.GetDeathmatch().m_nRounds;
-
-		m_nFragScore = (int)pProfile->m_ServerGameOptions.GetDeathmatch().m_nFragScore;
-		
-		m_pMaxPlayers->Enable(!g_pPlayerMgr->IsPlayerInWorld());
+		m_bWeaponsStay = pProfile->m_ServerGameOptions.GetDeathmatch().m_bWeaponsStay;
 
         UpdateData(LTFALSE);
 
@@ -133,9 +153,8 @@ void    CScreenHostDMOptions::OnFocus(LTBOOL bFocus)
 		pProfile->m_ServerGameOptions.GetDeathmatch().m_nScoreLimit = (uint8)m_nScoreLimit;
 		pProfile->m_ServerGameOptions.GetDeathmatch().m_nTimeLimit = (uint8)m_nTimeLimit;
 		pProfile->m_ServerGameOptions.GetDeathmatch().m_nRounds = (uint8)m_nRounds;
+		pProfile->m_ServerGameOptions.GetDeathmatch().m_bWeaponsStay = !!m_bWeaponsStay;
 
-		pProfile->m_ServerGameOptions.GetDeathmatch().m_nFragScore = (uint8)m_nFragScore;
-		
 		pProfile->Save();
 
 		if (g_pPlayerMgr->IsPlayerInWorld())
@@ -150,4 +169,3 @@ void    CScreenHostDMOptions::OnFocus(LTBOOL bFocus)
 	}
 	CBaseScreen::OnFocus(bFocus);
 }
-

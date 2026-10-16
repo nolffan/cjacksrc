@@ -23,6 +23,8 @@
 #endif
 
 
+// RETAIL: Contract J.A.C.K.'s list (CShell.dll .data 0x1014fed8): no LAN
+// join and no player skills screen, and Demolition's host options
 ADD_SCREEN(NONE,GenericScreen)
 ADD_SCREEN(MAIN,ScreenMain)
 
@@ -38,10 +40,8 @@ ADD_SCREEN(SAVE,ScreenSave)
 
 //multi
 ADD_SCREEN(PLAYER,ScreenPlayer)
-ADD_SCREEN(PLAYER_SKILLS,ScreenPlayerSkills)
 ADD_SCREEN(HOST,ScreenHost)
 ADD_SCREEN(JOIN,ScreenJoin)
-ADD_SCREEN(JOIN_LAN,ScreenJoinLAN)
 ADD_SCREEN(PLAYER_TEAM,ScreenPlayerTeam)
 
 //options
@@ -55,6 +55,7 @@ ADD_SCREEN(CONTROLS,ScreenControls)
 ADD_SCREEN(HOST_OPTIONS,ScreenHostOptions)
 ADD_SCREEN(HOST_DM_OPTIONS,ScreenHostDMOptions)
 ADD_SCREEN(HOST_TDM_OPTIONS,ScreenHostTDMOptions)
+ADD_SCREEN(HOST_DEMOLITION_OPTIONS,ScreenHostDemolitionOptions)
 ADD_SCREEN(HOST_DD_OPTIONS,ScreenHostDDOptions)
 ADD_SCREEN(HOST_MISSION,ScreenHostMission)
 ADD_SCREEN(HOST_LEVELS,ScreenHostLevels)

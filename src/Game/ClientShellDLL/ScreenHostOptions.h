@@ -44,7 +44,6 @@ protected:
 	int			m_nPlayerDiff;
 
 	CLTGUISlider*	m_pMaxPlayers;
-	CLTGUIToggle*	m_pSkillToggle;
 
 };
 

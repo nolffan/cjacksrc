@@ -29,7 +29,6 @@ CScreenHostOptions::CScreenHostOptions()
 	m_nDifficulty = 0;
 	
 	m_pMaxPlayers = NULL;
-	m_pSkillToggle = NULL;
 
 }
 
@@ -61,9 +60,7 @@ LTBOOL CScreenHostOptions::Build()
 	pToggle->SetOnString(szYes);
 	pToggle->SetOffString(szNo);
 
-	m_pSkillToggle = AddToggle(IDS_USE_SKILLS,IDS_HELP_USE_SKILLS,kColumn,&m_bUseSkills);
-	m_pSkillToggle->SetOnString(szYes);
-	m_pSkillToggle->SetOffString(szNo);
+	// RETAIL: no skills toggle in Contract J.A.C.K. (CShell 0x100c7390)
 
 	CLTGUICycleCtrl *pCycle = AddCycle(IDS_DIFFICULTY,IDS_HELP_DIFFICULTY,kColumn,&m_nDifficulty);
 	pCycle->AddString(LoadTempString(IDS_NEW_EASY));
@@ -96,7 +93,6 @@ void    CScreenHostOptions::OnFocus(LTBOOL bFocus)
 
 
 		m_pMaxPlayers->Enable(!g_pPlayerMgr->IsPlayerInWorld());
-		m_pSkillToggle->Enable(!g_pPlayerMgr->IsPlayerInWorld());
 
         UpdateData(LTFALSE);
 

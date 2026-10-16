@@ -1061,6 +1061,57 @@ DLLs.
   1445), which ours has no support for. ClientMultiplayerMgr's m_sModName
   is at 0x166c in retail, 0x1670 in ours.
 
+### 8c. cshell (CShell.dll's Contract J.A.C.K. screens)
+
+Round 1 (branch `cshell`), the items 8b leaves open:
+
+- The screen and command enums are retail's: no JOIN_LAN, no
+  PLAYER_SKILLS, HOST_DEMOLITION_OPTIONS after HOST_TDM_OPTIONS
+  (ScreenEnum.h, the .data names at 0x1014fed8); eScreenCmds has three
+  single-player commands after CMD_NEW_GAME that retail never handles
+  (CMD_CJ_24..26: ScreenSingle::OnCommand's jump table, 0x100dc930, has
+  LOAD_GAME at 27), no CMD_JOIN_LAN and no CMD_SKILLS, and CMD_TOGGLE_LAN
+  after CMD_TOGGLE_SCMDPASS (the host screen's 45). Checked against every
+  retail OnCommand jump table (single, save, host, host levels, join,
+  options): CMD_PLAYER 37, CMD_EDIT_PASS 40, CMD_EDIT_CDKEY 57,
+  CMD_DISPLAY 58, CMD_CROSSHAIR 68, CMD_CUSTOM 82. ScreenJoinLAN and
+  ScreenPlayerSkills left the project (their retail matches became
+  unwritten: CShell's unwritten count rose).
+- CScreenMulti is retail's (0x100d3130..0x100d3cbb): Player setup, CD Key,
+  Join, Host; the key typed in capitals (an edit filter) and grouped by
+  fours; checked by the GameSpy browser's IsCDKeyValid and kept in
+  CVersionMgr; an Escape back to single player's missions. All but
+  HandleCallback match (the dash's register and its last return).
+- CScreenHostDemolitionOptions (0x100c40d0..0x100c46a1) is new; the DM,
+  TDM, DD and coop host options are retail's (the team items without
+  their names, no tag score, no skills toggle, weapons stay, and an
+  internet game's most players capped by the server's bandwidth). The
+  team screens keep their unused team name pointers: retail's objects are
+  that size (TO2ScreenMgr's debug_new_fn).
+- CScreenHost is retail's (0x100c1ad0..0x100c37c3): a game type cycle
+  (DM, TDM, Doomsday, Demolition; CMD_GAME saves and updates), a
+  LAN/Internet toggle (m_bLAN, the profile's m_bLANOnly and g_bLAN), the
+  bandwidth's column with the most players it allows, no load item, no
+  Escape of its own, and the default campaign listing DE_ worlds for
+  deathmatch and Demolition.
+- ClientMultiplayerMgr has no WON server directory member (m_sModName at
+  0x166c as retail's). GetServerDir() returns NULL for NOLF2's join
+  screen until CScreenJoin is rewritten (below).
+- The checkpoint save: CSaveLoadMgr::CheckpointSaveExists and
+  GetCheckpointSaveFile ("CheckpointSave", "Checkpoint.sav"),
+  kLoadGameTypeCheckpoint (3, so kLoadGameTypeContinue is 4),
+  CClientSaveLoadMgr::LoadCheckpoint, CMissionMgr::StartGameFromCheckpoint
+  (eStartGameFromCheckpoint 5) and the load screen's entry (CMD_CUSTOM+2;
+  the slots now start at CMD_CUSTOM+3). **For the game package**: the
+  server (CServerSaveLoadMgr::HandleLoadGame) has no checkpoint case yet
+  and nothing writes the checkpoint save (Object.lto has the strings
+  "CheckpointSave" and "Checkpoint"); until then the entry never shows.
+- Where it stops: CScreenJoin is NOLF2's (WON); retail's
+  (0x100c8f40..0x100d09c0, about 30 KB with its sort instantiations) is a
+  GameSpy browser with a port column, a game type filter and nine sort
+  columns, and holds most of CShell's largest unwritten rows
+  (0x100cedd0, 0x100d06b0, 0x100ce580, 0x100ce850). It is next.
+
 ### 11. release
 
 - `build/package.sh` makes `<dir>-private.tar.gz` and `-public.tar.gz` for

@@ -19,6 +19,9 @@
 #include "BaseScreen.h"
 #include "NetDefs.h"
 
+// RETAIL: Contract J.A.C.K.'s host screen (CShell.dll 0x100c1b00..
+// 0x100c37c3, its vtable 0x1013684c): a game type cycle and a LAN/Internet
+// toggle; no load item and no escape of its own.
 class CScreenHost : public CBaseScreen
 {
 public:
@@ -33,7 +36,6 @@ public:
     LTBOOL   OnRButtonUp(int x, int y);
 
     void    OnFocus(LTBOOL bFocus);
-    void	Escape();
 
 	virtual bool UpdateInterfaceSFX();
 	void	ReadyLaunch(LTBOOL bReady);
@@ -42,12 +44,12 @@ protected:
 	void	HandleCallback(uint32 dwParam1, uint32 dwParam2);
 	void	CreateDefaultCampaign();
 
-    LTBOOL	LaunchGame();
-    LTBOOL	SetService( );
-	void	RunServerOptions();
+	LTBOOL	LaunchGame();
 	void	HandleLaunch();
 
-	void	UpdateBandwidth();
+	// RETAIL: the bandwidth's column also shows the most players it allows,
+	// and sets every team game's most players when bSetMaxPlayers
+	void	UpdateBandwidth(bool bSetMaxPlayers);
 	void	UpdateGameType();
 	void	SaveOptions();
 
@@ -62,10 +64,10 @@ protected:
 	LTBOOL	m_bDedicated;
 	CString	m_sScmdPassword;
 	LTBOOL	m_bAllowScmdCommands;
+	LTBOOL	m_bLAN;
 
 	CLTGUIColumnCtrl*	m_pName;
-
-	CLTGUITextCtrl*		m_pLoadCtrl;
+	CLTGUIToggle*		m_pLANToggle;
 
 	CLTGUIColumnCtrl*	m_pCampaign;
 
@@ -82,6 +84,7 @@ protected:
 
 	CLTGUITextCtrl*		m_pWeapons;
 
+	uint8				m_nGameType;	// the game type cycle's
 	GameType			m_eGameType;
 
 	uint8				m_nBandwidth;

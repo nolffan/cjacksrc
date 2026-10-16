@@ -44,7 +44,7 @@ protected:
 	int			m_nRounds;
 
 	int			m_nFragScore;
-	int			m_nTagScore;
+	LTBOOL		m_bWeaponsStay;	// RETAIL: Contract J.A.C.K.'s
 
 
 	CLTGUISlider*	m_pMaxPlayers;

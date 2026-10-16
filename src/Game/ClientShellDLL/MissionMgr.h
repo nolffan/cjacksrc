@@ -46,6 +46,9 @@ class CMissionMgr
 		// Start game from reload.
 		bool			StartGameFromReload( );
 
+		// RETAIL: CShell 0x10088cb0: start the game from the last checkpoint.
+		bool			StartGameFromCheckpoint( );
+
 		// Start game from continue game.
 		bool			StartGameFromContinue( );
 
@@ -100,6 +103,7 @@ class CMissionMgr
 			eStartGameFromQuickSave,
 			eStartGameFromSaveSlot,
 			eStartGameFromReload,
+			eStartGameFromCheckpoint,	// RETAIL: 5 (CShell 0x10088d66)
 			eStartGameFromContinue,
 			eStartGameAsClient,
 			eStartGameStarted,
@@ -113,6 +117,7 @@ class CMissionMgr
 		bool	FinishStartGameFromQuickSave( );
 		bool	FinishStartGameFromSaveSlot();
 		bool	FinishStartGameFromReload( );
+		bool	FinishStartGameFromCheckpoint( );
 		bool	FinishStartGameFromContinue( );
 		bool	FinishStartGameAsClient( );
 

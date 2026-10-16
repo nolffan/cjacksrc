@@ -964,10 +964,6 @@ bool CScreenJoin::PreState_Startup()
 	// Note : Find a way to put this back in the game client shell!!!  It has to be
 	// here right now so that we can delete it when we start up a server..
 	// NYI NYI NYI
-	if (!pServerDir)
-	{
-		pServerDir = g_pClientMultiplayerMgr->CreateServerDir( );
-	}
 
 	return true;
 }

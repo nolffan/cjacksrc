@@ -84,6 +84,7 @@ public:
 	// cjacksrc: GameSpy's browsers, for the Internet and the LAN (CShell.dll
 	// 0x1001e9b0); the Internet one answers a server's CD key challenge.
 	bool		CreateGameSpyBrowsers( );
+	IGameSpyBrowser*	GetGameSpyBrowser( ) const { return m_pGameSpyBrowser; }
 
 
 	// This client is connected to remote server.
@@ -101,11 +102,10 @@ public:
 	const char *GetServerAddress() const {return m_sServerAddress;}
 	const char *GetServerName() const {return m_sServerName;}
 
-	// Server directory access
-	// Note : The server directory is owned by this object once you pass it in.
-	IServerDirectory* GetServerDir() { return m_pServerDir; }
-	IServerDirectory* CreateServerDir( );
-	void		DeleteServerDir( );
+	// RETAIL: Contract J.A.C.K. has no WON server directory (its
+	// ClientMultiplayerMgr has no member for one: m_sModName is at 0x166c).
+	// cjacksrc: none, for NOLF2's join screen until it is rewritten.
+	IServerDirectory* GetServerDir() { return NULL; }
 
 	// Get/Set the source address of the message which is currently being processed
 	void		SetCurMessageSource(const uint8 aAddr[4], uint16 nPort);
@@ -155,9 +155,6 @@ private:
 
 	// Connection handling
 	bool			m_bForceDisconnect;	// Set this flag to disconnect on the next update
-
-		// Server directory interface
-	IServerDirectory*	m_pServerDir;
 
 	// Current message source
 	uint8		m_aCurMessageSourceAddr[4];

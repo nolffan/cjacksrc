@@ -45,7 +45,6 @@ ClientMultiplayerMgr::ClientMultiplayerMgr( )
 	m_nServerKey = 0;
 	m_nDisconnectCode = 0;
 	m_bForceDisconnect = false;
-	m_pServerDir = 0;
 	m_aCurMessageSourceAddr[0] = 0;
 	m_aCurMessageSourceAddr[1] = 0;
 	m_aCurMessageSourceAddr[2] = 0;
@@ -79,8 +78,6 @@ ClientMultiplayerMgr::ClientMultiplayerMgr( )
 
 ClientMultiplayerMgr::~ClientMultiplayerMgr( )
 {
-	delete GetServerDir();
-
 	if( m_pGameSpyBrowser )
 	{
 		IGameSpyBrowser::Delete( m_pGameSpyBrowser );
@@ -416,15 +413,6 @@ bool ClientMultiplayerMgr::SetupServerHost( int nPort, bool bLANOnly )
 	
 	m_ServerGameOptions.m_sModName = GetModName();
 	
-
-	// Make sure that the multiplayer mgr doesn't have a server directory in use
-	// This must be done because there can only be one IServerDirectory object
-	// created at a time for proper shutdown.  (Internal Titan implementation BS...)
-	// NYI - Note : This shouldn't be necessary, and if it is, it will cause problems
-	// elsewhere.  (Host/Join sequence = 2 objects) Figure out a way to get around this 
-	// restriction.
-	DeleteServerDir( );
-
     return true;
 }
 
@@ -464,63 +452,6 @@ void ClientMultiplayerMgr::ClearDisconnectCode()
 	m_nDisconnectCode = 0;
 	m_sDisconnectMsg.Empty( );
 	m_StartGameRequest.m_Type = GAMEMODE_NONE;
-}
-
-// --------------------------------------------------------------------------- //
-//
-//	ROUTINE:	ClientMultiplayerMgr::CreateServerDir
-//
-//	PURPOSE:	Creates the client's serverdir for joining a remote game.
-//
-// --------------------------------------------------------------------------- //
-
-IServerDirectory* ClientMultiplayerMgr::CreateServerDir( )
-{
-	// Make sure we don't already have one.
-	DeleteServerDir( );
-
-	// Get the resource module so we can give it to the serverdir for
-	// error messages.
-	void* pModule = NULL;
-	g_pLTClient->GetEngineHook("cres_hinstance",&pModule);
-	HMODULE hModule = (HINSTANCE)pModule;
-
-	// CJACK: Contract J.A.C.K. has no WON server directory: it browses
-	// servers with GameSpy (GameSpy.dll's IGameSpyBrowser), still to be written.
-	m_pServerDir = NULL;
-	if( !m_pServerDir )
-		return NULL;
-
-	// Set the game's name
-	m_pServerDir->SetGameName(g_pVersionMgr->GetNetGameName());
-	// Set the version
-	m_pServerDir->SetVersion(g_pVersionMgr->GetNetVersion());
-	m_pServerDir->SetRegion(g_pVersionMgr->GetNetRegion());
-	// Set up the packet header
-	CAutoMessage cMsg;
-	cMsg.Writeuint8(11); // CMSG_MESSAGE
-	cMsg.Writeuint8(MID_MULTIPLAYER_SERVERDIR);
-	m_pServerDir->SetNetHeader(*cMsg.Read());
-
-	return m_pServerDir;
-}
-
-// --------------------------------------------------------------------------- //
-//
-//	ROUTINE:	ClientMultiplayerMgr::DeleteServerDir
-//
-//	PURPOSE:	Remove the server dir.
-//
-// --------------------------------------------------------------------------- //
-
-void ClientMultiplayerMgr::DeleteServerDir( )
-{ 
-	if( m_pServerDir )
-	{
-		// No leaking, please...
-		delete m_pServerDir; 
-		m_pServerDir = NULL; 
-	}
 }
 
 // --------------------------------------------------------------------------- //
@@ -603,20 +534,6 @@ bool ClientMultiplayerMgr::OnMessage(uint8 messageID, ILTMessage_Read *pMsg)
 			break;
 		case MID_MULTIPLAYER_DATA:
 			return HandleMsgMultiplayerData( *pMsg );
-			break;
-		case MID_MULTIPLAYER_SERVERDIR:
-			if (GetServerDir())
-			{
-				char aAddrBuffer[16];
-				sprintf(aAddrBuffer, "%d.%d.%d.%d", 
-					(uint32)m_aCurMessageSourceAddr[0], 
-					(uint32)m_aCurMessageSourceAddr[1], 
-					(uint32)m_aCurMessageSourceAddr[2], 
-					(uint32)m_aCurMessageSourceAddr[3]);
-				return GetServerDir()->HandleNetMessage(*CLTMsgRef_Read(pMsg->SubMsg(pMsg->Tell())), aAddrBuffer, m_nCurMessageSourcePort);
-			}
-			else
-				return false;
 			break;
 		default:
 			break;

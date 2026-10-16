@@ -817,6 +817,10 @@ SOURCE=.\ScreenHostDDOptions.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\ScreenHostDemolitionOptions.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\ScreenHostDMOptions.cpp
 # End Source File
 # Begin Source File
@@ -842,10 +846,6 @@ SOURCE=.\ScreenHostWeapons.cpp
 # Begin Source File
 
 SOURCE=.\ScreenJoin.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\ScreenJoinLAN.cpp
 # End Source File
 # Begin Source File
 
@@ -886,10 +886,6 @@ SOURCE=.\ScreenPerformance.cpp
 # Begin Source File
 
 SOURCE=.\ScreenPlayer.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\ScreenPlayerSkills.cpp
 # End Source File
 # Begin Source File
 
@@ -1934,6 +1930,10 @@ SOURCE=.\ScreenHostDDOptions.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\ScreenHostDemolitionOptions.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\ScreenHostDMOptions.h
 # End Source File
 # Begin Source File
@@ -1959,10 +1959,6 @@ SOURCE=.\ScreenHostWeapons.h
 # Begin Source File
 
 SOURCE=.\ScreenJoin.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\ScreenJoinLAN.h
 # End Source File
 # Begin Source File
 
@@ -2003,10 +1999,6 @@ SOURCE=.\ScreenPerformance.h
 # Begin Source File
 
 SOURCE=.\ScreenPlayer.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\ScreenPlayerSkills.h
 # End Source File
 # Begin Source File
 
