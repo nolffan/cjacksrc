@@ -939,7 +939,7 @@ DLLs.
   matched our host screen's because the old ID coincided) and on CShell's
   unwritten count (175 to 192, ScreenJoinLAN and ScreenPlayerSkills
   leaving the project). Not committed: it needs ACCEPT_LOSSES or a
-  coordinator's decision (the change is in this package's notes).
+  coordinator's decision.
 - **For the game package**: retail's multiplayer screen is Contract
   J.A.C.K.'s own (Player setup, CD Key, Join, Host; CShell.dll
   0x100d3xxx); ours is NOLF2's and crashes in CScreenMulti::Update (its
