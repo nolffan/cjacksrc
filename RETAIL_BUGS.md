@@ -28,12 +28,12 @@ too, since Contract J.A.C.K. was built from the same code: check each
 against the retail binary before listing it. Those Contract J.A.C.K. no
 longer has go at the end, so nobody looks again.
 
-**Fixed so far** (in the modern build): ten -- the two GameSpy handle
-bugs (MODERN.md GS-1), GetCommandName (GAME-1), the world shaders' section
-order (EN-1), ShowVersionInfo (EN-3), the music thread's handle (EN-4), a
-failed transition segment (EN-5), the launcher's path overrun (APPS-1) and
-find handles (APPS-2), and the dedicated server's console formats
-(APPS-3).
+**Fixed so far** (in the modern build): eleven -- the two GameSpy handle
+bugs (MODERN.md GS-1), GetCommandName (GAME-1), the chassis's update
+(GAME-2), the world shaders' section order (EN-1), ShowVersionInfo (EN-3),
+the music thread's handle (EN-4), a failed transition segment (EN-5), the
+launcher's path overrun (APPS-1) and find handles (APPS-2), and the
+dedicated server's console formats (APPS-3).
 
 ## Format
 
@@ -147,6 +147,20 @@ world in a way that triggers it.
 Fixed in the modern build: src/Engine/runtime/render_a/src/sys/d3d/
 d3d_rendershader_base.h, MODERN.md EN-1.
 
+### A chassis's update to the clients does not say what it is for
+
+Object.lto 0x100aca0f (Chassis::CreateSFXMessage,
+src/Game/ObjectDLL/Chassis.cpp). The chassis sends the clients a
+MID_SFX_MESSAGE with its team, drop-zone radius and activate type, but
+without the SFX id (SFX_CHASSIS_ID) and the object that every such message
+starts with, so a client takes the team for the SFX id and part of the
+radius for the object, finds no special fx and drops the message. The
+special-fx message the chassis is created with is right; only the update
+is lost. It is sent when the chassis is created or loaded, before any
+client could use it, so nothing shows in the game.
+
+Fixed in the modern build: src/Game/ObjectDLL/Chassis.cpp, MODERN.md
+GAME-2.
 ### The ShowVersionInfo console command calls a null function
 
 Lithtech.exe 0x41a360 (con_ShowVersionInfo, src/Engine/runtime/client/src/

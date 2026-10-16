@@ -26,7 +26,7 @@
 #include "Searcher.h"
 #include "GadgetDisabler.h"
 #include "VehicleMgr.h"
-#include "DoomsdayPieceFX.h"
+#include "ChassisPieceFX.h"
 
 VarTrack	g_vtActivationDistance;
 VarTrack	g_vtReviveDistance;
@@ -533,7 +533,7 @@ void CTargetMgr::Update()
 
 	// Are we looking at a doomsday piece...
 	
-	CDoomsdayPieceFX *pDDPiece = dynamic_cast<CDoomsdayPieceFX*>(g_pGameClientShell->GetSFXMgr()->FindSpecialFX( SFX_DOOMSDAYPIECE_ID, m_hTarget ));
+	ChassisPieceFX *pDDPiece = dynamic_cast<ChassisPieceFX*>(g_pGameClientShell->GetSFXMgr()->FindSpecialFX( SFX_CHASSISPIECE_ID, m_hTarget ));
 	if( pDDPiece && (fDistAway <= g_vtActivationDistance.GetFloat()) )
 	{
 		m_bCanActivate = false;
@@ -725,7 +725,7 @@ static bool ActivateFilterFn(HOBJECT hTest, void *pUserData)
 
 	// Look to see if it is a DoomsDayPiece.  This should take precedence over characters and bodies...
 
-	CDoomsdayPieceFX *pDDPiece = dynamic_cast<CDoomsdayPieceFX*>(g_pGameClientShell->GetSFXMgr()->FindSpecialFX( SFX_DOOMSDAYPIECE_ID, hTest ));
+	ChassisPieceFX *pDDPiece = dynamic_cast<ChassisPieceFX*>(g_pGameClientShell->GetSFXMgr()->FindSpecialFX( SFX_CHASSISPIECE_ID, hTest ));
 	if( pDDPiece )
 	{
 		// If the piece is planted on our teams bse we no longer care about it...

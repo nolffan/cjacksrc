@@ -308,6 +308,8 @@ CWeaponMgr::CWeaponMgr()
 	m_nFileCRC = 0;
 
 	m_sMPDefaults = "";
+	m_sMPSelectedWeapon = "";
+	m_fVectorHalfDamageDist = 1000.0f;
 }
 
 
@@ -372,6 +374,8 @@ LTBOOL CWeaponMgr::Init(const char* szAttributeFile)
 
 	ClearLists();
 
+	// RETAIL: 0x10114b4c the default distance a vector's damage halves over.
+	m_fVectorHalfDamageDist = Max( 1.0f, (float)m_buteMgr.GetInt( "Global", "VectorHalfDamageDist", 1000 ));
 
 	// Read in the properties for each mod type...
 
@@ -743,6 +747,9 @@ LTBOOL CWeaponMgr::Init(const char* szAttributeFile)
 	char szTmp[128];
 	m_buteMgr.GetString(WMGR_MULTI_TAG, WMGR_MULTI_DEFAULTS,"", szTmp, sizeof(szTmp));
 	m_sMPDefaults = szTmp;
+
+	m_buteMgr.GetString(WMGR_MULTI_TAG, "SelectedWeapon", "", szTmp, sizeof(szTmp));
+	m_sMPSelectedWeapon = szTmp;
 
 
 	// Free up the bute mgr's memory...
@@ -1401,6 +1408,7 @@ WEAPON::WEAPON()
 	szSubroutineNeeded	= LTNULL;
 	szPowerupFX			= LTNULL;
 	szRespawnWaitFX		= LTNULL;
+	szHeatPVOverheatFxName = LTNULL;
 
 	for( i = 0; i < WMGR_MAX_RELOAD_SNDS; ++i )
 	{
@@ -1448,6 +1456,8 @@ WEAPON::WEAPON()
 
 	nMinPerturb			= 0;
 	nMaxPerturb			= 0;
+	nEffectiveVectorRange = 0;
+	fVectorHalfDamageDist = 1000.0f;
 
 	nRange				= 0;
 	nVectorsPerRound	= 0;
@@ -1473,15 +1483,20 @@ WEAPON::WEAPON()
 	fFireAnimRateScale		= 1.0f;
 	fReloadAnimRateScale	= 1.0f;
 
-	fHeatFactor				= 0.0f;
-	fHeatDissipationRate	= 0.0f;
-	fHeatOverheatTime		= 0.0f;
-
 	bRespawnWaitVisible		= false;
 	bRespawnWaitTranslucent = false;
 
 	bServerRestricted = false;
 	bCanServerRestrict = true;
+
+	nAutoTarget				= 1;
+	fAutoTargetAngle		= 10.0f;
+	fAutoTargetRange		= 3200.0f;
+	bShowChooser			= true;
+
+	fHeatFactor				= 0.0f;
+	fHeatDissipationRate	= 1.0f;
+	fHeatOverheatTime		= 0.0f;
 }
 
 
@@ -1518,6 +1533,7 @@ WEAPON::~WEAPON()
 	debug_deletea( szSubroutineNeeded );
 	debug_deletea( szPowerupFX );
 	debug_deletea( szRespawnWaitFX );
+	debug_deletea( szHeatPVOverheatFxName );
 
 	for( i = 0; i < WMGR_MAX_RELOAD_SNDS; ++i )
 	{
@@ -1586,6 +1602,7 @@ void WEAPON::InitMembers( CButeMgr &buteMgr, char *aTagName )
 	GetStringIfExist( buteMgr, aTagName, WMGR_WEAPON_SUBROUTINE_NEEDED, &szSubroutineNeeded, WMGR_MAX_NAME_LENGTH );
 	GetStringIfExist( buteMgr, aTagName, WMGR_WEAPON_POWERUPFX, &szPowerupFX, WMGR_MAX_NAME_LENGTH );
 	GetStringIfExist( buteMgr, aTagName, WMGR_WEAPON_RESPAWNWAITFX, &szRespawnWaitFX, WMGR_MAX_NAME_LENGTH );
+	GetStringIfExist( buteMgr, aTagName, "HeatPVOverheatFxName", &szHeatPVOverheatFxName, WMGR_MAX_NAME_LENGTH );
 	
 	int i;
 	for( i = 0; i < WMGR_MAX_RELOAD_SNDS; ++i )
@@ -1802,6 +1819,8 @@ void WEAPON::InitMembers( CButeMgr &buteMgr, char *aTagName )
 
 	nMinPerturb         = buteMgr.GetInt(aTagName, WMGR_WEAPON_MINPERTURB, nMinPerturb );
 	nMaxPerturb         = buteMgr.GetInt(aTagName, WMGR_WEAPON_MAXPERTURB, nMaxPerturb );
+	nEffectiveVectorRange = buteMgr.GetInt(aTagName, "EffectiveVectorRange", nEffectiveVectorRange );
+	fVectorHalfDamageDist = Max( 1.0f, (float)buteMgr.GetInt(aTagName, "VectorHalfDamageDist", (int)g_pWeaponMgr->GetVectorHalfDamageDist( )));
 	nRange              = buteMgr.GetInt(aTagName, WMGR_WEAPON_RANGE, nRange );
 	nVectorsPerRound    = buteMgr.GetInt(aTagName, WMGR_WEAPON_VECTORSPERROUND, nVectorsPerRound );
 
@@ -1832,6 +1851,21 @@ void WEAPON::InitMembers( CButeMgr &buteMgr, char *aTagName )
 	bRespawnWaitTranslucent	= !!(buteMgr.GetInt( aTagName, WMGR_WEAPON_RESPAWNWAITTRANSLUCENT, bRespawnWaitTranslucent ));
 	
 	bCanServerRestrict = !!( buteMgr.GetInt( aTagName, WMGR_ALL_CANSERVERRESTRICT, bCanServerRestrict ));
+
+	int nUseAutoTarget = buteMgr.GetInt( aTagName, "UseAutoTarget", 1 );
+	if( buteMgr.Success( ))
+	{
+		switch( nUseAutoTarget )
+		{
+			case 0: nAutoTarget = 0; break;
+			case 2: nAutoTarget = 2; break;
+			default: nAutoTarget = 1; break;
+		}
+	}
+
+	fAutoTargetAngle		= (float)buteMgr.GetDouble( aTagName, "AutoTargetAngle", fAutoTargetAngle );
+	fAutoTargetRange		= (float)buteMgr.GetDouble( aTagName, "AutoTargetRange", fAutoTargetRange );
+	bShowChooser			= !!( buteMgr.GetInt( aTagName, "ShowChooser", bShowChooser ));
 
 	fHeatFactor				= (float)buteMgr.GetDouble( aTagName, "HeatFactor", fHeatFactor );
 	fHeatDissipationRate	= (float)buteMgr.GetDouble( aTagName, "HeatDissipationRate", fHeatDissipationRate );
