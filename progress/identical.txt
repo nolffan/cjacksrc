@@ -11275,6 +11275,8 @@ Lithtech.exe	sub_4a90c0
 Lithtech.exe	sub_4a9470
 Lithtech.exe	sub_4a96e0
 Lithtech.exe	sub_4a9c00
+Lithtech.exe	sub_4aa720
+Lithtech.exe	sub_4aac10
 Lithtech.exe	sub_4ab1f0
 Lithtech.exe	sub_4ab220
 Lithtech.exe	sub_4ab260
