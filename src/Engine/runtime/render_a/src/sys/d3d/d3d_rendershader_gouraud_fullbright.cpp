@@ -221,6 +221,10 @@ void CRenderShader_Gouraud_Texture_Fullbright::PostFlush()
 	d3d_DisableTexture(0);
 	d3d_DisableTexture(1);
 
+	// RETAIL: stage 1's texture coordinates back to its own (Lithtech.exe
+	// 0x4fee3d)
+	PD3DDEVICE->SetTextureStageState(1, D3DTSS_TEXCOORDINDEX, 1);
+
 	if (m_nCurAlphaTest != m_nOldAlphaTest)
 		PD3DDEVICE->SetRenderState(D3DRS_ALPHATESTENABLE, (DWORD)m_nOldAlphaTest);
 }
@@ -767,10 +771,12 @@ void CRenderShader_Gouraud_EnvMap_Fullbright::PostFlush()
 {
 	d3d_DisableTexture(0);
 	d3d_DisableTexture(1);
+	d3d_DisableTexture(3);
 
-	// RETAIL: stage 1's texture coordinates back, the transform left
-	// (0x4fee3d)
-	PD3DDEVICE->SetTextureStageState(1, D3DTSS_TEXCOORDINDEX, 1);
+	// RETAIL: the environment map's transform undone and stage 3's texture
+	// coordinates back to its own (Lithtech.exe 0x4fef90)
+	d3d_UnsetEnvMapTransform(1);
+	PD3DDEVICE->SetTextureStageState(3, D3DTSS_TEXCOORDINDEX, 3);
 
 	if (m_nCurAlphaTest != m_nOldAlphaTest)
 		PD3DDEVICE->SetRenderState(D3DRS_ALPHATESTENABLE, (DWORD)m_nOldAlphaTest);
