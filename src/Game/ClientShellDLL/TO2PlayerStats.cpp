@@ -928,6 +928,7 @@ void CTO2PlayerStats::UpdateKeys(uint8 nType, uint16 nId)
 				m_Keys.Add(nId);
 				KEY* pKey = g_pKeyMgr->GetKey(nId);
 				g_pPickupMsgs->AddMessage(LoadTempString(pKey->nNameId),pKey->szImage);
+				g_pHUDCarrying->AddKey(nId);	// RETAIL: 0x100fd086
 			}
 		}
 		break;
@@ -937,6 +938,7 @@ void CTO2PlayerStats::UpdateKeys(uint8 nType, uint16 nId)
 			if (g_pKeyMgr->IsValidKey(nId))
 			{
 				m_Keys.Remove(nId);
+				g_pHUDCarrying->RemoveKey(nId);	// RETAIL: 0x100fd010
 			}
 		}
 		break;
@@ -944,6 +946,7 @@ void CTO2PlayerStats::UpdateKeys(uint8 nType, uint16 nId)
 		case ITEM_CLEAR_ID:
 		{
 			m_Keys.Clear();
+			g_pHUDCarrying->ClearKeys();	// RETAIL: 0x100fcfc8
 		}
 		break;
 

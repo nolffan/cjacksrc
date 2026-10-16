@@ -31,31 +31,43 @@ public:
 
     void        UpdateLayout();
 
+	// cjacksrc: Contract J.A.C.K. shows the keys the player holds beside
+	// the carrying icon (CShell.dll 0x10052570, 0x100522d0, 0x10052340).
+	bool		AddKey( uint32 nKeyId );
+	bool		RemoveKey( uint32 nKeyId );
+	void		ClearKeys( );
 
 private:
     LTIntPt		m_BasePos;
 	uint16		m_nSize;
 
-	enum	eCarryIcons
-	{
-		eBodyCanDrop,
-		eBodyNoDrop,
-		eBodyCanCarry,
-		eDD_TransmitterCanDrop,
-		eDD_TransmitterCanCarry,
-		eDD_BatteryCanDrop,
-		eDD_BatteryCanCarry,
-		eDD_CoreCanDrop,
-		eDD_CoreCanCarry,
-		kNumCarryIcons
-
-	};
-
-
 	LTPoly_GT4	m_Poly;
-	HTEXTURE	m_hIcon[kNumCarryIcons];
 
+	HTEXTURE	m_hBodyCanDrop;
+	HTEXTURE	m_hBodyNoDrop;
+	HTEXTURE	m_hBodyCanCarry;
 
+	// The carrying and pickup icons of each chassis piece, by its id.
+	struct ChassisPieceIcons
+	{
+		HTEXTURE	hCarrying;
+		HTEXTURE	hPickup;
+	};
+	typedef std::vector< ChassisPieceIcons > ChassisPieceIconList;
+	ChassisPieceIconList	m_ChassisPieceIcons;
+
+	// The keys held, with their icons' sizes.
+	struct KeyIcon
+	{
+		KeyIcon( ) : hIcon( LTNULL ), nKeyId( 0 ), nWidth( 0 ), nHeight( 0 ) { }
+
+		HTEXTURE	hIcon;
+		uint32		nKeyId;
+		uint32		nWidth;
+		uint32		nHeight;
+	};
+	typedef std::vector< KeyIcon > KeyIconList;
+	KeyIconList		m_KeyIcons;
 };
 
 #endif

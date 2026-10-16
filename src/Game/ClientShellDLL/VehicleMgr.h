@@ -185,6 +185,7 @@ class CVehicleMgr
 	// Movement state.
     uint32      m_dwControlFlags;
     uint32      m_dwLastControlFlags;
+	bool		m_bControlFlagsChanged;	// cjacksrc: RETAIL: 0x101056ec, not yet identified
 
 	float		m_fVehicleBaseMoveAccel;
 
@@ -242,6 +243,14 @@ class CVehicleMgr
 	float			m_fLureBobParameter;
 
 	bool			m_bResetLure;
+
+	// cjacksrc: Contract J.A.C.K.'s, read from the server (RETAIL:
+	// 0x101096ff), not yet identified: a position, a rotation and another
+	// vector, for the player lure.
+	bool			m_bHasLureTransform;
+	LTVector		m_vLurePos;
+	LTRotation		m_rLureRot;
+	LTVector		m_vLureOffset;
 	LTObjRef		m_hCurJumpVolume;
 
 	LTBOOL			m_bHaveJumpVolumeVel;

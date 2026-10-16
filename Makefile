@@ -18,6 +18,13 @@ IMAGE     ?= cjacksrc-build
 CONTAINER ?= cjacksrc-build
 # Parallel compile jobs inside the build (build/build.mk); empty: one per CPU
 JOBS ?=
+# The game directory `make test` plays: the release build's, or a variant's
+# (make test TEST_GAME=out/cjack-modern-release; build/variant.sh), and the
+# input script (tools/playtest-*.txt; empty: no input, the main menu)
+TEST_GAME ?= out/cjack-legacy-release
+TEST_SCRIPT ?=
+TEST_WORLD ?= -
+TEST_NAME = $(if $(filter out/cjack-legacy-release,$(TEST_GAME:%/=%)),test,test-$(notdir $(TEST_GAME:%/=%)))
 
 DOCKER_RUN = docker run --rm --init --name $(CONTAINER) \
 	-u $(shell id -u):$(shell id -g) -e HOME=/tmp/home $(if $(JOBS),-e CJACKSRC_JOBS=$(JOBS)) \
@@ -27,7 +34,7 @@ DOCKER_RUN = docker run --rm --init --name $(CONTAINER) \
 TOOLCHAIN_FILES = toolchains/msvc-7.10-3077/bin/cl.exe toolchains/dxsdk-8.1/include/d3d8.h
 
 .PHONY: all game debug modern modern-debug image retail check-rez check-tools check-toolchain \
-	reference progress progress-update shell clean distclean help
+	test mptest reference progress progress-update shell clean distclean help
 
 all: game
 
@@ -37,6 +44,11 @@ help:
 	@echo "make modern     the game with CJACK_MODERN, in out/cjack-modern-release/"
 	@echo "make modern-debug  both, in out/cjack-modern-debug/"
 	@echo "                (none of these is ever scored)"
+	@echo "make test       run out/cjack-legacy-release/ under Xvfb and Wine to its main menu"
+	@echo "                (build/playtest.sh; TEST_WORLD=<world>, TEST_SCRIPT=<script>,"
+	@echo "                TEST_GAME=out/cjack-modern-release; results in out/play/test*/)"
+	@echo "make mptest     the dedicated server hosts a deathmatch game and a client joins it,"
+	@echo "                under Xvfb and Wine (build/mptest.sh; out/play/*-mp/)"
 	@echo "make progress   score the build against the retail binaries; fails if a"
 	@echo "                function recorded in progress/identical.txt stops matching"
 	@echo "make progress-update  record the score in progress/ and README.md"
@@ -93,6 +105,14 @@ check-toolchain:
 	@for f in $(TOOLCHAIN_FILES); do \
 	  [ -f "$$f" ] || { echo "error: $$f is missing -- the compilers are the toolchains/ submodule: run git submodule update --init (see toolchains/README.md)" >&2; exit 1; }; \
 	done
+
+test: image
+	@[ -f $(TEST_GAME)/Lithtech.exe ] || { echo "error: no $(TEST_GAME)/ -- build it first (make, or make debug/modern/modern-debug)" >&2; exit 1; }
+	$(DOCKER_RUN) env PLAYTEST_NAME=$(TEST_NAME) $(if $(TEST_SCRIPT),PLAYTEST_SCRIPT=$(TEST_SCRIPT)) bash build/playtest.sh $(TEST_GAME) '$(TEST_WORLD)' $(if $(TEST_SCRIPT),5,60)
+
+mptest: image
+	@[ -f $(TEST_GAME)/ContractJackServer.exe ] || { echo "error: no $(TEST_GAME)/ -- build it first" >&2; exit 1; }
+	$(DOCKER_RUN) bash build/mptest.sh $(TEST_GAME)
 
 progress: retail
 	$(DOCKER_RUN) env COMPLETE=$(COMPLETE) COVERED=$(COVERED) bash build/progress.sh check
