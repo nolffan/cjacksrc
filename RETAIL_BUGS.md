@@ -28,12 +28,13 @@ too, since Contract J.A.C.K. was built from the same code: check each
 against the retail binary before listing it. Those Contract J.A.C.K. no
 longer has go at the end, so nobody looks again.
 
-**Fixed so far** (in the modern build): eleven -- the two GameSpy handle
+**Fixed so far** (in the modern build): fourteen -- the two GameSpy handle
 bugs (MODERN.md GS-1), GetCommandName (GAME-1), the chassis's update
 (GAME-2), the world shaders' section order (EN-1), ShowVersionInfo (EN-3),
-the music thread's handle (EN-4), a failed transition segment (EN-5), the
-launcher's path overrun (APPS-1) and find handles (APPS-2), and the
-dedicated server's console formats (APPS-3).
+the music thread's handle (EN-4), a failed transition segment (EN-5),
+batched screen quads' colours (EN-6), SoundSys's null Term (EN-7),
+SetCamera's unset viewport (EN-8), the launcher's path overrun (APPS-1) and
+find handles (APPS-2), and the dedicated server's console formats (APPS-3).
 
 ## Format
 
@@ -195,6 +196,43 @@ code tests it (a fix marked "[kml]").
 
 Fixed in the modern build: src/Engine/runtime/kernel/src/sys/win/
 ltdirectmusic_impl.cpp, MODERN.md EN-5.
+
+### Batched screen-space quads lose their vertex colours
+
+Lithtech.exe 0x41d7e0 (CD3DDrawPrim::DrawPrim for LT_POLYGT4,
+src/Engine/runtime/render_b/src/sys/d3d/d3ddrawprim.cpp). When more than
+two textured Gouraud quads are drawn in screen space they are copied into
+a triangle list, and every one of the six vertices takes the colour of the
+quad's first vertex (0x41d8ef): a gradient across a quad drawn this way
+comes out flat. Two quads or fewer, or a 3D transform, keep each vertex's
+colour.
+
+Fixed in the modern build: src/Engine/runtime/render_b/src/sys/d3d/
+d3ddrawprim.cpp, MODERN.md EN-6.
+
+### No sound driver at all crashes the engine
+
+Lithtech.exe 0x49bc80 (SoundSys, src/Engine/runtime/sound/src/
+soundmgr.cpp). When the configured sound driver fails and the default
+`SndDrv.dll` cannot be made either, SoundSys finds the driver pointer null
+and calls `Term` through it (0x49bd0b): a machine without a working sound
+driver crashes instead of running silent.
+
+Fixed in the modern build: src/Engine/runtime/sound/src/soundmgr.cpp,
+MODERN.md EN-7.
+
+### DrawPrim sets a viewport of undefined size
+
+Lithtech.exe 0x41c1f0 (CD3DDrawPrim::SetCamera, src/Engine/runtime/
+render_b/src/sys/d3d/d3ddrawprim.cpp). When the draw-prim camera's
+rectangle (or, with no camera, the screen) differs from the current
+viewport, SetCamera stores the new size in its saved viewport but builds
+the viewport it passes to SetViewport with only the position and depth
+range: its Width and Height are whatever the stack held. Direct3D either
+refuses the call or clips draw-prim output to a nonsense rectangle.
+
+Fixed in the modern build: src/Engine/runtime/render_b/src/sys/d3d/
+d3ddrawprim.cpp, MODERN.md EN-8.
 
 ### The launcher's own path can overrun a buffer
 
