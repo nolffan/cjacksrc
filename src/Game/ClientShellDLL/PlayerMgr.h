@@ -206,7 +206,8 @@ public:
 
 	uint8		GetCarryingObject() const { return m_nCarryingObject; }
 	bool		IsCarryingHeavyObject() const { return m_nCarryingObject == CFX_CARRY_BODY || m_nCarryingObject == CFX_CARRY_DD_CORE;}
-	void		SetCarryingObject( uint8 nCarry, bool bUpdateCameraDip );
+	void		SetCarryingObject( uint8 nCarry, struct CHASSISPIECE const* pChassisPiece, bool bUpdateCameraDip );
+	struct CHASSISPIECE const* GetCarryingChassisPiece() const { return m_pCarryingChassisPiece; }
 	uint8		CanCarryObject();
 	bool		CanDropCarriedObject() { return m_bCanDropCarriedObject; }
 	void		SetCanDropCarriedObject( bool bCanDrop ) { m_bCanDropCarriedObject = bCanDrop; }
@@ -365,6 +366,8 @@ protected:
     float         m_fRoll;                    // Roll of camera
     float         m_fFireJitterPitch;         // Weapon firing jitter pitch adjust
     float         m_fFireJitterYaw;           // Weapon firing jitter yaw adjust
+	float         m_fLastFireTime;            // cjacksrc: RETAIL: 0x1009ee5c when the weapon last fired
+	float         m_fRecoil;                  // cjacksrc: RETAIL: 0x10099d89 the camera's recoil so far
 
     float         m_fPlayerPitch;             // Pitch of player object
     float         m_fPlayerYaw;               // Yaw of player object
@@ -448,6 +451,15 @@ protected:
     uint16      m_nPlayerInfoChangeFlags;
     float		m_fPlayerInfoLastSendTime;
 
+	// cjacksrc: Contract J.A.C.K. sends the player's info less often
+	// (UpdatePlayerInfo, RETAIL: 0x1009f725): when it last sent all of it,
+	// two values it last sent, and the last two messages, so as not to
+	// send the same again.
+	float			m_fPlayerInfoLastFullSendTime;
+	uint8			m_nPlayerInfoLastSent[2];
+	CLTMsgRef_Read	m_cLastPlayerInfoMsg;
+	CLTMsgRef_Read	m_cLastPlayerExtraMsg;
+
 	// Container FX helpers...
 
     LTBOOL      m_bUseWorldFog;     // Tells if we should use global fog settings or
@@ -457,6 +469,7 @@ protected:
 
 	bool		m_bCameraDip;
 	uint8		m_nCarryingObject;
+	struct CHASSISPIECE const* m_pCarryingChassisPiece;	// cjacksrc: RETAIL: 0x1009c6ec the chassis piece carried
 	bool		m_bCanDropCarriedObject;
 
 	float		m_fDamage[kNumDamageSectors];

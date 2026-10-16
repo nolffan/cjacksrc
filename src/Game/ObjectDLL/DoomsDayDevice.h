@@ -17,15 +17,16 @@
 // Includes...
 //
 
-#include "PropType.h"
+#include "Chassis.h"
 #include "Timer.h"
 
 class CPlayerObj;
-class DoomsDayPiece;
-	
+
 LINKTO_MODULE( DoomsDayDevice );
 
-class DoomsDayDevice : public PropType 
+// cjacksrc: Contract J.A.C.K. makes the device a Chassis that takes the
+// three DoomsDay pieces (Object.lto 0x100c7690..0x100c8240).
+class DoomsDayDevice : public Chassis
 {
 	public: // Methods...
 
@@ -34,23 +35,16 @@ class DoomsDayDevice : public PropType
 
 		// Fires the device.
 		bool	Fire( CPlayerObj& playerObj );
-		
-		
-		uint8	GetTeamID( )			const { return m_nOwningTeamID; }
-		float	GetDropZoneRadius( )	const { return m_fDropZoneRadius; }
 
-		bool	AddDoomsDayPiece( DoomsDayPiece *pDDPiece, CPlayerObj *pPlayer );
-		bool	RemoveDoomsDayPiece( DoomsDayPiece *pDDPiece, CPlayerObj* pPlayer );
+		bool	AddPiece( ChassisPiece *pPiece, CPlayerObj *pPlayer );
+		bool	RemovePiece( ChassisPiece *pPiece, CPlayerObj *pPlayer );
 
 		typedef std::vector< DoomsDayDevice* > DoomsDayDeviceList;
 		static DoomsDayDeviceList const& GetDoomsDayDeviceList( ) { return m_lstDoomsDayDevices; }
 
-		typedef std::vector< DoomsDayPiece* > DoomsDayPieceList;
-		DoomsDayPieceList const& GetDoomsDayPieceList( ) const { return m_lstPiecesOnDevice; }
+	protected: // Methods...
 
-	protected: // Methods... 
-
-        uint32	EngineMessageFn( uint32 messageID, void *pData, LTFLOAT fData );
+		uint32	EngineMessageFn( uint32 messageID, void *pData, LTFLOAT fData );
 
 		bool	OnTrigger( HOBJECT hSender, const CParsedMsg &cMsg );
 
@@ -67,14 +61,12 @@ class DoomsDayDevice : public PropType
 
 		bool	BeginEnd( );
 		void	UpdateEnd( );
-		
+
 
 	private:
 
-		bool	ReadProp( ObjectCreateStruct* pStruct );
-
-        void    Save(ILTMessage_Write *pMsg, uint32 dwSaveFlags);
-        void    Load(ILTMessage_Read *pMsg, uint32 dwLoadFlags);
+		void	Save(ILTMessage_Write *pMsg, uint32 dwSaveFlags);
+		void	Load(ILTMessage_Read *pMsg, uint32 dwLoadFlags);
 
 		// Called to give damage to victim teams.
 		bool	DamageVictims( bool& bAllDead );
@@ -92,40 +84,12 @@ class DoomsDayDevice : public PropType
 		// Time to stay in fire state.
 		CTimer					m_Timer;
 
-		// Team that owns this device.
-		uint8					m_nOwningTeamID;
-
-		// Radius of the area considered the 'drop zone'. 
-		// When a piece is dropped within this radius it will be aded to the device.
-		float					m_fDropZoneRadius;
-		
-		typedef std::vector< LTObjRef >	TargetList;
-		TargetList	m_lsthTargets;
-		
 		// List of all DoomsDayDevices within the game.
-		static DoomsDayDeviceList		m_lstDoomsDayDevices;
-
-		DoomsDayPieceList	m_lstPiecesOnDevice;
+		static DoomsDayDeviceList	m_lstDoomsDayDevices;
 };
 
-class CDoomsDayDevicePlugin : public CPropTypePlugin
+class CDoomsDayDevicePlugin : public CChassisPlugin
 {
-	public:
-
-		virtual LTRESULT PreHook_EditStringList( 
-			const char *szRezPath,
-			const char *szPropName,
-			char **aszStrings,
-			uint32 *pcStrings,
-			const uint32 cMaxStrings,
-			const uint32 cMaxStringLen );
-
-		virtual LTRESULT PreHook_Dims(
-			const char *szRezPath,
-			const char *szPropValue,
-			char *szModelFilenameBuf,
-			int nModelFilenameBufLen,
-			LTVector &vDims );
 };
 
 #endif // __DOOMS_DAY_DEVICE_H__

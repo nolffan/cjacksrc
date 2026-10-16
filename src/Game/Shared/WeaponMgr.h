@@ -476,6 +476,8 @@ struct WEAPON
 
 	int		nMinPerturb;
 	int		nMaxPerturb;
+	int		nEffectiveVectorRange;	// cjacksrc: Contract J.A.C.K.'s, RETAIL: 0x1011351f
+	float	fVectorHalfDamageDist;	// cjacksrc: Contract J.A.C.K.'s, RETAIL: 0x10113544
 
 	int		nRange;
 	LTVector vRecoil;
@@ -519,11 +521,16 @@ struct WEAPON
 	bool	bServerRestricted;
 	bool	bCanServerRestrict;
 
-	// RETAIL: Contract J.A.C.K.'s weapon heat (WEAPON 0x1c0..0x1c8, read
-	// at CShell 0x1011384f; their place in the struct is still to set)
+	// cjacksrc: Contract J.A.C.K.'s auto-targeting and weapon heat
+	// (RETAIL: CShell 0x101137a3..0x1011389e).
+	int		nAutoTarget;			// UseAutoTarget: 0 never, 1 normally, 2 always
+	float	fAutoTargetAngle;
+	float	fAutoTargetRange;
+	bool	bShowChooser;
 	float	fHeatFactor;			// Heat added per shot
 	float	fHeatDissipationRate;	// Heat lost per second
 	float	fHeatOverheatTime;		// How long an overheated weapon stays unusable
+	char	*szHeatPVOverheatFxName;
 
 private:
 
@@ -646,6 +653,8 @@ class CWeaponMgr : public CGameButeMgr
 		bool		IsBetterWeapon( uint8 nWeaponIdA, uint8 nWeaponIdB ) const;
 
 		const char* GetMPDefaultWeapons() const;
+		const char* GetMPSelectedWeapon() const { return m_sMPSelectedWeapon.c_str(); }
+		float		GetVectorHalfDamageDist() const { return m_fVectorHalfDamageDist; }
 
 	protected :
 
@@ -679,6 +688,14 @@ class CWeaponMgr : public CGameButeMgr
 		uint32				m_nFileCRC;
 
 		std::string		m_sMPDefaults;
+
+		// cjacksrc: Contract J.A.C.K.'s (RETAIL: CShell 0x10115761,
+		// 0x10114b8e, 0x1011436f): the weapon a multiplayer game selects,
+		// the default distance a vector's damage halves over, and the file
+		// that overrides the weapons'.
+		std::string		m_sMPSelectedWeapon;
+		float			m_fVectorHalfDamageDist;
+		std::string		m_sOverrideFile;
 };
 
 

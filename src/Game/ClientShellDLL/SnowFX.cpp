@@ -483,8 +483,14 @@ void CSnowFXAirspace::Init( CSnowFX* parent, const LTVector& pos, const LTVector
 	m_MaxBounds = pos + dims;
 
 	// get the particle blockers for this airspace
+	// cjacksrc: Contract J.A.C.K.'s engine counts them first (a NULL array),
+	// then fills the array (CShell.dll 0x100f01ed, 0x100f0215)
 	m_Blockers.clear();
-	m_Parent->m_pClientDE->GetParticleBlockersInAABB( pos, dims, m_Blockers );
+	uint32 nNumBlockers = 0;
+	m_Parent->m_pClientDE->GetParticleBlockersInAABB( pos, dims, LTNULL, nNumBlockers );
+	m_Blockers.resize( nNumBlockers );
+	if( nNumBlockers )
+		m_Parent->m_pClientDE->GetParticleBlockersInAABB( pos, dims, &m_Blockers[0], nNumBlockers );
 
 	UpdateDensity();
 }

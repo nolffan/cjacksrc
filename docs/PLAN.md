@@ -318,34 +318,68 @@ dedicated server (package 7).
   CDMButeMgr, CDoomsdayPieceFX, CHierarchicalButeMgr, CMenuIntel,
   CMenuInventory, CMenuKeys, CMenuPlayer, CScreenJoinLAN,
   CScreenPlayerSkills, CSkillCtrl, CSkillPopup, CTO2VersionMgr,
-  CVersionMgr. CClientWeapon has 79 virtual functions to our 66 (many of
-  NOLF2's non-virtual ones made virtual, for CVehicleWeapon).
-  DoomsDayDevice and DoomsDayPiece derive from PropType and add 2 and 3
-  virtuals (carrying? 0x100c7b90, 0x100c7840; 0x100c8c80, 0x100c8df0,
-  0x100c8f30); VolumeEffect is a GameBase with two virtuals of its own
+  CVersionMgr. VolumeEffect is a GameBase with two virtuals of its own
   (0x1015e880, 0x1015e8a0). CHUDBombTarget keeps a timer per bomb
   (0x8c-byte entries; SetTimer 0x10051740 takes an index one past the end
   too: a candidate retail bug), fed by the display-timer message's types
   3 and up.
 - **Layouts still to change**: CInterfaceMgr is right but for a few
-  members in the middle; CPlayerMgr (+8), CGameClientShell (+8/+24),
-  CCharacterFX (+8 from 0x90), CVehicleMgr (+4), CHUDMgr (+868 at
+  members in the middle; CGameClientShell (+8/+24),
+  CCharacterFX (+8 from 0x90), CVehicleMgr (see below), CHUDMgr (+868 at
   0x3a04), StartGameRequest-like copies in the join screens; LTGUIMgr's
   edit control has two members more (0x180 from Create, 0x184 a
   character filter called from HandleChar, 0x101243c0); KeyFramer's
   other HSTRINGs are still HSTRINGs in retail.
-- **Where it stopped / next**: breadth first by near count. Next: the
-  chassis classes (Chassis.cpp, ChassisPiece.cpp from NOLF2's DoomsDay
-  files, DoomsDayDevice/Piece as their subclasses, ChassisFX and
-  ChassisPieceFX on the client) and CJ's CHUDCarrying with them; the
-  layouts of CPlayerMgr (two new members after the fire jitter, 0x6c
-  and 0x70; +8 later), CGameClientShell, CCharacterFX, CVehicleMgr (CJ's
-  holds a CVehicleWeapon at 0x2140) and WEAPON (AutoTarget*, ShowChooser
-  before the heat fields); CClientWeapon's virtual order (79 slots);
-  then CJ's connection flow (handshake on the client records, GameSpy's
-  CD key check, FinishClientConnect), the GameSpy server browser and
-  Demolition. The launcher and the dedicated server are the apps
-  package's.
+- **Done this round**: Chassis and ChassisPiece (Object.lto
+  0x100abf80..0x100af950) with DoomsDayDevice/DoomsDayPiece on them, all
+  but a few editor-plugin functions byte-identical; ChassisFX and
+  ChassisPieceFX on the client (CDoomsdayPieceFX is gone), the SFX ids up
+  to 60 (60, CAimMagnetFX, still to write) and their list sizes;
+  CPlayerMgr's layout (the last fire time and recoil after the jitter,
+  UpdatePlayerInfo's send-less-often members, the carried chassis piece);
+  CClientWeapon's 79 virtual functions and its heat (0x158..0x160,
+  CreateHeatFX, RemoveHeatFX, UpdateHeat); WEAPON's and CWeaponMgr's CJ
+  members in their retail places; CVehicleWeapon (0x1010c810..0x1010cf45)
+  and CVehicleMgr's copy of it. The chassis's update message is a retail
+  bug (RETAIL_BUGS.md, MODERN.md GAME-2).
+- **Where it stopped / next**: breadth first by near count.
+  - **Connection flow** (not started in code). Retail OnAddClient
+    (Object.lto 0x100e04b0) does what NOLF2's OnClientEnterWorld did
+    first: a banned client gets MID_HANDSHAKE 7 and is marked kicked
+    (ClientData 0x28; KickClientData 0x100dadd0 marks it and stamps
+    0x19508, which the update (0x100dd560, "AutoBootTime") uses to boot
+    kicked and inactive clients); in multiplayer it reads the
+    NetClientData (0x51 bytes) there, kicks a bad model, makes the
+    unique name (GenerateUniqueName into ClientData 0xc) and sets the
+    client name to the player GUID (then GetClientInfoFlags, unused);
+    then it sends MID_HANDSHAKE_HELLO with the version, the session name
+    and the string at 0x18050 (state 1), or in single player calls
+    FinishClientConnect (state 3). ProcessHandshake (0x100de370) works on
+    ClientData, not the player object, with GameSpy's CD key check
+    between (state 2; callbacks 0x100dd48f, 0x100dd530) and
+    FinishClientConnect at the end; OnClientEnterWorld (0x100de0c0) then
+    only reads the model id and makes or reuses the player. The client's
+    handshake (ClientMultiplayerMgr) must read the hello's two strings.
+    Do server and client together, so multiplayer keeps working.
+  - CJ's CHUDCarrying (0xa4 bytes: the body icons 0x78..0x80; per
+    chassis piece its carrying and pickup icons, 0x84, from Init
+    0x10052400; and a row of key icons, 0x94, 16-byte entries {icon, key
+    id, width, height}: Add 0x10052570 looks the key up in the key
+    manager (0x1017c9b4, its icon at +0x26), Remove 0x100522d0, Clear
+    0x10052340, called from 0x100fcb05..0x100fd41b; Render 0x100520a0
+    uses CanCarryObject(&pFX), 0x1009b830, and the carried piece 0x17c).
+  - CVehicleMgr's earlier members (+4 at 0x18, +8 at 0x130, +44 before
+    m_hCurJumpVolume) and its use of the weapon (SetPhysicsModel
+    0x10107b50, UpdateWeaponModel's vehicle branch 0x1009ee04).
+  - CPlayerMgr's CJ code: StartWeaponRecoil (CamRecoil* console
+    variables, 0x10099ce0), UpdatePlayerInfo's caching (0x1009f725).
+  - CGameClientShell (+8/+24), CCharacterFX (+8 from 0x90), CHUDMgr.
+  - The GameSpy server browser, Demolition (BaseGameOptions and its
+    subclasses, CDemolitionMissionMgr, the host options screen), AimMagnet
+    and GunMount.
+  - From the coordinator: try the engine's LTStrCat early return in the
+    game's own copies; GAME_NAME's string sits in another object's data
+    in all four images.
 - **Tools** (not committed, one-offs under out/): rtti.py (vtables by
   RTTI), vtcmp.py (a class's vtable, retail beside ours), ctorcmp.py
   (constructor store offsets aligned), place.py (the scoreboard's
@@ -637,29 +671,59 @@ the unchecked indices) and DrawAggregateShader (resize(0)). The nears
 list paired UpdateSendTimeWithAttachments with heap code at 0x4a03b0 and
 0x1005e930; its real homes are 0x45fe20 and 0x10030640.
 
+**Round 5** (on master's 412c3e7): **the SDK interfaces against
+retail, slot by slot.** Every engine table the game reaches through the
+SDK was compared with the shipped one, slot by slot (the placed function
+at each slot, or the slot's code with its calls mapped through the
+placements where small functions share a shape): ILTClient (94),
+ILTServer (78, in Lithtech.exe and server.dll), ILTCommon, ILTModel,
+ILTPhysics, ILTTransform, ILTSoundMgr (client and server),
+ILTDrawPrim, ILTTexInterface, ILTFontManager, ILTWidgetManager,
+ILTCursor (retail's table at 0x5548d8, after the cursor instance's three
+slots), ILTBenchmarkMgr, ILTDirectMusicMgr, ILTVideoMgr, the message
+classes, SpriteControl, the CUI fonts, poly strings and widgets, and
+ICommandLineArgs. All agree. The interface getters (slots 1-5 and 49-56
+of ILTClient) were checked through the holders' names ("ILTDrawPrim.
+Default" and so on) beside each global. ILTClient's and ILTServer's
+function-pointer members sit at retail's offsets too (all 129 and 106
+stores of InitFunctionPointers / SetupFunctionPointers, at 0x40bcd0 and
+0x1003d3d0). One signature differs: **GetParticleBlockersInAABB** takes
+`(pos, dims, uint32* pIndices, uint32& nNumIndices)` in CJ (NULL to
+count; CShell's snow airspace calls it twice, 0x100f01ed). The SDK has
+that form now, with `GetParticleBlockersInAABBList` as an inline helper
+for the old vector form, and **SnowFX.cpp** (game package) makes CJ's
+two calls; dropping every mention of `std::vector<uint32>` from
+iltclient.h moved a scheduling choice in Object.lto's
+CAIGoalMgr::HandleCommand (its stdafx.h includes the header), which the
+helper restores. Also: ltmem without /GX (LTMemHeapInit inlines the
+group Init; CLilFixedHeapGroup::Term matches; SndDrv.dll unchanged),
+CWorldParticleBlockerData::GetBlockersInAABB, si_SetObjectPos (moves only
+on a change of position), and `tools/fndiff.py` reads `--end` as decimal
+or `+size` as well as hex (tools clone commit 0f87cb5).
+
 **Where it stands / next** (stopped here: score recorded at
-`Lithtech.exe` 6,824 identical, 94.3%; `server.dll` 2,728, 95.9%;
+`Lithtech.exe` 6,832 identical, 94.4%; `server.dll` 2,735, 96.1%;
 SndDrv.dll 225) (breadth first, per module, with `tools/fndiff.py`,
 `o2gap.py`, `vtabcheck.py`, `uncovered.py`; `progress.py --nears=<target>`
 pairs some rows wrongly where a function's CSV extent is split, so check
-each with fndiff against the retail address first, and pass `--end` in
-hex: fndiff reads a decimal end as hex; fndiff on
+each with fndiff against the retail address first; fndiff on
 `--image=out/spdemo/Lithtech-readable.exe` reads SecuROM's calls put
-back):
-- structural nears not yet done: DrawDynamicParticles (block order and
-  pEffect kept in a register), CModelMgr::ForEach (retail calls the set
-  iterator's _Inc out of line; ours inlines it whatever the iterator
-  form), MarkSectionBreaks for Lightmap_Texture (retail inlines != into a
-  call of ==; ours calls != out of line, and writing == inlines it
-  whole), LTMemHeapInit (inlining), CLilFixedHeapGroup::Init and
-  CGeneralHeapGroup::Term, GetBlockersInAABB, MoveObject and
-  RotateWorldModel;
+back; `vtabcheck.py` misses tables whose constructor is not placed, so
+interface tables were matched by their slots' placements instead):
+- structural nears not yet done: DrawDynamicParticles (pEffect kept in a
+  register where retail reloads it; the failed-allocation return placed
+  out of line), CModelMgr::ForEach (retail calls the set iterator's _Inc
+  out of line; ours inlines it whatever the iterator form),
+  MarkSectionBreaks for Lightmap_Texture (retail inlines != into a call
+  of ==; ours calls != out of line, and writing == inlines it whole);
 - nears left as register allocation or scheduling only (tried, no source
-  shape found): BuildDeviceList (four stack slots), CreateDevice (esi and
-  edi swapped), CUIBitmapFont::BuildFontTable (three stack slots),
-  MoveAttachment (the MoveState zeroing interleaved), CD3D_RenderWorld::
-  Draw, CPlayerMover::Collide/_Poly/StairStep, QueueShadows,
-  LoadLightGroup, SSubLM::Load, the light-group stream operator,
+  shape found): MoveObject and RotateWorldModel (retail keeps 0 in a
+  register for its compares and stores), BuildDeviceList (four stack
+  slots), CreateDevice (esi and edi swapped),
+  CUIBitmapFont::BuildFontTable (three stack slots), MoveAttachment (the
+  MoveState zeroing interleaved), CD3D_RenderWorld::Draw,
+  CPlayerMover::Collide/_Poly/StairStep, QueueShadows, LoadLightGroup,
+  SSubLM::Load, the light-group stream operator,
   ps_UpdateParticleBoundingBox (x operand order),
   SendAllObjectsUnguaranteed, CD3DDrawPrim::SetCamera and
   SetTransformMode, the DrawPolyGrid imul order;

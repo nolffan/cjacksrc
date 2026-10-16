@@ -11,6 +11,8 @@
 
 #include "stdafx.h"
 #include "PlayerMgr.h"
+#include "ChassisPieceFX.h"
+#include "ChassisButeMgr.h"
 #include "AttachButeMgr.h"
 #include "BodyFX.h"
 #include "CMoveMgr.h"
@@ -42,7 +44,6 @@
 #include "PolyGridFX.h"
 #include "PlayerViewAttachmentMgr.h"
 #include "LTEulerAngles.h"
-#include "DoomsDayPieceFX.h"
 
 CPlayerMgr* g_pPlayerMgr = NULL;
 
@@ -201,6 +202,8 @@ CPlayerMgr::CPlayerMgr()
 
 	m_fFireJitterPitch	= 0.0f;
 	m_fFireJitterYaw	= 0.0f;
+	m_fRecoil			= 0.0f;
+	m_fLastFireTime		= 0.0f;
 
 	m_dwPlayerFlags			= 0;
 	m_ePlayerState			= PS_UNKNOWN;
@@ -233,6 +236,9 @@ CPlayerMgr::CPlayerMgr()
 
 	m_nPlayerInfoChangeFlags	= 0;
 	m_fPlayerInfoLastSendTime	= 0.0f;
+	m_fPlayerInfoLastFullSendTime = 0.0f;
+	m_nPlayerInfoLastSent[1]	= 0;
+	m_nPlayerInfoLastSent[0]	= 0;
 
 	m_bUseWorldFog          = LTTRUE;
 	m_hContainerSound       = NULL;
@@ -246,6 +252,7 @@ CPlayerMgr::CPlayerMgr()
 	m_fStartDuckTime		= 0.0f;
 
 	m_nCarryingObject		= CFX_CARRY_NONE;
+	m_pCarryingChassisPiece	= LTNULL;
 	m_bCanDropCarriedObject	= false;
 
  	m_fDistanceIndicatorPercent = -1.0f;
@@ -620,7 +627,7 @@ void CPlayerMgr::Load(ILTMessage_Read *pMsg, SaveDataState eLoadDataState)
 	{
 		nCarryingObject		= pMsg->Readuint8();
 	}
-	SetCarryingObject( nCarryingObject, false );
+	SetCarryingObject( nCarryingObject, LTNULL, false );
 
 	m_bCanDropCarriedObject		= pMsg->Readbool();
 
@@ -675,6 +682,7 @@ void CPlayerMgr::OnEnterWorld()
 	m_pMoveMgr->OnEnterWorld();
 
 	m_nCarryingObject		= CFX_CARRY_NONE;
+	m_pCarryingChassisPiece	= LTNULL;
 	m_bCanDropCarriedObject	= false;
 
 	m_fDistanceIndicatorPercent = -1.0f;
@@ -5343,13 +5351,16 @@ bool CPlayerMgr::IsDisabling()
 //
 // ----------------------------------------------------------------------- //
 
-void CPlayerMgr::SetCarryingObject( uint8 nCarry, bool bUpdateCameraDip )
+void CPlayerMgr::SetCarryingObject( uint8 nCarry, CHASSISPIECE const* pChassisPiece, bool bUpdateCameraDip )
 {	
 	if( m_nCarryingObject != nCarry )
 	{
 		m_nCarryingObject = nCarry;
+		m_pCarryingChassisPiece = pChassisPiece;
 
-		if(nCarry == CFX_CARRY_BODY || nCarry == CFX_CARRY_DD_CORE)
+		// RETAIL: 0x100990ac a chassis piece is heavy if its record says so.
+		if( nCarry == CFX_CARRY_BODY ||
+			( nCarry == CFX_CARRY_CHASSISPIECE && pChassisPiece && pChassisPiece->m_bHeavy ))
 		{
 			if( bUpdateCameraDip )
 				m_bCameraDip = true;
@@ -5463,21 +5474,11 @@ uint8 CPlayerMgr::CanCarryObject()
 		}
 
 
-		CDoomsdayPieceFX* const pFX = (CDoomsdayPieceFX*)g_pGameClientShell->GetSFXMgr()->FindSpecialFX(SFX_DOOMSDAYPIECE_ID, GetTargetMgr()->GetTargetObject());
+		// RETAIL: 0x1009b830 the pieces carried are chassis pieces.
+		ChassisPieceFX* const pFX = (ChassisPieceFX*)g_pGameClientShell->GetSFXMgr()->FindSpecialFX(SFX_CHASSISPIECE_ID, GetTargetMgr()->GetTargetObject());
 		if( pFX )
 		{
-			switch (pFX->GetType())
-			{
-			case kDoomsDay_transmitter:
-				return (CFX_CARRY_DD_TRAN);
-				break;
-			case kDoomsDay_battery:
-				return (CFX_CARRY_DD_BATT);
-				break;
-			case kDoomsDay_Core:
-				return (CFX_CARRY_DD_CORE);
-				break;
-			}
+			return CFX_CARRY_CHASSISPIECE;
 		}
 
 	}

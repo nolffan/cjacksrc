@@ -36,7 +36,9 @@
 #include "ProjectileFX.h"
 #include "LightFX.h"
 #include "PickupItemFX.h"
-#include "DoomsDayPieceFX.h"
+#include "ChassisPieceFX.h"
+#include "ChassisFX.h"
+#include "ChassisButeMgr.h"
 #include "GadgetTargetFX.h"
 #include "GameClientShell.h"
 #include "CharacterFX.h"
@@ -134,9 +136,11 @@ static unsigned int s_nDynArrayMaxNums[DYN_ARRAY_SIZE] =
 	50,		// Dynamic Occluder volumes
 	50,		// Scatter
 	50,		// Trigger
-	20,		// RadarObject
+	100,	// RadarObject
 	512,	// ActivateObject
-	3,		// DoomsDay pieces
+	15,		// Chassis pieces (cjacksrc: the rest are Contract J.A.C.K.'s)
+	15,		// Chassis
+	20,		// AimMagnets
 };
 
 
@@ -193,7 +197,8 @@ CBankedList<CScatterFX> g_SFXBank_Scatter;
 CBankedList<CTriggerFX> g_SFXBank_Trigger;
 CBankedList<CRadarObjectFX> g_SFXBank_RadarObject;
 CBankedList<CActivateObjectFX> g_SFXBank_ActivateObject;
-CBankedList<CDoomsdayPieceFX> g_SFXBank_DoomsdayPiece;
+CBankedList<ChassisPieceFX> g_SFXBank_ChassisPiece;
+CBankedList<ChassisFX> g_SFXBank_Chassis;
 
 
 // ----------------------------------------------------------------------- //
@@ -541,17 +546,33 @@ void CSFXMgr::HandleSFXMsg(HLOCALOBJ hObj, ILTMessage_Read *pMsg)
 		}
 		break;
 
-		case SFX_DOOMSDAYPIECE_ID :
+		case SFX_CHASSISPIECE_ID :
 		{
-			DOOMSDAYPIECECREATESTRUCT DoomsdayPieceCS;
+			CHASSISPIECECREATESTRUCT ChassisPieceCS;
 
-			DoomsdayPieceCS.hServerObj = hObj;
-            DoomsdayPieceCS.eType = (DDPieceType)pMsg->Readuint8();
-			DoomsdayPieceCS.bCarried = pMsg->Readbool();
-			DoomsdayPieceCS.nTeam = pMsg->Readuint8();
-			DoomsdayPieceCS.bPlanted = pMsg->Readbool();
+			ChassisPieceCS.hServerObj = hObj;
+			uint8 nPieceId = pMsg->Readuint8();
+			ChassisPieceCS.pChassisPiece = ( nPieceId != CHASSISBMGR_INVALID_ID ) ? ChassisButeMgr::Instance( ).GetPiece( nPieceId ) : LTNULL;
+			ChassisPieceCS.bCarried = pMsg->Readbool();
+			ChassisPieceCS.nTeam = pMsg->Readuint8();
+			ChassisPieceCS.bPlanted = pMsg->Readbool();
+			ChassisPieceCS.nActivateType = pMsg->Readuint8();
+			ChassisPieceCS.bRespawnSoon = pMsg->Readbool();
 
-			CreateSFX(nId, &DoomsdayPieceCS);
+			CreateSFX(nId, &ChassisPieceCS);
+		}
+		break;
+
+		case SFX_CHASSIS_ID :
+		{
+			CHASSISCREATESTRUCT ChassisCS;
+
+			ChassisCS.hServerObj = hObj;
+			ChassisCS.nTeam = pMsg->Readuint8();
+			ChassisCS.fDropZoneRadius = pMsg->Readfloat();
+			ChassisCS.nActivateType = pMsg->Readuint8();
+
+			CreateSFX(nId, &ChassisCS);
 		}
 		break;
 
@@ -957,9 +978,15 @@ void CSFXMgr::DeleteSFX(CSpecialFX* pFX)
 		}
 		break;
 
-		case SFX_DOOMSDAYPIECE_ID :
+		case SFX_CHASSISPIECE_ID :
 		{
-			g_SFXBank_DoomsdayPiece.Delete((CDoomsdayPieceFX*)pFX);
+			g_SFXBank_ChassisPiece.Delete((ChassisPieceFX*)pFX);
+		}
+		break;
+
+		case SFX_CHASSIS_ID :
+		{
+			g_SFXBank_Chassis.Delete((ChassisFX*)pFX);
 		}
 		break;
 
@@ -1306,9 +1333,15 @@ CSpecialFX* CSFXMgr::CreateSFX(uint8 nId, SFXCREATESTRUCT *psfxCreateStruct,
 		}
 		break;
 
-		case SFX_DOOMSDAYPIECE_ID :
+		case SFX_CHASSISPIECE_ID :
 		{
-			pSFX = g_SFXBank_DoomsdayPiece.New();
+			pSFX = g_SFXBank_ChassisPiece.New();
+		}
+		break;
+
+		case SFX_CHASSIS_ID :
+		{
+			pSFX = g_SFXBank_Chassis.New();
 		}
 		break;
 

@@ -13,6 +13,7 @@
 #ifndef __VEHICLE_MGR_H__
 #define __VEHICLE_MGR_H__
 
+#include "VehicleWeapon.h"
 #include "iltclient.h"
 #include "SharedMovement.h"
 #include "CameraOffsetMgr.h"
@@ -253,6 +254,12 @@ class CVehicleMgr
 
 	bool			m_bWasTouched;
 	CollisionInfo	m_cLastTouchInfo;
+
+	// cjacksrc: Contract J.A.C.K.'s vehicles have attributes and may
+	// carry a weapon (RETAIL: 0x10107cb3, 0x10107cff).
+	struct VEHICLEBUTES const*	m_pVehicleButes;
+	CVehicleWeapon	m_VehicleWeapon;
+	bool			m_bHasVehicleWeapon;
 };
 
 

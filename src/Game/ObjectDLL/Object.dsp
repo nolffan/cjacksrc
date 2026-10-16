@@ -630,7 +630,15 @@ SOURCE=.\CharacterMgr.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\Chassis.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\Shared\ChassisButeMgr.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\ChassisPiece.cpp
 # End Source File
 # Begin Source File
 
@@ -2041,7 +2049,15 @@ SOURCE=.\CharacterMgr.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\Chassis.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\Shared\ChassisButeMgr.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\ChassisPiece.h
 # End Source File
 # Begin Source File
 
