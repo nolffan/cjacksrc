@@ -62,6 +62,10 @@ class CServerButeMgr : public CGameButeMgr
 		float		GetDoomsDayDeviceDamageAmount( );
 		float		GetDoomsDayDeviceRespawnTime( );
 
+		// cjacksrc: Contract J.A.C.K.'s vehicles.
+		float		GetVehicleRespawnTime( );
+		float		GetVehicleBlinkTime( );
+
 	private:
 		int			m_nNumWONServers;
 };

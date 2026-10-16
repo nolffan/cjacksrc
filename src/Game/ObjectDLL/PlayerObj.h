@@ -395,8 +395,10 @@ class CPlayerObj : public CCharacter
 		void	SetJumpVelMul(float fVal)	{ChangeSpeedsVar(m_fJumpMultiplier, fVal);}
 		void	SetLadderVel(float fVal)	{ChangeSpeedsVar(m_fLadderVel, fVal);}
 
-		virtual void	SetPhysicsModel(PlayerPhysicsModel eModel=PPM_NORMAL, LTBOOL bUpdateClient=LTTRUE);
-		virtual void	SetVehiclePhysicsModel(PlayerPhysicsModel eModel);
+		// cjacksrc: RETAIL: Object 0x1010dcb0, 0x10109a10: Contract J.A.C.K.'s
+		// vehicles are VehicleButeMgr records.
+		virtual bool	SetPhysicsModel(PlayerPhysicsModel eModel=PPM_NORMAL, uint8 nVehicleId=0xFF, bool bUpdateClient=true);
+		virtual bool	SetVehiclePhysicsModel(uint8 nVehicleId);
 		virtual void	SetNormalPhysicsModel();
 
 		void	AcquireDefaultWeapon();

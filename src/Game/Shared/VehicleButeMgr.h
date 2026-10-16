@@ -110,7 +110,7 @@ class CVehicleButeMgr : public CGameButeMgr
 		// vehicle's or all of them.
 		bool			WriteVehicleButes( VEHICLEBUTES* pVehicle = LTNULL );
 
-		uint8				GetNumVehicles( ) const { return ( uint8 )m_VehicleList.size( ); }
+		uint32				GetNumVehicles( ) const { return m_VehicleList.size( ); }
 		VEHICLEBUTES*		GetVehicle( uint8 nId ) const;
 		VEHICLEBUTES*		GetVehicle( char const* pszName );
 

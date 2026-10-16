@@ -28,6 +28,7 @@
 #include "VolumeBrush.h"
 #include "SurfaceMgr.h"
 #include "PlayerVehicle.h"
+#include "VehicleButeMgr.h"
 #include "Breakable.h"
 #include "MusicMgr.h"
 #include "Camera.h"
@@ -7123,7 +7124,9 @@ void CPlayerObj::HandleClientMsg(ILTMessage_Read *pMsg)
 		case CP_PHYSICSMODEL :
 		{
             PlayerPhysicsModel eModel = (PlayerPhysicsModel)pMsg->Readuint8();
-			SetPhysicsModel(eModel, LTFALSE);
+			// RETAIL: Object 0x1010d8d0: and the vehicle.
+			uint8 nVehicleId = pMsg->Readuint8();
+			SetPhysicsModel(eModel, nVehicleId, false);
 		}
 		break;
 
@@ -7164,19 +7167,23 @@ void CPlayerObj::RideVehicle(PlayerVehicle* pVehicle)
 		return;
 	}
 
-
-	PlayerPhysicsModel eModel = pVehicle->GetPhysicsModel();
+	// RETAIL: Object 0x1010d98c.
+	if (m_nControlFlags & BC_CFLG_DUCK)
+	{
+		g_pLTServer->CPrint("Can't ride vehicles while ducking");
+		return;
+	}
 
 	// Set our vehicle model.  SetVehiclePhysicsModel() will set the
 	// appropriate links and attach the model to us...
 
-	if (eModel != PPM_NORMAL)
+	m_hVehicleModel = pVehicle->m_hObject;
+
+	if (!SetPhysicsModel(PPM_SNOWMOBILE, pVehicle->GetVehicleId()))
 	{
-		m_hVehicleModel = pVehicle->m_hObject;
+		m_hVehicleModel = LTNULL;
+		return;
 	}
-
-	SetPhysicsModel(eModel);
-
 
 	if (m_hVehicleModel)
 	{
@@ -7483,9 +7490,13 @@ void CPlayerObj::TransferWeapons(Body *pBody, bool bRemove )
 //
 // ----------------------------------------------------------------------- //
 
-void CPlayerObj::SetPhysicsModel(PlayerPhysicsModel eModel, LTBOOL bUpdateClient)
+bool CPlayerObj::SetPhysicsModel(PlayerPhysicsModel eModel, uint8 nVehicleId, bool bUpdateClient)
 {
-	if (m_ePPhysicsModel == eModel) return;
+	// RETAIL: Object 0x1010dcb0: Contract J.A.C.K.'s vehicles are
+	// VehicleButeMgr records; tell the clients unless the state update
+	// does.
+
+	if (m_ePPhysicsModel == eModel) return false;
 
 	if (bUpdateClient)
 	{
@@ -7495,8 +7506,10 @@ void CPlayerObj::SetPhysicsModel(PlayerPhysicsModel eModel, LTBOOL bUpdateClient
 	switch (eModel)
 	{
 		case PPM_SNOWMOBILE:
-		case PPM_LIGHTCYCLE:
-			SetVehiclePhysicsModel(eModel);
+		{
+			if (!SetVehiclePhysicsModel(nVehicleId))
+				return false;
+		}
 		break;
 
 		default :
@@ -7507,29 +7520,36 @@ void CPlayerObj::SetPhysicsModel(PlayerPhysicsModel eModel, LTBOOL bUpdateClient
 
 	m_ePPhysicsModel = eModel;
 
-
-    // Set our usr flags as necessary...
-
-    uint32 dwUserFlags = 0;
-
-	if (m_ePPhysicsModel == PPM_SNOWMOBILE)
+	if (!bUpdateClient)
 	{
-		dwUserFlags |= USRFLG_PLAYER_SNOWMOBILE;
+		CAutoMessage cMsg;
+		cMsg.Writeuint8(MID_SFX_MESSAGE);
+		cMsg.Writeuint8(SFX_CHARACTER_ID);
+		cMsg.WriteObject(m_hObject);
+		cMsg.Writeuint8(CFX_PHYSICSMODEL);
+		cMsg.Writeuint8(m_ePPhysicsModel);
+		cMsg.Writeuint8(nVehicleId);
+		g_pLTServer->SendToClient(cMsg.Read(), LTNULL, 0);
 	}
 
-    g_pCommonLT->SetObjectFlags(m_hObject, OFT_User, dwUserFlags, USRFLG_PLAYER_SNOWMOBILE);
+	CreateSpecialFX(false);
+
+	return true;
 }
 
 // ----------------------------------------------------------------------- //
 //
 //	ROUTINE:	CPlayerObj::SetVehiclePhysicsModel
 //
-//	PURPOSE:	Set the vehicle physics model
+//	PURPOSE:	RETAIL: Object 0x10109a10: ride vehicle nVehicleId
 //
 // ----------------------------------------------------------------------- //
 
-void CPlayerObj::SetVehiclePhysicsModel(PlayerPhysicsModel eModel)
+bool CPlayerObj::SetVehiclePhysicsModel(uint8 nVehicleId)
 {
+	if (nVehicleId >= g_pVehicleButeMgr->GetNumVehicles())
+		return false;
+
 	// Create the vehicle model...
 
 	if (!m_hVehicleModel)
@@ -7545,31 +7565,51 @@ void CPlayerObj::SetVehiclePhysicsModel(PlayerPhysicsModel eModel)
 
 		LTRotation rRot = m_rFullPlayerRot.IsIdentity() ? rPlayerRot : m_rFullPlayerRot;
 
+		VEHICLEBUTES* pVehicle = g_pVehicleButeMgr->GetVehicle(nVehicleId);
+		if (!pVehicle) return false;
+
 		char buff[256];
-		char* pPropName = GetPropertyNameFromPlayerPhysicsModel(eModel);
-		sprintf(buff, "PlayerVehicle VehicleType %s;Gravity 1", pPropName);
+		sprintf(buff, "PlayerVehicle VehicleType %s;Gravity 1", pVehicle->sName.c_str());
 
 		BaseClass* pModel = SpawnObject(buff, vPos, rRot);
-		if (!pModel) return;
+		if (!pModel) return false;
 
 		m_hVehicleModel = pModel->m_hObject;
-		if (!m_hVehicleModel) return;
+		if (!m_hVehicleModel) return false;
 	}
+
+	VEHICLEBUTES* pVehicle = g_pVehicleButeMgr->GetVehicle(nVehicleId);
+	if (!pVehicle) return false;
+
+	m_nVehicleId = pVehicle->nId;
 
 	// Attach the vehicle model to us...
 
     LTVector vOffset(0, 0, 0);
     LTRotation rOffset;
 
-    const char* pSocket = "Snowmobile";
+    const char* pSocket = pVehicle->bMotorcycle ? "Motorcycle" : "Snowmobile";
 
 	HATTACHMENT hAttachment;
     if( LT_OK != g_pLTServer->CreateAttachment(m_hObject, m_hVehicleModel, (char *)pSocket,
 												&vOffset, &rOffset, &hAttachment) )
 	{
-		ASSERT( !"CreateAttachment() failed." );
 		g_pLTServer->CPrint( "Failed to attach Snowmobile.  Check the socket on the player model!" );		
 	}
+
+	// The vehicle's weapon...
+
+	if (!pVehicle->sVehicleWeapon.empty())
+	{
+		WEAPON const* pWeapon = g_pWeaponMgr->GetWeapon(pVehicle->sVehicleWeapon.c_str());
+		if (pWeapon)
+		{
+			m_nVehicleWeaponId = pWeapon->nId;
+			m_pPlayerAttachments->ObtainWeapon(m_nVehicleWeaponId);
+		}
+	}
+
+	return true;
 }
 
 
@@ -7586,6 +7626,10 @@ void CPlayerObj::SetNormalPhysicsModel()
 	// Remove any vehicle models...
 
 	RemoveVehicleModel();
+
+	// RETAIL: Object 0x10109c58.
+	m_nVehicleWeaponId = WMGR_INVALID_ID;
+	m_nVehicleId = WMGR_INVALID_ID;
 }
 
 
