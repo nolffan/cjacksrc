@@ -95,6 +95,15 @@ class TimeRamp
 // RETAIL: Contract J.A.C.K.'s record of a client (0x2c bytes, Object
 // 0x100e04b7): its connection state and unique name live here, not in
 // the player object.
+// The states of a client's connection.
+enum ClientDataState
+{
+	eClientDataState_Added,				// Just connected
+	eClientDataState_Handshaking,		// Said hello
+	eClientDataState_CDKeyCheck,		// Waiting for GameSpy's CD key check
+	eClientDataState_Connected,			// Let in
+};
+
 struct ClientData
 {
 	ClientData( )
@@ -102,15 +111,15 @@ struct ClientData
 		m_hClient = NULL;
 		m_nLastClientUpdateTime = GetTickCount( );
 		m_nState = 0;
-		m_bFlag = false;
+		m_bKicked = false;
 		m_nTeamId = INVALID_TEAM;
 	}
 
 	HCLIENT m_hClient;
-	uint32	m_nState;					// 2 waiting for GameSpy's CD key check, 3 connected
+	uint32	m_nState;					// a ClientDataState
 	uint32 m_nLastClientUpdateTime;
 	std::string	m_sUniqueName;			// The player's name, unique on the server
-	bool	m_bFlag;					// RETAIL: 0x28, not yet identified
+	bool	m_bKicked;					// Kicked; the update removes it
 	uint8	m_nTeamId;
 };
 
@@ -234,6 +243,12 @@ class CGameServerShell : public IServerShellStub
 		void		PostStartWorld();
 		void		CacheFiles();
 		void		UpdateClientPingTimes();
+
+		// cjacksrc: Contract J.A.C.K.'s connection handling (Object.lto
+		// 0x100dd370, 0x100dd560, 0x100dadd0).
+		bool		UpdateClientCDKeyChecks();
+		bool		BootClients();
+		void		KickClientData( ClientData* pClientData );
         virtual void Update(LTFLOAT timeElapsed);
 		void		SendMultiPlayerDataToClient(HCLIENT hClient);
 		void		SendObjectivesDataToClient( HCLIENT hClient );

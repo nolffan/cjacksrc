@@ -23,6 +23,7 @@
 #include "ProfileMgr.h"
 #include "WeaponMgr.h"
 #include "CRC32.h"
+#include "IGameSpy.h"
 
 #pragma message( "FIXFIX:  Should really be called ClientConnectionMgr." )
 
@@ -64,6 +65,8 @@ ClientMultiplayerMgr::ClientMultiplayerMgr( )
 	m_nTeam = INVALID_TEAM;
 	m_bHasSelectedTeam = false;
 
+	m_pGameSpyBrowser = NULL;
+	m_pGameSpyLANBrowser = NULL;
 }
 
 // --------------------------------------------------------------------------- //
@@ -77,6 +80,18 @@ ClientMultiplayerMgr::ClientMultiplayerMgr( )
 ClientMultiplayerMgr::~ClientMultiplayerMgr( )
 {
 	delete GetServerDir();
+
+	if( m_pGameSpyBrowser )
+	{
+		IGameSpyBrowser::Delete( m_pGameSpyBrowser );
+		m_pGameSpyBrowser = NULL;
+	}
+
+	if( m_pGameSpyLANBrowser )
+	{
+		IGameSpyBrowser::Delete( m_pGameSpyLANBrowser );
+		m_pGameSpyLANBrowser = NULL;
+	}
 
 	g_pClientMultiplayerMgr = NULL;
 }
@@ -612,6 +627,78 @@ bool ClientMultiplayerMgr::OnMessage(uint8 messageID, ILTMessage_Read *pMsg)
 }
 
 
+// The keys a GameSpy browser asks servers for.
+
+static bool RegisterGameSpyBrowserKeys( IGameSpyBrowser* pBrowser )
+{
+	pBrowser->RegisterKey( "hostname" );
+	pBrowser->RegisterKey( "mapname" );
+	pBrowser->RegisterKey( "numplayers" );
+	pBrowser->RegisterKey( "maxplayers" );
+	pBrowser->RegisterKey( "gametype" );
+	pBrowser->RegisterKey( "gamemode" );
+	pBrowser->RegisterKey( "password" );
+	pBrowser->RegisterKey( "gamever" );
+	pBrowser->RegisterKey( "fraglimit" );
+	pBrowser->RegisterKey( "timelimit" );
+	pBrowser->RegisterKey( "player_" );
+	pBrowser->RegisterKey( "frags_" );
+	pBrowser->RegisterKey( "ping_" );
+	pBrowser->RegisterKey( "modname" );
+	pBrowser->RegisterKey( "options" );
+
+	pBrowser->AddSummaryKey( "hostname" );
+	pBrowser->AddSummaryKey( "numplayers" );
+	pBrowser->AddSummaryKey( "maxplayers" );
+	pBrowser->AddSummaryKey( "gametype" );
+	pBrowser->AddSummaryKey( "gamever" );
+	pBrowser->AddSummaryKey( "modname" );
+	pBrowser->AddSummaryKey( "password" );
+
+	return true;
+}
+
+// --------------------------------------------------------------------------- //
+//
+//	ROUTINE:	ClientMultiplayerMgr::CreateGameSpyBrowsers
+//
+//	PURPOSE:	Make GameSpy's browsers, for the Internet and the LAN.
+//
+// --------------------------------------------------------------------------- //
+
+bool ClientMultiplayerMgr::CreateGameSpyBrowsers( )
+{
+	if( !m_pGameSpyBrowser )
+	{
+		IGameSpyBrowser::StartupInfo startupInfo;
+		startupInfo.m_nGameType = 1;
+		m_pGameSpyBrowser = IGameSpyBrowser::Create( startupInfo );
+		RegisterGameSpyBrowserKeys( m_pGameSpyBrowser );
+	}
+
+	if( !m_pGameSpyLANBrowser )
+	{
+		IGameSpyBrowser::StartupInfo startupInfo;
+		startupInfo.m_nGameType = 2;
+		m_pGameSpyLANBrowser = IGameSpyBrowser::Create( startupInfo );
+		RegisterGameSpyBrowserKeys( m_pGameSpyLANBrowser );
+	}
+
+	return true;
+}
+
+// --------------------------------------------------------------------------- //
+//
+//	ROUTINE:	ClientMultiplayerMgr::HandleMsgHandshake
+//
+//	PURPOSE:	The server's side of the handshake.  Contract J.A.C.K.'s
+//				server says hello as the client connects, with its session
+//				name and level; the client proves its files are the
+//				server's and, on a server published with GameSpy, answers
+//				its CD key challenge (CShell.dll 0x1001fae0).
+//
+// --------------------------------------------------------------------------- //
+
 bool ClientMultiplayerMgr::HandleMsgHandshake( ILTMessage_Read & msg )
 {
 	int nHandshakeSub = (int)msg.Readuint8();
@@ -629,17 +716,20 @@ bool ClientMultiplayerMgr::HandleMsgHandshake( ILTMessage_Read & msg )
 				return true;
 			}
 
+			// The server's session name and the level it is on.
+			msg.ReadString( m_StartGameRequest.m_HostInfo.m_sName, ARRAY_LEN( m_StartGameRequest.m_HostInfo.m_sName ));
+
+			char szLevel[MAX_PATH+256];
+			msg.ReadString( szLevel, ARRAY_LEN( szLevel ));
+			g_pMissionMgr->SetServerLevel( szLevel );
+
 			// Send back a hello response
 			CAutoMessage cResponse;
 			cResponse.Writeuint8(MID_HANDSHAKE);
 			cResponse.Writeuint8(MID_HANDSHAKE_HELLO);
 		    cResponse.Writeuint16(GAME_HANDSHAKE_VER);
 			// Send them our secret key
-#ifdef SOURCE_RELEASE
-			cResponse.Writeuint32( GAME_HANDSHAKE_PASSWORD );
-#else // SOURCE_RELEASE
 			cResponse.Writeuint32((uint32)this);
-#endif // SOURCE_RELEASE
 			g_pLTClient->SendToServer(cResponse.Read(), MESSAGE_GUARANTEED);
 		}
 		break;
@@ -649,10 +739,6 @@ bool ClientMultiplayerMgr::HandleMsgHandshake( ILTMessage_Read & msg )
 			m_nServerKey = msg.Readuint32();
 			bool   bNeedPassword = msg.Readbool();
 
-#ifdef SOURCE_RELEASE
-			uint32 nPassword = GAME_HANDSHAKE_PASSWORD;
-			uint32 nXORMask = GAME_HANDSHAKE_MASK;
-#else // SOURCE_RELEASE
 			// Get the player name
 			char sName[255];
 			// (Make sure to clear out the first 4 characters, since that's all we care about)
@@ -667,7 +753,6 @@ bool ClientMultiplayerMgr::HandleMsgHandshake( ILTMessage_Read & msg )
 			// Encrypt "the string" with it
 			uint32 nPassword = *((uint32*)sName);
 			uint32 nXORMask = MessUp32BitValue(m_nServerKey, (uint32)(sName[0]));
-#endif // SOURCE_RELEASE
 
 			nPassword ^= nXORMask;
 
@@ -695,6 +780,10 @@ bool ClientMultiplayerMgr::HandleMsgHandshake( ILTMessage_Read & msg )
 			static uint32 nDamageFxCRC = CRC32::CalcRezFileCRC( "attributes\\damagefx.txt" );
 			uint32 nDamageFxMaskedCRC = nDamageFxCRC ^ nXORMask;
 
+			// cjacksrc: Contract J.A.C.K. checks autoexec.cfg too.
+			static uint32 nAutoexecCRC = CRC32::CalcFileCRC( "autoexec.cfg" );
+			uint32 nAutoexecMaskedCRC = nAutoexecCRC ^ nXORMask;
+
 			// Get the client shell file CRC
 			char aClientShellName[MAX_PATH + 1];
 			// Just in case getting the file name fails
@@ -708,6 +797,23 @@ bool ClientMultiplayerMgr::HandleMsgHandshake( ILTMessage_Read & msg )
 			// Mask that up too
 			nClientCRC ^= nXORMask;
 
+			// cjacksrc: a server published with GameSpy challenges our CD key.
+			bool bCDKeyChallenge = msg.Readbool();
+			char szChallenge[256] = "";
+			char szResponse[256] = "";
+			if( bCDKeyChallenge )
+			{
+				msg.ReadString( szChallenge, ARRAY_LEN( szChallenge ));
+
+				char szCDKey[256];
+				g_pVersionMgr->GetCDKey( szCDKey, ARRAY_LEN( szCDKey ));
+
+				unsigned int nResponseLen = ARRAY_LEN( szResponse );
+				if( !m_pGameSpyBrowser )
+					CreateGameSpyBrowsers( );
+				m_pGameSpyBrowser->GetCDKeyChallengeResponse( szCDKey, szChallenge, szResponse, &nResponseLen );
+			}
+
 			// Send it back their direction
 			CAutoMessage cResponse;
 			cResponse.Writeuint8(MID_HANDSHAKE);
@@ -718,7 +824,13 @@ bool ClientMultiplayerMgr::HandleMsgHandshake( ILTMessage_Read & msg )
 			cResponse.Writeuint32(nModelButesMaskedCRC);
 			cResponse.Writeuint32(nSurfaceMaskedCRC);
 			cResponse.Writeuint32(nDamageFxMaskedCRC);
+			cResponse.Writeuint32(nAutoexecMaskedCRC);
 			cResponse.Writeuint32(nHashedPassword);
+			if( bCDKeyChallenge )
+			{
+				cResponse.WriteString( szChallenge );
+				cResponse.WriteString( szResponse );
+			}
 			g_pLTClient->SendToServer(cResponse.Read(), MESSAGE_GUARANTEED);
 
 		}
@@ -734,6 +846,24 @@ bool ClientMultiplayerMgr::HandleMsgHandshake( ILTMessage_Read & msg )
 			// Oops... wrong password, disconnect
 			m_bForceDisconnect = true;
 			SetDisconnectCode(eDisconnect_WrongPassword, NULL);
+		}
+		break;
+		case MID_HANDSHAKE_CDKEYREJECTED:
+		{
+			m_bForceDisconnect = true;
+			SetDisconnectCode(eDisconnect_CDKeyRejected, NULL);
+		}
+		break;
+		case MID_HANDSHAKE_BADFILES:
+		{
+			m_bForceDisconnect = true;
+			SetDisconnectCode(eDisconnect_BadFiles, NULL);
+		}
+		break;
+		case MID_HANDSHAKE_BANNED:
+		{
+			m_bForceDisconnect = true;
+			SetDisconnectCode(eDisconnect_Banned, NULL);
 		}
 		break;
 		default :
