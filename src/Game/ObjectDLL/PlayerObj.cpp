@@ -939,6 +939,9 @@ CPlayerObj::CPlayerObj()
 
 	m_nRequestedTeam = INVALID_TEAM;
 
+	// RETAIL: Object 0x10114b61.
+	m_nWeaponSoundLoopType = 0;
+	m_nWeaponSoundLoopWeaponId = 0;
 }
 
 
@@ -952,6 +955,12 @@ CPlayerObj::CPlayerObj()
 
 CPlayerObj::~CPlayerObj()
 {
+	// RETAIL: Object 0x10114b86: stop our weapon sound loop.
+	if( m_nWeaponSoundLoopType )
+	{
+		m_nWeaponSoundLoopType = 0;
+		SendWeaponSoundLoop( LTNULL );
+	}
 
 	if (m_pnOldAmmo)
 	{
@@ -4424,6 +4433,13 @@ void CPlayerObj::HandleDead(LTBOOL)
 		m_pAttachments->HideAttachments( LTTRUE );
 	}
 
+	// RETAIL: Object 0x1011279c: the dead play no weapon sound loop.
+	if( m_nWeaponSoundLoopType )
+	{
+		m_nWeaponSoundLoopType = 0;
+		SendWeaponSoundLoop( LTNULL );
+	}
+
 	g_pCommonLT->SetObjectFlags(m_hObject, OFT_Flags, 0, FLAG_TOUCH_NOTIFY);
 	g_pCommonLT->SetObjectFlags(m_hHitBox, OFT_Flags, 0, FLAG_TOUCHABLE );
 
@@ -6760,14 +6776,50 @@ void CPlayerObj::HandleWeaponSoundLoopMessage(ILTMessage_Read *pMsg)
 	uint8	nType		= pMsg->Readuint8();
 	uint8	nWeaponId	= pMsg->Readuint8();
 
+	// RETAIL: Object 0x101119fb: remember the loop, and tell the clients
+	// when it changes.
+	if( nType != m_nWeaponSoundLoopType || nWeaponId != m_nWeaponSoundLoopWeaponId )
+	{
+		m_nWeaponSoundLoopWeaponId = nWeaponId;
+		m_nWeaponSoundLoopType = nType;
+		SendWeaponSoundLoop( LTNULL );
+	}
+}
+
+// ----------------------------------------------------------------------- //
+//
+//  ROUTINE:	CPlayerObj::SendWeaponSoundLoop
+//
+//  PURPOSE:	RETAIL: Object 0x1010e9e0: tell a client (all of them for
+//				LTNULL) about our weapon sound loop.
+//
+// ----------------------------------------------------------------------- //
+
+void CPlayerObj::SendWeaponSoundLoop( HCLIENT hClient )
+{
 	CAutoMessage cMsg;
 	cMsg.Writeuint8( MID_SFX_MESSAGE );
 	cMsg.Writeuint8( SFX_CHARACTER_ID );
 	cMsg.WriteObject( m_hObject );
 	cMsg.Writeuint8( CFX_WEAPON_SOUND_LOOP_MSG );
-	cMsg.Writeuint8( nType );
-	cMsg.Writeuint8( nWeaponId );
-	g_pLTServer->SendToClient( cMsg.Read(), LTNULL, 0 );
+	cMsg.Writeuint8( m_nWeaponSoundLoopType );
+	cMsg.Writeuint8( m_nWeaponSoundLoopWeaponId );
+	g_pLTServer->SendToClient( cMsg.Read(), hClient, MESSAGE_GUARANTEED );
+}
+
+// ----------------------------------------------------------------------- //
+//
+//  ROUTINE:	CPlayerObj::SendWeaponSoundLoopToClient
+//
+//  PURPOSE:	RETAIL: Object 0x10110810: tell a client entering the world
+//				about our weapon sound loop, if we have one.
+//
+// ----------------------------------------------------------------------- //
+
+void CPlayerObj::SendWeaponSoundLoopToClient( HCLIENT hClient, CPlayerObj* pNewPlayer )
+{
+	if( hClient != m_hClient && m_nWeaponSoundLoopType )
+		SendWeaponSoundLoop( hClient );
 }
 
 // ----------------------------------------------------------------------- //

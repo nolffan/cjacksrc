@@ -881,6 +881,17 @@ LPBASECLASS	CGameServerShell::OnClientEnterWorld(HCLIENT hClient)
 		SendObjectivesDataToClient( hClient );
 	}
 
+	// RETAIL: Object 0x100de246: the client hears the other players'
+	// weapon sound loops.
+	HCLIENT hOtherClient = g_pLTServer->GetNextClient( LTNULL );
+	while( hOtherClient )
+	{
+		CPlayerObj* pOtherPlayer = dynamic_cast< CPlayerObj* >(( LPBASECLASS )g_pLTServer->GetClientUserData( hOtherClient ));
+		if( pOtherPlayer )
+			pOtherPlayer->SendWeaponSoundLoopToClient( hClient, pPlayer );
+
+		hOtherClient = g_pLTServer->GetNextClient( hOtherClient );
+	}
 
 	// All done...
 

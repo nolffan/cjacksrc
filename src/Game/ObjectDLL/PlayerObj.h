@@ -152,6 +152,12 @@ class CPlayerObj : public CCharacter
 		void HandleWeaponFireMessage(ILTMessage_Read *pMsg);
 		void HandleWeaponSoundMessage(ILTMessage_Read *pMsg);
 		void HandleWeaponSoundLoopMessage(ILTMessage_Read *pMsg);
+
+		// cjacksrc: RETAIL: Object 0x1010e9e0, 0x10110810: the weapon sound
+		// loop playing, to all clients or to one; a client entering the world
+		// hears the other players' loops.
+		void SendWeaponSoundLoop( HCLIENT hClient );
+		void SendWeaponSoundLoopToClient( HCLIENT hClient, CPlayerObj* pNewPlayer );
 		void HandleClientMsg(ILTMessage_Read *pMsg);
 		void HandleTeleportMsg(ILTMessage_Read *pMsg);
         bool HandleObjectiveMessage(const CParsedMsg &cMsg);
@@ -603,6 +609,11 @@ class CPlayerObj : public CCharacter
 
 		// this will be a valid team id if the player has requested to change teams
 		uint8		m_nRequestedTeam;
+
+		// cjacksrc: Contract J.A.C.K.'s weapon sound loop playing (RETAIL:
+		// CPlayerObj +0x2ab8, +0x2abc; members before them are still missing).
+		int			m_nWeaponSoundLoopType;
+		int			m_nWeaponSoundLoopWeaponId;
 
 };
 
