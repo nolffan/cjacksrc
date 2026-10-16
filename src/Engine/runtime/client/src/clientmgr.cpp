@@ -196,8 +196,10 @@ LTRESULT CClientMgr::Init(const char *resTrees[MAX_RESTREES], uint32 nResTrees, 
 {
     const char *pDLLPath;
     char cmd[64];
-    // RETAIL: a vector of the trees' count (Lithtech.exe 0x40fb16)
-    std::vector<TreeType> treeTypes(nResTrees);
+    // RETAIL: a vector with room for the trees, its elements written through
+    // &treeTypes[0] without a size (Lithtech.exe 0x40fb16)
+    std::vector<TreeType> treeTypes;
+    treeTypes.reserve(nResTrees);
     int nTreesLoaded;
     LTRESULT dResult;
     RMode defaultMode;
@@ -1301,7 +1303,7 @@ void CClientMgr::Term()
         RemoveObjectsInList(&m_ObjectMgr.m_ObjectLists[i], false);
     }
 
-    SaveAutoConfig("autoexec.cfg");
+    // RETAIL: no SaveAutoConfig("autoexec.cfg") here (Lithtech.exe 0x40f880)
 
     // Stop getting input.
     m_InputMgr->Term(m_InputMgr);
