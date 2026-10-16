@@ -750,30 +750,57 @@ colours (EN-6), SoundSys calls Term through a null driver (EN-7),
 DrawPrim's viewport of undefined size (EN-8); EN-9 keeps the screen's
 aspect for the player-view model.
 
+**Round 7** (on master's 680b56c). The unwritten rows: Lithtech.exe 19 ->
+3, server.dll 7 -> 2. Most were enumeration artefacts: CClassMgr's six
+empty tick functions, the `free` thunks and two getters enumerated as
+one row each (`progress/extent-splits.csv`), operand bytes inside static
+initializers and 1,053 zero bytes at the end of Lithtech.exe's .text
+(screen-exclude). The two fullbright shaders' PostFlush functions had
+been crossed (texture: stage 1's coordinates back, 0x4fee20;
+environment map: stage 3 and the env-map transform, 0x4fef90). Left:
+`??_H` (0x401000), con_SetErrorLog (0x419670) and dfree (0x4234c0),
+which ours have byte for byte but the scorer pairs elsewhere (identical
+bodies elsewhere in our link), and one initializer (0x5429d0).
+**The math_phys.h initializers** (investigated only): in retail
+Lithtech.exe the five-function groups cluster in the libraries' objects
+(Lib_UI and D3DRender files each have one) while only about a dozen of
+the main project's ~200 objects do; the holders registered beside each
+group name the objects. That is what a precompiled header gives: with
+`/Yu"bdefs.h"` only the `/Yc` object and those built without the PCH
+emit the header's dynamic initializers. The Lithtech project was most
+likely built with a `bdefs.h` precompiled header (the game DLLs' `/Yu`
+already shows the effect, 20 groups in CShell.dll). Not tried: a PCH
+changes code generation elsewhere too (CAIGoalMgr::HandleCommand moved
+with one header edit), the build would have to make the `.pch` before
+any other object, and the gain is only the surplus `_$E` functions,
+which are not scored. **SndDrv.dll's 30** are the scorer's `small` class
+(functions almost all relocation, 162 bytes, not verifiable), not
+mismatches. **GameSpy.dll's 6 nears** are block layout and register
+choices (IsValidKeyName's early return, ToWideString's lea/shl,
+SBCallback keeping its bool on the stack); tried, not found.
+
 **Where it stands / next** (stopped here: score recorded at
-`Lithtech.exe` 6,877 identical, 96.1%; `server.dll` 2,741, 96.2%;
+`Lithtech.exe` 6,878 identical, 96.2%; `server.dll` 2,741, 96.3%;
 SndDrv.dll 225) (breadth first, per module, with `tools/fndiff.py`,
 `o2gap.py`, `vtabcheck.py`, `uncovered.py`; `progress.py --nears=<target>`
 pairs some rows wrongly where a function's CSV extent is split, so check
 each with fndiff against the retail address first; fndiff on
 `--image=out/spdemo/Lithtech-readable.exe` reads SecuROM's calls put
-back; a split function's interior rows go into the screen-exclude files):
-- unwritten, small: Lithtech.exe 19 rows (2 KB: the C runtime's pieces,
-  folded thunks, CClassMgr's empty stubs at 0x403d70, 0x404730),
-  server.dll 7;
-- structural nears not yet done: DrawDynamicParticles (pEffect kept in a
-  register), CModelMgr::ForEach (_Inc inlined), MarkSectionBreaks
-  (Lightmap_Texture, != inlined into ==), LoadLightGroup (push_front not
-  inlined in the exe's copy), LoadRenderStyle (retail calls string's
-  c_str out of line);
+back; a split function's interior rows go into the screen-exclude files,
+missed starts into extent-splits.csv):
+- structural nears tried again and left: DrawDynamicParticles (pEffect
+  in a register), CModelMgr::ForEach (_Inc inlined), MarkSectionBreaks
+  (Lightmap_Texture), LoadLightGroup (push_front not inlined in the
+  exe's copy), LoadRenderStyle (retail calls string's c_str out of line):
+  each is an inlining or register decision no source form tried moves;
 - nears left as register allocation or scheduling only (tried, no source
-  shape found): MoveObject, RotateWorldModel, StairStep, Collide,
-  QueueShadows, d3d_RenderWorldWithAggregate, r_LoadSystemTexture,
-  CD3D_RenderWorld::Load and Draw, BuildDeviceList (four stack slots),
+  shape found): d3d_DrawPolyGrid (one imul order; the expression and
+  statement orders tried), MoveObject, RotateWorldModel, StairStep,
+  Collide, QueueShadows, d3d_RenderWorldWithAggregate,
+  r_LoadSystemTexture, CD3D_RenderWorld::Load and Draw, BuildDeviceList,
   CreateDevice, BuildFontTable, MoveAttachment, LoadPixelShader,
   SetObjectFlags, sm_AllocateID, SendAllObjectsUnguaranteed,
-  SetTransformMode, ps_UpdateParticleBoundingBox, the DrawPolyGrid imul
-  order;
+  SetTransformMode, ps_UpdateParticleBoundingBox;
 - the textured lightmap sections have no constructors now (round 2);
   watch the modern build for code that relied on them.
 
