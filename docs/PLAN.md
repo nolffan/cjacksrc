@@ -1106,6 +1106,19 @@ Round 1 (branch `cshell`), the items 8b leaves open:
   server (CServerSaveLoadMgr::HandleLoadGame) has no checkpoint case yet
   and nothing writes the checkpoint save (Object.lto has the strings
   "CheckpointSave" and "Checkpoint"); until then the entry never shows.
+- The auto targeting (aim assist) is Contract J.A.C.K.'s: CAutoTargetMgr
+  (0x10003770..0x10004811, FEAR's AutoTargetMgr is its descendant) updated
+  by CPlayerMgr::Update after the lean, aiming GetFireVectors' first
+  person shots once locked on; CAimMagnetFX (0x10001e70..0x10001f3a, its
+  SFX_AIMMAGNET_ID bank and message); the skeletons' Node%dAutoTarget
+  (CModelButeMgr's node 0xb9, at most eight a skeleton) and
+  COMMAND_ID_MANUALAIM toggling it off. A weapon's UseAutoTarget decides:
+  0 never, 1 on easy, 2 always. Left: the locked-on crosshair
+  (CHUDCrosshair::Render 0x1005571d draws at GetCrosshairPos; ours is
+  NOLF2's), the vehicle weapon's aim (0x10004682), CPlayerMgr's
+  m_bManualAim at its retail offset (0x1cd; ours is the last member), and
+  **for the game package** the server's AimMagnet objects (Object.lto
+  has AimMagnet and CAimMagnetPlugin) that create the magnets.
 - Where it stops: CScreenJoin is NOLF2's (WON); retail's
   (0x100c8f40..0x100d09c0, about 30 KB with its sort instantiations) is a
   GameSpy browser with a port column, a game type filter and nine sort

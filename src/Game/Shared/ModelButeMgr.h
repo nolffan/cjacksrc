@@ -21,6 +21,9 @@
 
 // Defines
 
+// RETAIL: the most nodes of a skeleton the auto targeting aims at
+#define	MAX_MODELBMGR_AUTOTARGET_NODES (8)
+
 #define NODEFLAG_NONE			(0)		// This node has no special flags
 #define	NODEFLAG_CRITICALHIT	(1)		// This node is a "critical hit" node
 #define	NODEFLAG_TALK			(2)		// This node is a "talk" (mouth) node
@@ -158,6 +161,7 @@ class CModelButeMgr : public CGameButeMgr
         LTFLOAT         GetSkeletonNodeHitRadius(ModelSkeleton eModelSkeleton, ModelNode eModelNode);
         LTFLOAT         GetSkeletonNodeHitPriority(ModelSkeleton eModelSkeleton, ModelNode eModelNode);
 		bool			GetSkeletonNodeAttachSpears(ModelSkeleton eModelSkeleton, ModelNode eModelNode);
+		bool			GetSkeletonNodeAutoTarget(ModelSkeleton eModelSkeleton, ModelNode eModelNode);
         ModelTrackingNodeGroup GetSkeletonTrackingNodesLookAt(ModelSkeleton eModelSkeleton);
         ModelTrackingNodeGroup GetSkeletonTrackingNodesAimAt(ModelSkeleton eModelSkeleton);
 
@@ -332,6 +336,7 @@ class CModelButeMgr::CNode
 			m_fHitRadius = 10.0f;
 			m_fHitPriority = 0.0f;
 			m_bAttachSpears = true;
+			m_bAutoTarget = false;
 		}
 
 	public :
@@ -348,6 +353,7 @@ class CModelButeMgr::CNode
         LTFLOAT         m_fHitRadius;
         LTFLOAT         m_fHitPriority;
 		bool			m_bAttachSpears;
+		bool			m_bAutoTarget;	// RETAIL: Contract J.A.C.K.'s (0xb9)
 };
 
 class CModelButeMgr::CSkeleton

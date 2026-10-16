@@ -12,6 +12,7 @@
 
 #include "stdafx.h"
 #include "ClientWeapon.h"
+#include "AutoTargetMgr.h"
 #include "VarTrack.h"
 #include "LayoutMgr.h"
 #include "PlayerStats.h"
@@ -4928,9 +4929,22 @@ bool CClientWeapon::GetFireVectors( LTVector *vU, LTVector *vR, LTVector *vF,
 
 		// get the axis orientation of the camera
 		g_pLTClient->GetObjectRotation( hCamera, &rRot );
-		*vU = rRot.Up();
-		*vR = rRot.Right();
-		*vF = rRot.Forward();
+
+		// RETAIL: aimed by the auto targeting when it has locked on
+		// (CShell 0x100266f7)
+		if ( CAutoTargetMgr::Instance().IsLockedOn() )
+		{
+			*vF = CAutoTargetMgr::Instance().GetTargetVector();
+			*vR = vF->Cross( rRot.Up() );
+			*vU = vR->Cross( *vF );
+			vU->Normalize();
+		}
+		else
+		{
+			*vU = rRot.Up();
+			*vR = rRot.Right();
+			*vF = rRot.Forward();
+		}
 	}
 	else
 	{

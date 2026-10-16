@@ -105,6 +105,7 @@ static char s_szBuffer[1024];
 	#define MODELBMGR_SKELETON_NODE_RADIUS						"Node%dRadius"
 	#define MODELBMGR_SKELETON_NODE_PRIORITY					"Node%dPriority"
 	#define MODELBMGR_SKELETON_NODE_ATTACHSPEARS				"Node%dAttachSpears"
+	#define MODELBMGR_SKELETON_NODE_AUTOTARGET					"Node%dAutoTarget"	// RETAIL: Contract J.A.C.K.'s
 
 #define MODELBMGR_TRACKINGNODES			"TrackingNodes"
 
@@ -283,6 +284,7 @@ LTBOOL CModelButeMgr::Init(const char* szAttributeFile)
 
 		m_aSkeletons[iSkeleton].m_aNodes = debug_newa(CModelButeMgr::CNode, m_aSkeletons[iSkeleton].m_cNodes);
 
+		uint8 nAutoTargetNodes = 0;
 		for ( int iNode = 0 ; iNode < m_aSkeletons[iSkeleton].m_cNodes ; iNode++ )
 		{
 			// Get the node's name
@@ -338,6 +340,16 @@ LTBOOL CModelButeMgr::Init(const char* szAttributeFile)
 
 			sprintf( s_aAttName, MODELBMGR_SKELETON_NODE_ATTACHSPEARS, iNode );
 			m_aSkeletons[iSkeleton].m_aNodes[iNode].m_bAttachSpears = !!m_buteMgr.GetInt( s_aTagName, s_aAttName, 1 );
+
+			// RETAIL: CShell 0x1008ae11: the nodes the auto targeting aims at,
+			// at most MAX_MODELBMGR_AUTOTARGET_NODES of them
+			sprintf( s_aAttName, MODELBMGR_SKELETON_NODE_AUTOTARGET, iNode );
+			if( nAutoTargetNodes < MAX_MODELBMGR_AUTOTARGET_NODES )
+			{
+				m_aSkeletons[iSkeleton].m_aNodes[iNode].m_bAutoTarget = !!m_buteMgr.GetInt( s_aTagName, s_aAttName, 0 );
+				if( m_aSkeletons[iSkeleton].m_aNodes[iNode].m_bAutoTarget )
+					nAutoTargetNodes++;
+			}
 		}
 	}
 
@@ -1251,6 +1263,16 @@ bool CModelButeMgr::GetSkeletonNodeAttachSpears( ModelSkeleton eModelSkeleton, M
 	if (eModelSkeletonInvalid == eModelSkeleton) return 0.0f;
 
 	return m_aSkeletons[eModelSkeleton].m_aNodes[eModelNode].m_bAttachSpears;
+}
+
+// RETAIL: CShell 0x10089b20
+bool CModelButeMgr::GetSkeletonNodeAutoTarget( ModelSkeleton eModelSkeleton, ModelNode eModelNode )
+{
+	_ASSERT(eModelSkeleton >= 0 && eModelSkeleton < m_cSkeletons);
+	_ASSERT(eModelNode >= 0 && eModelNode < m_aSkeletons[eModelSkeleton].m_cNodes);
+	if (eModelSkeletonInvalid == eModelSkeleton) return false;
+
+	return m_aSkeletons[eModelSkeleton].m_aNodes[eModelNode].m_bAutoTarget;
 }
 
 ModelTrackingNodeGroup CModelButeMgr::GetSkeletonTrackingNodesLookAt(ModelSkeleton eModelSkeleton)

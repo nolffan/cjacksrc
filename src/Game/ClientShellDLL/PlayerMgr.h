@@ -102,6 +102,7 @@ public:
 
     LTBOOL		IsPlayerMovementAllowed()       { return m_bAllowPlayerMovement;}
     LTBOOL      IsZoomed()          const       { return (m_nZoomView > 0 || m_bZooming); }
+	bool		IsManualAim()		const		{ return m_bManualAim; }
 	LTBOOL		IsZooming()			const		{ return m_bZooming; }
     LTBOOL      IsUnderwater()      const       { return IsLiquid(m_eCurContainerCode); }
     bool		UsingSpyVision()    const       { return m_bSpyVision; }
@@ -495,6 +496,10 @@ protected:
 	float		m_fMultiAttachDeathCamTimer;
 
 	bool		m_bLerpAttachedCamera;
+
+	// RETAIL: Contract J.A.C.K.'s manual aim (COMMAND_ID_MANUALAIM); retail's
+	// member is at 0x1cd, kept here at the end for now
+	bool		m_bManualAim;
 };
 
 extern CPlayerMgr* g_pPlayerMgr;

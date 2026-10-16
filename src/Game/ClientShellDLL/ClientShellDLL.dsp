@@ -47,6 +47,10 @@ LINK32=link.exe
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
+SOURCE=.\AimMagnetFX.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\ActivateObjectFX.cpp
 # End Source File
 # Begin Source File
@@ -64,6 +68,10 @@ SOURCE=..\Shared\AssertMgr.cpp
 # Begin Source File
 
 SOURCE=..\Shared\AttachButeMgr.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\AutoTargetMgr.cpp
 # End Source File
 # Begin Source File
 
@@ -1166,6 +1174,10 @@ SOURCE=..\Shared\WinUtil.cpp
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
+SOURCE=.\AimMagnetFX.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\ActivateObjectFX.h
 # End Source File
 # Begin Source File
@@ -1175,6 +1187,10 @@ SOURCE=..\Shared\ActivateTypeMgr.h
 # Begin Source File
 
 SOURCE=..\Shared\ActivationData.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\AutoTargetMgr.h
 # End Source File
 # Begin Source File
 

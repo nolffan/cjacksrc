@@ -40,6 +40,7 @@
 #include "ChassisFX.h"
 #include "ChassisButeMgr.h"
 #include "GadgetTargetFX.h"
+#include "AimMagnetFX.h"
 #include "GameClientShell.h"
 #include "CharacterFX.h"
 #include "BodyFX.h"
@@ -198,6 +199,7 @@ CBankedList<CTriggerFX> g_SFXBank_Trigger;
 CBankedList<CRadarObjectFX> g_SFXBank_RadarObject;
 CBankedList<CActivateObjectFX> g_SFXBank_ActivateObject;
 CBankedList<ChassisPieceFX> g_SFXBank_ChassisPiece;
+CBankedList<CAimMagnetFX> g_SFXBank_AimMagnet;	// RETAIL: Contract J.A.C.K.'s
 CBankedList<ChassisFX> g_SFXBank_Chassis;
 
 
@@ -573,6 +575,19 @@ void CSFXMgr::HandleSFXMsg(HLOCALOBJ hObj, ILTMessage_Read *pMsg)
 			ChassisCS.nActivateType = pMsg->Readuint8();
 
 			CreateSFX(nId, &ChassisCS);
+		}
+		break;
+
+		// RETAIL: CShell 0x100e28d4
+		case SFX_AIMMAGNET_ID :
+		{
+			AIMMAGNETCREATESTRUCT AimMagnetCS;
+
+			AimMagnetCS.hServerObj = hObj;
+			AimMagnetCS.m_nTeamId = pMsg->Readuint8();
+			AimMagnetCS.m_hTarget = pMsg->ReadObject();
+
+			CreateSFX(nId, &AimMagnetCS);
 		}
 		break;
 
@@ -990,6 +1005,12 @@ void CSFXMgr::DeleteSFX(CSpecialFX* pFX)
 		}
 		break;
 
+		case SFX_AIMMAGNET_ID :
+		{
+			g_SFXBank_AimMagnet.Delete((CAimMagnetFX*)pFX);
+		}
+		break;
+
 		case SFX_GADGETTARGET_ID :
 		{
 			g_SFXBank_GadgetTarget.Delete((CGadgetTargetFX*)pFX);
@@ -1342,6 +1363,12 @@ CSpecialFX* CSFXMgr::CreateSFX(uint8 nId, SFXCREATESTRUCT *psfxCreateStruct,
 		case SFX_CHASSIS_ID :
 		{
 			pSFX = g_SFXBank_Chassis.New();
+		}
+		break;
+
+		case SFX_AIMMAGNET_ID :
+		{
+			pSFX = g_SFXBank_AimMagnet.New();
 		}
 		break;
 
