@@ -349,11 +349,15 @@ dedicated server (package 7).
     CreateGameSpyBrowsers, CMissionMgr::SetServerLevel). The preload
     screen's WON CD key validation is gone (retail keeps only the state):
     it crashed a client joining by +join. A single-player level loads
-    through the new path (`make test` with M01S01). `make mptest` (the
-    boot branch's harness, run here from a copy) cannot judge yet: the
-    dedicated server shows "ERROR - Unable to use the selected network
-    service." and loads no world, with or without these changes, so the
-    client waits at "Connecting to server". Still to do: the loop at the
+    through the new path (`make test` with M01S01). `make mptest` joins
+    once the client's registry has a CD key (HKLM ...\Contract Jack\1.0,
+    CDKey, any key of the right form): with none the client's GameSpy
+    response is empty and the server's CD key check rejects it
+    (MID_HANDSHAKE_CDKEYREJECTED, "Disconnected(4)"), as an all-retail
+    run in the same harness does too; with one, the check times out
+    without GameSpy's server and GameSpy lets the client in, as retail's
+    SDK does. The harness (build/mptest.sh) should write a CD key, as the
+    retail installer does. Still to do: the loop at the
     end of retail OnClientEnterWorld (each other player's
     0x10110810(hClient, pPlayer), a CJ player state sent to the new
     client), CPlayerObj's handshake flag (unused now), CRC32's
