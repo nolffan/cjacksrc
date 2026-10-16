@@ -385,15 +385,19 @@ dedicated server (package 7).
   - CShell's CPlayerMgr::UpdateContainers (0x1009fd80) has been near
     (one move scheduled differently) since the WEAPON/CWeaponMgr commit,
     not since the merge; reverting WeaponMgr.h did not bring it back.
-  - CPlayerMgr's CJ code: StartWeaponRecoil (CamRecoil* console
-    variables, 0x10099ce0), UpdatePlayerInfo's caching (0x1009f725).
+  - CPlayerMgr's recoil: done (StartWeaponRecoil 0x10099ce0 and
+    DecayWeaponRecoil 0x10098b80, both size-exact nears: one store
+    scheduled differently, one jump sense); NOLF2's fire jitter and its
+    console variables are gone. Still: UpdatePlayerInfo's caching
+    (0x1009f725), UpdateWeaponModel's vehicle branch.
+  - From the coordinator: the game's code never calls LTStrCat (nothing
+    to try there).
   - CGameClientShell (+8/+24), CCharacterFX (+8 from 0x90), CHUDMgr.
   - The GameSpy server browser, Demolition (BaseGameOptions and its
     subclasses, CDemolitionMissionMgr, the host options screen), AimMagnet
     and GunMount.
-  - From the coordinator: try the engine's LTStrCat early return in the
-    game's own copies; GAME_NAME's string sits in another object's data
-    in all four images.
+  - From the coordinator: GAME_NAME's string sits in another object's
+    data in all four images (not looked at).
 - **Tools** (not committed, one-offs under out/): rtti.py (vtables by
   RTTI), vtcmp.py (a class's vtable, retail beside ours), ctorcmp.py
   (constructor store offsets aligned), place.py (the scoreboard's
