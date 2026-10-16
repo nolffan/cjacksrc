@@ -342,31 +342,46 @@ dedicated server (package 7).
   members in their retail places; CVehicleWeapon (0x1010c810..0x1010cf45)
   and CVehicleMgr's copy of it. The chassis's update message is a retail
   bug (RETAIL_BUGS.md, MODERN.md GAME-2).
+- **Multiplayer join (this round)**: our client and server join each
+  other, and each joins retail's (the mixed runs: a game directory whose
+  `custom/` holds our CShell and retail's Object.lto or the other way
+  round; the client loads CShell from it, the server Object.lto). What it
+  took: retail's CRC32 goes on over the upper-cased file title after the
+  bytes, and the weapons and modelbutes CRCs sum more files
+  (CWeaponMgr::GetFileCRC 0x10111510, CModelButeMgr::GetFileCRC
+  0x1008a740); one MPMissions.txt for deathmatch and doomsday (with the
+  DE_ worlds and SelectedWeapon); CPlayerScore without tags and the
+  server app's shell update with two values per player (with three, the
+  server app spun for ever reading past the message once a player
+  joined: that was the "loading screen for ever"); the pickup messages'
+  activated flag. A join still needs a CD key in the client's registry
+  (HKLM ...\Contract Jack\1.0, CDKey, any key of the right form): with
+  none, client and server alike reject it ("CD-Key verification failed."
+  now, as retail says it), as an all-retail run does. **The harness
+  (build/mptest.sh, boot's) should write one**; a copy with the key is
+  how the runs above were made. The last steps of OnClientEnterWorld are
+  in (each other player's weapon sound loop to the new client).
+- **Done this round** (after the join): CPlayerObj's SECRET (mission
+  stats count it, IC_SECRET_ID, the client's "You found a secret." and
+  sound) and ChangeModel commands, its overlay set (saved, shown again on
+  load), its vehicle bytes and weapon sound loop (saved), its retail
+  members up to +0x2ac0 (MissionStats has one more counter); the pickups'
+  activated flag on both sides (UpdatePlayerStats reads the message
+  itself, byte-identical); CInterfaceMgr::Disconnected's handshake
+  messages; the scoreboard without tags.
 - **Where it stopped / next**: breadth first by near count.
-  - **Connection flow: done** (OnAddClient, ProcessHandshake,
-    UpdateClientCDKeyChecks, BootClients, KickClientData,
-    OnClientEnterWorld, RespawnPlayer; the client's HandleMsgHandshake,
-    CreateGameSpyBrowsers, CMissionMgr::SetServerLevel). The preload
-    screen's WON CD key validation is gone (retail keeps only the state):
-    it crashed a client joining by +join. A single-player level loads
-    through the new path (`make test` with M01S01). `make mptest` joins
-    once the client's registry has a CD key (HKLM ...\Contract Jack\1.0,
-    CDKey, any key of the right form): with none the client's GameSpy
-    response is empty and the server's CD key check rejects it
-    (MID_HANDSHAKE_CDKEYREJECTED, "Disconnected(4)"), as an all-retail
-    run in the same harness does too; with one, the check times out
-    without GameSpy's server and GameSpy lets the client in, as retail's
-    SDK does. The harness (build/mptest.sh) should write a CD key, as the
-    retail installer does. Still to do: the loop at the
-    end of retail OnClientEnterWorld (each other player's
-    0x10110810(hClient, pPlayer), a CJ player state sent to the new
-    client), CPlayerObj's handshake flag (unused now), CRC32's
-    two-argument CalcFileCRC and the CRCs retail takes (weapons'
-    0x10111510, the model butes' 0x1008a740).
+  - **Connection flow: done** (see above). The handshake flag of
+    CPlayerObj is unused. CPlayerObj::SaveOverlays (0x10110900) is near
+    (retail inlines the set iteration), HandleOverlayMessage near.
+  - mixC (our client, retail server) showed no weapon before the pickup
+    messages carried their flag; with it, it does.
   - CHUDCarrying: done (chassis pieces' icons, the row of keys).
   - CVehicleMgr: its layout is done; what the new members are for, and
     its use of the weapon (SetPhysicsModel 0x10107b50, the lure message
     0x101096d0, UpdateWeaponModel's vehicle branch 0x1009ee04), are not.
+    On the server CPlayerObj's vehicle bytes (+0x2ab3 the weapon, +0x2ab4
+    the VehicleButeMgr id) are in place and saved, but nothing sets them
+    yet (Object 0x10109b63, 0x10109c27; 0x10109c50 resets them).
   - CShell's CPlayerMgr::UpdateContainers (0x1009fd80) has been near
     (one move scheduled differently) since the WEAPON/CWeaponMgr commit,
     not since the merge; reverting WeaponMgr.h did not bring it back.
