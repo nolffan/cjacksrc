@@ -222,6 +222,10 @@ enum LoadGameType
     #define MID_HANDSHAKE_LETMEIN               2   // What, this password?  Client to server
     #define MID_HANDSHAKE_DONE                  3   // You'll do just fine.  Server to client
     #define MID_HANDSHAKE_WRONGPASS             4   // Wrong password.  Server to client
+	// cjacksrc: Contract J.A.C.K.'s (Object.lto 0x100dd4c5, 0x100de655, 0x100e05a6)
+    #define MID_HANDSHAKE_CDKEYREJECTED         5   // GameSpy rejected the CD key.  Server to client
+    #define MID_HANDSHAKE_BADFILES              6   // The client's files differ.  Server to client
+    #define MID_HANDSHAKE_BANNED                7   // The client is banned.  Server to client
     // Handshake version state
 
 #define MID_GADGETTARGET						246 // Both ways, handling of a gadget target

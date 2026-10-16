@@ -34,7 +34,6 @@ protected:
 	virtual void	CreateInterfaceSFX();
 
 	void			FirstUpdate( );
-	bool			UpdateCDKeyValidation( );
 
 	std::string		m_layout;
 	bool			m_bWaitingToExit;

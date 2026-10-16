@@ -25,13 +25,6 @@ namespace
 {
 }
 
-static void FailCDKey( )
-{
-	MBCreate mb;
-	g_pInterfaceMgr->ShowMessageBox(IDS_CDKEY_INVALID,&mb);
-	g_pInterfaceMgr->SwitchToScreen(SCREEN_ID_MAIN);
-}
-
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
@@ -94,7 +87,9 @@ bool CScreenPreload::UpdateInterfaceSFX()
 		iter++;
 	}
 
-	bAnyActive = bAnyActive || !UpdateCDKeyValidation( );
+	// RETAIL: 0x100da7b9 Contract J.A.C.K. does not validate the CD key
+	// here: GameSpy checks it as the client joins (ProcessHandshake).
+	bAnyActive = bAnyActive || ( m_eValidatingCDKeyState != kValidatingCDKeyState_None );
 
 	if (!bAnyActive )
 	{
@@ -116,91 +111,6 @@ bool CScreenPreload::UpdateInterfaceSFX()
 	return bAnyActive;
 }
 
-// --------------------------------------------------------------------------- //
-//
-//	ROUTINE:	CScreenPreload::UpdateCDKeyValidation
-//
-//	PURPOSE:	Updates the cdkey validation state.
-//
-//	RETURN:		true when validation complete.
-//
-// --------------------------------------------------------------------------- //
-
-bool CScreenPreload::UpdateCDKeyValidation( )
-{
-	switch( m_eValidatingCDKeyState )
-	{
-		case kValidatingCDKeyState_None:
-		{
-			// Not validating cdkey, so we're done.
-			return true;
-			break;
-		}
-		case kValidatingCDKeyState_Start:
-		{
-			IServerDirectory *pServerDir = g_pClientMultiplayerMgr->GetServerDir();
-			if( !pServerDir )
-			{
-				pServerDir = g_pClientMultiplayerMgr->CreateServerDir( );
-			}
-
-			// Need to ask serverdir what the cdkey is from registry then set it.
-			std::string sCDKey;
-			pServerDir->GetCDKey( &sCDKey );
-			if( !pServerDir->SetCDKey( sCDKey.c_str( )))
-			{
-				FailCDKey( );
-				return false;
-			}
-
-			if( !pServerDir->QueueRequest(IServerDirectory::eRequest_Validate_CDKey))
-			{
-				FailCDKey( );
-				return false;
-			}
-
-			m_eValidatingCDKeyState = kValidatingCDKeyState_Waiting;
-			break;
-		}
-		case kValidatingCDKeyState_Waiting:
-		{
-			IServerDirectory *pServerDir = g_pClientMultiplayerMgr->GetServerDir();
-
-			// Are we still waiting?
-			switch (pServerDir->GetCurStatus())
-			{
-				case IServerDirectory::eStatus_Processing : 
-				{
-					// Still waiting for response.
-					break;
-				}
-				case IServerDirectory::eStatus_Waiting : 
-				{
-					// If we reach the waiting state, we're done.
-					m_eValidatingCDKeyState = kValidatingCDKeyState_None;
-					return true;
-					break;
-				}
-				case IServerDirectory::eStatus_Error : 
-				{
-					FailCDKey( );
-					break;
-				}
-				default :
-				{
-					ASSERT(!"Unknown directory status encountered");
-
-					FailCDKey( );
-					break;
-				}
-			}
-
-			break;
-		}
-	}
-
-	return false;
-}
 
 
 void CScreenPreload::FirstUpdate( )
@@ -358,17 +268,7 @@ void CScreenPreload::FirstUpdate( )
 		iter++;
 	}
 	
-	// If we are not joining a lan game and the cdkey hasn't been validated,
-	// we need to do it now.
 	m_eValidatingCDKeyState = kValidatingCDKeyState_None;
-	if( !g_bLAN && g_pClientMultiplayerMgr->GetStartGameRequest( ).m_Type == STARTGAME_CLIENTTCP )
-	{
-		IServerDirectory *pServerDir = g_pClientMultiplayerMgr->GetServerDir();
-		if( !pServerDir || !pServerDir->IsCDKeyValid( ))
-		{
-			m_eValidatingCDKeyState = kValidatingCDKeyState_Start;
-		}
-	}
 }
 
 void CScreenPreload::CreateInterfaceSFX()

@@ -332,6 +332,7 @@ void CVehicleMgr::InitWorldData()
 {
 	m_dwControlFlags		= 0;
 	m_dwLastControlFlags	= 0;
+	m_bControlFlagsChanged	= false;
 
 	m_fVehicleBaseMoveAccel = 0.0f;
 
@@ -368,6 +369,7 @@ void CVehicleMgr::InitWorldData()
 
 	m_nPlayerLureId			= 0;
 	m_bResetLure			= false;
+	m_bHasLureTransform		= false;
 	m_hCurJumpVolume		= NULL;
 
 	m_bHaveJumpVolumeVel	= LTFALSE;
