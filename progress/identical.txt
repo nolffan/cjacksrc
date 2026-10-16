@@ -12703,8 +12703,11 @@ Lithtech.exe	sub_503c50
 Lithtech.exe	sub_503f00
 Lithtech.exe	sub_504570
 Lithtech.exe	sub_5045d0
+Lithtech.exe	sub_504610
+Lithtech.exe	sub_504db0
 Lithtech.exe	sub_504de0
 Lithtech.exe	sub_504e4f
+Lithtech.exe	sub_504e70
 Lithtech.exe	sub_504edd
 Lithtech.exe	sub_504f10
 Lithtech.exe	sub_504f70

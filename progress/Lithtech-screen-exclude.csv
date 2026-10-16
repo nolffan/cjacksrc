@@ -68,3 +68,6 @@ addr,reason
 0x0045e825,NOT A FUNCTION: interior block of pd_Update (0x0045e400): a pointer or jump target inside it split its extent
 0x004620fc,NOT A FUNCTION: interior block of SendAllObjectsUnguaranteed (0x00461ee0): a pointer or jump target inside it split its extent
 0x00505a4d,NOT A FUNCTION: interior block of DrawDynamicParticles (0x005058a0): a pointer or jump target inside it split its extent
+0x00504722,NOT A FUNCTION: interior block of CD3DRenderStateMgr::SetVertexShaderConstants (0x00504610): a pointer or jump target inside it split its extent
+0x00504753,NOT A FUNCTION: interior block of CD3DRenderStateMgr::SetVertexShaderConstants (0x00504610): a pointer or jump target inside it split its extent
+0x0050492f,NOT A FUNCTION: interior block of CD3DRenderStateMgr::SetVertexShaderConstants (0x00504610): a pointer or jump target inside it split its extent
