@@ -78,7 +78,7 @@ Every one is Visual C++ .NET 2003 (13.10.3077): `progress/COMPILERS.md`.
 | 5 | `gamespy`: `GameSpy.dll`: Monolith's wrapper from the image, GameSpy's SDK rolled back to 2003 | 2 | builds, retail's exports and behaviour (`build/gamespytest.sh`); 163/181 of Monolith's functions identical (below) |
 | 6 | `engine`: `Lithtech.exe` and `server.dll` from the Jupiter tree, trimmed to 2003, D3D8; the demos' engine for the SecuROM pages and the imports (a `demoimports.py` for these demos) | 2 | in progress: both build; `Lithtech.exe` 83.3%, `server.dll` 93.1% identical; converging (below) |
 | 7 | `apps`: the launcher `ContractJack.exe` and the dedicated server `ContractJackServer.exe` from NOLF2's Launcher and ServerApp | 2 | both build with retail's resources; `ContractJack.exe` 284/344 identical (98.9%), `ContractJackServer.exe` 550/644 (98.0%): what is left is ButeMgr's register allocation and EH funclets (below) |
-| 8 | `boot`: the built binaries in the game under Wine, to the menu, a level, saving and loading (`make test`, tools/playtest.sh) | 3-7 | |
+| 8 | `boot`: the built binaries in the game under Wine, to the menu, a level, saving and loading (`make test`, tools/playtest.sh) | 3-7 | single player boots to the menu, plays M01S01, quicksaves and quickloads; the dedicated server hosts a deathmatch world; our client and retail's join it as far as the loading screen (below) |
 | 9 | `match`: byte-matching, module by module, ratcheted by `make progress` | 3-7 | |
 | 10 | `modern`: the modern build (`CJACK_MODERN`): fixes (`RETAIL_BUGS.md`), widescreen, our Bink player on FFmpeg, as nolf2src's | 8 | |
 | 11 | `release`: `-private`/`-public` archives, install scripts from the player's own discs and 1.1 update (`tools/mkinstall.py`), and the GitHub Actions workflow building the four public archives with `make progress` on the legacy release | 8, 10 | the machinery is done (below); the run scripts (`linux-run.sh`) wait for the game to run |
@@ -810,6 +810,73 @@ NOLF2's file order. Recorded: the launcher 284 of 344 functions identical (98.9%
   score change); VersionMgr.cpp's NOLF2 network strings are client-only;
   ButeMgr's string holder change and hash (above) gained 13 and 12
   functions in CShell.dll and Object.lto.
+
+### 8. boot
+
+- `make test` (build/playtest.sh: tools/playtest.sh with Contract
+  J.A.C.K.'s names; TEST_GAME, TEST_WORLD, TEST_SCRIPT, TEST_NAME) and
+  `make mptest` (build/mptest.sh: a dedicated server and a client joining
+  it, under one Xvfb; MPTEST_WINEDEBUG, MPTEST_BT=1 for winedbg backtraces).
+  build/playtest-play.txt is the single-player script: to the main menu,
+  the first level, a little play, F6 quicksave, F9 quickload (with the
+  "This will end your current game" confirmation), shots.
+- Results on master 861c30e (engine round 5) plus this branch (and on
+  6b59e7b, engine round 4, before it): the game
+  runs to the main menu, loads M01S01 (its briefing), plays, quicksaves
+  and quickloads to the saved position. The control is our Lithtech.exe
+  and server.dll with retail's game DLLs (from GameDLL.rez, no `custom`):
+  it does the same script identically since round 4 (before it, the
+  missing ILTClient slot crashed it in its first frames). The retail
+  Lithtech.exe refuses to run (SecuROM: "No CD-ROM drive found").
+- Fixed here: `CNetMgr::GetLocalIpAddress` returned the driver's bool as
+  an LTRESULT, so `GetTcpIpAddress` said LT_ERROR on success and the
+  dedicated server stopped with "Unable to use the selected network
+  service" (status 2 from CGameServerShell::OnServerInitialized). Retail
+  converts it; server.dll 0x10029de0 and Lithtech.exe 0x451e90 now match.
+- Multiplayer under Wine, as far as it goes: Contract J.A.C.K. ships no
+  co-operative worlds (its CoopMissions.txt still names NOLF2's
+  `CP_c01s01`...; a co-op server waits in its level change for ever, in
+  retail too), so mptest hosts deathmatch. The server reads the missions
+  file the client writes when it starts (retail: `MPMissions.txt`); with
+  it, our server loads its world ("DoRunWorld completed"), as retail's
+  does. A client from the command line (`+join`) then:
+  - retail game DLLs on our engine, against the fully retail server:
+    "CD-Key verification failed" (no CD key in the registry and GameSpy's
+    servers are gone; the same with any server -- not ours to fix);
+  - ours: crashes in `CScreenPreload::UpdateCDKeyValidation` (CShell,
+    reading NULL): NOLF2's WON CD-key validation runs for a `+join`
+    (g_bLAN false) and `ClientMultiplayerMgr::CreateServerDir` returns
+    NULL in CJ. Retail has no such step: its `UpdateInterfaceSFX`
+    (CShell 0x100da750) tests a member at 0x7ac instead and never calls a
+    validation function. **For the game package.**
+  - ours with that step skipped (an experiment, not committed): connects,
+    gets its ID, enters the world (`Entering world
+    WORLDS\RETAILMULTIPLAYER\DM_VOLKOVSLAIR.DAT`, `MID_PLAYER_CONNECTED`)
+    and then stays on the loading screen: its switching-worlds state is
+    WaitForClient and its world is loaded, but it has no client object and
+    its player state stays PS_UNKNOWN, so `CPlayerMgr::IsPlayerInWorld`
+    never holds; both processes run normally (winedbg). The same on
+    master 861c30e (engine round 5).
+  - retail's client DLLs (from Update_v1x1.rez/GameDLL.rez) on our engine
+    against our server and Object.lto: first "Unable to join because the
+    game server is a different version" -- NOLF2's GAME_HANDSHAKE_VER 1.3;
+    retail's is 0x100 in both DLLs' .rdata, now fixed here
+    (VersionMgr.cpp). With that, retail's client shows the level's loading
+    screen (Volkov's Lair) and waits there like ours: so what is missing
+    is on the server side -- our Object.lto's handshake
+    (`CGameServerShell::RespawnPlayer` sends HELLO; `ProcessHandshake`
+    checks the LETMEIN CRCs and kicks on a mismatch, which the client
+    never hears of) or server.dll's connect sequence (the
+    FinishClientConnect stopgap, KickClient). **Next for game/engine.**
+- **For the game package**: retail writes one `MPMissions.txt` for
+  deathmatch and doomsday (Object.lto and CShell.dll both name it; ours
+  writes `DMMissions.txt` and `DDMissions.txt`); retail's main menu has no
+  LAN item (ours shows NOLF2's IDS_MULTIPLAYER_LAN item, labelled "TEAM
+  SAY:" by CJ's CRes); retail's version text reads "v1.1 - Retail" (ours
+  "CJ v1.1 -"); the briefing's "Press any key to continue." is orange in
+  retail, blue in ours, and its text wraps differently.
+- **For the engine package**: the console's "LithTech build
+  4294967295.4294967295" (the build number is unset).
 
 ### 11. release
 
