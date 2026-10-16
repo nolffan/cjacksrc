@@ -1534,16 +1534,28 @@ void CAIHuman::UpdateMovement()
 	// If last update did not use cheap movement,
 	// but this update does, force the AI to the ground.
 
+	// RETAIL: Object 0x1003b55b: Contract J.A.C.K. only forces AI that move
+	// to the floor (MoveToFloor) to the ground.
+
 	if( ( !bLastCheapMovement ) && m_bCheapMovement )
 	{
-		m_bForceGround = LTTRUE;
+		m_bForceGround = m_bMoveToFloor;
 	}
 
 	// Force dead AI to the ground, if they were not sitting or crouching.
 
+	bool bDeadOnLadder = false;
 	if( m_damage.IsDead() && m_pAnimationContext->IsPropSet( kAPG_Posture, kAP_Stand ) )
 	{
-		m_bForceGround = LTTRUE;
+		AITRACE( AIShowGoals, ( m_hObject, "DEAD FORCE GROUND: %d", m_bMoveToFloor ) );
+		m_bForceGround = m_bMoveToFloor;
+
+		// RETAIL: but not off a ladder.
+		AIVolume* pVolume = GetCurrentVolume();
+		if( pVolume && ( pVolume->GetVolumeType() == AIVolume::kVolumeType_Ladder ))
+		{
+			bDeadOnLadder = true;
+		}
 	}
 
 	if ( !m_bMove || m_bForceGround || m_bPosDirty)
@@ -1564,7 +1576,7 @@ void CAIHuman::UpdateMovement()
 	{
 		m_vMovePos = m_pMovementModifier->Update( m_hObject, GetDims(), GetPosition(), m_vMovePos, GetLastVolume() ); 
 	}
-	else if ( m_bCheapMovement || m_bForceGround )
+	else if ( ( m_bCheapMovement || m_bForceGround ) && !bDeadOnLadder )
 	{
 		AIASSERT( !IsSwimming() && !IsHovering(), m_hObject, "AI should be using a movement modifier!" );
 		if ( !GetAnimationContext()->IsPropSet(kAPG_Movement, kAP_ClimbUp) && !GetAnimationContext()->IsPropSet(kAPG_Movement, kAP_ClimbDown) &&

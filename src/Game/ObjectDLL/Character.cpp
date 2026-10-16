@@ -11,6 +11,7 @@
 // ----------------------------------------------------------------------- //
 
 #include "stdafx.h"
+#include <algorithm>
 #include "Character.h"
 #include "ChassisButeMgr.h"
 #include "iltserver.h"
@@ -276,6 +277,9 @@ static bool DamageFilterHook( GameBase *pObject, DamageStruct *pDamageStruct )
 }
 
 
+// RETAIL: Object 0x1024b9fc
+CCharacter::CharacterList CCharacter::m_lstCharacters;
+
 // ----------------------------------------------------------------------- //
 //
 //	ROUTINE:	CCharacter::CCharacter()
@@ -444,6 +448,10 @@ CCharacter::CCharacter() : GameBase(OT_MODEL)
 
 	m_nCarrying = CFX_CARRY_NONE;
 	m_pCarriedChassisPiece = LTNULL;
+
+	// RETAIL: Object 0x100a6100: Contract J.A.C.K. keeps every character
+	// in a list (heat-seeking projectiles look for targets in it).
+	m_lstCharacters.push_back( this );
 }
 
 // ----------------------------------------------------------------------- //
@@ -536,6 +544,13 @@ CCharacter::~CCharacter()
 
 	RemoveAggregate(m_pSearch);
 	debug_delete(m_pSearch);
+
+	// RETAIL: Object 0x100a630a
+	CharacterList::iterator iter = std::find( m_lstCharacters.begin( ), m_lstCharacters.end( ), this );
+	if( iter != m_lstCharacters.end( ))
+	{
+		m_lstCharacters.erase( iter );
+	}
 }
 
 

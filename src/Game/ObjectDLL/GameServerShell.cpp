@@ -3937,6 +3937,80 @@ LTBOOL CGameServerShell::UpdateGameServer()
 
 // ----------------------------------------------------------------------- //
 //
+//	ROUTINE:	CGameServerShell::UpdateGameSpy
+//
+//	PURPOSE:	RETAIL: Object 0x100dbcb0: the game's state the GameSpy
+//				listing shows, every five seconds
+//
+// ----------------------------------------------------------------------- //
+
+bool CGameServerShell::UpdateGameSpy()
+{
+	if( !m_pGameSpyServer )
+		return false;
+
+	uint32 nTime = GetTickCount( );
+	if( m_nLastPublishTime && ( nTime - m_nLastPublishTime ) <= 5000 )
+		return true;
+
+	m_nLastPublishTime = nTime;
+
+	ServerMissionSettings sms = g_pServerMissionMgr->GetServerSettings( );
+
+	char szValue[256];
+
+	// The world's name, without its path...
+
+	char szMapName[_MAX_FNAME];
+	_splitpath( m_sWorld, NULL, NULL, szMapName, NULL );
+	m_pGameSpyServer->SetServerProperty( "mapname", szMapName );
+
+	sprintf( szValue, "%d", sms.m_nScoreLimit );
+	m_pGameSpyServer->SetServerProperty( "fraglimit", szValue );
+
+	sprintf( szValue, "%d", sms.m_nTimeLimit );
+	m_pGameSpyServer->SetServerProperty( "timelimit", szValue );
+
+	CPlayerObj::PlayerObjList const& lstPlayers = CPlayerObj::GetPlayerObjList( );
+
+	m_pGameSpyServer->SetNumPlayers( lstPlayers.size( ));
+	sprintf( szValue, "%d", lstPlayers.size( ));
+	m_pGameSpyServer->SetServerProperty( "numplayers", szValue );
+
+	sprintf( szValue, "FriendlyFire %d; WeaponsStay %d; Rounds %d; RunSpeed %d",
+		sms.m_bFriendlyFire, sms.m_bWeaponsStay, sms.m_nRounds, sms.m_nRunSpeed );
+	m_pGameSpyServer->SetServerProperty( "options", szValue );
+
+	// Each player's name, score and ping...
+
+	char szKey[256];
+	int nPlayer = 0;
+	CPlayerObj::PlayerObjList::const_iterator iter;
+	for( iter = lstPlayers.begin( ); iter != lstPlayers.end( ); iter++, nPlayer++ )
+	{
+		CPlayerObj* pPlayer = *iter;
+
+		sprintf( szKey, "player_%d", nPlayer );
+		m_pGameSpyServer->SetServerProperty( szKey, pPlayer->GetNetUniqueName( ));
+
+		sprintf( szKey, "frags_%d", nPlayer );
+		sprintf( szValue, "%d", pPlayer->GetPlayerScore( )->GetScore( ));
+		m_pGameSpyServer->SetServerProperty( szKey, szValue );
+
+		float fPing = 0.0f;
+		g_pLTServer->GetClientPing( pPlayer->GetClient( ), fPing );
+		uint16 nPing = ( uint16 )( fPing + 0.5f );
+
+		sprintf( szKey, "ping_%d", nPlayer );
+		sprintf( szValue, "%d", nPing );
+		m_pGameSpyServer->SetServerProperty( szKey, szValue );
+	}
+
+	return true;
+}
+
+// ----------------------------------------------------------------------- //
+//
 //	ROUTINE:	CGameServerShell::AddClientToList
 //
 //	PURPOSE:	Adds the given client handle to our local list
@@ -4277,6 +4351,9 @@ void CGameServerShell::UpdateMultiplayer()
 
 	// Update game server info...
 	UpdateGameServer();
+
+	// RETAIL: 0x100def85: and the GameSpy listing.
+	UpdateGameSpy();
 
 	// RETAIL: 0x100def8c remove kicked clients, boot inactive ones.
 	BootClients();

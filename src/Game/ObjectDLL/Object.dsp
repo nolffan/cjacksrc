@@ -408,6 +408,10 @@ SOURCE=.\AIInformationVolumeMgr.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\AimMagnet.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\AIMovement.cpp
 # End Source File
 # Begin Source File
@@ -848,6 +852,10 @@ SOURCE=.\GlobalsInit.cpp
 # Begin Source File
 
 SOURCE=.\Group.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\GunMount.cpp
 # End Source File
 # Begin Source File
 
@@ -1789,6 +1797,10 @@ SOURCE=.\AIInformationVolumeMgr.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\AimMagnet.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\AIMovement.h
 # End Source File
 # Begin Source File
@@ -2330,6 +2342,10 @@ SOURCE=.\GlobalServerMgr.h
 # Begin Source File
 
 SOURCE=.\Group.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\GunMount.h
 # End Source File
 # Begin Source File
 

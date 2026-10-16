@@ -75,7 +75,7 @@ uint32 SurfaceToUserFlag(SurfaceType eSurfType);
 // ----------------------------------------------------------------------- //
 
 char* GetMovementSound(SurfaceType eSurfType, LTBOOL bLeftFoot,
-					   PlayerPhysicsModel eModel);
+					   PlayerPhysicsModel eModel, uint8 nVehicleId);
 
 // ----------------------------------------------------------------------- //
 //

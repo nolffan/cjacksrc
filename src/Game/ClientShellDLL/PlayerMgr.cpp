@@ -2869,7 +2869,7 @@ LTBOOL CPlayerMgr::OnCommandOn(int command)
 				{
 					// Vehicle Mgr now handles calling DoActivate(), just tell
 					// the vehicle mgr to get off the vehicle...
-					m_pMoveMgr->GetVehicleMgr()->SetPhysicsModel(PPM_NORMAL);
+					m_pMoveMgr->GetVehicleMgr()->SetPhysicsModel(PPM_NORMAL, 0xFF);
 					return LTTRUE;
 				}
 				else if (GetTargetMgr()->IsTargetInRange())

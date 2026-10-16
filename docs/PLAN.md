@@ -383,21 +383,41 @@ dedicated server (package 7).
   fires a vehicle's own weapon (CVehicleMgr::UpdateVehicleWeapon).
   Joins rechecked (ours, retail client/our server, our client/retail
   server) and M01S01 save/load.
-- **Client vehicles still NOLF2's**: CVehicleMgr (about 60 functions,
-  0x10104f40..0x1010c710; CJ's reads VehicleButes for handling and
-  sounds, has a tricycle, SetPhysicsModel(model, id, preset) 0x1010abe0)
-  and CCharacterFX's CFX_PHYSICSMODEL (38) and CPlayerVehicleFX's
-  PVFX_* messages and blinking flag are not done; the client's
-  SetPhysicsModel ignores the vehicle id. ClientShellDLL edits this
-  round (all for the vehicles and the player update): the .dsp and
-  GlobalClientMgr (CVehicleButeMgr), PlayerMgr (UpdatePlayerInfo,
-  UpdateWeaponModel), VehicleMgr (UpdateVehicleWeapon, CP_PHYSICSMODEL).
-- **Next on Object.lto** (largest unwritten): 0x10010000 (1296, after
-  CAI::HandleCommand), 0x10120620/0x1011f930/0x10121800/0x1011ed00
-  (CProjectile's CJ code), 0x100e5850 (after DoomsDayDevice),
-  0x100dbcb0 (GameSpy server keys), 0x1003b540 (AIHuman), 0x10035100/
-  0x10035370 (CAIGoalSniper), then layouts, the server browser,
-  Demolition, AimMagnet, GunMount.
+- **Vehicles, projectiles and new objects (round after)**: CVehicleMgr
+  is CJ's: handling, sounds, player-view model and weapon from the
+  vehicle's record (SetPhysicsModel(model, id, preset) 0x1010abe0, the
+  record's pitches and turn rates as VarTracks, SaveVehicleButes for the
+  cheat), reversing and braking against the motion (UpdateVehicleMotion,
+  UpdateVehicleSounds, the banking turn), the lure's saved offset
+  transform (Save/Load, PlayerLureFX::SetOffsetTransform), no light cycle
+  (gone from the enum too). The physics-model message carries the vehicle
+  id (CMoveMgr; CPlayerObj::WriteVehicleMessage 0x1010faa0, which also
+  sends CFX_PHYSICSMODEL); CCharacterFX keeps it in CHARCREATESTRUCT's
+  0x60/0x64 (the physics model and vehicle id: the two unknown bytes) and
+  plays the vehicle's own MP sounds; CPlayerVehicleFX blinks, moves and
+  plays the spawn FX (PVFX_*). SURFACE has CJ's per-vehicle-type sounds,
+  speed and impact FX (VehicleType%d_*, 6 types) instead of NOLF2's
+  snowmobile fields. Object.lto: CProjectile's fire sound and ignore-FX
+  word, range falloff (EffectiveVectorRange, VectorHalfDamageDist),
+  VectorImpactDebug, the vector filter skipping projectiles and weapon
+  items, heat-seeking projectiles (AMMO HeatSeeking*, UpdateHeatSeeking
+  0x10120620, CCharacter's list of characters); AimMagnet (server side;
+  CAimMagnetFX on the client is not written: SFX 60 is ignored there);
+  GunMount; the GameSpy listing's keys (UpdateGameSpy 0x100dbcb0); AIHuman
+  UpdateMovement's MoveToFloor and ladder case; CAIGoalSniper's SEEKPLAYER
+  and NORADIUS (functional, layout not retail's). ClientShellDLL edits
+  (all vehicle work): VehicleMgr, CMoveMgr, PlayerMgr (SetPhysicsModel
+  calls), PlayerLureFX.h, PlayerVehicleFX, CharacterFX. Joins (ours, mixed
+  both ways) and M01S01 save/load pass. Recorded: CShell.dll 5,442,
+  Object.lto 8,440 identical (100 unwritten, 678 unplaced).
+- **Where it stopped** (the coordinator's pause, after that commit).
+  Next: 0x10121800/0x10121550/0x10122330 are std::sort's for the
+  heat-seeking targets (ours instantiates its own); CJ's AI node
+  interface (AINode::GetStatus takes the AI first;
+  AIVolumePlayerInfo::FindViewNode takes a target, 0x10079e30) and the
+  sniper's FindNearestAttractorNode (0x10035550) on it; CAIHuman has 8
+  bytes more before m_bForceGround; the rest of the unwritten list,
+  Demolition, the server browser, GAME_NAME, the unplaced.
 - **Where it stopped / next**: breadth first by near count.
   - **Connection flow: done** (see above). The handshake flag of
     CPlayerObj is unused. CPlayerObj::SaveOverlays (0x10110900) is near

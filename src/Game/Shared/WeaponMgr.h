@@ -382,6 +382,14 @@ struct AMMO
 	bool	bServerRestricted;
 	bool	bCanServerRestrict;
 
+	// RETAIL: Contract J.A.C.K.'s heat-seeking projectiles (Object
+	// 0x10161d82): they turn toward the nearest character or AimMagnet in
+	// a cone ahead of them.
+	bool	bHeatSeeking;
+	float	fHeatSeekingRange;
+	float	fHeatSeekingAngle;			// Degrees, half the cone
+	float	fHeatSeekingRateOfTurn;		// Degrees per second
+
 private:
 	int             nNameId;
 	int             nMaxAmount;

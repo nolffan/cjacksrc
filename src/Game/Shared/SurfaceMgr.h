@@ -16,6 +16,9 @@
 #include "GameButeMgr.h"
 #include "TemplateList.h"
 #include "SurfaceDefs.h"
+#include "ButeListReader.h"
+#include <vector>
+#include <string>
 
 class CSurfaceMgr;
 struct CScaleFX;
@@ -29,7 +32,9 @@ extern CSurfaceMgr* g_pSurfaceMgr;
 #define SRF_MAX_FILE_PATH			64
 #define SRF_MAX_NAME_LENGTH			32
 #define SRF_MAX_FOOTSTEP_SNDS		2
-#define SRF_MAX_SNOWMOBILE_SNDS		2
+// RETAIL: Contract J.A.C.K.'s surfaces have sounds, a speed and an impact
+// FX for each kind of vehicle (VEHICLEBUTES::nSurfaceVehicleType).
+#define SRF_MAX_VEHICLE_TYPES		6
 #define SRF_MAX_IMPACT_SNDS			2
 #define SRF_MAX_SHELL_SNDS			1
 #define SRF_MAX_IMPACT_SCALEFX		5
@@ -39,9 +44,24 @@ extern CSurfaceMgr* g_pSurfaceMgr;
 #define SRF_MAX_EXIT_PSHOWERFX		5
 #define SRF_MAX_EXIT_POLYDEBRISFX	5
 
+struct SURFACEVEHICLE
+{
+	SURFACEVEHICLE() : fVelMult(1.0f) {}
+
+	CButeListReader	blrSnds;
+	float			fVelMult;
+	std::string		sImpactFX;
+};
+
 struct SURFACE
 {
 	SURFACE();
+	~SURFACE();
+
+	SURFACEVEHICLE const* GetVehicleType(uint8 nType) const
+	{
+		return (nType < SRF_MAX_VEHICLE_TYPES ? aVehicleTypes[nType] : LTNULL);
+	}
 
     LTBOOL   Init(CButeMgr & buteMgr, char* aTagName);
 	void	Cache(CSurfaceMgr* pSurfaceMgr);
@@ -85,9 +105,6 @@ struct SURFACE
 	char	szLtFootPrintSpr[SRF_MAX_FILE_PATH];
 	char	szRtFootStepSnds[SRF_MAX_FOOTSTEP_SNDS][SRF_MAX_FILE_PATH];
 	char	szLtFootStepSnds[SRF_MAX_FOOTSTEP_SNDS][SRF_MAX_FILE_PATH];
-	char	szSnowmobileSnds[SRF_MAX_SNOWMOBILE_SNDS][SRF_MAX_FILE_PATH];
-
-	LTFLOAT	fSnowVelMult;
 
     LTFLOAT  fFootPrintLifetime;
     LTVector vFootPrintScale;
@@ -132,8 +149,8 @@ struct SURFACE
 	// Underwater Exit FX
 	char	szUWExitFXName[SRF_MAX_NAME_LENGTH];
 	
-	// Snowmobile Impact FX
-	char	szSnowmobileImpactFXName[SRF_MAX_NAME_LENGTH];
+	// RETAIL: one for each SRF_MAX_VEHICLE_TYPES.
+	std::vector<SURFACEVEHICLE*> aVehicleTypes;
 
 };
 

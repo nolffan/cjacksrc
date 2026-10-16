@@ -46,6 +46,8 @@ class PlayerLureFX : public CSpecialFX
 
 		// Gets the offset to be used when following the lure.
 		LTransform const&	GetOffsetTransform( ) { return m_offsetTransform; }
+		// RETAIL: CShell 0x1010c770, out of line in VehicleMgr.obj.
+		bool			SetOffsetTransform( LTransform const& offsetTransform ) { m_offsetTransform = offsetTransform; return true; }
 
 		char const*		GetDeathFX( ) { return m_sDeathFX.c_str( ); }
 

@@ -29,6 +29,7 @@
 #include "VolumeBrushFX.h"
 #include "CMoveMgr.h"
 #include "VehicleMgr.h"
+#include "VehicleButeMgr.h"
 #include "PlayerCamera.h"
 #include "ClientWeaponBase.h"
 #include "ClientWeaponMgr.h"
@@ -1470,16 +1471,11 @@ void CCharacterFX::DoFootStepKey(HLOCALOBJ hObj, LTBOOL bForceSound)
 
     // Play one-off sounds on vehicles...
 
+	// RETAIL: Contract J.A.C.K. knows from CFX_PHYSICSMODEL.
 	PlayerPhysicsModel eModel = PPM_NORMAL;
     if (m_cs.bIsPlayer)
     {
-        uint32 dwFlags;
-	    g_pCommonLT->GetObjectFlags(m_hServerObject, OFT_User, dwFlags);
-
-        if (dwFlags & USRFLG_PLAYER_SNOWMOBILE)
-		{
-			eModel = PPM_SNOWMOBILE;
-		}
+		eModel = (PlayerPhysicsModel)m_cs.nPhysicsModel;
     }
 
 
@@ -1688,7 +1684,7 @@ void CCharacterFX::PlayMovementSound(LTVector vPos, SurfaceType eSurface,
 
 
 
-	pSound = GetMovementSound(eSurface, bLeftFoot, eModel);
+	pSound = GetMovementSound(eSurface, bLeftFoot, eModel, m_cs.nVehicleId);
 
 	if (pSound && *pSound)
 	{
@@ -1906,7 +1902,7 @@ void CCharacterFX::UpdateOnVehicle()
     uint32 dwFlags;
     g_pCommonLT->GetObjectFlags(m_hServerObject, OFT_User, dwFlags);
 
-    m_bOnVehicle = (dwFlags & USRFLG_PLAYER_SNOWMOBILE);
+    // RETAIL: Contract J.A.C.K. knows from CFX_PHYSICSMODEL.
 
 	// Play multiplayer sounds if appropriate...
 
@@ -2020,46 +2016,36 @@ void CCharacterFX::UpdateOnVehicle()
 
 void CCharacterFX::UpdateMultiVehicleSounds()
 {
-	if (m_bOnVehicle)
+	// RETAIL: CShell 0x10011fe0: the vehicle's own sounds; turning off is
+	// CFX_PHYSICSMODEL's.
+
+	if (!m_bOnVehicle) return;
+
+	// See if we just got on the vehicle...
+
+	if (!m_hVehicleSound)
 	{
-		// See if we just got on the vehicle...
+		VEHICLEBUTES* pVehicle = g_pVehicleButeMgr->GetVehicle(m_cs.nVehicleId);
+		if (!pVehicle) return;
 
-		if (!m_hVehicleSound)
-		{
-			// Play startup sound...
+		// Play startup sound...
 
-            const char* pSnd = "snd\\vehicle\\snowmobile\\startup.wav";
-            g_pClientSoundMgr->PlaySoundFromObject(m_hServerObject, (char *)pSnd,
-				DEFAULT_VEHICLE_RADIUS, SOUNDPRIORITY_PLAYER_HIGH);
-
-
-			// Play running sound...
-
-			uint32 dwFlags = PLAYSOUND_GETHANDLE | PLAYSOUND_LOOP;
-
-			pSnd = "snd\\vehicle\\snowmobile\\MP_Loop.wav";
-			m_hVehicleSound = g_pClientSoundMgr->PlaySoundFromObject(m_hServerObject,
-                (char *)pSnd, DEFAULT_VEHICLE_RADIUS, SOUNDPRIORITY_PLAYER_HIGH, dwFlags);
-		}
-		else
-		{
-			// Make sure the sound is playing from the correct position
-
-			LTVector vPos;
-			g_pLTClient->GetObjectPos(m_hServerObject, &vPos);
-			((ILTClientSoundMgr*)g_pLTClient->SoundMgr())->SetSoundPosition(m_hVehicleSound, &vPos);
-		}
-	}
-	else if (m_hVehicleSound)
-	{
-		g_pLTClient->SoundMgr()->KillSound(m_hVehicleSound);
-		m_hVehicleSound = LTNULL;
-
-		// Play turn-off sound
-
-        const char* pSnd = "snd\\vehicle\\snowmobile\\turnoff.wav";
-        g_pClientSoundMgr->PlaySoundFromObject(m_hServerObject, (char *)pSnd,
+		g_pClientSoundMgr->PlaySoundFromObject(m_hServerObject, (char*)pVehicle->sStartUpSnd.c_str(),
 			DEFAULT_VEHICLE_RADIUS, SOUNDPRIORITY_PLAYER_HIGH);
+
+		// Play running sound...
+
+		uint32 dwFlags = PLAYSOUND_GETHANDLE | PLAYSOUND_LOOP;
+		m_hVehicleSound = g_pClientSoundMgr->PlaySoundFromObject(m_hServerObject,
+			(char*)pVehicle->sMPLoop.c_str(), DEFAULT_VEHICLE_RADIUS, SOUNDPRIORITY_PLAYER_HIGH, dwFlags);
+	}
+	else
+	{
+		// Make sure the sound is playing from the correct position
+
+		LTVector vPos;
+		g_pLTClient->GetObjectPos(m_hServerObject, &vPos);
+		((ILTClientSoundMgr*)g_pLTClient->SoundMgr())->SetSoundPosition(m_hVehicleSound, &vPos);
 	}
 }
 
@@ -2477,6 +2463,36 @@ LTBOOL CCharacterFX::OnServerMessage(ILTMessage_Read *pMsg)
 		case CFX_CINEMATICAI_MSG:
 		{
 			m_cs.bIsCinematicAI = pMsg->Readbool();
+		}
+		break;
+
+		case CFX_PHYSICSMODEL:
+		{
+			// RETAIL: CShell 0x1001698a: got on or off a vehicle.
+
+			PlayerPhysicsModel eModel = (PlayerPhysicsModel)pMsg->Readuint8();
+			m_cs.nVehicleId = pMsg->Readuint8();
+
+			if (m_cs.nPhysicsModel == PPM_SNOWMOBILE && eModel != PPM_SNOWMOBILE)
+			{
+				if (m_hVehicleSound)
+				{
+					g_pLTClient->SoundMgr()->KillSound(m_hVehicleSound);
+					m_hVehicleSound = LTNULL;
+				}
+
+				// Play turn-off sound
+
+				VEHICLEBUTES* pVehicle = g_pVehicleButeMgr->GetVehicle(m_cs.nVehicleId);
+				if (pVehicle)
+				{
+					g_pClientSoundMgr->PlaySoundFromObject(m_hServerObject, (char*)pVehicle->sTurnOffSnd.c_str(),
+						DEFAULT_VEHICLE_RADIUS, SOUNDPRIORITY_PLAYER_HIGH);
+				}
+			}
+
+			m_cs.nPhysicsModel = eModel;
+			m_bOnVehicle = (eModel == PPM_SNOWMOBILE);
 		}
 		break;
 

@@ -12,6 +12,7 @@
 
 #include "stdafx.h"
 #include "Projectile.h"
+#include "AimMagnet.h"
 #include "ltengineobjects.h"
 #include "iltserver.h"
 #include "MsgIds.h"
@@ -60,6 +61,7 @@ static bool CanCharacterHitCharacter( CProjectile* pProjectile, HOBJECT hImpacte
 
 static CVarTrack g_vtInvisibleMaxThickness;
 static CVarTrack g_vtDeflectAngleRange;
+static CVarTrack g_vtVectorImpactDebug;	// RETAIL: Object 0x1011cbe7
 
 CVarTrack g_vtNetFriendlyFire;
 
@@ -79,6 +81,10 @@ namespace
 		if (!g_vtDeflectAngleRange.IsInitted())
 		{
 			g_vtDeflectAngleRange.Init(g_pLTServer, "DeflectAngleRange", LTNULL, 30.0f );
+		}
+		if (!g_vtVectorImpactDebug.IsInitted())
+		{
+			g_vtVectorImpactDebug.Init(g_pLTServer, "VectorImpactDebug", LTNULL, 0.0f );
 		}
 	}
 }
@@ -629,6 +635,201 @@ void CProjectile::Update()
 	{
 		Detonate(LTNULL);
 	}
+
+	// RETAIL: Object 0x10120f2e
+	if (m_pAmmoData->bHeatSeeking)
+	{
+		UpdateHeatSeeking();
+	}
+}
+
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	HeatSeekingFilterFn()
+//
+//	PURPOSE:	RETAIL: Object 0x1011d070: only the world and world models
+//				hide a target
+//
+// ----------------------------------------------------------------------- //
+
+static bool HeatSeekingFilterFn(HOBJECT hObj, void *pUserData)
+{
+	uint32 dwFlags;
+	g_pCommonLT->GetObjectFlags(hObj, OFT_Flags, dwFlags);
+	if (!(dwFlags & FLAG_SOLID)) return false;
+
+	if (IsMainWorld(hObj)) return true;
+
+	uint32 dwType;
+	g_pCommonLT->GetObjectType(hObj, &dwType);
+	return (dwType == OT_WORLDMODEL);
+}
+
+namespace
+{
+	// A heat-seeking projectile's possible target.
+	struct HeatSeekingTarget
+	{
+		LPBASECLASS	pObject;
+		float		fDistSqr;
+		bool		bCharacter;
+
+		bool operator<( HeatSeekingTarget const& other ) const { return fDistSqr < other.fDistSqr; }
+	};
+}
+
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	CProjectile::UpdateHeatSeeking()
+//
+//	PURPOSE:	RETAIL: Object 0x10120620: Contract J.A.C.K.'s heat-seeking
+//				projectiles turn toward the nearest character or AimMagnet
+//				they can see in a cone ahead of them
+//
+// ----------------------------------------------------------------------- //
+
+void CProjectile::UpdateHeatSeeking()
+{
+	if (m_pAmmoData->eType != PROJECTILE) return;
+
+	LTVector vPos;
+	g_pLTServer->GetObjectPos(m_hObject, &vPos);
+
+	LTRotation rRot;
+	g_pLTServer->GetObjectRotation(m_hObject, &rRot);
+	LTVector vForward = rRot.Forward();
+
+	float fRangeSqr = m_pAmmoData->fHeatSeekingRange * m_pAmmoData->fHeatSeekingRange;
+	float fHalfAngle = MATH_DEGREES_TO_RADIANS(m_pAmmoData->fHeatSeekingAngle);
+
+	CCharacter* pShooter = dynamic_cast<CCharacter*>(g_pLTServer->HandleToObject(m_hFiredFrom));
+
+	CCharacter::CharacterList const& lstCharacters = CCharacter::GetCharacterList();
+	AimMagnet::AimMagnetList const& lstAimMagnets = AimMagnet::GetAimMagnetList();
+
+	std::vector<HeatSeekingTarget> aTargets;
+	aTargets.reserve(lstCharacters.size() + lstAimMagnets.size());
+
+	// Characters...
+
+	CCharacter::CharacterList::const_iterator iterChar;
+	for (iterChar = lstCharacters.begin(); iterChar != lstCharacters.end(); iterChar++)
+	{
+		CCharacter* pChar = *iterChar;
+		if (pChar == pShooter || pChar->IsDead()) continue;
+
+		if (IsTeamGameType() && IsMyTeam(pChar->m_hObject)) continue;
+		if (!CanCharacterHitCharacter(this, pChar->m_hObject)) continue;
+
+		LTVector vTargetPos;
+		g_pLTServer->GetObjectPos(pChar->GetHitBox(), &vTargetPos);
+
+		LTVector vDir = vTargetPos - vPos;
+		float fDistSqr = vDir.MagSqr();
+		if (fDistSqr > fRangeSqr) continue;
+
+		vDir.Normalize();
+		if ((float)acos(vDir.Dot(vForward)) > fHalfAngle) continue;
+
+		HeatSeekingTarget target;
+		target.pObject = g_pLTServer->HandleToObject(pChar->GetHitBox());
+		target.fDistSqr = fDistSqr;
+		target.bCharacter = true;
+		aTargets.push_back(target);
+	}
+
+	// AimMagnets...
+
+	AimMagnet::AimMagnetList::const_iterator iterMagnet;
+	for (iterMagnet = lstAimMagnets.begin(); iterMagnet != lstAimMagnets.end(); iterMagnet++)
+	{
+		AimMagnet* pMagnet = *iterMagnet;
+
+		LTVector vTargetPos;
+		g_pLTServer->GetObjectPos(pMagnet->m_hObject, &vTargetPos);
+
+		LTVector vDir = vTargetPos - vPos;
+		float fDistSqr = vDir.MagSqr();
+		if (fDistSqr > fRangeSqr) continue;
+
+		float fDist = vDir.Mag();
+		if (fDist != 0.0f)
+		{
+			vDir *= 1.0f / fDist;
+		}
+
+		if ((float)acos(vDir.Dot(vForward)) > fHalfAngle) continue;
+
+		HeatSeekingTarget target;
+		target.pObject = pMagnet;
+		target.fDistSqr = fDistSqr;
+		target.bCharacter = false;
+		aTargets.push_back(target);
+	}
+
+	if (aTargets.empty()) return;
+
+	// Go for the nearest one we can see...
+
+	std::sort(aTargets.begin(), aTargets.end());
+
+	IntersectQuery qInfo;
+	IntersectInfo iInfo;
+	qInfo.m_From = vPos;
+	qInfo.m_Flags = INTERSECT_OBJECTS | IGNORE_NONSOLID | INTERSECT_HPOLY;
+	qInfo.m_FilterFn = HeatSeekingFilterFn;
+
+	std::vector<HeatSeekingTarget>::iterator iter;
+	for (iter = aTargets.begin(); iter != aTargets.end(); iter++)
+	{
+		g_pLTServer->GetObjectPos(iter->pObject->m_hObject, &qInfo.m_To);
+		qInfo.m_pActualIntersectUserData = iter->pObject->m_hObject;
+
+		if (!g_pLTServer->IntersectSegment(&qInfo, &iInfo))
+			break;
+	}
+
+	if (iter == aTargets.end()) return;
+
+	// Turn toward it as fast as we may...
+
+	LTVector vTargetPos;
+	g_pLTServer->GetObjectPos(iter->pObject->m_hObject, &vTargetPos);
+
+	LTVector vDir = vTargetPos - vPos;
+	float fDist = vDir.Mag();
+	if (fDist != 0.0f)
+	{
+		vDir *= 1.0f / fDist;
+	}
+
+	float fMaxTurn = g_pLTServer->GetFrameTime() * MATH_DEGREES_TO_RADIANS(m_pAmmoData->fHeatSeekingRateOfTurn);
+	float fAngle = (float)acos(vDir.Dot(vForward));
+
+	float fT = fMaxTurn / fAngle;
+	if (fT > 0.0f)
+	{
+		if (fT > 1.0f)
+			fT = 1.0f;
+	}
+	else
+	{
+		fT = 0.0f;
+	}
+
+	LTRotation rTarget(vDir, LTVector(0.0f, 1.0f, 0.0f));
+	LTRotation rNew;
+	rNew.Slerp(rRot, rTarget, fT);
+
+	m_vDir = rNew.Forward();
+	g_pLTServer->SetObjectRotation(m_hObject, &rNew);
+
+	LTVector vVel;
+	g_pPhysicsLT->GetVelocity(m_hObject, &vVel);
+	vVel = m_vDir * vVel.Mag();
+	g_pPhysicsLT->SetVelocity(m_hObject, &vVel);
+
+	m_vFirePos = vPos - (m_vDir * 1000.0f);
 }
 
 // ----------------------------------------------------------------------- //
@@ -1369,10 +1570,24 @@ void CProjectile::AddSpecialFX()
 
 		cMsg.Writeuint8(nShooterId);
 
+		// RETAIL: Object 0x1011edce: and which of the weapon's FX to skip.
+		cMsg.Writeuint16(g_wIgnoreFX);
+
 		LTRESULT ltResult;
 		ltResult = g_pLTServer->SetObjectSFXMessage(m_hObject, cMsg.Read());
 		ASSERT( LT_OK == ltResult );
 
+	// RETAIL: Object 0x1011ee15: Contract J.A.C.K. plays the fire sound
+	// where the projectile was fired.
+	{
+		CAutoMessage cSoundMsg;
+		cSoundMsg.Writeuint8(SFX_PLAYERSOUND_ID);
+		cSoundMsg.Writeuint8(PSI_FIRE);
+		cSoundMsg.Writeuint8(m_pWeaponData->nId);
+		cSoundMsg.Writeuint8(nShooterId);
+		cSoundMsg.WriteCompPos(m_vFirePos);
+		g_pLTServer->SendSFXMessage(cSoundMsg.Read(), m_vFirePos, 0);
+	}
 
 }
 
@@ -1456,7 +1671,11 @@ bool DoVectorFilterFn(HOBJECT hObj, void *pUserData)
 		// CharacterHitBox objects are used for vector impacts, don't
 		// impact on the character/body prop object itself....
 
-		if (IsCharacter(hObj) || IsBody(hObj) || IsKindOf(hObj, "Intelligence"))
+		// RETAIL: Object 0x1011f0be: nor other projectiles and dropped
+		// weapons.
+
+		if (IsCharacter(hObj) || IsBody(hObj) || IsKindOf(hObj, "Intelligence") ||
+			IsKindOf(hObj, "CProjectile") || IsKindOf(hObj, "WeaponItem"))
 		{
             return false;
 		}
@@ -1910,6 +2129,19 @@ LTBOOL CProjectile::HandleVectorImpact(IntersectInfo & iInfo, LTVector & vFrom,
 
 	if (!bHitWorld && eSurfType != ST_LIQUID)
 	{
+		// RETAIL: Object 0x1011fa67: Contract J.A.C.K.'s bullets lose half
+		// their damage every fVectorHalfDamageDist past the weapon's
+		// effective range.
+
+		LTVector vDist = iInfo.m_Point - vFirePos;
+		float fDist = vDist.Mag();
+
+		WEAPON const* pWeapon = g_pWeaponMgr->GetWeapon(m_pWeaponData->nId);
+		if (fDist > (float)pWeapon->nEffectiveVectorRange)
+		{
+			AdjustDamage(1.0f / (float)exp(0.6931472f * (fDist - (float)pWeapon->nEffectiveVectorRange) / pWeapon->fVectorHalfDamageDist));
+		}
+
 		ImpactDamageObject(m_hFiredFrom, iInfo.m_hObject);
 	}
 
@@ -1920,6 +2152,13 @@ LTBOOL CProjectile::HandleVectorImpact(IntersectInfo & iInfo, LTVector & vFrom,
 
 	SURFACE* pSurf = g_pSurfaceMgr->GetSurface(eSurfType);
     if (!pSurf) return LTTRUE;  // Done.
+
+	if (g_vtVectorImpactDebug.GetFloat() != 0.0f)
+	{
+		g_pLTServer->CPrint("Vector impacted surface: %s", pSurf->szName);
+		g_pLTServer->CPrint("   Bullethole   = %s", pSurf->szBulletHoleSpr);
+		g_pLTServer->CPrint("   ImpactFXName = %s", pSurf->szImpactFXName);
+	}
 
 	if (pSurf->bCanShootThrough)
 	{

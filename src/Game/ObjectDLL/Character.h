@@ -595,6 +595,18 @@ class CCharacter : public GameBase, public IHitBoxUser, public IPlayerTrackerRec
 		int32				m_cActive;						// Activation count
 		static int32		sm_cAISnds;
 
+	public :
+
+		// RETAIL: Contract J.A.C.K.'s list of every character.
+		typedef std::vector< CCharacter* > CharacterList;
+		static CharacterList const& GetCharacterList( ) { return m_lstCharacters; }
+
+	private :
+
+		static CharacterList	m_lstCharacters;
+
+	protected :
+
 		CSearchable*		m_pSearch;
 
 		uint8				m_iPermissionSet;

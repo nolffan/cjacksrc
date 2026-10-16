@@ -43,10 +43,10 @@
 #define SRFMGR_SURFACE_LTFOOTPRINTSPR			"LtFootPrintSpr"
 #define SRFMGR_SURFACE_FOOTPRINTSCALE			"FootPrintScale"
 #define SRFMGR_SURFACE_FOOTPRINTLIFETIME		"FootPrintLifetime"
-#define SRFMGR_SURFACE_SNOWVELMULTIPLIER		"SnowmobileVelMult"
 #define SRFMGR_SURFACE_RTFOOTSND				"RtFootSnd"
 #define SRFMGR_SURFACE_LTFOOTSND				"LtFootSnd"
-#define SRFMGR_SURFACE_SNOWMOBILESND			"SnowmobileSnd"
+#define SRFMGR_SURFACE_VEHICLESND			"VehicleType%d_Snd"
+#define SRFMGR_SURFACE_VEHICLEVELMULT		"VehicleType%d_VelMult"
 #define SRFMGR_SURFACE_BODYFALLSND				"BodyFallSnd"
 #define SRFMGR_SURFACE_BODYFALLSNDRADIUS		"BodyFallSndRadius"
 #define SRFMGR_SURFACE_BODYLEDGEFALLSND			"BodyLedgeFallSnd"
@@ -62,7 +62,7 @@
 #define	SRFMGR_SURFACE_UWIMPACTFXNAME			"UWImpactFXName"
 #define	SRFMGR_SURFACE_EXITFXNAME				"ExitFXName"
 #define	SRFMGR_SURFACE_UWEXITFXNAME				"UWExitFXName"
-#define SRFMGR_SURFACE_SNOWMOBILEIMPACTFXNAME	"SnowmobileImpactFXName"
+#define SRFMGR_SURFACE_VEHICLEIMPACTFX		"VehicleType%d_ImpactFX"
 
 // Global pointer to surface mgr...
 
@@ -365,11 +365,6 @@ SURFACE::SURFACE()
 		szLtFootStepSnds[i][0]	= '\0';
 	}
 
-	for (i=0; i < SRF_MAX_SNOWMOBILE_SNDS; i++)
-	{
-		szSnowmobileSnds[i][0]	= '\0';
-	}
-
 	szName[0]				= '\0';
 	szBodyFallSnd[0]		= '\0';
 	fBodyFallSndRadius		= 800.0f;
@@ -379,7 +374,6 @@ SURFACE::SURFACE()
 	fMovementNoiseModifier	= 1.0f;
 	fImpactNoiseModifier	= 1.0f;
 	fFootPrintLifetime		= 1.0f;
-	fSnowVelMult			= 1.0f;
 
 	szActivationSnd[0]		= '\0';
 	fActivationSndRadius	= 0;
@@ -395,8 +389,15 @@ SURFACE::SURFACE()
 
 	szExitFXName[0]			= '\0';
 	szUWExitFXName[0]		= '\0';
+}
 
-	szSnowmobileImpactFXName[0]	= '\0';
+SURFACE::~SURFACE()
+{
+	for (uint32 i=0; i < aVehicleTypes.size(); i++)
+	{
+		debug_delete(aVehicleTypes[i]);
+	}
+	aVehicleTypes.clear();
 }
 
 // ----------------------------------------------------------------------- //
@@ -432,7 +433,6 @@ LTBOOL SURFACE::Init(CButeMgr & buteMgr, char* aTagName)
     fGrenadeSndRadius       = (LTFLOAT) buteMgr.GetDouble(aTagName, SRFMGR_SURFACE_GRENADESNDRADIUS);
     fHardness               = (LTFLOAT) buteMgr.GetDouble(aTagName, SRFMGR_SURFACE_HARDNESS);
     fFootPrintLifetime      = (LTFLOAT) buteMgr.GetDouble(aTagName, SRFMGR_SURFACE_FOOTPRINTLIFETIME);
-    fSnowVelMult			= (LTFLOAT) buteMgr.GetDouble(aTagName, SRFMGR_SURFACE_SNOWVELMULTIPLIER);
     bMagnetic               = (LTBOOL) buteMgr.GetInt(aTagName, SRFMGR_SURFACE_MAGNETIC);
 
 	vFootPrintScale			= buteMgr.GetVector(aTagName, SRFMGR_SURFACE_FOOTPRINTSCALE);
@@ -456,12 +456,6 @@ LTBOOL SURFACE::Init(CButeMgr & buteMgr, char* aTagName)
 	{
 		sprintf(s_aAttName, "%s%d", SRFMGR_SURFACE_LTFOOTSND, i);
 		buteMgr.GetString(aTagName, s_aAttName, szLtFootStepSnds[i-1], ARRAY_LEN(szLtFootStepSnds[i-1]));
-	}
-
-	for (i=1; i <= SRF_MAX_SNOWMOBILE_SNDS; i++)
-	{
-		sprintf(s_aAttName, "%s%d", SRFMGR_SURFACE_SNOWMOBILESND, i);
-		buteMgr.GetString(aTagName, s_aAttName, szSnowmobileSnds[i-1], ARRAY_LEN(szSnowmobileSnds[i-1]));
 	}
 
 	buteMgr.GetString(aTagName, SRFMGR_SURFACE_BODYFALLSND, szBodyFallSnd, ARRAY_LEN(szBodyFallSnd));
@@ -508,7 +502,23 @@ LTBOOL SURFACE::Init(CButeMgr & buteMgr, char* aTagName)
 
 	buteMgr.GetString( aTagName, SRFMGR_SURFACE_UWEXITFXNAME, szUWExitFXName, ARRAY_LEN( szUWExitFXName ));
 
-	buteMgr.GetString( aTagName, SRFMGR_SURFACE_SNOWMOBILEIMPACTFXNAME, szSnowmobileImpactFXName, ARRAY_LEN( szSnowmobileImpactFXName ));
+	// RETAIL: CShell 0x100f61aa: what each kind of vehicle does here.
+
+	for (i=0; i < SRF_MAX_VEHICLE_TYPES; i++)
+	{
+		SURFACEVEHICLE* pVehicle = debug_new(SURFACEVEHICLE);
+
+		sprintf(s_aAttName, SRFMGR_SURFACE_VEHICLESND, i);
+		pVehicle->blrSnds.Read(&buteMgr, aTagName, s_aAttName, SRF_MAX_FILE_PATH);
+
+		sprintf(s_aAttName, SRFMGR_SURFACE_VEHICLEVELMULT, i);
+		pVehicle->fVelMult = (float)buteMgr.GetDouble(aTagName, s_aAttName, 1.0);
+
+		sprintf(s_aAttName, SRFMGR_SURFACE_VEHICLEIMPACTFX, i);
+		pVehicle->sImpactFX = buteMgr.GetString(aTagName, s_aAttName, "");
+
+		aVehicleTypes.push_back(pVehicle);
+	}
 
     return LTTRUE;
 }
@@ -593,11 +603,15 @@ void SURFACE::Cache(CSurfaceMgr* pSurfaceMgr)
 		}
 	}
 
-	for (i=0; i < SRF_MAX_SNOWMOBILE_SNDS; i++)
+	for (i=0; i < (int)aVehicleTypes.size(); i++)
 	{
-		if (szSnowmobileSnds[i][0])
+		SURFACEVEHICLE* pVehicle = aVehicleTypes[i];
+		for (uint8 j=0; j < pVehicle->blrSnds.GetNumItems(); j++)
 		{
-            g_pLTServer->CacheFile(FT_SOUND, szSnowmobileSnds[i]);
+			if (pVehicle->blrSnds.GetItem(j)[0])
+			{
+				g_pLTServer->CacheFile(FT_SOUND, pVehicle->blrSnds.GetItem(j));
+			}
 		}
 	}
 

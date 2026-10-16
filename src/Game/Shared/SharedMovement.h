@@ -21,7 +21,7 @@ enum PlayerPhysicsModel
 	PPM_NORMAL=0,
 	PPM_SNOWMOBILE,
 	PPM_LURE,
-	PPM_LIGHTCYCLE,
+	// RETAIL: Contract J.A.C.K. has no light cycle.
 	PPM_NUM_MODELS
 };
 
@@ -31,7 +31,6 @@ inline LTBOOL IsVehicleModel(PlayerPhysicsModel eModel)
 	{
 		case PPM_SNOWMOBILE :
 		case PPM_LURE :
-		case PPM_LIGHTCYCLE :
             return LTTRUE;
 		break;
 

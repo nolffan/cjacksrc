@@ -11,6 +11,7 @@
 #include "stdafx.h"
 #include "ContainerCodes.h"
 #include "SurfaceFunctions.h"
+#include "VehicleButeMgr.h"
 #include "ClientServerShared.h"
 #include "CommonUtilities.h"
 #include "WeaponMgr.h"
@@ -144,7 +145,7 @@ uint32 SurfaceToUserFlag(SurfaceType eSurfType)
 // ----------------------------------------------------------------------- //
 
 char* GetMovementSound(SurfaceType eSurfType, LTBOOL bLeftFoot,
-					   PlayerPhysicsModel eModel)
+					   PlayerPhysicsModel eModel, uint8 nVehicleId)
 {
 	SURFACE* pSurf = g_pSurfaceMgr->GetSurface(eSurfType);
 #ifndef __PSX2
@@ -156,8 +157,16 @@ char* GetMovementSound(SurfaceType eSurfType, LTBOOL bLeftFoot,
 	{
 		case PPM_SNOWMOBILE :
 		{
-			int nIndex = GetRandom(0, SRF_MAX_SNOWMOBILE_SNDS-1);
-			return (pSurf->szSnowmobileSnds[nIndex]);
+			// RETAIL: CShell 0x100f578b: the sounds for the vehicle's kind.
+
+			VEHICLEBUTES* pVehicle = g_pVehicleButeMgr->GetVehicle(nVehicleId);
+			if (!pVehicle) return LTNULL;
+
+			SURFACEVEHICLE const* pSurfVehicle = pSurf->GetVehicleType(pVehicle->nSurfaceVehicleType);
+			if (!pSurfVehicle || !pSurfVehicle->blrSnds.GetNumItems()) return LTNULL;
+
+			int nIndex = GetRandom(0, pSurfVehicle->blrSnds.GetNumItems()-1);
+			return (char*)pSurfVehicle->blrSnds.GetItem(nIndex);
 		}
 		break;
 

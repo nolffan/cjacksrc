@@ -2382,7 +2382,7 @@ void CMoveMgr::OnPhysicsUpdate(uint16 changeFlags, ILTMessage_Read *pMsg)
 			// it by changing it here.
 			if( m_pVehicleMgr->GetPhysicsModel( ) == PPM_LURE )
 			{
-				m_pVehicleMgr->SetPhysicsModel( PPM_NORMAL );
+				m_pVehicleMgr->SetPhysicsModel( PPM_NORMAL, 0xFF );
 			}
 
 			// Tell the vehiclemgr about the lure object.
@@ -2394,11 +2394,16 @@ void CMoveMgr::OnPhysicsUpdate(uint16 changeFlags, ILTMessage_Read *pMsg)
 			m_pVehicleMgr->SetPlayerLureId( 0 );
 		}
 
+		// RETAIL: CShell 0x1002e13d: a vehicle says which one it is.
+		uint8 nVehicleId = 0xFF;
+		if( eModel == PPM_SNOWMOBILE )
+			nVehicleId = pMsg->Readuint8();
+
 		// Turn off duck lock...
 		if (eModel != PPM_NORMAL)
 			SetDuckLock(LTFALSE);
 
-		m_pVehicleMgr->SetPhysicsModel(eModel);
+		m_pVehicleMgr->SetPhysicsModel(eModel, nVehicleId);
 	}
 }
 
