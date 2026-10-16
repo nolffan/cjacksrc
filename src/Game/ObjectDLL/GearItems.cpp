@@ -276,6 +276,7 @@ void GearItem::PickedUp(ILTMessage_Read *pMsg)
 				cMsg.Writeuint8(MID_GEAR_PICKEDUP);
 				cMsg.Writeuint8((uint8)m_nGearId);
 				cMsg.Writebool(bPickedUp);
+				cMsg.Writebool(pPlayer->GetActivatePickup());
 				g_pLTServer->SendToClient(cMsg.Read(), hClient, MESSAGE_GUARANTEED);
 			}
 		}

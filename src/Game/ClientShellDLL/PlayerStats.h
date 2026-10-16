@@ -55,7 +55,9 @@ public:
 	virtual void		UpdateProgress(uint32 nProgress) = 0;
 	virtual	void		UpdateMaxProgress(uint32 nMaxProgress) = 0;
 	
-    virtual void        UpdateAmmo(uint8 nWeaponId, uint8 nAmmoId, uint32 nAmmo, LTBOOL bPickedup=LTFALSE, LTBOOL bDisplayMsg=LTTRUE) = 0;
+    // cjacksrc: RETAIL: CShell 0x100fbcd0: bShowFail, the server's word that
+    // the player activated the pickup, says what a failed pickup shows.
+    virtual void        UpdateAmmo(uint8 nWeaponId, uint8 nAmmoId, uint32 nAmmo, LTBOOL bPickedup=LTFALSE, LTBOOL bDisplayMsg=LTTRUE, bool bShowFail=false) = 0;
     virtual void        UpdateGear(uint8 nGearId) = 0;
     virtual void        UpdateMod(uint8 nModId) = 0;
     virtual void        UpdateAir(LTFLOAT nPercent) = 0;

@@ -277,6 +277,7 @@ void ModItem::PickedUp(ILTMessage_Read *pMsg)
 				cMsg.Writeuint8((uint8)bPickedUp);
                 cMsg.Writeuint8(m_nModId);
                 cMsg.Writefloat(bDisplaMsg ? 1.0f : 0.0f);
+                cMsg.Writebool(pPlayer->GetActivatePickup());
 				g_pLTServer->SendToClient(cMsg.Read(), hClient, MESSAGE_GUARANTEED);
 			}
 		}
