@@ -939,7 +939,10 @@ CPlayerObj::CPlayerObj()
 
 	m_nRequestedTeam = INVALID_TEAM;
 
-	// RETAIL: Object 0x10114b61.
+	// RETAIL: Object 0x10114b2e.
+	m_nVehicleWeaponId = WMGR_INVALID_ID;
+	m_nVehicleId = WMGR_INVALID_ID;
+	m_bActivatePickup = false;
 	m_nWeaponSoundLoopType = 0;
 	m_nWeaponSoundLoopWeaponId = 0;
 }
@@ -1212,6 +1215,9 @@ bool CPlayerObj::OnTrigger(HOBJECT hSender, const CParsedMsg &cMsg)
 	static CParsedMsg::CToken s_cTok_WakeUp("WakeUp");
 	static CParsedMsg::CToken s_cTok_DropBody( "DropBody" );
 	static CParsedMsg::CToken s_cTok_Score( "Score" );
+	// RETAIL: Object 0x10113739: Contract J.A.C.K.'s.
+	static CParsedMsg::CToken s_cTok_Secret( "SECRET" );
+	static CParsedMsg::CToken s_cTok_ChangeModel( "ChangeModel" );
 
 
 	// Default to not finding the trigger.
@@ -1486,8 +1492,67 @@ bool CPlayerObj::OnTrigger(HOBJECT hSender, const CParsedMsg &cMsg)
 			bRet = true;
 		}
 	}
+	// RETAIL: Object 0x1011442c.
+	else if( cMsg.GetArg(0) == s_cTok_Secret )
+	{
+		HandleSecretMessage( );
+		bRet = true;
+	}
+	else if( cMsg.GetArg(0) == s_cTok_ChangeModel )
+	{
+		HandleChangeModelMessage( cMsg );
+		bRet = true;
+	}
 
     return bRet;
+}
+
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	CPlayerObj::HandleSecretMessage()
+//
+//	PURPOSE:	RETAIL: Object 0x1010ece0: the player found a secret; count
+//				it and tell the client.
+//
+// ----------------------------------------------------------------------- //
+
+bool CPlayerObj::HandleSecretMessage()
+{
+	m_Stats.dwNumSecrets++;
+
+	CAutoMessage cMsg;
+	cMsg.Writeuint8( MID_PLAYER_INFOCHANGE );
+	cMsg.Writeuint8( IC_SECRET_ID );
+	g_pLTServer->SendToClient( cMsg.Read(), GetClient( ), MESSAGE_GUARANTEED );
+
+	return true;
+}
+
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	CPlayerObj::HandleChangeModelMessage()
+//
+//	PURPOSE:	RETAIL: Object 0x1010ed80: give the player another model.
+//
+// ----------------------------------------------------------------------- //
+
+bool CPlayerObj::HandleChangeModelMessage(const CParsedMsg &cMsg)
+{
+	if( cMsg.GetArgCount( ) < 2 )
+		return false;
+
+	ModelId eModelId = g_pModelButeMgr->GetModelId( cMsg.GetArg( 1 ));
+	if( eModelId == eModelIdInvalid )
+	{
+		g_pLTServer->CPrint( "CPlayerObj::HandleChangeModelMessage() : %s is not a valid model name.", cMsg.GetArg( 1 ).c_str( ));
+		return false;
+	}
+
+	m_eModelId = eModelId;
+	m_eModelSkeleton = g_pModelButeMgr->GetModelSkeleton( m_eModelId );
+	ResetModel( );
+
+	return true;
 }
 
 //----------------------------------------------------------------------------
@@ -1794,23 +1859,73 @@ bool CPlayerObj::HandleOverlayMessage(const CParsedMsg &cMsg)
 	static CParsedMsg::CToken s_cTok_Off("Off");
 	static CParsedMsg::CToken s_cTok_On("On");
 
+	// RETAIL: Object 0x10111d7e: Contract J.A.C.K. keeps the overlays
+	// on, to save them.
 	if (cMsg.GetArg(2) == s_cTok_Off)
-		nMsg = 0;
-	else if (cMsg.GetArg(2) == s_cTok_On)
-		nMsg = 1;
-	
-
-	if(nMsg < 255)
 	{
-
-		CAutoMessage cClientMsg;
-		cClientMsg.Writeuint8(MID_PLAYER_OVERLAY);
-		cClientMsg.Writeuint8(nId);
-		cClientMsg.Writeuint8(nMsg);
-		g_pLTServer->SendToClient(cClientMsg.Read(), GetClient( ), MESSAGE_GUARANTEED);
+		nMsg = 0;
+		m_Overlays.erase(nId);
 	}
+	else if (cMsg.GetArg(2) == s_cTok_On)
+	{
+		nMsg = 1;
+		m_Overlays.insert(nId);
+	}
+	else
+		return true;
+
+	CAutoMessage cClientMsg;
+	cClientMsg.Writeuint8(MID_PLAYER_OVERLAY);
+	cClientMsg.Writeuint8(nId);
+	cClientMsg.Writeuint8(nMsg);
+	g_pLTServer->SendToClient(cClientMsg.Read(), GetClient( ), MESSAGE_GUARANTEED);
 
     return true;
+}
+
+// --------------------------------------------------------------------------- //
+//
+//	ROUTINE:	CPlayerObj::SaveOverlays()
+//
+//	PURPOSE:	RETAIL: Object 0x10110900: save the overlays on.
+//
+// --------------------------------------------------------------------------- //
+
+void CPlayerObj::SaveOverlays( ILTMessage_Write *pMsg )
+{
+	pMsg->Writeuint16(( uint16 )m_Overlays.size( ));
+
+	for( OverlaySet::iterator iter = m_Overlays.begin( ); iter != m_Overlays.end( ); iter++ )
+	{
+		pMsg->Writeuint8( *iter );
+	}
+}
+
+// --------------------------------------------------------------------------- //
+//
+//	ROUTINE:	CPlayerObj::LoadOverlays()
+//
+//	PURPOSE:	RETAIL: Object 0x10111e60: load the overlays on, and show
+//				them again.
+//
+// --------------------------------------------------------------------------- //
+
+void CPlayerObj::LoadOverlays( ILTMessage_Read *pMsg )
+{
+	m_Overlays.clear( );
+
+	uint16 nNumOverlays = pMsg->Readuint16( );
+	for( uint16 i = 0; i < nNumOverlays; i++ )
+	{
+		uint8 nId = pMsg->Readuint8( );
+		m_Overlays.insert( nId );
+
+		CAutoMessage cClientMsg;
+		cClientMsg.Writeuint8( MID_PLAYER_OVERLAY );
+		cClientMsg.Writeuint8( nId );
+		cClientMsg.Writeuint8( 1 );
+		g_pLTServer->SendToClient( cClientMsg.Read(), GetClient( ), MESSAGE_GUARANTEED );
+	}
 }
 
 
@@ -3608,6 +3723,7 @@ void CPlayerObj::FullGearCheat()
 		g_pLTServer->SendToObject(cMsg.Read(), m_hObject, m_hObject, MESSAGE_GUARANTEED);
 		cMsg.Writeuint32(MID_GEAR_PICKEDUP);
 		cMsg.Writeuint8(i);
+		cMsg.Writebool( m_bActivatePickup );
 		g_pLTServer->SendToClient(cMsg.Read(), GetClient( ), MESSAGE_GUARANTEED);
 	}
 }
@@ -3664,6 +3780,7 @@ void CPlayerObj::GimmeGearCheat( uint8 nId )
 	g_pLTServer->SendToObject( cMsg.Read( ), m_hObject, m_hObject, MESSAGE_GUARANTEED );
 	cMsg.Writeuint32( MID_GEAR_PICKEDUP );
 	cMsg.Writeuint8( nId );
+	cMsg.Writebool( m_bActivatePickup );
 	g_pLTServer->SendToClient( cMsg.Read( ), GetClient( ), MESSAGE_GUARANTEED );
 }
 
@@ -3719,6 +3836,7 @@ void CPlayerObj::AcquireGear(char* pGearName)
 	g_pLTServer->SendToObject(cMsg.Read( ), m_hObject, m_hObject, MESSAGE_GUARANTEED);
 	cMsg.Writeuint32(MID_GEAR_PICKEDUP);
 	cMsg.Writeuint8((uint8)pGear->nId);
+	cMsg.Writebool( m_bActivatePickup );
 	g_pLTServer->SendToClient(cMsg.Read( ), GetClient( ), MESSAGE_GUARANTEED);
 }
 
@@ -5772,6 +5890,12 @@ void CPlayerObj::Save(ILTMessage_Write *pMsg, uint32 dwSaveFlags)
 
 	SAVE_bool( m_bCanBeRevived );
 
+	// RETAIL: Object 0x10111961: Contract J.A.C.K.'s.
+	SAVE_BYTE( m_nVehicleWeaponId );
+	SAVE_BYTE( m_nVehicleId );
+	SAVE_BYTE( m_nWeaponSoundLoopType );
+	SAVE_BYTE( m_nWeaponSoundLoopWeaponId );
+	SaveOverlays( pMsg );
 }
 
 
@@ -5888,26 +6012,22 @@ void CPlayerObj::Load(ILTMessage_Read *pMsg, uint32 dwLoadFlags)
 		SetClientSaveData( pMsg->ReadMessage() );
 	}
 
-	if( g_pVersionMgr->GetCurrentSaveVersion( ) < CVersionMgr::kSaveVersion__1_3 )
-	{
-		m_bCanBeRevived = false;
-
-		if (m_hCarriedObject)
-		{
-			SetCarrying(CFX_CARRY_BODY);
-		}
-		else
-		{
-			SetCarrying(CFX_CARRY_NONE);
-		}
-	}
-	else
-	{
-		LOAD_bool( m_bCanBeRevived );
-	}
+	// RETAIL: Object 0x10112e70: Contract J.A.C.K. loads no saves older
+	// than its own.
+	LOAD_bool( m_bCanBeRevived );
+	LOAD_BYTE( m_nVehicleWeaponId );
+	LOAD_BYTE( m_nVehicleId );
 
 	//need to initialize this with the client id
 	m_Score.Init( g_pLTServer->GetClientID( GetClient() ) );
+
+	// RETAIL: Object 0x10112ec1: the weapon sound loop, told to the clients
+	// when it changes.
+	int nType = pMsg->Readuint8( );
+	int nWeaponId = pMsg->Readuint8( );
+	SetWeaponSoundLoop( nType, nWeaponId );
+
+	LoadOverlays( pMsg );
 }
 
 
@@ -6778,12 +6898,7 @@ void CPlayerObj::HandleWeaponSoundLoopMessage(ILTMessage_Read *pMsg)
 
 	// RETAIL: Object 0x101119fb: remember the loop, and tell the clients
 	// when it changes.
-	if( nType != m_nWeaponSoundLoopType || nWeaponId != m_nWeaponSoundLoopWeaponId )
-	{
-		m_nWeaponSoundLoopWeaponId = nWeaponId;
-		m_nWeaponSoundLoopType = nType;
-		SendWeaponSoundLoop( LTNULL );
-	}
+	SetWeaponSoundLoop( nType, nWeaponId );
 }
 
 // ----------------------------------------------------------------------- //
