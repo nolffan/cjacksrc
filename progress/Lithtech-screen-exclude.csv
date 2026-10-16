@@ -80,3 +80,4 @@ addr,reason
 0x005429fa,NOT A FUNCTION: interior block of the static initializer at 0x005429f0 (an operand byte of its fstps)
 0x00542852,NOT A FUNCTION: interior block of the static initializer at 0x00542850 (the operand of its flds)
 0x00549461,NOT A FUNCTION: zero fill at the end of .text, 1053 bytes of 00 in the shipped and the demo's images
+0x005429d8,NOT A FUNCTION: interior block of the static initializer at 0x005429d0 (an operand byte of its fmuls)
