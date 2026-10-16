@@ -67,7 +67,13 @@ void d3d_SetReallyClose(CReallyCloseData* pData)
 
 	PD3DDEVICE->SetViewport(&ViewportData);
 
+#ifdef CJACK_MODERN
+	// M-E1: the player-view model in the screen's own aspect
 	float aspect = g_ViewParams.m_fScreenWidth / g_ViewParams.m_fScreenHeight;
+#else
+	// RETAIL: the PVModelAspect console variable (Lithtech.exe 0x50bf76)
+	float aspect = g_CV_PVModelAspect.m_Val;
+#endif
 
 	// Setup the projection transform by using the power of D3D.
 	D3DXMATRIX NewProj;
