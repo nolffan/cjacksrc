@@ -216,7 +216,8 @@ LTBOOL CScreenMulti::Build()
 	// RETAIL: the game client shell writes the missions file
 	g_pGameClientShell->CreateMPMissionFile();
 //	CreateTDMMissionFile();
-	CreateDDMissionFile();
+	// cjacksrc: RETAIL: CShell 0x1004c1ca: the one file has them all.
+//	CreateDDMissionFile();
 
 
  	// Make sure to call the base class
@@ -877,7 +878,8 @@ void CScreenMulti::CreateDMMissionFile()
 			{
 				if (ptr->m_Type == TYPE_FILE)
 				{
-					if (strnicmp(ptr->m_pBaseFilename,"DM_",3) == 0 || strnicmp(ptr->m_pBaseFilename,"DD_",3) == 0)
+					// RETAIL: CShell 0x1004af60: and Contract J.A.C.K.'s DE_ worlds.
+					if (strnicmp(ptr->m_pBaseFilename,"DM_",3) == 0 || strnicmp(ptr->m_pBaseFilename,"DE_",3) == 0 || strnicmp(ptr->m_pBaseFilename,"DD_",3) == 0)
 					{
 						SAFE_STRCPY(strBaseName, ptr->m_pBaseFilename);
 						pBaseName = strtok (strBaseName, ".");
@@ -910,10 +912,15 @@ void CScreenMulti::CreateDMMissionFile()
 	CDMButeMgr buteMgr;
 	char szTmp[16];
 	char szString[512];
+	// RETAIL: CShell 0x1004b0ce: the last default weapon named, which a
+	// mission without a selected weapon selects (it carries over to the
+	// missions after it).
+	char szWeapon[512] = "";
 
 	while (iter != filenames.end())
 	{
 		bool bDefaultWeapons = false;
+		bool bSelectedWeapon = false;
 
 		sprintf(szLabel,"Mission%d",index);
 							
@@ -954,10 +961,21 @@ void CScreenMulti::CreateDMMissionFile()
 				{
 					if (w > 0)
 						sDef += ",";
-					sDef += g_pWeaponMgr->GetWeapon(mission.aDefaultWeapons[w])->szName;
+					SAFE_STRCPY(szWeapon, g_pWeaponMgr->GetWeapon(mission.aDefaultWeapons[w])->szName);
+					sDef += szWeapon;
 				}
 				sDef += "\"";
 				CWinUtil::WinWritePrivateProfileString( szLabel, "DefaultWeapons", sDef.c_str(), sFN.c_str());
+			}
+
+			// RETAIL: CShell 0x1004b3aa: the weapon the mission selects.
+			if (mission.nSelectedWeapon != WMGR_INVALID_ID)
+			{
+				bSelectedWeapon = true;
+				WEAPON const *pWeapon = g_pWeaponMgr->GetWeapon(mission.nSelectedWeapon);
+				// (Retail formats the name's address, and never uses it.)
+				sprintf(szTmp, "%d", pWeapon->szName);
+				CWinUtil::WinWritePrivateProfileString( szLabel, "SelectedWeapon", pWeapon->szName, sFN.c_str());
 			}
 
 			buteMgr.Term();
@@ -967,6 +985,16 @@ void CScreenMulti::CreateDMMissionFile()
 		{
 			sprintf(szString, "\"%s\"", g_pWeaponMgr->GetMPDefaultWeapons());
 			CWinUtil::WinWritePrivateProfileString( szLabel, "DefaultWeapons", szString, sFN.c_str());
+		}
+
+		// RETAIL: CShell 0x1004b484.
+		if (!bSelectedWeapon)
+		{
+			if (strlen(szWeapon))
+				sprintf(szString, "\"%s\"", szWeapon);
+			else
+				sprintf(szString, "\"%s\"", g_pWeaponMgr->GetMPSelectedWeapon());
+			CWinUtil::WinWritePrivateProfileString( szLabel, "SelectedWeapon", szString, sFN.c_str());
 		}
 
 		++index;

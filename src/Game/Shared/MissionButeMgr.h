@@ -17,11 +17,11 @@
 
 #define MISSION_DEFAULT_FILE		"Attributes\\Missions.txt"
 #define MISSION_COOP_FILE			"Attributes\\CoopMissions.txt"
-// RETAIL: Contract J.A.C.K.'s one multiplayer missions file (CShell.dll and
-// Object.lto both name MPMissions.txt; NOLF2's was DMMissions.txt)
+// cjacksrc: RETAIL: CShell 0x1004adf4, Object 0x100bc8a3: Contract J.A.C.K.
+// writes one missions file for its multiplayer game types.
 #define MISSION_DM_FILE 			"MPMissions.txt"
 //#define MISSION_TDM_FILE 			"TDMMissions.txt"
-#define MISSION_DD_FILE 			"DDMissions.txt"
+#define MISSION_DD_FILE 			MISSION_DM_FILE
 
 #define MMGR_INVALID_ID			255	// Invalid id
 #define MISSION_DEFAULT_ID		0	// First Level in Mission attribute file

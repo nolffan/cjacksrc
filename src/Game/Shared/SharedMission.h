@@ -36,6 +36,7 @@ struct MissionStats
     uint32  dwNumNeutralKills;  // Number of neutrals killed
     uint32  dwNumTimesKilled;   // Number of times killed (in multiplayer)
     uint32  dwNumTimesHit;      // Number of times hit during the mission
+    uint32  dwNumSecrets;       // cjacksrc: Contract J.A.C.K.'s secrets found (RETAIL: Object 0x1010ece4)
 
     uint32  dwHitLocations[HL_NUM_LOCS];  // Number of times player hit each body part hit
 

@@ -80,16 +80,11 @@ void SVModelHook(ModelHookData *pData, void *pUser);
 
 VarTrack			g_CV_CSendRate;		// The SendRate console variable.
 VarTrack			g_vtPlayerRotate;	// The PlayerRotate console variable
+// cjacksrc: RETAIL: CShell 0x1017e5cc: how long the recoil has been
+// recovering (StartWeaponRecoil, DecayWeaponRecoil).
+static float		s_fRecoilRecoverTime = 0.0f;
 VarTrack			g_vtCamZoom1MaxDist;
 VarTrack			g_vtCamZoom2MaxDist;
-VarTrack			g_vtUseCamRecoil;
-VarTrack			g_vtCamRecoilRecover;
-VarTrack			g_vtBaseCamRecoilPitch;
-VarTrack			g_vtMaxCamRecoilPitch;
-VarTrack			g_vtBaseCamRecoilYaw;
-VarTrack			g_vtMaxCamRecoilYaw;
-VarTrack			g_vtFireJitterDecayTime;
-VarTrack			g_vtFireJitterMaxPitchDelta;
 VarTrack			g_vtFOVXNormal;
 VarTrack			g_vtFOVYNormal;
 VarTrack			g_vtFOVYMaxUW;
@@ -366,12 +361,6 @@ LTBOOL CPlayerMgr::Init()
 	g_vtFOVYMaxUW.Init(g_pLTClient, "FOVYUWMax", NULL, 78.0f);
 	g_vtFOVYMinUW.Init(g_pLTClient, "FOVYUWMin", NULL, 77.0f);
 	g_vtUWFOVRate.Init(g_pLTClient, "FOVUWRate", NULL, 0.3f);
-	g_vtUseCamRecoil.Init(g_pLTClient, "CamRecoil", NULL, 0.0f);
-	g_vtCamRecoilRecover.Init(g_pLTClient, "CamRecoilRecover", NULL, 0.3f);
-	g_vtBaseCamRecoilPitch.Init(g_pLTClient, "CamRecoilBasePitch", NULL, 5.0f);
-	g_vtMaxCamRecoilPitch.Init(g_pLTClient, "CamRecoilMaxPitch", NULL, 75.0f);
-	g_vtBaseCamRecoilYaw.Init(g_pLTClient, "CamRecoilBaseYaw", NULL, 3.0f);
-	g_vtMaxCamRecoilYaw.Init(g_pLTClient, "CamRecoilMaxYaw", NULL, 35.0f);
 	g_vtCamRotInterpTime.Init(g_pLTClient, "CamRotInterpTime", NULL, 0.15f);
 	g_vtRespawnWaitTime.Init(g_pLTClient, "RespawnWaitTime", NULL, 1.0f);
 	g_vtMultiplayerRespawnWaitTime.Init(g_pLTClient, "RespawnMultiWaitTime", NULL, 30.0f);
@@ -416,12 +405,6 @@ LTBOOL CPlayerMgr::Init()
 	g_vtMultiplayerDeathCamMoveTime.Init( g_pLTClient, "MultiplayerDeathCamMoveTime", NULL, 0.5f );
 	g_vtMultiAttachDeathCamMaxTime.Init( g_pLTClient, "MultiplayerDeathAttachCamMaxTime", NULL, 5.0f );
 	g_vtAttachedCamInterpolationRate.Init( g_pLTClient, "AttachedCamIntrepolationRate", NULL, 0.1f );
-
-	// Default these to use values specified in the weapon...(just here for
-	// tweaking values...)
-
-	g_vtFireJitterDecayTime.Init(g_pLTClient, "FireJitterDecayTime", NULL, -1.0f);
-	g_vtFireJitterMaxPitchDelta.Init(g_pLTClient, "FireJitterMaxPitchDelta", NULL, -1.0f);
 
 	g_vSVModelColor = g_pLayoutMgr->GetSpyVisionModelColor();
 	m_vSVLightScale = g_pLayoutMgr->GetSpyVisionLightScale();
@@ -2168,9 +2151,15 @@ void CPlayerMgr::UpdateWeaponModel()
 
 	// Do fire camera jitter...
 
-	if (FiredWeapon(eWeaponState) && m_pPlayerCamera->IsFirstPerson())
+	if (FiredWeapon(eWeaponState))
 	{
-		StartWeaponRecoil();
+		// RETAIL: CShell 0x1009ee51: the recoil recovers from the last shot.
+		m_fLastFireTime = g_pLTClient->GetTime();
+
+		if (m_pPlayerCamera->IsFirstPerson())
+		{
+			StartWeaponRecoil();
+		}
 	}
 }
 
@@ -2185,52 +2174,59 @@ void CPlayerMgr::UpdateWeaponModel()
 
 void CPlayerMgr::StartWeaponRecoil()
 {
-	float fMaxPitch = g_vtFireJitterMaxPitchDelta.GetFloat();
+	// RETAIL: CShell 0x10099ce0: Contract J.A.C.K.'s recoil grows with the
+	// recoil already there, up to CamRecoilMax, and kicks the view up and
+	// sideways at random; the console variables (read each shot, none
+	// registered) tweak it.
 
-	if (g_vtUseCamRecoil.GetFloat() > 0.0f)
+	float fKick = GetConsoleFloat("CamRecoilKick", -1.0f);
+	float fFactor = GetConsoleFloat("CamRecoilFactor", 1.0f);
+	float fScale = GetConsoleFloat("CamRecoilScale", 0.05f);
+	float fMax = GetConsoleFloat("CamRecoilMax", 10.0f);
+
+	if (fKick < 0.0f)
 	{
-		// Move view up a bit...
+		// Based on the current weapon/ammo type...
 
-		float fPCorrect = 1.0f - (m_fFireJitterPitch / DEG2RAD(g_vtMaxCamRecoilPitch.GetFloat()));
-		float fPVal = GetRandom(0.5f,2.0f) * DEG2RAD(g_vtBaseCamRecoilPitch.GetFloat()) * fPCorrect;
-		m_fFireJitterPitch += fPVal;
-		m_fPitch -= fPVal;
-
-		// Move view left/right a bit...
-
-		float fYawDiff = (float)fabs(m_fFireJitterYaw);
-		float fYCorrect = 1.0f - (fYawDiff / DEG2RAD(g_vtMaxCamRecoilYaw.GetFloat()));
-		float fYVal = GetRandom(-2.0f,2.0f) * DEG2RAD(g_vtBaseCamRecoilYaw.GetFloat()) * fYCorrect;
-		m_fFireJitterYaw += fYVal;
-		m_fYaw -= fYVal;
-	}
-	else
-	{
-		// Move view up a bit...(based on the current weapon/ammo type)
-
-		WEAPON const *pWeaponData = 0;
-		AMMO const *pAmmoData	= 0;
 		IClientWeaponBase *pClientWeapon = m_pClientWeaponMgr->GetCurrentClientWeapon();
 		if ( pClientWeapon )
 		{
-			pWeaponData = pClientWeapon->GetWeapon();
-			pAmmoData = pClientWeapon->GetAmmo();
-		}
+			WEAPON const *pWeaponData = pClientWeapon->GetWeapon();
+			AMMO const *pAmmoData = pClientWeapon->GetAmmo();
 
-		if (pWeaponData && pAmmoData)
-		{
-			if (fMaxPitch < 0.0f)
+			if (pWeaponData && pAmmoData)
 			{
-				fMaxPitch = pWeaponData->fFireRecoilPitch * pAmmoData->fFireRecoilMult;
+				fKick = pWeaponData->fFireRecoilPitch * pAmmoData->fFireRecoilMult;
 			}
 		}
-
-		float fVal = (float)DEG2RAD(fMaxPitch) - m_fFireJitterPitch;
-		m_fFireJitterPitch += fVal;
-		m_fPitch -= fVal;
 	}
 
-	if (fMaxPitch > 0.0f)
+	s_fRecoilRecoverTime = 0.0f;
+
+	float fRecoil = (fFactor * m_fRecoil + 1.0f) * fScale * fKick;
+	m_fRecoil += fRecoil;
+
+	// Move view up a bit...
+
+	float fPitch = GetRandom(-fRecoil, fRecoil * 0.5f);
+	m_fPitch += DEG2RAD(GetConsoleBool("CamRecoilDebug", false) ? fRecoil * -0.5f : fPitch);
+
+	if (m_fRecoil > fMax)
+	{
+		m_fRecoil = fMax;
+	}
+
+	if (GetConsoleBool("CamRecoilDebug", false))
+	{
+		g_pLTClient->CPrint("recoil up to: %0.2f", m_fRecoil);
+	}
+
+	// Move view left/right a bit...
+
+	float fYaw = GetRandom(-fRecoil, fRecoil) / 3.0f;
+	m_fYaw += DEG2RAD(GetConsoleBool("CamRecoilDebug", false) ? 0.0f : fYaw);
+
+	if (fRecoil > 0.0f)
 	{
 		// Shake the screen if it isn't shaking...
 
@@ -2253,87 +2249,48 @@ void CPlayerMgr::StartWeaponRecoil()
 
 void CPlayerMgr::DecayWeaponRecoil()
 {
-	// Decay firing jitter if necessary...
+	// RETAIL: CShell 0x10098b80: the recoil recovers once the weapon has not
+	// fired for a moment, the faster the longer it has not, and with the
+	// aim skill.
 
-	if (g_vtUseCamRecoil.GetFloat() > 0.0f)
+	if (m_fRecoil > 0.0f)
 	{
-		if (m_fFireJitterPitch > 0.0f)
+		float fTime = g_pLTClient->GetTime() - m_fLastFireTime;
+		if (fTime < 0.03f)
+			return;
+
+		float fRecover = GetConsoleFloat("CamRecoilRecover", -1.0f);
+		if (fRecover < 0.0f)
 		{
-			float fCorrect = 1.0f + m_fFireJitterPitch / DEG2RAD(g_vtMaxCamRecoilPitch.GetFloat());
-			float fVal = (g_pGameClientShell->GetFrameTime() * g_vtCamRecoilRecover.GetFloat()) * fCorrect;
-
-			if (m_fFireJitterPitch < fVal)
-			{
-				fVal = m_fFireJitterPitch;
-			}
-
-			m_fFireJitterPitch -= fVal;
-			m_fPitch += fVal;
-		}
-
-		float fYawDiff = (float)fabs(m_fFireJitterYaw);
-		if (fYawDiff > 0.0f)
-		{
-			float fCorrect = 1.0f + fYawDiff / DEG2RAD(g_vtMaxCamRecoilYaw.GetFloat());
-			float fVal = (g_pGameClientShell->GetFrameTime() * g_vtCamRecoilRecover.GetFloat()) * fCorrect;
-
-			if (fYawDiff < fVal)
-			{
-				fVal = fYawDiff;
-			}
-			if (m_fFireJitterYaw < 0.0f)
-				fVal *= -1.0f;
-
-			m_fFireJitterYaw -= fVal;
-			m_fYaw += fVal;
-		}
-	}
-	else
-	{
-		if (m_fFireJitterPitch > 0.0f)
-		{
-			float fVal = m_fFireJitterPitch;
-
-			// get the weapon and ammo data
-			WEAPON const *pWeaponData = 0;
-			AMMO const *pAmmoData	= 0;
 			IClientWeaponBase *pClientWeapon = m_pClientWeaponMgr->GetCurrentClientWeapon();
 			if ( pClientWeapon )
 			{
-				pWeaponData = pClientWeapon->GetWeapon();
-				pAmmoData = pClientWeapon->GetAmmo();
-			}
-
-			float fMaxPitch  = g_vtFireJitterMaxPitchDelta.GetFloat();
-			float fTotalTime = g_vtFireJitterDecayTime.GetFloat();
-
-			if (pWeaponData && pAmmoData)
-			{
-				if (fMaxPitch < 0.0f)
+				WEAPON const *pWeaponData = pClientWeapon->GetWeapon();
+				if (pWeaponData)
 				{
-					fMaxPitch = pWeaponData->fFireRecoilPitch * pAmmoData->fFireRecoilMult;
-				}
-
-				if (fTotalTime < 0.0f)
-				{
-					fTotalTime = pWeaponData->fFireRecoilDecay;
+					fRecover = pWeaponData->fFireRecoilDecay;
 				}
 			}
-
-			if (fTotalTime > 0.01)
-			{
-				fVal = g_pGameClientShell->GetFrameTime() * (DEG2RAD(fMaxPitch) / fTotalTime);
-			}
-
-			if (m_fFireJitterPitch - fVal < 0.0f)
-			{
-				fVal = m_fFireJitterPitch;
-			}
-
-			m_fFireJitterPitch -= fVal;
-			m_fPitch += fVal;
 		}
 
+		s_fRecoilRecoverTime += g_pLTClient->GetFrameTime();
+		float fVal = g_pLTClient->GetFrameTime() * s_fRecoilRecoverTime;
+		fVal = g_pPlayerStats->GetSkillModifier(SKL_AIM, AimModifiers::eCorrection) * fVal * fRecover;
+
+		m_fRecoil -= fVal;
+		if (m_fRecoil < 0.0f)
+		{
+			m_fRecoil = 0.0f;
+
+			if (GetConsoleBool("CamRecoilDebug", false))
+			{
+				g_pLTClient->CPrint("recovered in: %0.2f", fTime);
+			}
+		}
+		else if (GetConsoleBool("CamRecoilDebug", false))
+		{
+			g_pLTClient->CPrint("recoil down to: %0.2f", m_fRecoil);
+		}
 	}
 }
 

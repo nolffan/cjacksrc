@@ -549,7 +549,7 @@ void CTO2PlayerStats::UpdateMaxArmor(uint32 nArmor)
 
 void CTO2PlayerStats::UpdateAmmo(uint8 nWeaponId, uint8 nAmmoId,
                               uint32 nAmmo, LTBOOL bPickedup,
-                              LTBOOL bDisplayMsg)
+                              LTBOOL bDisplayMsg, bool bShowFail)
 {
 	if (!g_pLTClient || !g_pWeaponMgr) return;
 
@@ -563,7 +563,7 @@ void CTO2PlayerStats::UpdateAmmo(uint8 nWeaponId, uint8 nAmmoId,
 			{
 				if (bDisplayMsg)
 				{
-					g_pGameClientShell->HandleWeaponPickup(nWeaponId);
+					g_pGameClientShell->HandleWeaponPickup(nWeaponId, true, bShowFail);
 				}
 			}
 
@@ -707,7 +707,7 @@ void CTO2PlayerStats::UpdateAmmo(uint8 nWeaponId, uint8 nAmmoId,
 				if (!pWeapon || !(pWeapon->bInfiniteAmmo))
 				{
 					bool bTookAmmo = bool(taken != 0);
-					g_pGameClientShell->HandleAmmoPickup(nAmmoId, taken, bTookAmmo, nWeaponId);
+					g_pGameClientShell->HandleAmmoPickup(nAmmoId, taken, bTookAmmo, bShowFail, nWeaponId);
 				}
 			}
 

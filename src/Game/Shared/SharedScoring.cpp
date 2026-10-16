@@ -32,7 +32,6 @@ CPlayerScore::CPlayerScore()
 	m_nClientID = -1;
 	m_nScore = 0;
 	m_nFrags = 0;
-	m_nTags = 0;
 
 	m_bInitted = false;
 
@@ -51,7 +50,6 @@ void CPlayerScore::Init(uint32 nClientID)
 	m_nClientID = nClientID;
 	m_nScore = 0;
 	m_nFrags = 0;
-	m_nTags = 0;
 
 	m_bInitted = true;
 
@@ -74,7 +72,6 @@ void CPlayerScore::WriteData(ILTMessage_Write *pMsg)
 
     pMsg->Writeint32(m_nScore);
     pMsg->Writeint32(m_nFrags);
-    pMsg->Writeint32(m_nTags);
 
 }
 
@@ -92,7 +89,6 @@ void CPlayerScore::ReadData(ILTMessage_Read *pMsg)
 
     m_nScore	= pMsg->Readint32();
     m_nFrags	= pMsg->Readint32();
-    m_nTags		= pMsg->Readint32();
 
 }
 

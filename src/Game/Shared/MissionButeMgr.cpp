@@ -213,7 +213,7 @@ MISSION::MISSION()
 	nNumDefaultAmmo		= 0;
 	nNumDefaultMods		= 0;
 
-	// RETAIL: none (CShell.dll 0x1008761f stores 0xff)
+	// RETAIL: CShell 0x1008761f.
 	nSelectedWeapon		= WMGR_INVALID_ID;
 
 	aDefaultWeapons[0]	= WMGR_INVALID_ID;

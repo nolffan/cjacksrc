@@ -4716,7 +4716,7 @@ void CGameClientShell::SetDifficulty(GameDifficulty e)
 //
 // ----------------------------------------------------------------------- //
 
-void CGameClientShell::HandleWeaponPickup(uint8 nWeaponID, bool bSuccess /* = true */)
+void CGameClientShell::HandleWeaponPickup(uint8 nWeaponID, bool bSuccess /* = true */, bool bShowFail /* = false */)
 {
 	WEAPON const *pWeapon = g_pWeaponMgr->GetWeapon(nWeaponID);
 	if (!pWeapon) return;
@@ -4734,7 +4734,7 @@ void CGameClientShell::HandleWeaponPickup(uint8 nWeaponID, bool bSuccess /* = tr
 			FormatString(IDS_GUNPICKUP,szMsg,sizeof(szMsg),pWeapon->szShortName);
 		}
 	}
-	else if( IsCoopMultiplayerGameType( ))
+	else if( bShowFail )	// RETAIL: Contract J.A.C.K. asks the server
 	{
 		if (pWeapon->bIsAmmo && pWeapon->nIsAmmoNoPickupId)
 		{
@@ -4771,7 +4771,7 @@ void CGameClientShell::HandleWeaponPickup(uint8 nWeaponID, bool bSuccess /* = tr
 //
 // ----------------------------------------------------------------------- //
 
-void CGameClientShell::HandleGearPickup(uint8 nGearId, bool bSuccess /* = true */)
+void CGameClientShell::HandleGearPickup(uint8 nGearId, bool bSuccess /* = true */, bool bShowFail /* = false */)
 {
 	GEAR const *pGear = g_pWeaponMgr->GetGear(nGearId);
 	if (!pGear) return;
@@ -4788,7 +4788,7 @@ void CGameClientShell::HandleGearPickup(uint8 nGearId, bool bSuccess /* = true *
 	{
 		FormatString(IDS_GEARPICKUP,szMsg,sizeof(szMsg),szName);
 	}
-	else if( IsCoopMultiplayerGameType( ))
+	else if( bShowFail )	// RETAIL: Contract J.A.C.K. asks the server
 	{
 		FormatString(IDS_GEAR_NOPICKUP,szMsg,sizeof(szMsg),szName);
 
@@ -4810,7 +4810,7 @@ void CGameClientShell::HandleGearPickup(uint8 nGearId, bool bSuccess /* = true *
 //
 // ----------------------------------------------------------------------- //
 
-void CGameClientShell::HandleModPickup(uint8 nModId, bool bSuccess /* = true */)
+void CGameClientShell::HandleModPickup(uint8 nModId, bool bSuccess /* = true */, bool bShowFail /* = false */)
 {
 	MOD const *pMod = g_pWeaponMgr->GetMod(nModId);
 	if (!pMod) return;
@@ -4827,7 +4827,7 @@ void CGameClientShell::HandleModPickup(uint8 nModId, bool bSuccess /* = true */)
 	{
 		FormatString(IDS_MODPICKUP,szMsg,sizeof(szMsg),szName);
 	}
-	else if( IsCoopMultiplayerGameType( ))
+	else if( bShowFail )	// RETAIL: Contract J.A.C.K. asks the server
 	{
 		FormatString(IDS_MOD_NOPICKUP,szMsg,sizeof(szMsg),szName);
 
@@ -4851,6 +4851,7 @@ void CGameClientShell::HandleModPickup(uint8 nModId, bool bSuccess /* = true */)
 
 void CGameClientShell::HandleAmmoPickup(uint8 nAmmoId, int nAmmoCount, 
 										bool bSuccess /* = true */,
+										bool bShowFail /* = false */,
 										uint8 nWeaponId /* = WMGR_INVALID_ID */)
 {
 	AMMO const *pAmmo = g_pWeaponMgr->GetAmmo(nAmmoId);
@@ -4865,7 +4866,7 @@ void CGameClientShell::HandleAmmoPickup(uint8 nAmmoId, int nAmmoCount,
 		//check for "infinite" ammo types
 		FormatString(IDS_AMMOPICKUP,szMsg,sizeof(szMsg),nAmmoCount,pAmmo->szShortName);
 	}
-	else if( IsCoopMultiplayerGameType( ))
+	else if( bShowFail )	// RETAIL: Contract J.A.C.K. asks the server
 	{
 		FormatString(IDS_AMMO_NOPICKUP,szMsg,sizeof(szMsg),pAmmo->szShortName);
 

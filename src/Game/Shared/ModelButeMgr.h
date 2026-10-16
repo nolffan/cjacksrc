@@ -249,6 +249,9 @@ class CModelButeMgr : public CGameButeMgr
 
 		int				GetTeamDefaultModel(int nTeam);
 
+		// cjacksrc: RETAIL: CShell 0x1008a740, Object 0x100fba70.
+		uint32			GetFileCRC();
+
 
 	protected : // Protected inner classes
 

@@ -647,7 +647,11 @@ class CWeaponMgr : public CGameButeMgr
 		PROJECTILEFX*    GetProjectileFX(int nProjFXId);
 		FIREFX*          GetFireFX(int nFireFXId);
 
-		uint32		GetFileCRC() { return m_nFileCRC; }
+		// RETAIL: CShell 0x10111510, Object 0x10160f70: Contract J.A.C.K.
+		// sums the CRCs of the attribute file, the override file and each
+		// weapon's player-view model.
+		uint32		GetFileCRC();
+		WEAPON const* GetHolsterWeapon() const { return m_pHolsterWeapon; }
 
 		// Checks if weaponida is better than weaponidb.
 		bool		IsBetterWeapon( uint8 nWeaponIdA, uint8 nWeaponIdB ) const;
@@ -676,6 +680,7 @@ class CWeaponMgr : public CGameButeMgr
 		int*				m_pWeaponOrder;				// Order of weapon selection
 		int					m_nFirstPlayerWeapon;		// First weapon player can use
 		int					m_nLastPlayerWeapon;		// Last weapon player can use
+		WEAPON const*		m_pHolsterWeapon;			// cjacksrc: RETAIL: CShell 0x101154c9
 
 		uint8*				m_pClasses;				// indices into weapon order
 		uint8				m_nNumClasses;
@@ -684,8 +689,6 @@ class CWeaponMgr : public CGameButeMgr
 		uint8				m_nNumWeaponPriorities;
 
 		void				ClearLists();	// Clear all the above lists
-
-		uint32				m_nFileCRC;
 
 		std::string		m_sMPDefaults;
 

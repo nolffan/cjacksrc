@@ -152,9 +152,35 @@ class CPlayerObj : public CCharacter
 		void HandleWeaponFireMessage(ILTMessage_Read *pMsg);
 		void HandleWeaponSoundMessage(ILTMessage_Read *pMsg);
 		void HandleWeaponSoundLoopMessage(ILTMessage_Read *pMsg);
+
+		// cjacksrc: RETAIL: Object 0x1010e9e0, 0x10110810: the weapon sound
+		// loop playing, to all clients or to one; a client entering the world
+		// hears the other players' loops.
+		void SendWeaponSoundLoop( HCLIENT hClient );
+		void SendWeaponSoundLoopToClient( HCLIENT hClient, CPlayerObj* pNewPlayer );
+		void SetWeaponSoundLoop( int nType, int nWeaponId )
+		{
+			if( nType != m_nWeaponSoundLoopType || nWeaponId != m_nWeaponSoundLoopWeaponId )
+			{
+				m_nWeaponSoundLoopType = nType;
+				m_nWeaponSoundLoopWeaponId = nWeaponId;
+				SendWeaponSoundLoop( LTNULL );
+			}
+		}
+
+		// cjacksrc: RETAIL: Object 0x10110900, 0x10111e60.
+		void SaveOverlays( ILTMessage_Write *pMsg );
+		void LoadOverlays( ILTMessage_Read *pMsg );
+
+		bool GetActivatePickup( ) const { return m_bActivatePickup; }
+		void SetActivatePickup( bool bActivate ) { m_bActivatePickup = bActivate; }
 		void HandleClientMsg(ILTMessage_Read *pMsg);
 		void HandleTeleportMsg(ILTMessage_Read *pMsg);
         bool HandleObjectiveMessage(const CParsedMsg &cMsg);
+		// cjacksrc: Contract J.A.C.K.'s SECRET and ChangeModel commands
+		// (RETAIL: Object 0x1010ece0, 0x1010ed80).
+		bool HandleSecretMessage();
+		bool HandleChangeModelMessage(const CParsedMsg &cMsg);
         bool HandleKeyMessage(const CParsedMsg &cMsg);
         bool HandleTransmissionMessage(const CParsedMsg &cMsg);
         bool HandleOverlayMessage(const CParsedMsg &cMsg);
@@ -603,6 +629,27 @@ class CPlayerObj : public CCharacter
 
 		// this will be a valid team id if the player has requested to change teams
 		uint8		m_nRequestedTeam;
+
+		// cjacksrc: RETAIL: CPlayerObj +0x2ab3, +0x2ab4: the vehicle the
+		// player rides (its VehicleButeMgr id) and the weapon it gives
+		// (Object 0x10109b63, 0x10109c27; WMGR_INVALID_ID for none).
+		uint8		m_nVehicleWeaponId;
+		uint8		m_nVehicleId;
+
+		// cjacksrc: RETAIL: CPlayerObj +0x2ab5: set while the player
+		// activates a pickup (PickupItem::OnTrigger), so the client shows why
+		// a pickup failed only then.
+		bool		m_bActivatePickup;
+
+		// cjacksrc: Contract J.A.C.K.'s weapon sound loop playing (RETAIL:
+		// CPlayerObj +0x2ab8, +0x2abc; members before them are still missing).
+		int			m_nWeaponSoundLoopType;
+		int			m_nWeaponSoundLoopWeaponId;
+
+		// cjacksrc: RETAIL: CPlayerObj +0x2ac0: the overlays on, saved and
+		// shown again on load.
+		typedef std::set< uint8 > OverlaySet;
+		OverlaySet	m_Overlays;
 
 };
 

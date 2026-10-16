@@ -274,6 +274,7 @@ enum LoadGameType
 #define IC_PSETS_ID					25
 #define IC_PERFORMANCE_RATING_ID	26
 #define IC_BUILD_POINTS_ID			27
+#define IC_SECRET_ID				28	// cjacksrc: Contract J.A.C.K.'s, the player found a secret
 
 //helper id's that tell what to do with objectives, parameters, keys, etc.
 #define ITEM_ADD_ID			0

@@ -211,10 +211,13 @@ public:
     void        FlashScreen(const LTVector &vFlashColor, const LTVector &vPos, float fFlashRange,
 		float fTime, float fRampUp, float fRampDown, bool bForce=false);
 
-    void        HandleWeaponPickup(uint8 nWeaponId, bool bSuccess = true);
-    void        HandleGearPickup(uint8 nGearId, bool bSucces = true);
-    void        HandleModPickup(uint8 nModId, bool bSucces = true);
-    void        HandleAmmoPickup(uint8 nAmmoId, int nAmmoCount, bool bSuccess = true, uint8 nWeaponId = WMGR_INVALID_ID);
+    // cjacksrc: RETAIL: CShell 0x100458f0..0x10045c90: bShowFail (the
+    // player activated the pickup) says whether a failed pickup shows a
+    // message, where NOLF2 asked for a co-operative game.
+    void        HandleWeaponPickup(uint8 nWeaponId, bool bSuccess = true, bool bShowFail = false);
+    void        HandleGearPickup(uint8 nGearId, bool bSucces = true, bool bShowFail = false);
+    void        HandleModPickup(uint8 nModId, bool bSucces = true, bool bShowFail = false);
+    void        HandleAmmoPickup(uint8 nAmmoId, int nAmmoCount, bool bSuccess = true, bool bShowFail = false, uint8 nWeaponId = WMGR_INVALID_ID);
 
 	CDamageFXMgr*		GetDamageFXMgr()			{ return &m_DamageFXMgr; }
 

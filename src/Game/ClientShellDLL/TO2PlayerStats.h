@@ -57,7 +57,7 @@ public:
 	void		UpdateMaxEnergy(uint32 nEnergy) {}
     void		UpdateProgress(uint32 nProgress) { m_dwProgress = (nProgress >= m_dwMaxProgress ? m_dwMaxProgress : nProgress); }
 	void		UpdateMaxProgress(uint32 nMaxProgress) { m_dwMaxProgress = nMaxProgress; }
-	void        UpdateAmmo(uint8 nWeaponId, uint8 nAmmoId, uint32 nAmmo, LTBOOL bPickedup=LTFALSE, LTBOOL bDisplayMsg=LTTRUE);
+	void        UpdateAmmo(uint8 nWeaponId, uint8 nAmmoId, uint32 nAmmo, LTBOOL bPickedup=LTFALSE, LTBOOL bDisplayMsg=LTTRUE, bool bShowFail=false);
     void        UpdateGear(uint8 nGearId);
     void        UpdateMod(uint8 nModId);
     void        UpdateAir(LTFLOAT nPercent);

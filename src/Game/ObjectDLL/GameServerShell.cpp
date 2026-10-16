@@ -881,6 +881,17 @@ LPBASECLASS	CGameServerShell::OnClientEnterWorld(HCLIENT hClient)
 		SendObjectivesDataToClient( hClient );
 	}
 
+	// RETAIL: Object 0x100de246: the client hears the other players'
+	// weapon sound loops.
+	HCLIENT hOtherClient = g_pLTServer->GetNextClient( LTNULL );
+	while( hOtherClient )
+	{
+		CPlayerObj* pOtherPlayer = dynamic_cast< CPlayerObj* >(( LPBASECLASS )g_pLTServer->GetClientUserData( hOtherClient ));
+		if( pOtherPlayer )
+			pOtherPlayer->SendWeaponSoundLoopToClient( hClient, pPlayer );
+
+		hOtherClient = g_pLTServer->GetNextClient( hOtherClient );
+	}
 
 	// All done...
 
@@ -1256,7 +1267,7 @@ void CGameServerShell::ProcessHandshake(HCLIENT hClient, ILTMessage_Read *pMsg)
 				bBadFiles = true;
 
 			// CRC the modelbutes.txt
-			static uint32 nModelButesCRC = CRC32::CalcRezFileCRC( g_pModelButeMgr->GetAttributeFile( ));
+			static uint32 nModelButesCRC = g_pModelButeMgr->GetFileCRC( );
 			if (( nModelButesCRC ^ nXORMask ) != pMsg->Readuint32())
 				bBadFiles = true;
 
@@ -5175,8 +5186,9 @@ void CGameServerShell::ServerAppShellUpdate( )
 
 		cMsg.Writeuint16( g_pLTServer->GetClientID( hClient ));
 		cMsg.WriteString( pPlayer->GetNetUniqueName( ));
+		// RETAIL: Object 0x100ddd1b: kills and score, as the server app reads
+		// them.
 		cMsg.Writeint16( pPlayer->GetPlayerScore()->GetFrags( ));
-		cMsg.Writeint16( pPlayer->GetPlayerScore()->GetTags( ));
 		cMsg.Writeint16( pPlayer->GetPlayerScore()->GetScore( ));
 	}
 

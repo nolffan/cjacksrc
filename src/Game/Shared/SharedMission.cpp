@@ -49,6 +49,7 @@ void MissionStats::Init()
 	dwNumNeutralKills	= 0;
 	dwNumTimesKilled	= 0;
 	dwNumTimesHit		= 0;
+	dwNumSecrets		= 0;
 
 	for (int i = 0; i < HL_NUM_LOCS; i++)
 		dwHitLocations[i] = 0;
@@ -77,6 +78,7 @@ void MissionStats::WriteData(ILTMessage_Write *pMsg)
     pMsg->Writeuint32(dwNumNeutralKills);
     pMsg->Writeuint32(dwNumTimesKilled);
     pMsg->Writeuint32(dwNumTimesHit);
+    pMsg->Writeuint32(dwNumSecrets);
 
 	for (int i = 0; i < HL_NUM_LOCS; i++)
         pMsg->Writeuint32(dwHitLocations[i]);
@@ -105,6 +107,7 @@ void MissionStats::ReadData(ILTMessage_Read *pMsg)
     dwNumNeutralKills   = pMsg->Readuint32();
     dwNumTimesKilled    = pMsg->Readuint32();
     dwNumTimesHit       = pMsg->Readuint32();
+    dwNumSecrets        = pMsg->Readuint32();
 
 	for (int i = 0; i < HL_NUM_LOCS; i++)
         dwHitLocations[i] = pMsg->Readuint32();

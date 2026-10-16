@@ -41,7 +41,11 @@ CRC32Table::CRC32Table()
 // The global, static table
 CRC32Table g_CRCTable;
 
-uint32 CRC32::CalcFileCRC(const char *pFilename)
+
+// RETAIL: CShell 0x1002ffd0, Object 0x100bb8e0: Contract J.A.C.K. goes on
+// to CRC the upper-cased file title of pName after the file's bytes, so a
+// file the client found by its module path CRCs as the server's copy does.
+uint32 CRC32::CalcFileCRC(const char *pFilename, const char *pName)
 {
 	FILE *pFile = fopen(pFilename, "rb");
 	if (!pFile)
@@ -56,7 +60,20 @@ uint32 CRC32::CalcFileCRC(const char *pFilename)
 		g_CRCTable.Calc(nAccumulator, (uint8)nNextChar);
 	}
 
+	// cjacksrc: Contract J.A.C.K. continues over the upper-cased file title
+	char szTitle[_MAX_PATH * 2];
+	_splitpath(pName, NULL, NULL, szTitle, NULL);
+	_strupr(szTitle);
+	for (const char *pCur = szTitle; *pCur; ++pCur)
+		g_CRCTable.Calc(nAccumulator, (uint8)*pCur);
+
 	return nAccumulator ^ 0xFFFFFFFF;
+}
+
+// RETAIL: CShell 0x100300a0, Object 0x100bb9b0.
+uint32 CRC32::CalcFileCRC(const char *pFilename)
+{
+	return CalcFileCRC(pFilename, pFilename);
 }
 
 uint32 CRC32::CalcDataCRC(const void *pData, uint32 nDataSize)
@@ -117,6 +134,14 @@ uint32 CRC32::CalcRezFileCRC(const char *pFilename)
 	}
 
 	pFileStream->Release();
+
+	// RETAIL: CShell 0x10030271, Object 0x100bbb81: and the file's title.
+	// cjacksrc: Contract J.A.C.K. continues over the upper-cased file title
+	char szTitle[_MAX_PATH * 2];
+	_splitpath(pFilename, NULL, NULL, szTitle, NULL);
+	_strupr(szTitle);
+	for (const char *pCur = szTitle; *pCur; ++pCur)
+		g_CRCTable.Calc(nAccumulator, (uint8)*pCur);
 
 	return nAccumulator ^ 0xFFFFFFFF;
 }
