@@ -38,6 +38,10 @@ void con_SetErrorLog(ErrorLogFn theFunction);
 // Keypress handler.
 void con_OnKeyPress(uint32 key);
 
+// RETAIL: the console draws itself (Lithtech.exe 0x4196a0)
+void con_Draw();
+void con_DrawSmall(int nLines);
+
 // Cycle thru the commands they've typed in...
 void con_CycleCommandsBack();
 void con_CycleCommandsForward();

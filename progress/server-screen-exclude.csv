@@ -1,0 +1,4 @@
+addr,reason
+0x10029211,NOT A FUNCTION: interior block of CPlayerMover::StairStep (0x10029090): a stray call target from data at 0x10064489 split its extent
+0x10029323,NOT A FUNCTION: interior block of CPlayerMover::StairStep (0x10029090): a stray call target from data at 0x1006459b split its extent
+0x10029367,NOT A FUNCTION: interior block of CPlayerMover::StairStep (0x10029090): a stray call target from data at 0x100645df split its extent

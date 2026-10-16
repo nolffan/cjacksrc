@@ -116,7 +116,16 @@ ILTSoundSys* SoundSys(bool bTerminate)
 				// grab the default snddrv.dll NOTE: does't call Init on it. 
 				g_pSoundSys = ILTSoundFactory::GetSoundFactory()->MakeSoundSystem(LTNULL);
 
-
+#ifndef CJACK_MODERN
+				// RETAIL: when there is no default driver either, Term is
+				// called through the null pointer (Lithtech.exe 0x49bd0b;
+				// RETAIL_BUGS.md, MODERN.md EN-7)
+				if (g_pSoundSys == LTNULL)
+				{
+					g_pSoundSys->Term();
+					g_pSoundSys = LTNULL;
+				}
+#endif
 		  }
 
         //ASSERT(g_pSoundSys != LTNULL);
@@ -533,10 +542,11 @@ void CSoundMgr::Term(bool bRemoveSounds)
                     if (g_DebugLevel >= 2)
                     {
                         pSoundBuffer = pSoundInstance->GetSoundBuffer();
+                        // RETAIL: each through DEBUG_PRINT (Lithtech.exe 0x49d83f)
                         if (pSoundBuffer)
-                            dsi_PrintToConsole("Unfreed sound handle %s", pSoundBuffer->GetFileIdent()->m_Filename);
+                            DEBUG_PRINT(1, ("Unfreed sound handle %s", pSoundBuffer->GetFileIdent()->m_Filename))
                         else
-                            dsi_PrintToConsole("Unfreed sound handle 0x%x", pSoundInstance);
+                            DEBUG_PRINT(1, ("Unfreed sound handle 0x%x", pSoundInstance))
                     }
                 }
 
