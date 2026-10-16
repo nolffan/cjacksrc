@@ -58,6 +58,10 @@ class CVehicleMgr
  
 	LTBOOL		CanShowCrosshair()	const { return (m_ePPhysicsModel != PPM_SNOWMOBILE); }
 	LTBOOL      IsVehiclePhysics();
+
+	// cjacksrc: RETAIL: CShell 0x101055b0: the vehicle's own weapon.
+	bool		HasVehicleWeapon() const { return m_bHasVehicleWeapon; }
+	WeaponState	UpdateVehicleWeapon( LTRotation const &rRot, LTVector const &vPos, bool bFire, FireType eFireType );
 	LTBOOL		CanDismount();
 	LTBOOL      IsTurning()				const { return (m_bVehicleTurning && !m_bVehicleStopped); }
 	int			GetTurnDirection()		const { return m_nVehicleTurnDirection; }

@@ -6191,9 +6191,9 @@ LTBOOL CPlayerObj::ClientUpdate(ILTMessage_Read *pMsg)
     LTBOOL bRet = LTTRUE;
 
     LTBOOL bOld3rdPersonView = m_b3rdPersonView;
-	m_nClientChangeFlags = 0;
-
-    m_nClientChangeFlags = pMsg->Readuint16();
+	// RETAIL: Object 0x10108fdf: Contract J.A.C.K.'s client sends the
+	// change flags in a byte.
+    m_nClientChangeFlags = pMsg->Readuint8();
 
 	if (m_nClientChangeFlags & CLIENTUPDATE_PLAYERROT)
 	{
@@ -6516,6 +6516,11 @@ void CPlayerObj::HandlePlayerPositionMessage(ILTMessage_Read *pMsg)
     LTVector newPos, curPos, curVel, newVel;
     uint8 moveCode;
     LTBOOL bOnGround;
+
+	// RETAIL: Object 0x1010cfdd: Contract J.A.C.K.'s client sends its
+	// position only when it changed.
+	if (!pMsg->Readbool())
+		return;
 
     moveCode = pMsg->Readuint8();
 

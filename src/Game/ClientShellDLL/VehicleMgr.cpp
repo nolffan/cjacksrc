@@ -812,6 +812,8 @@ void CVehicleMgr::UpdateVehicleMotion()
 		cMsg.Writeuint8(MID_PLAYER_CLIENTMSG);
 		cMsg.Writeuint8(CP_PHYSICSMODEL);
 		cMsg.Writeuint8(PPM_NORMAL);
+		// RETAIL: CShell 0x1010c570: and no vehicle.
+		cMsg.Writeuint8(0xFF);
 	    g_pLTClient->SendToServer(cMsg.Read(), MESSAGE_GUARANTEED);
 
 		// The server won't notify us, so change models...
@@ -1308,6 +1310,23 @@ void CVehicleMgr::UpdateVehicleFriction(LTFLOAT fSlideToStopTime)
 LTBOOL CVehicleMgr::IsVehiclePhysics()
 {
 	return IsVehicleModel(m_ePPhysicsModel);
+}
+
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	CVehicleMgr::UpdateVehicleWeapon
+//
+//	PURPOSE:	RETAIL: CShell 0x101055b0: aim and fire the vehicle's weapon
+//
+// ----------------------------------------------------------------------- //
+
+WeaponState CVehicleMgr::UpdateVehicleWeapon( LTRotation const &rRot, LTVector const &vPos, bool bFire, FireType eFireType )
+{
+	if( !m_bHasVehicleWeapon )
+		return W_INACTIVE;
+
+	m_VehicleWeapon.SetCameraInfo( rRot, vPos );
+	return m_VehicleWeapon.Update( bFire, eFireType );
 }
 
 // ----------------------------------------------------------------------- //
