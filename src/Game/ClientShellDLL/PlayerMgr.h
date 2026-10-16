@@ -208,7 +208,7 @@ public:
 	bool		IsCarryingHeavyObject() const { return m_nCarryingObject == CFX_CARRY_BODY || m_nCarryingObject == CFX_CARRY_DD_CORE;}
 	void		SetCarryingObject( uint8 nCarry, struct CHASSISPIECE const* pChassisPiece, bool bUpdateCameraDip );
 	struct CHASSISPIECE const* GetCarryingChassisPiece() const { return m_pCarryingChassisPiece; }
-	uint8		CanCarryObject();
+	uint8		CanCarryObject( class CSpecialFX** ppFX = LTNULL );
 	bool		CanDropCarriedObject() { return m_bCanDropCarriedObject; }
 	void		SetCanDropCarriedObject( bool bCanDrop ) { m_bCanDropCarriedObject = bCanDrop; }
 	
