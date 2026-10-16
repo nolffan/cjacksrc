@@ -5451,8 +5451,9 @@ void CPlayerMgr::UpdateDistanceIndicator()
 //
 // ----------------------------------------------------------------------- //
 
-uint8 CPlayerMgr::CanCarryObject()
+uint8 CPlayerMgr::CanCarryObject( CSpecialFX** ppFX )
 {
+	// RETAIL: 0x1009b830 the special fx of what can be carried is handed back.
 	if( !GetCarryingObject() && GetTargetMgr()->IsTargetInRange() && GetTargetMgr()->IsMoveTarget() && !m_pMoveMgr->IsDucking() )
 	{				
 		// Check if the target object is a body...
@@ -5460,24 +5461,29 @@ uint8 CPlayerMgr::CanCarryObject()
 		CBodyFX* pBody = g_pGameClientShell->GetSFXMgr()->GetBodyFX(GetTargetMgr()->GetTargetObject());
 		if( pBody )
 		{
+			if( ppFX )
+				*ppFX = pBody;
+
 			// If the body can be revived then we can't carry it...
 			
-			if (pBody->CanBeRevived())
-				return CFX_CARRY_NONE;
-			else
-				return CFX_CARRY_BODY;
+			return !pBody->CanBeRevived();
 		}
 		CCharacterFX* pChar = g_pGameClientShell->GetSFXMgr()->GetCharacterFX(GetTargetMgr()->GetTargetObject());
 		if( pChar )
 		{
+			if( ppFX )
+				*ppFX = pChar;
+
 			return CFX_CARRY_BODY;
 		}
 
-
-		// RETAIL: 0x1009b830 the pieces carried are chassis pieces.
-		ChassisPieceFX* const pFX = (ChassisPieceFX*)g_pGameClientShell->GetSFXMgr()->FindSpecialFX(SFX_CHASSISPIECE_ID, GetTargetMgr()->GetTargetObject());
+		// The pieces carried are chassis pieces.
+		CSpecialFX* const pFX = g_pGameClientShell->GetSFXMgr()->FindSpecialFX(SFX_CHASSISPIECE_ID, GetTargetMgr()->GetTargetObject());
 		if( pFX )
 		{
+			if( ppFX )
+				*ppFX = pFX;
+
 			return CFX_CARRY_CHASSISPIECE;
 		}
 

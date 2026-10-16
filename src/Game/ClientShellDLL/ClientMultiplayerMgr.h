@@ -18,13 +18,18 @@
 #include "ProfileUtils.h"
 
 class IServerDirectory;
+class IGameSpyBrowser;
 
 
 enum eDisconnectCodes
 {
 	eDisconnect_None = 0,
 	eDisconnect_NotSameGUID,
-	eDisconnect_WrongPassword
+	eDisconnect_WrongPassword,
+	// cjacksrc: Contract J.A.C.K.'s (CShell.dll 0x1001ff9f..0x1001ffc7)
+	eDisconnect_BadFiles,			// The server found our files changed
+	eDisconnect_CDKeyRejected,		// GameSpy rejected our CD key
+	eDisconnect_Banned,				// The server bans us
 };
 
 
@@ -75,6 +80,10 @@ public:
 
 	// Start a client of a server based on previously set startgamerequest.
 	bool		StartClientServer( );
+
+	// cjacksrc: GameSpy's browsers, for the Internet and the LAN (CShell.dll
+	// 0x1001e9b0); the Internet one answers a server's CD key challenge.
+	bool		CreateGameSpyBrowsers( );
 
 
 	// This client is connected to remote server.
@@ -160,6 +169,10 @@ private:
 	
 	// The name of our selected mod...
 	std::string		m_sModName;
+
+	// cjacksrc: RETAIL: 0x1688, 0x168c (CreateGameSpyBrowsers).
+	IGameSpyBrowser*	m_pGameSpyBrowser;
+	IGameSpyBrowser*	m_pGameSpyLANBrowser;
 	
 };
 

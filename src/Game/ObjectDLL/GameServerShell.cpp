@@ -564,8 +564,6 @@ CGameServerShell::~CGameServerShell()
 
 void CGameServerShell::OnAddClient(HCLIENT hClient)
 {
-	DEBUG_CONSOLE_OUTPUT("Add Client", eRarely);
-
 	// Add this client to our list of clients.
 	ClientData* pClientData = debug_new( ClientData );
 	pClientData->m_hClient = hClient;
@@ -575,7 +573,14 @@ void CGameServerShell::OnAddClient(HCLIENT hClient)
 	// Check if the client is banned.
 	if( !BanIPMgr::Instance( ).OnAddClient( hClient ))
 	{
-		g_pLTServer->KickClient( hClient );
+		CAutoMessage cMsg;
+		cMsg.Writeuint8( MID_HANDSHAKE );
+		cMsg.Writeuint8( MID_HANDSHAKE_BANNED );
+		g_pLTServer->SendToClient( cMsg.Read(), hClient, MESSAGE_GUARANTEED );
+
+		pClientData->m_bKicked = true;
+		m_nLastClientTime = GetTickCount( );
+		return;
 	}
 
 	// Tell serverapp about it.
@@ -620,15 +625,73 @@ void CGameServerShell::OnAddClient(HCLIENT hClient)
 		iter++;
 	}
 
-	// The engine no longer moves a new client towards the world by itself:
-	// the game lets it in. Contract J.A.C.K. does that only once the
-	// client has passed the handshake and, on a published server,
-	// GameSpy's CD key check (ProcessHandshake, Object.lto 0x100de844;
-	// the GameSpy callbacks, 0x100dd48f, 0x100dd530, 0x100e097f), keeping
-	// a connection record per client (0x194fc). Until that is rebuilt the
-	// handshake stays where NOLF2 had it, after the client enters the
-	// world, and every client is let in here.
-	g_pLTServer->FinishClientConnect( hClient );
+	// RETAIL: 0x100e0793 the client's name is set here, as it connects:
+	// its player GUID, with its unique player name kept in its record.
+	NetClientData ncd;
+	memset( &ncd, 0, sizeof( ncd ));
+
+	char const* pszClientName = NULL;
+
+	// Must have client data for mp game.
+	if( IsMultiplayerGame( ))
+	{
+		// Make sure the NetClientData is valid.
+		int nNcdSize = sizeof( ncd );
+		if( !g_pLTServer->GetClientData( hClient, ( uint8* )&ncd, nNcdSize ) || nNcdSize != sizeof( NetClientData ))
+		{
+			g_pLTServer->KickClient( hClient );
+			pClientData->m_bKicked = true;
+			m_nLastClientTime = GetTickCount( );
+			return;
+		}
+
+		// Check if the modelid is valid.
+		ModelId ePlayerModelId = (ModelId)ncd.m_ePlayerModelId;
+		if( ePlayerModelId == eModelIdInvalid || 
+			ePlayerModelId >= g_pModelButeMgr->GetNumModels( ))
+		{
+			g_pLTServer->KickClient( hClient );
+			KickClientData( pClientData );
+			return;
+		}
+
+		char szUniqueName[MAX_PLAYER_NAME];
+		GenerateUniqueName( hClient, ncd.m_szName, szUniqueName, ARRAY_LEN( szUniqueName ));
+		pClientData->m_sUniqueName = szUniqueName;
+
+		pszClientName = ncd.m_szPlayerGuid;
+	}
+	else
+	{
+		pszClientName = "singleplayer";
+	}
+
+	// Set our clientname from the netclientdata.
+	g_pLTServer->SetClientName( hClient, pszClientName, strlen( pszClientName ) + 1 );
+	g_pLTServer->GetClientInfoFlags( hClient );
+
+	if( IsMultiplayerGame( ))
+	{
+		// Start a handshake with the client: our version, the session's
+		// name and the level we are on.
+		pClientData->m_nState = eClientDataState_Handshaking;
+
+		CAutoMessage cHello;
+		cHello.Writeuint8( MID_HANDSHAKE );
+		cHello.Writeuint8( MID_HANDSHAKE_HELLO );
+		cHello.Writeuint16( GAME_HANDSHAKE_VER );
+		cHello.WriteString( m_ServerGameOptions.GetSessionName( ));
+		cHello.WriteString( GetCurLevel( ));
+		g_pLTServer->SendToClient( cHello.Read(), hClient, MESSAGE_GUARANTEED );
+	}
+	else
+	{
+		// Single player needs no handshake: let the client in.
+		pClientData->m_nState = eClientDataState_Connected;
+		g_pLTServer->FinishClientConnect( hClient );
+	}
+
+	m_nLastClientTime = GetTickCount( );
 }
 
 // ----------------------------------------------------------------------- //
@@ -754,37 +817,20 @@ LPBASECLASS	CGameServerShell::OnClientEnterWorld(HCLIENT hClient)
 	// This will be filled in with clientdata for mp games.
 	NetClientData ncd;
 	memset( &ncd, 0, sizeof( ncd ));
+	ePlayerModelId = eModelIdInvalid;
 
-	char const* pszClientName = NULL;
-
-	// Must have client data for mp game.
+	// RETAIL: 0x100de0ea the client data was checked and the client named
+	// as it connected (OnAddClient); only its model is needed here.
 	if( IsMultiplayerGame( ))
 	{
-		// Make sure the NetClientData is valid.
 		int nNcdSize = sizeof( ncd );
 		if( !g_pLTServer->GetClientData( hClient, ( uint8* )&ncd, nNcdSize ) || nNcdSize != sizeof( NetClientData ))
 		{
 			return NULL;
 		}
 
-		pszClientName = ncd.m_szPlayerGuid;
-
 		ePlayerModelId = (ModelId)ncd.m_ePlayerModelId;
-
-		// Check if the modelid is valid.
-		if( ePlayerModelId == eModelIdInvalid || 
-			ePlayerModelId >= g_pModelButeMgr->GetNumModels( ))
-		{
-			return NULL;
-		}
 	}
-	else
-	{
-		pszClientName = "singleplayer";
-	}
-
-	// Set our clientname from the netclientdata.
-	g_pLTServer->SetClientName( hClient, pszClientName, strlen( pszClientName ) + 1 );
 
 	// See if we can use a player from one of the clientrefs.
 	pPlayer = PickClientRefPlayer( hClient );
@@ -812,15 +858,18 @@ LPBASECLASS	CGameServerShell::OnClientEnterWorld(HCLIENT hClient)
 		
 		SendObjectivesDataToClient( hClient );
 
-		// Tell the player about our ncd.
-		pPlayer->SetNetClientData( ncd );
+		ClientData* pClientData = GetClientData( hClient );
+		if( !pClientData )
+		{
+			g_pLTServer->RemoveObject( pPlayer->m_hObject );
+			return NULL;
+		}
 
 	    uint32  nClientID   = g_pLTServer->GetClientID( hClient );
-		char const* pszNetUniqueName = pPlayer->GetNetUniqueName( );
 
 		CAutoMessage cMsg;
 		cMsg.Writeuint8( MID_PLAYER_CONNECTED );
-		cMsg.WriteString( pszNetUniqueName );
+		cMsg.WriteString( pClientData->m_sUniqueName.c_str( ));
 		cMsg.Writeuint32( nClientID );
 		g_pLTServer->SendToClient( cMsg.Read(), hClient, MESSAGE_GUARANTEED );
 
@@ -1095,16 +1144,24 @@ inline uint32 MessUp32BitValue(uint32 nValue, uint32 nRot)
 
 void CGameServerShell::ProcessHandshake(HCLIENT hClient, ILTMessage_Read *pMsg)
 {
-	// Get the player
-	CPlayerObj *pPlayer = GetPlayerFromClientList(hClient);
-	if (!pPlayer)
-	{
-		// Uh...  Who are you again?
-		g_pLTServer->KickClient(hClient);
-		return;
-	}
 	//host doesn't need to provide user password 
 	bool bIsHost = g_pLTServer->GetClientInfoFlags(hClient) & CIF_LOCAL;
+
+	// RETAIL: 0x100de370 the handshake works on the client's record, from
+	// OnAddClient, before the client has a player.
+	ClientData* pClientData = NULL;
+	ClientDataList::iterator iter = m_ClientDataList.begin( );
+	for( ; iter != m_ClientDataList.end( ); iter++ )
+	{
+		if( (*iter)->m_hClient == hClient )
+		{
+			pClientData = *iter;
+			break;
+		}
+	}
+
+	if( !pClientData )
+		return;
 
 	// Get the player's GUID.
 	char szClientName[MAX_CLIENT_NAME_LENGTH] = "";
@@ -1112,6 +1169,7 @@ void CGameServerShell::ProcessHandshake(HCLIENT hClient, ILTMessage_Read *pMsg)
 	if( !szClientName[0] )
 	{
 		g_pLTServer->KickClient( hClient );
+		KickClientData( pClientData );
 		return;
 	}
 
@@ -1120,14 +1178,13 @@ void CGameServerShell::ProcessHandshake(HCLIENT hClient, ILTMessage_Read *pMsg)
 	{
 		case MID_HANDSHAKE_HELLO :
 		{
-
-
 			// Check the client's version
 			int nHandshakeVer = (int)pMsg->Readuint16();
 			if (nHandshakeVer != GAME_HANDSHAKE_VER)
 			{
 				// If they got here, they ignored our different version number.  Boot 'em!
 				g_pLTServer->KickClient(hClient);
+				KickClientData( pClientData );
 
 				// Jump out of the handshake
 				return;
@@ -1143,12 +1200,24 @@ void CGameServerShell::ProcessHandshake(HCLIENT hClient, ILTMessage_Read *pMsg)
 			CAutoMessage cResponse;
 			cResponse.Writeuint8(MID_HANDSHAKE);
 			cResponse.Writeuint8(MID_HANDSHAKE_PASSWORD);
-#ifdef SOURCE_RELEASE
-			cResponse.Writeuint32( GAME_HANDSHAKE_PASSWORD );
-#else // SOURCE_RELEASE
 			cResponse.Writeuint32((uint32)this ^ MessUp32BitValue(nClientKey, (uint32)(szClientName[0])));
-#endif // SOURCE_RELEASE
 			cResponse.Writebool((!bIsHost && m_ServerGameOptions.m_bUsePassword));
+
+			// A server published with GameSpy challenges the client's CD key.
+			if( m_pGameSpyServer )
+			{
+				cResponse.Writebool( true );
+
+				char szChallenge[256];
+				unsigned int nChallengeLen = ARRAY_LEN( szChallenge );
+				m_pGameSpyServer->GetCDKeyChallenge( szChallenge, &nChallengeLen );
+				cResponse.WriteString( szChallenge );
+			}
+			else
+			{
+				cResponse.Writebool( false );
+			}
+
 			g_pLTServer->SendToClient(cResponse.Read(), hClient, MESSAGE_GUARANTEED);
 		}
 		break;
@@ -1157,13 +1226,9 @@ void CGameServerShell::ProcessHandshake(HCLIENT hClient, ILTMessage_Read *pMsg)
 			// Get the client's password
 			uint32 nClientPassword = pMsg->Readuint32();
 
-#ifdef SOURCE_RELEASE
-
-			uint32 nXORMask = GAME_HANDSHAKE_MASK;
-			nClientPassword ^= nXORMask;
-			uint32 nClientName = GAME_HANDSHAKE_PASSWORD;
-
-#else // SOURCE_RELEASE
+			// RETAIL: 0x100de46f every check is made before the client is
+			// told it failed.
+			bool bBadFiles = false;
 
 			// Encrypt the first 4 bytes of the client name
 			uint32 nClientName = *((uint32*)( &szClientName[0] ));
@@ -1177,83 +1242,47 @@ void CGameServerShell::ProcessHandshake(HCLIENT hClient, ILTMessage_Read *pMsg)
 			uint32 nXORMask = MessUp32BitValue((uint32)this, (uint32)(szClientName[0]));
 			nClientName ^= nXORMask;
 
-#endif // SOURCE_RELEASE
-
 			// Validate
 			if (nClientName != nClientPassword)
-			{
-				// They're a fake!!
-				g_pLTServer->KickClient(hClient);
-				return;
-			}
+				bBadFiles = true;
 
 			// Read in their weapons file CRC
-			uint32 nWeaponCRC = g_pWeaponMgr->GetFileCRC();
-			nWeaponCRC ^= nXORMask;
-			uint32 nClientCRC = pMsg->Readuint32();
-			
-#ifndef _DEBUG
-			if (nWeaponCRC != nClientCRC)
-			{
-				// They're cheating!!
-				g_pLTServer->KickClient(hClient);
-
-				return;
-			}
-#endif
+			static uint32 nWeaponCRC = g_pWeaponMgr->GetFileCRC();
+			if (( nWeaponCRC ^ nXORMask ) != pMsg->Readuint32())
+				bBadFiles = true;
 
 			// Read in their client file CRC
-			uint32 nCShellCRC = m_nCShellCRC;
-			nCShellCRC ^= nXORMask;
-			nClientCRC = pMsg->Readuint32();
-#ifndef _DEBUG
-			if (nCShellCRC != nClientCRC)
-			{
-				// They're cheating!!
-				g_pLTServer->KickClient(hClient);
-
-				return;
-			}
-#endif
+			if (( m_nCShellCRC ^ nXORMask ) != pMsg->Readuint32())
+				bBadFiles = true;
 
 			// CRC the modelbutes.txt
 			static uint32 nModelButesCRC = CRC32::CalcRezFileCRC( g_pModelButeMgr->GetAttributeFile( ));
-			uint32 nModelButesMaskedCRC = nModelButesCRC ^ nXORMask;
-			uint32 nClientModelButesCRC = pMsg->Readuint32();
-#ifndef _DEBUG
-			if( nClientModelButesCRC !=  nModelButesMaskedCRC )
-			{
-				// They're cheating!!
-				g_pLTServer->KickClient(hClient);
-				return;
-			}
-#endif
+			if (( nModelButesCRC ^ nXORMask ) != pMsg->Readuint32())
+				bBadFiles = true;
 
 			// CRC the surface.txt
 			static uint32 nSurfaceCRC = CRC32::CalcRezFileCRC( g_pSurfaceMgr->GetAttributeFile( ));
-			uint32 nSurfaceMaskedCRC = nSurfaceCRC ^ nXORMask;
-			uint32 nClientSurfaceCRC = pMsg->Readuint32();
-#ifndef _DEBUG
-			if( nClientSurfaceCRC !=  nSurfaceMaskedCRC )
-			{
-				// They're cheating!!
-				g_pLTServer->KickClient(hClient);
-				return;
-			}
-#endif
+			if (( nSurfaceCRC ^ nXORMask ) != pMsg->Readuint32())
+				bBadFiles = true;
 
 			// CRC the damagefx.txt
 			static uint32 nDamageFxCRC = CRC32::CalcRezFileCRC( "attributes\\damagefx.txt" );
-			uint32 nDamageFxMaskedCRC = nDamageFxCRC ^ nXORMask;
-			uint32 nClientDamageFxCRC = pMsg->Readuint32();
-#ifndef _DEBUG
-			if( nClientDamageFxCRC !=  nDamageFxMaskedCRC )
+			if (( nDamageFxCRC ^ nXORMask ) != pMsg->Readuint32())
+				bBadFiles = true;
+
+			// CRC the autoexec.cfg
+			static uint32 nAutoexecCRC = CRC32::CalcFileCRC( "autoexec.cfg" );
+			if ((( nAutoexecCRC ^ nXORMask ) != pMsg->Readuint32()) || bBadFiles )
 			{
 				// They're cheating!!
-				g_pLTServer->KickClient(hClient);
+				CAutoMessage cMsg;
+				cMsg.Writeuint8(MID_HANDSHAKE);
+				cMsg.Writeuint8((uint8)MID_HANDSHAKE_BADFILES);
+				g_pLTServer->SendToClient(cMsg.Read(), hClient, MESSAGE_GUARANTEED);
+
+				KickClientData( pClientData );
 				return;
 			}
-#endif
 
 			uint32 nHashedPassword = pMsg->Readuint32();
 			uint32 nServerHashedPassword = str_Hash(m_ServerGameOptions.m_sPassword.c_str( ));
@@ -1267,36 +1296,181 @@ void CGameServerShell::ProcessHandshake(HCLIENT hClient, ILTMessage_Read *pMsg)
 				cMsg.Writeuint8((uint8)MID_HANDSHAKE_WRONGPASS);
 				g_pLTServer->SendToClient(cMsg.Read(), hClient, MESSAGE_GUARANTEED);
 
-				//and boot 'em
-				//jrg - 9/4/02 in this particular case we let the client disconnect itself so that it can handle
-				//		an incorrect password a little more smoothly
-//				g_pLTServer->KickClient(hClient);
+				KickClientData( pClientData );
 				return;
 			}
 
+			if( m_pGameSpyServer )
+			{
+				// Have GameSpy check the client's CD key; the update lets
+				// the client in when it is done.
+				char szChallenge[256];
+				char szResponse[256];
+				pMsg->ReadString( szChallenge, ARRAY_LEN( szChallenge ));
+				pMsg->ReadString( szResponse, ARRAY_LEN( szResponse ));
 
-			// Tell the client they passed the test...
-			CAutoMessage cMsg;
-			cMsg.Writeuint8(MID_HANDSHAKE);
-			cMsg.Writeuint8((uint8)MID_HANDSHAKE_DONE);
-			g_pLTServer->SendToClient(cMsg.Read(), hClient, MESSAGE_GUARANTEED);
+				uint32 nClientId = g_pLTServer->GetClientID( hClient );
 
+				uint8 aAddr[4];
+				uint16 nPort;
+				g_pLTServer->GetClientAddr( hClient, aAddr, &nPort );
 
-			// Unlock the player
-			pPlayer->FinishHandshake();
+				char szIP[32];
+				sprintf( szIP, "%d.%d.%d.%d", aAddr[0], aAddr[1], aAddr[2], aAddr[3] );
 
-			// Spawn them in..
-			RespawnPlayer(pPlayer, hClient);
+				m_pGameSpyServer->ProcessCDKeyChallengeResponse( nClientId, szIP, szChallenge, szResponse );
+				pClientData->m_nState = eClientDataState_CDKeyCheck;
+			}
+			else
+			{
+				// Let them in.
+				pClientData->m_nState = eClientDataState_Connected;
+				g_pLTServer->FinishClientConnect( hClient );
+			}
 		}
 		break;
 		default :
 		{
 			// Hmm..  They sent over an invalid handshake message.  They're naughty.
 			g_pLTServer->KickClient(hClient);
+			KickClientData( pClientData );
 			return;
 		}
 	}
 
+}
+
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	CGameServerShell::KickClientData
+//
+//	PURPOSE:	Mark a client to be removed by the update.
+//
+// ----------------------------------------------------------------------- //
+
+void CGameServerShell::KickClientData( ClientData* pClientData )
+{
+	pClientData->m_bKicked = true;
+	m_nLastClientTime = GetTickCount( );
+}
+
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	CGameServerShell::UpdateClientCDKeyChecks
+//
+//	PURPOSE:	Let in the clients whose CD keys GameSpy accepted.
+//
+// ----------------------------------------------------------------------- //
+
+bool CGameServerShell::UpdateClientCDKeyChecks( )
+{
+	ClientDataList::iterator iter = m_ClientDataList.begin( );
+	for( ; iter != m_ClientDataList.end( ); iter++ )
+	{
+		ClientData* pClientData = *iter;
+		if( pClientData->m_nState != eClientDataState_CDKeyCheck )
+			continue;
+
+		if( !m_pGameSpyServer )
+		{
+			pClientData->m_nState = eClientDataState_Connected;
+			g_pLTServer->FinishClientConnect( pClientData->m_hClient );
+			continue;
+		}
+
+		switch( m_pGameSpyServer->GetChallengeResponse( g_pLTServer->GetClientID( pClientData->m_hClient )))
+		{
+			case IGameSpyServer::eChallengeResponse_Invalid:
+			case IGameSpyServer::eChallengeResponse_Rejected:
+			{
+				CAutoMessage cMsg;
+				cMsg.Writeuint8( MID_HANDSHAKE );
+				cMsg.Writeuint8( MID_HANDSHAKE_CDKEYREJECTED );
+				g_pLTServer->SendToClient( cMsg.Read(), pClientData->m_hClient, MESSAGE_GUARANTEED );
+
+				pClientData->m_bKicked = true;
+				m_nLastClientTime = GetTickCount( );
+			}
+			break;
+
+			case IGameSpyServer::eChallengeResponse_Accepted:
+			{
+				pClientData->m_nState = eClientDataState_Connected;
+
+				CAutoMessage cMsg;
+				cMsg.Writeuint8( MID_HANDSHAKE );
+				cMsg.Writeuint8( MID_HANDSHAKE_DONE );
+				g_pLTServer->SendToClient( cMsg.Read(), pClientData->m_hClient, MESSAGE_GUARANTEED );
+
+				g_pLTServer->FinishClientConnect( pClientData->m_hClient );
+			}
+			break;
+
+			default:
+			break;
+		}
+	}
+
+	return true;
+}
+
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	CGameServerShell::BootClients
+//
+//	PURPOSE:	Remove kicked clients, and boot those that have not talked
+//				to us in a very long time.
+//
+// ----------------------------------------------------------------------- //
+
+bool CGameServerShell::BootClients( )
+{
+	if(( float )( GetTickCount( ) - m_nLastClientTime ) < 5.0f )
+		return true;
+
+	m_nLastClientTime = GetTickCount( );
+
+	// Check if any client has not talked to us in a very long time.  If so, it may
+	// mean there is a bug in the networking code that refuses to kick clients not responding.
+	// Because this bug is rare, it's difficult to track in the networking.  This is just a bit
+	// of fullproofing.  The autoboottime is in seconds, so we need to convert it to ms.
+	uint32 nCurrentTime = GetTickCount( );
+	uint32 nAutoBootTime = ( uint32 )( GetConsoleFloat( "AutoBootTime", 60.0f ) * 1000.0f + 0.5f );
+	ClientDataList::const_iterator iter = m_ClientDataList.begin( );
+	for( ; iter != m_ClientDataList.end( ); iter++ )
+	{
+		ClientData* pClientData = *iter;
+		if( !pClientData )
+			continue;
+
+		char const* pszReason;
+		if( pClientData->m_bKicked )
+		{
+			pszReason = "Removing kicked client.";
+		}
+		else
+		{
+			// Skip the host.
+			if( g_pLTServer->GetClientInfoFlags( pClientData->m_hClient ) & CIF_LOCAL )
+				continue;
+
+			// Get the time since the ping.  Account for wrapping.
+			uint32 nDeltaTime = ( nCurrentTime > pClientData->m_nLastClientUpdateTime ) ? 
+				( nCurrentTime - pClientData->m_nLastClientUpdateTime ) : 
+				( nCurrentTime + ~( pClientData->m_nLastClientUpdateTime - 1 ));
+
+			// Check if they haven't talked in a while.
+			if( nDeltaTime < nAutoBootTime )
+				continue;
+
+			pszReason = "Booting innactive client.";
+		}
+
+		g_pLTServer->CPrint( pszReason );
+		g_pLTServer->KickClient( pClientData->m_hClient );
+	}
+
+	return true;
 }
 
 
@@ -3123,22 +3297,11 @@ void CGameServerShell::RespawnPlayer(CPlayerObj* pPlayer, HCLIENT hClient)
 
 		// Tell the client to init us!
 		SendEmptyClientMsg(MID_PLAYER_SINGLEPLAYER_INIT, hClient, MESSAGE_GUARANTEED);
-
-		// Unlock the player since we're in single player mode
-		pPlayer->FinishHandshake();
-	}
-	else if (!pPlayer->HasDoneHandshake())
-	{
-		// Start a handshake with the client
-		CAutoMessage cMsg;
-		cMsg.Writeuint8(MID_HANDSHAKE);
-		cMsg.Writeuint8(MID_HANDSHAKE_HELLO);
-		cMsg.Writeuint16(GAME_HANDSHAKE_VER);
-		g_pLTServer->SendToClient(cMsg.Read(), hClient, MESSAGE_GUARANTEED);
 	}
 	else
 	{
-		// Tell the client to init us!
+		// RETAIL: 0x100da338 the handshake was done before the client
+		// entered the world: tell the client to init us!
 		SendEmptyClientMsg(MID_PLAYER_MULTIPLAYER_INIT, hClient, MESSAGE_GUARANTEED);
 	}
 }
@@ -4095,11 +4258,17 @@ void CGameServerShell::UpdateMultiplayer()
 {
 	if (!IsMultiplayerGame( )) return;
 
+	// Let in the clients whose CD keys GameSpy accepted.
+	UpdateClientCDKeyChecks();
+
 	// Update client ping times
 	UpdateClientPingTimes();
 
 	// Update game server info...
 	UpdateGameServer();
+
+	// RETAIL: 0x100def8c remove kicked clients, boot inactive ones.
+	BootClients();
 
 	if (m_bShowMultiplayerSummary)
 	{
@@ -4126,33 +4295,6 @@ void CGameServerShell::UpdateMultiplayer()
 		return;
 	}
 
-	// Check if any client has not talked to us in a very long time.  If so, it may
-	// mean there is a bug in the networking code that refuses to kick clients not responding.
-	// Because this bug is rare, it's difficult to track in the networking.  This is just a bit
-	// of fullproofing.  The autoboottime is in seconds, so we need to convert it to ms.
-	uint32 nCurrentTime = GetTickCount( );
-	uint32 nAutoBootTime = ( uint32 )( GetConsoleFloat( "AutoBootTime", 5.0f * 60.0f ) * 1000.0f + 0.5f );
-	ClientDataList::const_iterator iter = m_ClientDataList.begin( );
-	for( ; iter != m_ClientDataList.end( ); iter++ )
-	{
-		ClientData* pClientData = *iter;
-
-		// Skip the host.
-		if( g_pLTServer->GetClientInfoFlags( pClientData->m_hClient ) & CIF_LOCAL )
-			continue;
-
-		// Get the time since the ping.  Account for wrapping.
-		uint32 nDeltaTime = ( nCurrentTime > pClientData->m_nLastClientUpdateTime ) ? 
-			( nCurrentTime - pClientData->m_nLastClientUpdateTime ) : 
-			( nCurrentTime + ~( pClientData->m_nLastClientUpdateTime - 1 ));
-
-		// Check if they haven't talked in a while.
-		if( nDeltaTime >= nAutoBootTime )
-		{
-			g_pLTServer->CPrint( "Booting innactive client." );
-			g_pLTServer->KickClient( pClientData->m_hClient );
-		}
-	}
 }
 
 // ----------------------------------------------------------------------- //

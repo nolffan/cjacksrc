@@ -33,6 +33,10 @@ class CMissionMgr
 		// Start game from specific level.
 		bool			StartGameFromLevel( char const* pszLevelName );
 
+		// cjacksrc: the level the server we join is on, from its hello
+		// (CShell.dll 0x10088710).
+		bool			SetServerLevel( char const* pszWorldName );
+
 		// Start game from quicksave.
 		bool			StartGameFromQuickSave( );
 

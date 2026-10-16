@@ -2925,16 +2925,11 @@ Used for: Special FX.
 //! std::vector (Lithtech.exe 0x40a5a0; CShell.dll 0x100f01ed calls it twice)
 	bool (*GetParticleBlockersInAABB)( const LTVector& pos, const LTVector& dims, uint32* pIndices, uint32& nNumIndices );
 
-//! cjacksrc: NOLF2's form over Contract J.A.C.K.'s (count, then fill), for
-//! code written against the std::vector one; not part of the interface.
-	bool GetParticleBlockersInAABBList( const LTVector& pos, const LTVector& dims, std::vector<uint32>& indices )
-	{
-		uint32 nNumIndices = 0;
-		if( !GetParticleBlockersInAABB( pos, dims, LTNULL, nNumIndices ) )
-			return false;
-		indices.resize( nNumIndices );
-		return !nNumIndices || GetParticleBlockersInAABB( pos, dims, &indices[0], nNumIndices );
-	}
+//! cjacksrc: NOLF2's std::vector form, named as a type only. Its mention
+//! of std::vector<uint32> in the precompiled headers keeps the game's code
+//! as retail's (CAIGoalMgr::HandleCommand, CMenuMgr::Init,
+//! CPlayerMgr::UpdateContainers); a function using the vector changed it.
+	typedef bool (*GetParticleBlockersInAABBVectorFn)( const LTVector& pos, const LTVector& dims, std::vector<uint32>& indices );
 
 /*!
 \param  index           Index of blocker to retrieve.

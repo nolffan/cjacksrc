@@ -343,34 +343,29 @@ dedicated server (package 7).
   and CVehicleMgr's copy of it. The chassis's update message is a retail
   bug (RETAIL_BUGS.md, MODERN.md GAME-2).
 - **Where it stopped / next**: breadth first by near count.
-  - **Connection flow** (not started in code). Retail OnAddClient
-    (Object.lto 0x100e04b0) does what NOLF2's OnClientEnterWorld did
-    first: a banned client gets MID_HANDSHAKE 7 and is marked kicked
-    (ClientData 0x28; KickClientData 0x100dadd0 marks it and stamps
-    0x19508, which the update (0x100dd560, "AutoBootTime") uses to boot
-    kicked and inactive clients); in multiplayer it reads the
-    NetClientData (0x51 bytes) there, kicks a bad model, makes the
-    unique name (GenerateUniqueName into ClientData 0xc) and sets the
-    client name to the player GUID (then GetClientInfoFlags, unused);
-    then it sends MID_HANDSHAKE_HELLO with the version, the session name
-    and the string at 0x18050 (state 1), or in single player calls
-    FinishClientConnect (state 3). ProcessHandshake (0x100de370) works on
-    ClientData, not the player object, with GameSpy's CD key check
-    between (state 2; callbacks 0x100dd48f, 0x100dd530) and
-    FinishClientConnect at the end; OnClientEnterWorld (0x100de0c0) then
-    only reads the model id and makes or reuses the player. The client's
-    handshake (ClientMultiplayerMgr) must read the hello's two strings.
-    Do server and client together, so multiplayer keeps working.
-  - CJ's CHUDCarrying (0xa4 bytes: the body icons 0x78..0x80; per
-    chassis piece its carrying and pickup icons, 0x84, from Init
-    0x10052400; and a row of key icons, 0x94, 16-byte entries {icon, key
-    id, width, height}: Add 0x10052570 looks the key up in the key
-    manager (0x1017c9b4, its icon at +0x26), Remove 0x100522d0, Clear
-    0x10052340, called from 0x100fcb05..0x100fd41b; Render 0x100520a0
-    uses CanCarryObject(&pFX), 0x1009b830, and the carried piece 0x17c).
-  - CVehicleMgr's earlier members (+4 at 0x18, +8 at 0x130, +44 before
-    m_hCurJumpVolume) and its use of the weapon (SetPhysicsModel
-    0x10107b50, UpdateWeaponModel's vehicle branch 0x1009ee04).
+  - **Connection flow: done** (OnAddClient, ProcessHandshake,
+    UpdateClientCDKeyChecks, BootClients, KickClientData,
+    OnClientEnterWorld, RespawnPlayer; the client's HandleMsgHandshake,
+    CreateGameSpyBrowsers, CMissionMgr::SetServerLevel). The preload
+    screen's WON CD key validation is gone (retail keeps only the state):
+    it crashed a client joining by +join. A single-player level loads
+    through the new path (`make test` with M01S01). `make mptest` (the
+    boot branch's harness, run here from a copy) cannot judge yet: the
+    dedicated server shows "ERROR - Unable to use the selected network
+    service." and loads no world, with or without these changes, so the
+    client waits at "Connecting to server". Still to do: the loop at the
+    end of retail OnClientEnterWorld (each other player's
+    0x10110810(hClient, pPlayer), a CJ player state sent to the new
+    client), CPlayerObj's handshake flag (unused now), CRC32's
+    two-argument CalcFileCRC and the CRCs retail takes (weapons'
+    0x10111510, the model butes' 0x1008a740).
+  - CHUDCarrying: done (chassis pieces' icons, the row of keys).
+  - CVehicleMgr: its layout is done; what the new members are for, and
+    its use of the weapon (SetPhysicsModel 0x10107b50, the lure message
+    0x101096d0, UpdateWeaponModel's vehicle branch 0x1009ee04), are not.
+  - CShell's CPlayerMgr::UpdateContainers (0x1009fd80) has been near
+    (one move scheduled differently) since the WEAPON/CWeaponMgr commit,
+    not since the merge; reverting WeaponMgr.h did not bring it back.
   - CPlayerMgr's CJ code: StartWeaponRecoil (CamRecoil* console
     variables, 0x10099ce0), UpdatePlayerInfo's caching (0x1009f725).
   - CGameClientShell (+8/+24), CCharacterFX (+8 from 0x90), CHUDMgr.

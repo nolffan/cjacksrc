@@ -1004,3 +1004,22 @@ bool CMissionMgr::SendStartGameMessage( )
 	
 	return true;
 }
+
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	CMissionMgr::SetServerLevel
+//
+//	PURPOSE:	The level the server we join is on, for the loading screen.
+//
+// ----------------------------------------------------------------------- //
+
+bool CMissionMgr::SetServerLevel( char const* pszWorldName )
+{
+	if( pszWorldName && !SetNewLevel( pszWorldName ))
+		return false;
+
+	if( g_pInterfaceMgr->GetGameState( ) == GS_LOADINGLEVEL )
+		g_pInterfaceMgr->UpdateLoadScreenInfo( );
+
+	return true;
+}
