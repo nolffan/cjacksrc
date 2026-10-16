@@ -114,8 +114,9 @@ uint32 CScreenLoad::OnCommand(uint32 dwCommand, uint32 dwParam1, uint32 dwParam2
 };
 
 
+// RETAIL: CShell.dll 0x100d1840 takes the controls' position
 CLTGUIColumnCtrl* CScreenLoad::BuildSaveControls( char const* pszIniKey, uint32 nCommandId, uint32 nControlHelpStringId, 
-									bool bUserName )
+									bool bUserName, LTIntPt pos )
 {
 	// Check inputs.
 	if( !pszIniKey || !pszIniKey[0] )
@@ -137,7 +138,7 @@ CLTGUIColumnCtrl* CScreenLoad::BuildSaveControls( char const* pszIniKey, uint32 
 	if( !saveGameData.szUserName[0] )
 		return NULL;
 
-	CLTGUIColumnCtrl* pColCtrl = CreateColumnCtrl(nCommandId, nControlHelpStringId);
+	CLTGUIColumnCtrl* pColCtrl = CreateColumnCtrl(nCommandId, nControlHelpStringId, pos);
 	pColCtrl->SetFont(LTNULL,kSmallFontSize);
 
 	// The world name column
@@ -156,9 +157,11 @@ void CScreenLoad::BuildSavedLevelLists()
 	{
 		CLTGUITextCtrl *pCtrl = AddTextItem( IDS_QUICKLOAD,LTNULL,LTNULL,kDefaultPos,LTTRUE);
 		pCtrl->Enable(LTFALSE);
-		CLTGUIColumnCtrl*  pColCtrl = BuildSaveControls( QUICKSAVE_INIKEY, CMD_CUSTOM, IDS_HELP_QUICKLOAD, false );
-		AddControl(pColCtrl);
-		m_nextPos.y += kSmallFontSize;
+		// RETAIL: the save's line indented under its label (CShell.dll
+		// 0x100d19c5), not spaced below it
+		m_nextPos.x += kIndent;
+		AddControl(BuildSaveControls( QUICKSAVE_INIKEY, CMD_CUSTOM, IDS_HELP_QUICKLOAD, false, m_nextPos ));
+		m_nextPos.x -= kIndent;
 	}
 
 	if (g_pClientSaveLoadMgr->ReloadSaveExists())
@@ -166,9 +169,9 @@ void CScreenLoad::BuildSavedLevelLists()
 		
 		CLTGUITextCtrl *pCtrl = AddTextItem( IDS_LOADCURRENT,LTNULL,LTNULL,kDefaultPos,LTTRUE);
 		pCtrl->Enable(LTFALSE);
-		CLTGUIColumnCtrl*  pColCtrl = BuildSaveControls( RELOADLEVEL_INIKEY, CMD_CUSTOM+1, IDS_HELP_RELOAD, false );
-		AddControl(pColCtrl);
-		m_nextPos.y += kSmallFontSize;
+		m_nextPos.x += kIndent;
+		AddControl(BuildSaveControls( RELOADLEVEL_INIKEY, CMD_CUSTOM+1, IDS_HELP_RELOAD, false, m_nextPos ));
+		m_nextPos.x -= kIndent;
 	}
 	
 	CLTGUITextCtrl *pCtrl = AddTextItem(IDS_LOAD_USERGAME,LTNULL,LTNULL,kDefaultPos,LTTRUE);
@@ -263,8 +266,15 @@ void CScreenLoad::ParseSaveString(char const* pszWorldName, char const* pszTitle
 					LoadString(pLevel->nNameId,szLevel,sizeof(szLevel));
 				}
 
-				if(strlen(szLevel))
-					sprintf(pSG->szUserName,"%s",szLevel);
+				// RETAIL: Contract J.A.C.K.'s level names are a space, so the
+				// level's name counts only past its blanks and the mission's
+				// ("CHAPTER 1. The Proposition") shows (CShell.dll 0x100d16f4)
+				char const* pszLevel = szLevel;
+				while (*pszLevel == ' ' || *pszLevel == '\t')
+					pszLevel++;
+
+				if(strlen(pszLevel))
+					sprintf(pSG->szUserName,"%s",pszLevel);
 				else
 					sprintf(pSG->szUserName,"%s",szMission);
 			}

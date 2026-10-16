@@ -37,6 +37,8 @@ enum eScreenCmds
 	CMD_DM,
 	CMD_TEAM_DM,
 	CMD_DOOM,
+	CMD_DEMOLITION,	// RETAIL: one more main-menu command before CMD_OPTIONS
+				// (retail's options are 18, its quit callback sends 21 for CMD_EXIT)
 	CMD_OPTIONS,
 	CMD_RESUME,
 	CMD_PROFILE,

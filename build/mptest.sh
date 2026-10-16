@@ -16,13 +16,15 @@
 # of its own (out/play/<name>/wine). The registry gets what the game's setup
 # and 1.1 update write (HKLM\SOFTWARE\Monolith Productions\Contract Jack\1.0:
 # InstallDir, NetRegionCode EN, UpdateNum 1, UpdateCommandLine0
-# "-rez Update_v1x1.rez"). The client starts once to its menu for 30
+# "-rez Update_v1x1.rez", and the CDKey the multiplayer screen stores:
+# $MPTEST_CDKEY, default a key of the right form). The client starts once
+# to its menu for 30
 # seconds: it writes the multiplayer missions file the server reads
 # (retail's MPMissions.txt, from the worlds in the rez files). The server
 # then starts on a profile of its own (Profiles/mptest.txt: deathmatch --
 # Contract J.A.C.K. ships no co-operative worlds -- LAN only, port 27888,
 # dedicated; its campaign that file's mission $MPTEST_MISSION, default 12
-# (DM_VOLKOVSLAIR in ours); the
+# (DE_ISLAND, a small world); the
 # profile's bools are ButeMgr's TRUE/FALSE) with its error log on
 # (server.log); once it has had 60 seconds, a client starts with
 # "+join 127.0.0.1:27888
@@ -71,6 +73,10 @@ if [ ! -e /dev/snd ] && [ -f /usr/share/alsa/alsa.conf ]; then
     printf '</usr/share/alsa/alsa.conf>\npcm.!default { type null }\n' > asound.conf
     export ALSA_CONFIG_PATH="$RUN/asound.conf"
 fi
+# A CD key of the right form (GameSpy.dll's IsCDKeyValid; this one is from
+# build/gamespytest.sh's random keys, not a sold one): with none, the
+# client's challenge response is empty and the server rejects the join.
+export MPTEST_CDKEY="${MPTEST_CDKEY:-BUN6-RYX3-DUZ9-MED2-7352}"
 export WINRUN="Z:$(echo "$RUN" | tr / '\\')"
 export WINEPREFIX="$RUN/wine" WINEDEBUG="${MPTEST_WINEDEBUG:--all,+seh,+msgbox}" WINEDLLOVERRIDES="winedbg.exe=d"
 xvfb-run -a -s '-screen 0 640x480x24' bash -c '
@@ -78,6 +84,7 @@ xvfb-run -a -s '-screen 0 640x480x24' bash -c '
     K="HKLM\\Software\\Monolith Productions\\Contract Jack\\1.0"
     wine reg add "$K" /v InstallDir /t REG_SZ /d "$WINRUN" /f >/dev/null 2>&1
     wine reg add "$K" /v NetRegionCode /t REG_SZ /d EN /f >/dev/null 2>&1
+    wine reg add "$K" /v CDKey /t REG_SZ /d "$MPTEST_CDKEY" /f >/dev/null 2>&1
     wine reg add "$K" /v UpdateNum /t REG_DWORD /d 1 /f >/dev/null 2>&1
     wine reg add "$K" /v UpdateCommandLine0 /t REG_SZ /d "-rez Update_v1x1.rez" /f >/dev/null 2>&1
     # The client writes the multiplayer missions file (MPMissions.txt,

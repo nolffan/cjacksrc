@@ -60,7 +60,6 @@ protected:
 	CLTGUITextCtrl*		m_pSFXLabel;
 	CLTGUIFrame*		m_pSFXFrame;
 
-	CLTGUITextCtrl*		m_pPerformanceTest;
 	
 	CLTGUICycleCtrl*	m_pDetailLevel; 
 	CLTGUICycleCtrl*	m_pPrecache; 

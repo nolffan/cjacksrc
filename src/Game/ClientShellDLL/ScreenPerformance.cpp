@@ -55,7 +55,6 @@ CScreenPerformance::CScreenPerformance()
 	m_pDisplayFrame = LTNULL;
 	m_pSFXFrame = LTNULL;
 
-	m_pPerformanceTest = LTNULL;
 
 	memset(&m_sCfg,0,sizeof(m_sCfg));
 
@@ -124,9 +123,7 @@ LTBOOL CScreenPerformance::Build()
 
 	pCtrl = AddTextItem(IDS_SFX, CMD_SFX, IDS_HELP_SFX);
 
-	//add a gap before performance test item
-	m_nextPos.y += g_pLayoutMgr->GetScreenFontSize((eScreenID)m_nScreenID);;
-	m_pPerformanceTest = AddTextItem(IDS_PERFORMANCE_TEST,CMD_CUSTOM,IDS_HELP_PERFORMANCE_TEST);
+	// RETAIL: no performance test item (CShell.dll 0x100d4d20)
 
 	char szOn[32] = "";
 	char szOff[32] = "";
@@ -448,17 +445,7 @@ uint32 CScreenPerformance::OnCommand(uint32 dwCommand, uint32 dwParam1, uint32 d
 // Screen specific rendering
 LTBOOL   CScreenPerformance::Render(HSURFACE hDestSurf)
 {
-	// Dumb, but need to make sure this is enabled/disabled
-	// correctly and there are a lot of timing issues with
-	// when the client is actually connected/disconnected
-	if (m_pPerformanceTest)
-	{
-#ifdef _TO2DEMO
-		m_pPerformanceTest->Enable(LTFALSE);
-#else
-		m_pPerformanceTest->Enable(!g_pLTClient->IsConnected());
-#endif // _TO2DEMO
-	}
+	// RETAIL: no performance test item to enable (CShell.dll 0x100d3f80)
 
 	return CBaseScreen::Render(hDestSurf);
 }

@@ -46,6 +46,8 @@
 #include <stdio.h>
 #include "ClientMultiplayerMgr.h"
 #include "ClientButeMgr.h"
+#include "DMButeMgr.h"
+#include "direct.h"
 #include "MissionMgr.h"
 #include "ClientSaveLoadMgr.h"
 #include "FXButeMgr.h"
@@ -1179,7 +1181,8 @@ uint32 CGameClientShell::OnEngineInitialized(RMode *pMode, LTGUID *pAppGuid)
 	}
 	else
 	{
-		g_pClientMultiplayerMgr->SetModName( LoadTempString( IDS_RETAIL ) );
+		// RETAIL: the literal (CShell.dll 0x1004bec6), not the string table's
+		g_pClientMultiplayerMgr->SetModName( "Retail" );
 	}	
 
 	// Process command line.
@@ -1301,6 +1304,9 @@ uint32 CGameClientShell::OnEngineInitialized(RMode *pMode, LTGUID *pAppGuid)
 	WriteConsoleInt( "ConsoleEnable", 0 );
 #endif // _TO2DEMO
 
+
+	// RETAIL: the multiplayer missions file, written at every start
+	CreateMPMissionFile();
 
 	// Determine how long it took to initialize the game...
 	sprintf(strTimeDiff, "Game initialized in %f seconds.\n", CWinUtil::GetTime() - fStartTime);
@@ -5080,4 +5086,211 @@ void CGameClientShell::SetGameType(GameType eGameType)
 		
 	}
 	m_eGameType = eGameType;
+}
+
+
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	CGameClientShell::CreateMPMissionFile
+//
+//	PURPOSE:	Writes the multiplayer missions file: every DM_, DE_ and
+//				DD_ world in the multiplayer world paths, sorted, with its
+//				.cfg's name, photo, default and selected weapons.
+//
+//	RETAIL: CShell.dll 0x1004adb0 (NOLF2's CScreenMulti::CreateDMMissionFile,
+//	moved here, for demolition worlds too and with each mission's selected
+//	weapon)
+//
+// ----------------------------------------------------------------------- //
+
+void CGameClientShell::CreateMPMissionFile()
+{
+	char path[256];
+	std::string sFN = _getcwd(path,sizeof(path));
+	sFN += "\\";
+	sFN += MISSION_DM_FILE;
+
+	if (CWinUtil::FileExist(sFN.c_str()))
+	{
+		remove(MISSION_DM_FILE);
+	}
+
+	StringSet filenames;
+
+	// Get a list of world names and sort them alphabetically
+
+	uint8 nNumPaths = g_pClientButeMgr->GetNumMultiWorldPaths();
+
+	char pathBuf[128];
+	FileEntry** pFilesArray = debug_newa(FileEntry*, nNumPaths);
+
+	if (pFilesArray)
+	{
+		for (int i=0; i < nNumPaths; ++i)
+		{
+			pathBuf[0] = '\0';
+			g_pClientButeMgr->GetWorldPath(i, pathBuf, ARRAY_LEN(pathBuf),LTFALSE);
+
+			if (pathBuf[0])
+			{
+				pFilesArray[i] = g_pLTClient->GetFileList(pathBuf);
+			}
+			else
+			{
+				pFilesArray[i] = LTNULL;
+			}
+		}
+	}
+
+	char strBaseName[256];
+	char* pBaseName = NULL;
+	char* pBaseExt = NULL;
+
+	for (int i=0; i < nNumPaths; ++i)
+	{
+		pathBuf[0] = '\0';
+		g_pClientButeMgr->GetWorldPath(i, pathBuf, ARRAY_LEN(pathBuf),LTFALSE);
+
+		if (pathBuf[0] && pFilesArray[i])
+		{
+			sprintf(path, "%s\\", pathBuf);
+			FileEntry* ptr = pFilesArray[i];
+
+			while (ptr)
+			{
+				if (ptr->m_Type == TYPE_FILE)
+				{
+					if (strnicmp(ptr->m_pBaseFilename,"DM_",3) == 0 ||
+						strnicmp(ptr->m_pBaseFilename,"DE_",3) == 0 ||
+						strnicmp(ptr->m_pBaseFilename,"DD_",3) == 0)
+					{
+						strncpy(strBaseName, ptr->m_pBaseFilename, sizeof(strBaseName) - 1);
+						strBaseName[sizeof(strBaseName) - 1] = '\0';
+						pBaseName = strtok (strBaseName, ".");
+						pBaseExt = strtok (NULL, "");
+						if (pBaseExt && stricmp (pBaseExt, "dat") == 0)
+						{
+							char szString[512];
+							sprintf(szString, "%s%s", path, pBaseName);
+
+							// add this to the array
+							filenames.insert(szString);
+						}
+					}
+				}
+
+				ptr = ptr->m_pNext;
+			}
+
+			g_pLTClient->FreeFileList(pFilesArray[i]);
+		}
+	}
+
+	debug_deletea(pFilesArray);
+
+
+	int index = 0;
+	char szLabel[256];
+	StringSet::iterator iter = filenames.begin();
+
+	CDMButeMgr buteMgr;
+	char szTmp[16];
+	char szString[512];
+	char szWeapon[512] = "";
+
+	while (iter != filenames.end())
+	{
+		bool bDefaultWeapons = false;
+		bool bSelectedWeapon = false;
+		szWeapon[0] = '\0';
+
+		sprintf(szLabel,"Mission%d",index);
+
+		sprintf(szString, "\"%s\"", (*iter).c_str());
+		CWinUtil::WinWritePrivateProfileString( szLabel, "Level0", szString, sFN.c_str());
+
+		std::string sCfg = (*iter);
+		sCfg += ".cfg";
+
+		if (buteMgr.Init(sCfg.c_str()))
+		{
+			MISSION mission;
+			mission.Init(*buteMgr.GetButeMgr(),"Mission");
+
+			if (mission.nNameId > 0)
+			{
+				sprintf(szTmp,"%d",mission.nNameId);
+				CWinUtil::WinWritePrivateProfileString( szLabel, "NameId", szTmp, sFN.c_str());
+			}
+
+			if (!mission.sName.empty())
+			{
+				sprintf(szString, "\"%s\"", mission.sName.c_str());
+				CWinUtil::WinWritePrivateProfileString( szLabel, "NameStr", szString, sFN.c_str());
+			}
+
+			if (!mission.sPhoto.empty())
+			{
+				sprintf(szString, "\"%s\"", mission.sPhoto.c_str());
+				CWinUtil::WinWritePrivateProfileString( szLabel, "Photo", szString, sFN.c_str());
+			}
+
+			if (mission.nNumDefaultWeapons)
+			{
+				bDefaultWeapons = true;
+				std::string sDef = "\"";
+				for (int w = 0; w < mission.nNumDefaultWeapons; w++)
+				{
+					if (w > 0)
+						sDef += ",";
+
+					// The last default weapon is the selected one if the
+					// mission names none.
+					strncpy(szWeapon, g_pWeaponMgr->GetWeapon(mission.aDefaultWeapons[w])->szName, sizeof(szWeapon) - 1);
+					szWeapon[sizeof(szWeapon) - 1] = '\0';
+					sDef += szWeapon;
+				}
+				sDef += "\"";
+				CWinUtil::WinWritePrivateProfileString( szLabel, "DefaultWeapons", sDef.c_str(), sFN.c_str());
+			}
+
+			if (mission.nSelectedWeapon != WMGR_INVALID_ID)
+			{
+				bSelectedWeapon = true;
+				WEAPON const* pWeapon = g_pWeaponMgr->GetWeapon(mission.nSelectedWeapon);
+				// RETAIL: a %d of the name's pointer, never written anywhere
+				sprintf(szTmp,"%d",pWeapon->szName);
+				CWinUtil::WinWritePrivateProfileString( szLabel, "SelectedWeapon", pWeapon->szName, sFN.c_str());
+			}
+
+			buteMgr.Term();
+		}
+
+		if (!bDefaultWeapons)
+		{
+			sprintf(szString, "\"%s\"", g_pWeaponMgr->GetMPDefaultWeapons());
+			CWinUtil::WinWritePrivateProfileString( szLabel, "DefaultWeapons", szString, sFN.c_str());
+		}
+
+		if (!bSelectedWeapon)
+		{
+			if (strlen(szWeapon))
+				sprintf(szString, "\"%s\"", szWeapon);
+			else
+				sprintf(szString, "\"%s\"", g_pWeaponMgr->GetMPSelectedWeapon());
+			CWinUtil::WinWritePrivateProfileString( szLabel, "SelectedWeapon", szString, sFN.c_str());
+		}
+
+		++index;
+		iter++;
+	}
+
+
+	// Flush the file. (if anything was added)
+	if (index > 0)
+	{
+		CWinUtil::WinWritePrivateProfileString( NULL, NULL, NULL, sFN.c_str());
+	}
+
+	filenames.clear();
 }

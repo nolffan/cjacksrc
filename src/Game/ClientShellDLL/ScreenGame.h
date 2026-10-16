@@ -43,7 +43,6 @@ protected:
 	int					m_nWeaponSway;
 	int					m_nMsgDur;
 	LTBOOL				m_bAutoWeaponSwitch;
-	LTBOOL				m_bLoadScreenTips;
 	LTBOOL				m_bVehicleContour;
 
 	CLTGUICycleCtrl		*m_pDifficultyCtrl;			// The difficulty control
