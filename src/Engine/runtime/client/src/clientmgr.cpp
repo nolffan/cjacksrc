@@ -181,6 +181,18 @@ void _GetRModeFromConsoleVariables(RMode *pMode)
 }
 
 
+// RETAIL: kept in the shipped engine though nothing calls it
+// (Lithtech.exe 0x40d0d0; the 2006 tree's, which Update calls outside _FINAL)
+void MaybeDrawConsole()
+{
+    if (g_CV_ForceConsole && r_GetRenderStruct()->m_bInitted)
+    {
+        con_Draw();
+        r_GetRenderStruct()->SwapBuffers(0);
+    }
+}
+
+
 //
 // CClientMgr
 //
