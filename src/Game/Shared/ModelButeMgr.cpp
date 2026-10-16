@@ -15,6 +15,7 @@
 #include "CommonUtilities.h"
 #include "UberAssert.h"
 #include "SurfaceMgr.h"
+#include "CRC32.h"
 
 // Globals/statics
 
@@ -1892,6 +1893,47 @@ ModelId CModelButeMgr::GetTeamModel(int num)
 		num = 0;
 	}
 	return m_aTeamModels[num];
+}
+
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	CModelButeMgr::GetFileCRC
+//
+//	PURPOSE:	RETAIL: CShell 0x1008a740, Object 0x100fba70: the CRC a
+//				multiplayer handshake compares; the sum of the attribute
+//				file's and each multiplayer model file's.
+//
+//				Retail marks off a team model by its index in the
+//				deathmatch list rather than by its model id, so a team
+//				model is skipped whenever as many deathmatch models came
+//				before it; client and server agree on this, so it stays.
+//
+// ----------------------------------------------------------------------- //
+
+uint32 CModelButeMgr::GetFileCRC()
+{
+	uint32 nCRC = CRC32::CalcRezFileCRC( m_strAttributeFile );
+
+	std::vector< uint8 > abCRCed;
+	abCRCed.resize( m_cModels, false );
+
+	int nModel;
+	for( nModel = 0; nModel < m_cDMModels; nModel++ )
+	{
+		nCRC += CRC32::CalcRezFileCRC( GetModelFilename( m_aDMModels[nModel] ));
+		abCRCed[nModel] = true;
+	}
+
+	for( nModel = 0; nModel < m_cTeamModels; nModel++ )
+	{
+		if( abCRCed[nModel] )
+			continue;
+
+		nCRC += CRC32::CalcRezFileCRC( GetModelFilename( m_aTeamModels[nModel] ));
+		abCRCed[nModel] = true;
+	}
+
+	return nCRC;
 }
 
 int CModelButeMgr::GetTeamDefaultModel(int nTeam)

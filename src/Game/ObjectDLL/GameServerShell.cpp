@@ -1256,7 +1256,7 @@ void CGameServerShell::ProcessHandshake(HCLIENT hClient, ILTMessage_Read *pMsg)
 				bBadFiles = true;
 
 			// CRC the modelbutes.txt
-			static uint32 nModelButesCRC = CRC32::CalcRezFileCRC( g_pModelButeMgr->GetAttributeFile( ));
+			static uint32 nModelButesCRC = g_pModelButeMgr->GetFileCRC( );
 			if (( nModelButesCRC ^ nXORMask ) != pMsg->Readuint32())
 				bBadFiles = true;
 

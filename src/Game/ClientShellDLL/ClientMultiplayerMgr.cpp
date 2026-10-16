@@ -769,8 +769,8 @@ bool ClientMultiplayerMgr::HandleMsgHandshake( ILTMessage_Read & msg )
 			nWeaponCRC ^= nXORMask;
 
 			// CRC the modelbutes.txt
-			static uint32 nModelButesCRC = CRC32::CalcRezFileCRC( g_pModelButeMgr->GetAttributeFile( ));
-			uint32 nModelButesMaskedCRC = nModelButesCRC ^ nXORMask;
+			// RETAIL: CShell 0x1001fcc0: and the multiplayer models, each time.
+			uint32 nModelButesMaskedCRC = g_pModelButeMgr->GetFileCRC( ) ^ nXORMask;
 
 			// CRC the surface.txt
 			static uint32 nSurfaceCRC = CRC32::CalcRezFileCRC( g_pSurfaceMgr->GetAttributeFile( ));
@@ -792,7 +792,8 @@ bool ClientMultiplayerMgr::HandleMsgHandshake( ILTMessage_Read & msg )
 			HMODULE hClientShell;
 			g_pLTClient->GetEngineHook("cshell_hinstance", (void**)&hClientShell);
 			DWORD nResult = GetModuleFileName(hClientShell, aClientShellName, sizeof(aClientShellName));
-			uint32 nClientCRC = CRC32::CalcFileCRC(aClientShellName);
+			// RETAIL: CShell 0x1001fdbc: CRC'd under the name the server CRCs.
+			uint32 nClientCRC = CRC32::CalcFileCRC(aClientShellName, "cshell.dll");
 			
 			// Mask that up too
 			nClientCRC ^= nXORMask;
