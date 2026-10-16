@@ -5862,6 +5862,12 @@ const char *FindFilename(const char *pFileName)
 	return pResult;
 }
 
+// cjacksrc: Contract J.A.C.K.'s CRes strings (ClientRes/TO2/ClientRes.h's
+// IDS_CJ_1440 to IDS_CJ_1442).
+#define IDS_CJ_CDKEYREJECTED	1440	// "CD-Key verification failed."
+#define IDS_CJ_BADFILES			1441	// "Invalid game assets."
+#define IDS_CJ_BANNED			1442	// "You have been banned from the server."
+
 void CInterfaceMgr::Disconnected(uint32 nDisconnectFlag)
 {
 	eScreenID destination = SCREEN_ID_MULTI;
@@ -5875,11 +5881,19 @@ void CInterfaceMgr::Disconnected(uint32 nDisconnectFlag)
 			nMsgId = IDS_NETERR_NOTSAMEGUID;
 			break;
 		case eDisconnect_WrongPassword:
+			// RETAIL: CShell 0x1006983b: back to the multiplayer screen.
 			nMsgId = IDS_NETERR_WRONGPASS;
-			if (g_bLAN)
-				destination = SCREEN_ID_JOIN_LAN;
-			else
-				destination = SCREEN_ID_JOIN;
+			break;
+
+		// RETAIL: CShell 0x10069849: Contract J.A.C.K.'s handshake failures.
+		case eDisconnect_BadFiles:
+			nMsgId = IDS_CJ_BADFILES;
+			break;
+		case eDisconnect_CDKeyRejected:
+			nMsgId = IDS_CJ_CDKEYREJECTED;
+			break;
+		case eDisconnect_Banned:
+			nMsgId = IDS_CJ_BANNED;
 			break;
 
 		case 0 : // Avoid the warning..
