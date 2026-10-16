@@ -906,6 +906,49 @@ NOLF2's file order. Recorded: the launcher 284 of 344 functions identical (98.9%
 - **For the engine package**: the console's "LithTech build
   4294967295.4294967295" (the build number is unset).
 
+### 8b. ui (the visible differences from retail, outside the join)
+
+Compared screen by screen under Wine (out/tour scripts for build/playtest.sh,
+`mclick` on menu items) against the control: our engine with retail's game
+DLLs.
+
+- Fixed (branch `ui`): the main menu (no LAN item, no game type list, the
+  version text "v1.1 - Retail" from CVersionMgr::GetDisplayVersion and the
+  literal mod name "Retail"); the fonts' space width (SetDefCharWidth, so
+  the briefing wraps as retail's); the multiplayer missions file, written
+  by CGameClientShell at every start as MPMissions.txt (identical to
+  retail's, DE_ worlds and SelectedWeapon included); the game options (no
+  load screen tips) and performance screens (no Test Settings); the load
+  screen (the mission's name for Contract J.A.C.K.'s blank level names,
+  saves indented under their labels). Single player, options and its
+  sub-screens, controls, profile, load and the in-game system menu now look
+  as retail's; the HUD in M01S01 too.
+- Not differences: "Press any key to continue." flashes between two colours
+  in both (0.333 s, the colour XOR 0xFFFFFF); "LithTech build
+  4294967295.4294967295" is retail's too (retail's Lithtech.exe has no
+  RCDATA 12346 version resource either, so GetLTExeVersion fails in both).
+- **The screen and command enums are not retail's.** Retail's screen names
+  (CShell.dll .data 0x1014fed8, 32 bytes each) have no JOIN_LAN and no
+  PLAYER_SKILLS and add HOST_DEMOLITION_OPTIONS after HOST_TDM_OPTIONS
+  (retail: GAME = 14, ours 16). eScreenCmds needs one more entry before
+  CMD_OPTIONS (added here, CMD_DEMOLITION: retail's options are 18), one
+  more before CMD_EDIT_PASS (retail 0x28) and one more before
+  CMD_CROSSHAIR (retail 0x44; CMD_CUSTOM retail 0x52). The screen enum
+  change was made and measured: +37 functions, but `make progress` failed
+  on one recorded function (sub_100c9030, a join callback that only
+  matched our host screen's because the old ID coincided) and on CShell's
+  unwritten count (175 to 192, ScreenJoinLAN and ScreenPlayerSkills
+  leaving the project). Not committed: it needs ACCEPT_LOSSES or a
+  coordinator's decision (the change is in this package's notes).
+- **For the game package**: retail's multiplayer screen is Contract
+  J.A.C.K.'s own (Player setup, CD Key, Join, Host; CShell.dll
+  0x100d3xxx); ours is NOLF2's and crashes in CScreenMulti::Update (its
+  WON server directory is NULL) once the main menu's Multiplayer reaches
+  it. Retail's load screen also lists a checkpoint save
+  (CClientSaveLoadMgr 0x100b5330, the INI key CheckpointSave, IDS 1444 and
+  1445), which ours has no support for. ClientMultiplayerMgr's m_sModName
+  is at 0x166c in retail, 0x1670 in ours.
+
 ### 11. release
 
 - `build/package.sh` makes `<dir>-private.tar.gz` and `-public.tar.gz` for
