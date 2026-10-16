@@ -17,7 +17,9 @@
 
 #define MISSION_DEFAULT_FILE		"Attributes\\Missions.txt"
 #define MISSION_COOP_FILE			"Attributes\\CoopMissions.txt"
-#define MISSION_DM_FILE 			"DMMissions.txt"
+// RETAIL: Contract J.A.C.K.'s one multiplayer missions file (CShell.dll and
+// Object.lto both name MPMissions.txt; NOLF2's was DMMissions.txt)
+#define MISSION_DM_FILE 			"MPMissions.txt"
 //#define MISSION_TDM_FILE 			"TDMMissions.txt"
 #define MISSION_DD_FILE 			"DDMissions.txt"
 

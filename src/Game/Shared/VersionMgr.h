@@ -56,6 +56,8 @@ class CVersionMgr
 		void SetCDKey( char const* pszCDKey );
 
 #ifdef _CLIENTBUILD
+		// RETAIL: the main menu's version text (CShell.dll 0x1010d130)
+		void GetDisplayVersion( char* pszVersion, uint32 nLen );
 		inline bool	IsLowViolence() const { return m_bLowViolence; }
 #endif
 

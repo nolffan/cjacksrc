@@ -1179,7 +1179,8 @@ uint32 CGameClientShell::OnEngineInitialized(RMode *pMode, LTGUID *pAppGuid)
 	}
 	else
 	{
-		g_pClientMultiplayerMgr->SetModName( LoadTempString( IDS_RETAIL ) );
+		// RETAIL: the literal (CShell.dll 0x1004bec6), not the string table's
+		g_pClientMultiplayerMgr->SetModName( "Retail" );
 	}	
 
 	// Process command line.
