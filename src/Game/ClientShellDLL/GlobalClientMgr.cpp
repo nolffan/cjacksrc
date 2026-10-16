@@ -21,6 +21,7 @@
 #include "ActivateTypeMgr.h"
 #include "TriggerTypeMgr.h"
 #include "ChassisButeMgr.h"
+#include "VehicleButeMgr.h"
 
 // ----------------------------------------------------------------------- //
 //
@@ -126,7 +127,16 @@ LTBOOL CGlobalClientMgr::Init()
 		}
 	}
 
-	// RETAIL: 0x1004e65a (after the vehicles, CVehicleButeMgr, still to come)
+	// RETAIL: 0x1004e62e: Contract J.A.C.K.'s vehicles.
+	if( !g_pVehicleButeMgr )
+	{
+		CVehicleButeMgr &VehicleButeMgr = CVehicleButeMgr::Instance();
+		if( !VehicleButeMgr.Init() )
+		{
+			DebugCPrint( 1, "ERROR in CGlobalClientMgr::Init()\nCouldn't initialize CVehicleButeMgr.\n\n" );
+		}
+	}
+
 	if( !ChassisButeMgr::Instance( ).IsInitialized( ))
 	{
 		if( !ChassisButeMgr::Instance( ).Init( ))

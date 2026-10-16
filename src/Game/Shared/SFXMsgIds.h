@@ -137,6 +137,16 @@
 	#define	CFX_CARRY_DD_CORE				4					
 
 
+// cjacksrc: RETAIL: Object 0x1010dd6e: the player's physics model and
+// vehicle changed (sent when the client is not told otherwise).
+#define CFX_PHYSICSMODEL				38
+
+// cjacksrc: Contract J.A.C.K.'s PlayerVehicle messages (RETAIL: Object
+// 0x10116fe0, 0x101172c0).
+#define PVFX_BLINK						0	// About to respawn
+#define PVFX_STOPBLINK					1	// Ridden (respawn stopped)
+#define PVFX_MOVE						2	// Back to its place: from, to
+
 // CameraFX messages...
 
 #define CAMFX_FOV						1

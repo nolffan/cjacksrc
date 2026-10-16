@@ -369,6 +369,35 @@ dedicated server (package 7).
   activated flag on both sides (UpdatePlayerStats reads the message
   itself, byte-identical); CInterfaceMgr::Disconnected's handshake
   messages; the scoreboard without tags.
+- **Round after the join**: CVehicleButeMgr (Shared, every function of
+  both copies byte-identical); vehicles are its records: PlayerVehicle's
+  VehicleType names one (model, skins, WorldEdit dims), multiplayer
+  vehicles respawn after ServerButes' VehicleRespawnTime and blink
+  (PVFX_* messages); CPlayerObj's SetPhysicsModel(model, vehicle id,
+  update client), SetVehiclePhysicsModel (Motorcycle/Snowmobile socket,
+  the vehicle's weapon), RideVehicle (not ducking) all byte-identical.
+  MID_PLAYER_UPDATE in CJ's form on both sides (byte flags, rotation and
+  position only when changed, CSendRate_Min; server ClientUpdate and
+  HandlePlayerPositionMessage byte-identical, client UpdatePlayerInfo a
+  near): ours and retail's misread each other before. UpdateWeaponModel
+  fires a vehicle's own weapon (CVehicleMgr::UpdateVehicleWeapon).
+  Joins rechecked (ours, retail client/our server, our client/retail
+  server) and M01S01 save/load.
+- **Client vehicles still NOLF2's**: CVehicleMgr (about 60 functions,
+  0x10104f40..0x1010c710; CJ's reads VehicleButes for handling and
+  sounds, has a tricycle, SetPhysicsModel(model, id, preset) 0x1010abe0)
+  and CCharacterFX's CFX_PHYSICSMODEL (38) and CPlayerVehicleFX's
+  PVFX_* messages and blinking flag are not done; the client's
+  SetPhysicsModel ignores the vehicle id. ClientShellDLL edits this
+  round (all for the vehicles and the player update): the .dsp and
+  GlobalClientMgr (CVehicleButeMgr), PlayerMgr (UpdatePlayerInfo,
+  UpdateWeaponModel), VehicleMgr (UpdateVehicleWeapon, CP_PHYSICSMODEL).
+- **Next on Object.lto** (largest unwritten): 0x10010000 (1296, after
+  CAI::HandleCommand), 0x10120620/0x1011f930/0x10121800/0x1011ed00
+  (CProjectile's CJ code), 0x100e5850 (after DoomsDayDevice),
+  0x100dbcb0 (GameSpy server keys), 0x1003b540 (AIHuman), 0x10035100/
+  0x10035370 (CAIGoalSniper), then layouts, the server browser,
+  Demolition, AimMagnet, GunMount.
 - **Where it stopped / next**: breadth first by near count.
   - **Connection flow: done** (see above). The handshake flag of
     CPlayerObj is unused. CPlayerObj::SaveOverlays (0x10110900) is near

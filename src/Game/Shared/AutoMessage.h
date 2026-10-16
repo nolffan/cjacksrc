@@ -70,6 +70,7 @@ public:
 	inline void WriteBits64(uint64 nValue, uint32 nSize) { m_pMsg->WriteBits64(nValue, nSize); }
 	inline void WriteData(const void *pData, uint32 nSize) { m_pMsg->WriteData(pData, nSize); }
 	inline void WriteMessage(ILTMessage_Read *pMsg) { m_pMsg->WriteMessage(pMsg); }
+	inline void WriteMessageRaw(ILTMessage_Read *pMsg) { m_pMsg->WriteMessageRaw(pMsg); }
 	inline void WriteString(const char *pString) { m_pMsg->WriteString(pString); }
 	inline void WriteHString(HSTRING hString) { m_pMsg->WriteHString(hString); }
 	inline void WriteCompLTVector(const LTVector &vVec) { m_pMsg->WriteCompLTVector(vVec); }
