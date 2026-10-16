@@ -868,6 +868,14 @@ NOLF2's file order. Recorded: the launcher 284 of 344 functions identical (98.9%
     checks the LETMEIN CRCs and kicks on a mismatch, which the client
     never hears of) or server.dll's connect sequence (the
     FinishClientConnect stopgap, KickClient). **Next for game/engine.**
+- The control for multiplayer is Contract J.A.C.K.'s multiplayer demo
+  (rez/demos/contractjack_demo_mp.exe: `rez/tools/sfxcab.py`, then
+  `rez/tools/unshield/unshield x` on its data1.cab; Program_Files and
+  System_Files as the game directory, `-rez Game.rez`, MPTEST_MISSION=0):
+  its own engine, server and game DLLs host DE_Italy and the client joins
+  and plays it, in the same mptest run -- the harness and Wine are not
+  what stops ours. (Its game DLLs do not load on our engine: "Invalid
+  shell DLL", the demo's interfaces are not retail's.)
 - **For the game package**: retail writes one `MPMissions.txt` for
   deathmatch and doomsday (Object.lto and CShell.dll both name it; ours
   writes `DMMissions.txt` and `DDMissions.txt`); retail's main menu has no
