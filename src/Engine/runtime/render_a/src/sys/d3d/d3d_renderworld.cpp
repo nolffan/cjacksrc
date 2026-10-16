@@ -266,7 +266,7 @@ void CD3D_RenderWorld::StartFrame(const ViewParams& Params)
 
 void CD3D_RenderWorld::GetFrameOccluders(const ViewParams& Params)
 {
-	m_aFrameOccluders.clear();
+	m_aFrameOccluders.resize(0);	// RETAIL: 0x4aa74d
 
 	if (g_CV_DebugRBNoOccluders.m_Val != 0.0f)
 		return;
@@ -1110,10 +1110,11 @@ CRenderShader *CD3D_RenderWorld::AllocShader(const CRBSection &cSection)
 			break;
 	}
 
+	// RETAIL: the shaders are the main world's (Lithtech.exe 0x4aacc0)
 	CRenderShader *pShader = 0;
 	do 
 	{
-		pShader = m_aShaders[eResult];
+		pShader = g_Device.m_pRenderWorld->m_aShaders[eResult];
 		if (!pShader)
 		{
 			switch (eResult)
@@ -1176,7 +1177,7 @@ CRenderShader *CD3D_RenderWorld::AllocShader(const CRBSection &cSection)
 		}
 		if (!pShader || !pShader->ValidateShader(cSection))
 		{
-			if (!m_aShaders[eResult])
+			if (!g_Device.m_pRenderWorld->m_aShaders[eResult])
 				delete pShader;
 			pShader = 0;
 			// Choose a more stable shader.. (Would rather this happened automatically...)
@@ -1225,7 +1226,7 @@ CRenderShader *CD3D_RenderWorld::AllocShader(const CRBSection &cSection)
 		}
 	} while (!pShader);
 
-	m_aShaders[eResult] = pShader;
+	g_Device.m_pRenderWorld->m_aShaders[eResult] = pShader;
 
 	return pShader;
 }
