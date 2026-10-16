@@ -47,7 +47,7 @@ help:
 	@echo "make test       run out/cjack-legacy-release/ under Xvfb and Wine to its main menu"
 	@echo "                (build/playtest.sh; TEST_WORLD=<world>, TEST_SCRIPT=<script>,"
 	@echo "                TEST_GAME=out/cjack-modern-release; results in out/play/test*/)"
-	@echo "make mptest     the dedicated server hosts a co-op game and a client joins it,"
+	@echo "make mptest     the dedicated server hosts a deathmatch game and a client joins it,"
 	@echo "                under Xvfb and Wine (build/mptest.sh; out/play/*-mp/)"
 	@echo "make progress   score the build against the retail binaries; fails if a"
 	@echo "                function recorded in progress/identical.txt stops matching"
