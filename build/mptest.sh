@@ -23,12 +23,12 @@
 # (retail's MPMissions.txt, from the worlds in the rez files). The server
 # then starts on a profile of its own (Profiles/mptest.txt: deathmatch --
 # Contract J.A.C.K. ships no co-operative worlds -- LAN only, port 27888,
-# dedicated; its campaign that file's mission $MPTEST_MISSION, default 12
-# (DE_ISLAND, a small world); the
+# dedicated; its campaign that file's mission $MPTEST_MISSION, by default
+# the first world of the game type, MPTEST_TYPE dm, tdm, dd or de); the
 # profile's bools are ButeMgr's TRUE/FALSE) with its error log on
 # (server.log); once it has had 60 seconds, a client starts with
 # "+join 127.0.0.1:27888
-# +gametype Deathmatch". Writes
+# +gametype <the type>" (out/play/<name>-mp-<type>/ for all but dm). Writes
 #   server.png / client.png   the display before the client and at the end
 #   server.log                the server's console
 #   error.log                 the client's console (+ErrorLog 1)
@@ -49,9 +49,22 @@ SECS="${2:-60}"
 for f in Lithtech.exe server.dll ContractJackServer.exe cjackcmds.txt autoexec.cfg.retail Default.prf.retail; do
     [ -f "$GAME/$f" ] || { echo "mptest.sh: $GAME/$f missing"; exit 2; }
 done
-NAME="${MPTEST_NAME:-$(basename "$GAME")-mp}"
+# The game type: dm (deathmatch, the default), tdm (team deathmatch), dd
+# (Doomsday), de (Demolition): the profile's GameType, its campaign
+# directory, the worlds it takes (by their names' prefix) and the client's
+# +gametype.
+TYPE="${MPTEST_TYPE:-dm}"
+case "$TYPE" in
+    dm)  GT=2; CDIR=DM_Campaigns;  PFX=DM_; GTNAME=Deathmatch ;;
+    tdm) GT=3; CDIR=TDM_Campaigns; PFX=DM_; GTNAME=TeamDeathmatch ;;
+    dd)  GT=4; CDIR=DD_Campaigns;  PFX=DD_; GTNAME=DoomsDay ;;
+    de)  GT=5; CDIR=DE_Campaigns;  PFX=DE_; GTNAME=Demolition ;;
+    *)   echo "mptest.sh: MPTEST_TYPE is dm, tdm, dd or de"; exit 2 ;;
+esac
+SUFFIX=""; [ "$TYPE" = dm ] || SUFFIX="-$TYPE"
+NAME="${MPTEST_NAME:-$(basename "$GAME")-mp$SUFFIX}"
 RUN="$REPO/out/play/$NAME"
-rm -rf "$RUN"; mkdir -p "$RUN/Profiles/mptest/DM_Campaigns" "$RUN/Save"
+rm -rf "$RUN"; mkdir -p "$RUN/Profiles/mptest/$CDIR" "$RUN/Save"
 REL="$(python3 -c 'import os,sys; print(os.path.relpath(sys.argv[1], sys.argv[2]))' "$GAME" "$RUN")"
 for f in "$GAME"/*; do
     b=$(basename "$f")
@@ -61,10 +74,23 @@ for f in "$GAME"/*; do
 done
 cp "$GAME/autoexec.cfg.retail" "$RUN/autoexec.cfg"
 cp "$GAME/Default.prf.retail" "$RUN/Profiles/Default.prf"
-printf '[Multiplayer]\r\nGameType = 2\r\nPort = 27888\r\nLANOnly = TRUE\r\nDedicated = TRUE\r\nUsePassword = FALSE\r\n' > "$RUN/Profiles/mptest.txt"
-printf '[MissionList]\r\nMission0=%s\r\nLoopMissions=TRUE\r\n' "${MPTEST_MISSION:-12}" > "$RUN/Profiles/mptest/DM_Campaigns/default_campaign.txt"
-printf '%s ++screenwidth 640 ++screenheight 480 ++bitdepth 32 ++windowed 0 +DisableMovies 1 +ErrorLog 1 +AlwaysFlushLog 1 +join 127.0.0.1:27888 +gametype Deathmatch\r\n' \
-    "$(tr -d '\r\n' < "$GAME/cjackcmds.txt")" > "$RUN/cjackcmds.txt"
+printf '[Multiplayer]\r\nGameType = %s\r\nPort = 27888\r\nLANOnly = TRUE\r\nDedicated = TRUE\r\nUsePassword = FALSE\r\n' "$GT" > "$RUN/Profiles/mptest.txt"
+# The campaign: mission $MPTEST_MISSION of the missions file, or else the
+# first whose world's name has the type's prefix (once the client has
+# written the file; mkcampaign.sh runs between the two starts).
+cat > "$RUN/mkcampaign.sh" <<MKC
+m="\${MPTEST_MISSION:-}"
+if [ -z "\$m" ]; then
+    m=\$(tr -d '\r' < MPMissions.txt | awk -v p='$PFX' 'BEGIN { p = toupper(p) }
+        /^\[Mission/ { gsub(/[^0-9]/, ""); n = \$0 }
+        /^Level0=/ && f == "" && index(toupper(\$0), "\\\\" p) { f = n }
+        END { print f }')
+fi
+printf '[MissionList]\\r\\nMission0=%s\\r\\nLoopMissions=TRUE\\r\\n' "\${m:-0}" > "Profiles/mptest/$CDIR/default_campaign.txt"
+echo "mptest: $TYPE on mission \${m:-0}" > campaign.txt
+MKC
+printf '%s ++screenwidth 640 ++screenheight 480 ++bitdepth 32 ++windowed 0 +DisableMovies 1 +ErrorLog 1 +AlwaysFlushLog 1 +join 127.0.0.1:27888 +gametype %s\r\n' \
+    "$(tr -d '\r\n' < "$GAME/cjackcmds.txt")" "$GTNAME" > "$RUN/cjackcmds.txt"
 printf '%s ++screenwidth 640 ++screenheight 480 ++bitdepth 32 ++windowed 0 +DisableMovies 1\r\n' \
     "$(tr -d '\r\n' < "$GAME/cjackcmds.txt")" > "$RUN/cjackcmds-menu.txt"
 
@@ -79,11 +105,16 @@ fi
 export MPTEST_CDKEY="${MPTEST_CDKEY:-BUN6-RYX3-DUZ9-MED2-7352}"
 export WINRUN="Z:$(echo "$RUN" | tr / '\\')"
 export WINEPREFIX="$RUN/wine" WINEDEBUG="${MPTEST_WINEDEBUG:--all,+seh,+msgbox}" WINEDLLOVERRIDES="winedbg.exe=d"
+# MPTEST_WINEDBG=1: let Wine's debugger print a crash's backtrace into the
+# wine-*.log (it is off otherwise: it would wait on a dialog)
+export MPTEST_WINEDBG="${MPTEST_WINEDBG:-}"
+[ -n "$MPTEST_WINEDBG" ] && export WINEDLLOVERRIDES=""
 xvfb-run -a -s '-screen 0 640x480x24' bash -c '
     wineboot -i >/dev/null 2>&1
     K="HKLM\\Software\\Monolith Productions\\Contract Jack\\1.0"
     wine reg add "$K" /v InstallDir /t REG_SZ /d "$WINRUN" /f >/dev/null 2>&1
     wine reg add "$K" /v NetRegionCode /t REG_SZ /d EN /f >/dev/null 2>&1
+    [ -n "$MPTEST_WINEDBG" ] && wine reg add "HKCU\\Software\\Wine\\WineDbg" /v ShowCrashDialog /t REG_DWORD /d 0 /f >/dev/null 2>&1
     wine reg add "$K" /v CDKey /t REG_SZ /d "$MPTEST_CDKEY" /f >/dev/null 2>&1
     wine reg add "$K" /v UpdateNum /t REG_DWORD /d 1 /f >/dev/null 2>&1
     wine reg add "$K" /v UpdateCommandLine0 /t REG_SZ /d "-rez Update_v1x1.rez" /f >/dev/null 2>&1
@@ -92,6 +123,7 @@ xvfb-run -a -s '-screen 0 640x480x24' bash -c '
     wine Lithtech.exe -cmdfile cjackcmds-menu.txt > wine-menu.log 2>&1 &
     sleep 30
     wineserver -k 2>/dev/null; sleep 2
+    bash mkcampaign.sh
     wine ContractJackServer.exe -profile mptest +errorlog 1 > wine-server.log 2>&1 & S=$!
     sleep 60
     xwd -root -silent | convert xwd:- server.png 2>/dev/null

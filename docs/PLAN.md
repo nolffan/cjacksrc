@@ -1061,6 +1061,31 @@ DLLs.
   1445), which ours has no support for. ClientMultiplayerMgr's m_sModName
   is at 0x166c in retail, 0x1670 in ours.
 
+### 8c. playtest coverage (branch `apps2`)
+
+Harness: `make control` (out/cjack-control: retail's game with our
+engine), `make campaign` (build/campaign.sh: every single-player world,
+build/playtest-level.txt: into control, move, look, fire, quicksave,
+quickload; CAMPAIGN_CONTROL=cjack-control compares each world's shots),
+`make mptest MPTEST_TYPE=dm|tdm|dd|de` (the first world of each game type;
+MPTEST_WINEDBG=1 for a crash backtrace). Run on master ae759b5 + `apps2`.
+
+| What | Ours | Control | Finding, owner |
+|---|---|---|---|
+| Single player, all 15 worlds (M01S01 ... M07S04, EPILOGUE) | all load, play, save and load; no crash | same | (harness: a run can be judged NO HUD when skipcine's keys land before the level, 1 in 3 for our M01S01, and the control's M04S02/M04S03 post-load check; rerun) |
+| Mouse look | turn 400 px turns noticeably less than retail; turn 0 200 (look down) does not pitch at all | pitches down to the floor | **cshell**: mouse sensitivity / vertical look (CPlayerMgr's mouse input, profile Sensitivity/InputRate). It makes every later shot of a scripted run diverge from the control. |
+| Firing (M03S02, standing) | fires, muzzle flash, ammo counts | same | none |
+| M06S01 (space) | no weapon in hand after the moves; no "Laser Rifle" pickup message | picks up the Laser Rifle on the same path | **game/cshell**: probably the diverging movement above; recheck once mouse look is fixed |
+| Load after quickload, M01S01 | no checkpoint | "Saving checkpoint..." with its icon after the load | **cshell/game**: Contract J.A.C.K.'s checkpoint saves (known) |
+| Multiplayer deathmatch, team deathmatch | join, play on DM_Khios | same | none |
+| Multiplayer Doomsday (DD_AntarcticAggression) | client crashes once in the world: read of 0xDA in TVector3<float>::operator== (Lithtech.exe 0x40c710, an ICF-folded helper reached through clientde_impl) right after MID_PI_UPDATE | joins and plays | **cshell/game**: our game code passes a bad vector pointer to the engine (the control, same engine, is fine); a backtrace needs MPTEST_WINEDBG with winedbg's console output, not yet captured |
+| Multiplayer Demolition (DE_Bollywood) | server: "Unable to load the game binaries" (no Demolition game type: no CDemolitionMissionMgr, NetDefs' type strings end at DoomsDay) | joins and plays | **game**: retail Object.lto has CDemolitionMissionMgr and DemolitionGameOptions; CShell.dll ScreenHostDemolitionOptions |
+| Vehicles (M03S01, M03S02, M07S02 have PlayerVehicles) | not reached | not reached | harness: blind movement does not find them; needs a save at a vehicle (PLAYTEST_SAVES) |
+| Modern build | single-player script and mptest pass | -- | none |
+
+Stopped here: the harness is committed; next, a backtrace of the Doomsday
+crash and a vehicle save to start from.
+
 ### 11. release
 
 - `build/package.sh` makes `<dir>-private.tar.gz` and `-public.tar.gz` for
