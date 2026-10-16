@@ -191,6 +191,9 @@ CVehicleMgr::CVehicleMgr()
 	m_vLastVehiclePYR.Init();
 	m_vVehiclePYR.Init();
 
+	m_pVehicleButes = LTNULL;
+	m_bHasVehicleWeapon = false;
+
 	InitWorldData();
 }
 

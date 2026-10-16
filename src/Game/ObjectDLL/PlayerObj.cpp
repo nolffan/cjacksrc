@@ -53,7 +53,8 @@
 #include "AIGoalMgr.h"
 #include "AIGoalSpecialDamage.h"
 #include "PickupItem.h"
-#include "DoomsDayPiece.h"
+#include "ChassisPiece.h"
+#include "ChassisButeMgr.h"
 
 #include <stdio.h>
 
@@ -5301,7 +5302,7 @@ LTBOOL CPlayerObj::DoActivate(CActivationData* pData)
 						return LTFALSE;
 					}
 				}
-				else if( IsKindOf( pData->m_hTarget, "DoomsDayPiece" ) )
+				else if( IsKindOf( pData->m_hTarget, "ChassisPiece" ) )
 				{
 					// Is there anything we need to check on the object??
 				}
@@ -7847,23 +7848,11 @@ void CPlayerObj::SetCarriedObject( HOBJECT hObject, bool bTransition /* = false 
 		}
 		else
 		{
-			DoomsDayPiece* pDoomsDayPiece = dynamic_cast< DoomsDayPiece* >( g_pLTServer->HandleToObject( hObject ));
-			//we only know about carrying doomsday pieces right now
-			ASSERT(pDoomsDayPiece);
-			if( pDoomsDayPiece )
+			// RETAIL: 0x1010a118 what is carried is a chassis piece.
+			ChassisPiece* pChassisPiece = dynamic_cast< ChassisPiece* >( g_pLTServer->HandleToObject( hObject ));
+			if( pChassisPiece && pChassisPiece->GetChassisPiece( ))
 			{
-				switch (pDoomsDayPiece->GetDoomsDayPieceType())
-				{
-				case kDoomsDay_transmitter:
-					SetCarrying(CFX_CARRY_DD_TRAN);
-					break;
-				case kDoomsDay_battery:
-					SetCarrying(CFX_CARRY_DD_BATT);
-					break;
-				case kDoomsDay_Core:
-					SetCarrying(CFX_CARRY_DD_CORE);
-					break;
-				}
+				SetCarrying( CFX_CARRY_CHASSISPIECE, pChassisPiece->GetChassisPiece( ));
 			}
 		}
 
@@ -7918,7 +7907,21 @@ void CPlayerObj::SetCarriedObject( HOBJECT hObject, bool bTransition /* = false 
 
 bool CPlayerObj::IsCarryingHeavyObject() 
 {
-	return ( IsCarrying() && (m_pcs->nCarrying == CFX_CARRY_BODY || m_pcs->nCarrying == CFX_CARRY_DD_CORE));
+	// RETAIL: 0x1010a310 a chassis piece is heavy if its record says so.
+	if( !IsCarrying() )
+		return false;
+
+	if( m_pcs->nCarrying == CFX_CARRY_BODY )
+		return true;
+
+	if( m_pcs->nCarrying == CFX_CARRY_CHASSISPIECE )
+	{
+		ChassisPiece* pChassisPiece = dynamic_cast< ChassisPiece* >( g_pLTServer->HandleToObject( m_hCarriedObject ));
+		if( pChassisPiece && pChassisPiece->GetChassisPiece( ))
+			return pChassisPiece->GetChassisPiece( )->m_bHeavy;
+	}
+
+	return false;
 }
 
 
@@ -8127,7 +8130,7 @@ bool CPlayerObj::DropCarriedObject( bool bTransition /* = false  */ )
 			// will move the AI to the correct position if we are not allowed to drop the body.
 		}
 	}
-	else if( IsKindOf( m_hCarriedObject, "DoomsDayPiece" ))
+	else if( IsKindOf( m_hCarriedObject, "ChassisPiece" ))
 	{
 		HOBJECT hObj = m_hCarriedObject;
 		g_pCommonLT->SetObjectFlags( hObj, OFT_User, 0, USRFLG_ATTACH_HIDE1SHOW3 );
@@ -8209,7 +8212,7 @@ bool CPlayerObj::PickupObject( HOBJECT hObject )
 			}
 		}
 	}
-	else if( IsKindOf( hObject, "DoomsDayPiece" ))
+	else if( IsKindOf( hObject, "ChassisPiece" ))
 	{
 		// Send message to the object letting it know the player wants to pick it up.
 		// The object can then decide if it is ok to be picked up or not.
