@@ -1293,7 +1293,7 @@ bool CD3D_RenderWorld::CastRay(
 	CD3D_RenderBlock::SRay sRay(vOrigin, vDir, fMinDist, fMaxDist);
 	static CD3D_RenderBlock::TIntersectionList aBlockIntersections;
 	static CD3D_RenderBlock::TIntersectionList aFinalIntersections;
-	aFinalIntersections.clear();
+	aFinalIntersections.resize(0);	// RETAIL: 0x4a9c00
 	CD3D_RenderBlock::EIntersectionType eIntersection;
 	if (bFirstIntersect)
 		eIntersection = CD3D_RenderBlock::eIntersectionType_First;
@@ -1303,7 +1303,7 @@ bool CD3D_RenderWorld::CastRay(
 	uint32 nIntersectionBlock = 0;
 	for (uint32 nIntersectLoop = 0; nIntersectLoop < m_nRenderBlockCount; ++nIntersectLoop)
 	{
-		aBlockIntersections.clear();
+		aBlockIntersections.resize(0);
 
 		uint32 nBlockTrisChecked;
 		if (!m_pRenderBlocks[nIntersectLoop].IntersectRay(sRay, aBlockIntersections, eIntersection, &nBlockTrisChecked))
@@ -1346,7 +1346,7 @@ bool CD3D_RenderWorld::CastRay(
 	}
 
 	// Don't leave anything lying around
-	aFinalIntersections.clear();
+	aFinalIntersections.resize(0);
 
 	return true;
 }
