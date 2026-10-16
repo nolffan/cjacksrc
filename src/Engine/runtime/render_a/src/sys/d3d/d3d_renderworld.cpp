@@ -246,7 +246,7 @@ void CD3D_RenderWorld::DrawOccluder(const COccludee::COutline &cOutline)
 void CD3D_RenderWorld::StartFrame(const ViewParams& Params)
 {
 	GetShaderDrawRange().Reset();	// RETAIL: 0x4aaba0
-	m_aOccluderOutlines.clear();
+	m_aOccluderOutlines.resize(0);	// RETAIL: resize(0) (Lithtech.exe 0x4aaba0)
 	m_nOccludeCollectTime = 0;
 
 	// Don't do any occluder stuff if we're fiddling with console variables
@@ -1247,7 +1247,7 @@ void CD3D_RenderWorld::DebugTri(const ViewParams& Params)
 		nIntersectionBlock = nIntersectLoop;
 
 		// Clear the current intersection list
-		aIntersections.clear();
+		aIntersections.resize(0);	// RETAIL: resize(0) (Lithtech.exe 0x4a9910)
 
 		// Find the closest intersection distance
 		float fClosestDist = aBlockIntersections[0].m_fDistance;
