@@ -78,3 +78,6 @@ modes at any size; our Bink player on FFmpeg in place of RAD's
   LT_POLYGT4 copies each vertex's own colour into its triangle list
   (`RETAIL_BUGS.md`; src/Engine/runtime/render_b/src/sys/d3d/
   d3ddrawprim.cpp).
+* **EN-7: no sound driver.** SoundSys leaves the driver null when no driver
+  can be made, rather than calling Term through the null pointer
+  (`RETAIL_BUGS.md`; src/Engine/runtime/sound/src/soundmgr.cpp).

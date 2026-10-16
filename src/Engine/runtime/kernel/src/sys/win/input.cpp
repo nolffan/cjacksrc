@@ -2475,7 +2475,8 @@ static bool input_TrackDevice( DeviceInput *pInputArray, uint32 *pnInOut )
 			{
 				if( hResult == DI_BUFFEROVERFLOW )
 				{
-					dsi_ConsolePrint ("Input buffer overflow on %s", pDevice->m_InstanceName);
+					// RETAIL: only at debug level 1 (Lithtech.exe 0x431270)
+					DEBUG_PRINT(1, ("Input buffer overflow on %s", pDevice->m_InstanceName));
 				}
 				else
 				{

@@ -209,6 +209,17 @@ colour.
 Fixed in the modern build: src/Engine/runtime/render_b/src/sys/d3d/
 d3ddrawprim.cpp, MODERN.md EN-6.
 
+### No sound driver at all crashes the engine
+
+Lithtech.exe 0x49bc80 (SoundSys, src/Engine/runtime/sound/src/
+soundmgr.cpp). When the configured sound driver fails and the default
+`SndDrv.dll` cannot be made either, SoundSys finds the driver pointer null
+and calls `Term` through it (0x49bd0b): a machine without a working sound
+driver crashes instead of running silent.
+
+Fixed in the modern build: src/Engine/runtime/sound/src/soundmgr.cpp,
+MODERN.md EN-7.
+
 ### The launcher's own path can overrun a buffer
 
 ContractJack.exe 0x40669d (CLauncherApp::InitInstance,
