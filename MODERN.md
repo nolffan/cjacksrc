@@ -85,3 +85,7 @@ modes at any size; our Bink player on FFmpeg in place of RAD's
   it sets the camera's (or the screen's) width and height
   (`RETAIL_BUGS.md`; src/Engine/runtime/render_b/src/sys/d3d/
   d3ddrawprim.cpp).
+* **EN-9: the player-view model's aspect.** The really-close projection
+  takes the screen's aspect rather than the PVModelAspect console variable
+  (1 by default), so the weapon model is not stretched on a wide screen
+  (src/Engine/runtime/render_a/src/sys/d3d/3d_ops.cpp).

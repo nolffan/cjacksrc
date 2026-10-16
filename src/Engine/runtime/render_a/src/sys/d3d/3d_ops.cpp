@@ -68,7 +68,7 @@ void d3d_SetReallyClose(CReallyCloseData* pData)
 	PD3DDEVICE->SetViewport(&ViewportData);
 
 #ifdef CJACK_MODERN
-	// M-E1: the player-view model in the screen's own aspect
+	// MODERN.md EN-9: the player-view model in the screen's own aspect
 	float aspect = g_ViewParams.m_fScreenWidth / g_ViewParams.m_fScreenHeight;
 #else
 	// RETAIL: the PVModelAspect console variable (Lithtech.exe 0x50bf76)
