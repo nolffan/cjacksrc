@@ -95,3 +95,23 @@ ContractJackServer.exe,0x00413be0,function after the int3 padding that ends the 
 ContractJackServer.exe,0x00413d90,function after the int3 padding that ends the one at 0x413d60 (first instruction `mov 0x30(%esp),%eax`); nothing calls it directly (an uncalled function the server's /Ox objects keep, a virtual or message-map handler, or a library member)
 ContractJackServer.exe,0x00413e50,function after the int3 padding that ends the one at 0x413d60 (first instruction `mov 0x34(%esp),%eax`); nothing calls it directly (an uncalled function the server's /Ox objects keep, a virtual or message-map handler, or a library member)
 ContractJackServer.exe,0x00414150,function after the int3 padding that ends the one at 0x414080 (first instruction `mov 0x30(%esp),%eax`); nothing calls it directly (an uncalled function the server's /Ox objects keep, a virtual or message-map handler, or a library member)
+Lithtech.exe,0x00403d80,CClassMgr::ClearTickCounts (ret): the second of CClassMgr's six empty tick functions after ShowTickCounts 0x403d70; enumerated as one row with them
+Lithtech.exe,0x00403d90,CClassMgr::DisplayTickCounts (ret): the third of the six empty tick functions from 0x403d70
+Lithtech.exe,0x00403da0,CClassMgr::DisplayClassTickCounts (ret 4): the fourth of the six empty tick functions from 0x403d70
+Lithtech.exe,0x00403db0,CClassMgr::CalculateSimpleTickInfo (ret): the fifth of the six empty tick functions from 0x403d70
+Lithtech.exe,0x00403dc0,CClassMgr::CalculateVerboseTickInfo (ret): the last of the six empty tick functions from 0x403d70
+Lithtech.exe,0x00401030,function after the int3 padding that ends the vector constructor iterator at 0x401000 (`mov eax,[ecx+0xc]; ret`)
+Lithtech.exe,0x0049f640,function after the int3 padding that ends the `jmp [free]` thunk at 0x49f630 (`jmp [IAT]`)
+Lithtech.exe,0x0049f650,function after the int3 padding that ends the thunk at 0x49f640 (`mov eax,ecx; ret`)
+Lithtech.exe,0x0049f660,function after the int3 padding that ends the one at 0x49f650 (`ret`)
+server.dll,0x10001f80,CClassMgr::ClearTickCounts (ret): the second of CClassMgr's six empty tick functions after ShowTickCounts 0x10001f70; enumerated as one row with them
+server.dll,0x10001f90,CClassMgr::DisplayTickCounts (ret): the third of the six empty tick functions from 0x10001f70
+server.dll,0x10001fa0,CClassMgr::DisplayClassTickCounts (ret 4): the fourth of the six empty tick functions from 0x10001f70
+server.dll,0x10001fb0,CClassMgr::CalculateSimpleTickInfo (ret): the fifth of the six empty tick functions from 0x10001f70
+server.dll,0x10001fc0,CClassMgr::CalculateVerboseTickInfo (ret): the last of the six empty tick functions from 0x10001f70
+server.dll,0x1005dc30,function after the int3 padding that ends the `jmp [free]` thunk at 0x1005dc20 (`jmp [IAT]`)
+server.dll,0x1005dc40,function after the int3 padding that ends the thunk at 0x1005dc30 (`mov eax,ecx; ret`)
+server.dll,0x1005dc50,function after the int3 padding that ends the one at 0x1005dc40 (`ret`)
+server.dll,0x1000a210,function after the int3 padding that ends the jump thunk at 0x1000a200 (`push ecx; call [IAT]; ret`)
+server.dll,0x1000c7d0,function after the int3 padding that ends the getter at 0x1000c7c0 (`mov eax,[0x1007b908]; ret`)
+server.dll,0x1000d460,function after the int3 padding that ends the getter at 0x1000d450 (`xor eax,eax; ret`)

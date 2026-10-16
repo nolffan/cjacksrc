@@ -43,8 +43,8 @@ those functions make up.
 
 | Binary | | Byte-identical functions | Byte-identical code | | Unwritten | Unplaced |
 |---|---|--:|--:|---|--:|--:|
-| `Lithtech.exe` | the engine | 6,877 / 7,987 | 1,119,298 / 1,165,143 bytes | `███████████████████░` 96.0% | 19 | 1,407 |
-| `server.dll` | the engine's server | 2,741 / 3,117 | 388,639 / 403,787 bytes | `███████████████████░` 96.2% | 7 | 487 |
+| `Lithtech.exe` | the engine | 6,878 / 7,985 | 1,119,390 / 1,163,983 bytes | `███████████████████░` 96.1% | 3 | 1,395 |
+| `server.dll` | the engine's server | 2,741 / 3,125 | 388,639 / 403,637 bytes | `███████████████████░` 96.2% | 2 | 475 |
 | `SndDrv.dll` | the sound driver | 225 / 255 | 28,371 / 28,533 bytes | `███████████████████░` 99.4% | 0 | 33 |
 | `GameSpy.dll` | the GameSpy services | 163 / 181 | 19,242 / 20,193 bytes | `███████████████████░` 95.2% | 0 | 13 |
 | `ContractJack.exe` | the launcher | 284 / 344 | 40,336 / 40,759 bytes | `███████████████████░` 98.9% | 0 | 2 |
@@ -55,7 +55,7 @@ those functions make up.
 | `ltmsg.dll` | the engine's messages, not in the total | 5 / 5 resources | 2,054 / 2,054 bytes | `████████████████████` 100.0% | 0 | -- |
 | `CRes.dll` | the game's client resources, not in the total | 457 / 457 resources | 330,555 / 330,555 bytes | `████████████████████` 100.0% | 0 | -- |
 | `SRes.dll` | the game's server resources, not in the total | no resources | -- | -- | -- | -- |
-| **All** | | **24,961 / 29,297** | **3,953,678 / 4,625,181 bytes** | `█████████████████░░░` **85.4%** | **342** | **3,171** |
+| **All** | | **24,962 / 29,303** | **3,953,770 / 4,623,871 bytes** | `█████████████████░░░` **85.5%** | **321** | **3,147** |
 <!-- progress:end -->
 
 Every function in that table is recorded in `progress/identical.txt`, and

@@ -12760,6 +12760,7 @@ Lithtech.exe	sub_4feea0
 Lithtech.exe	sub_4feed0
 Lithtech.exe	sub_4fef30
 Lithtech.exe	sub_4fef60
+Lithtech.exe	sub_4fef90
 Lithtech.exe	sub_4feff0
 Lithtech.exe	sub_4ff400
 Lithtech.exe	sub_4ff590
