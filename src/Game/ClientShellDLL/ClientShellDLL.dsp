@@ -1126,6 +1126,10 @@ SOURCE=.\VehicleWeapon.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\Shared\VehicleButeMgr.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\Shared\VersionMgr.cpp
 # End Source File
 # Begin Source File
