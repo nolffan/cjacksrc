@@ -21,7 +21,8 @@
 # (retail's MPMissions.txt, from the worlds in the rez files). The server
 # then starts on a profile of its own (Profiles/mptest.txt: deathmatch --
 # Contract J.A.C.K. ships no co-operative worlds -- LAN only, port 27888,
-# dedicated; its campaign that file's mission 12 (DM_VOLKOVSLAIR in ours); the
+# dedicated; its campaign that file's mission $MPTEST_MISSION, default 12
+# (DM_VOLKOVSLAIR in ours); the
 # profile's bools are ButeMgr's TRUE/FALSE) with its error log on
 # (server.log); once it has had 60 seconds, a client starts with
 # "+join 127.0.0.1:27888
@@ -59,7 +60,7 @@ done
 cp "$GAME/autoexec.cfg.retail" "$RUN/autoexec.cfg"
 cp "$GAME/Default.prf.retail" "$RUN/Profiles/Default.prf"
 printf '[Multiplayer]\r\nGameType = 2\r\nPort = 27888\r\nLANOnly = TRUE\r\nDedicated = TRUE\r\nUsePassword = FALSE\r\n' > "$RUN/Profiles/mptest.txt"
-printf '[MissionList]\r\nMission0=12\r\nLoopMissions=TRUE\r\n' > "$RUN/Profiles/mptest/DM_Campaigns/default_campaign.txt"
+printf '[MissionList]\r\nMission0=%s\r\nLoopMissions=TRUE\r\n' "${MPTEST_MISSION:-12}" > "$RUN/Profiles/mptest/DM_Campaigns/default_campaign.txt"
 printf '%s ++screenwidth 640 ++screenheight 480 ++bitdepth 32 ++windowed 0 +DisableMovies 1 +ErrorLog 1 +AlwaysFlushLog 1 +join 127.0.0.1:27888 +gametype Deathmatch\r\n' \
     "$(tr -d '\r\n' < "$GAME/cjackcmds.txt")" > "$RUN/cjackcmds.txt"
 printf '%s ++screenwidth 640 ++screenheight 480 ++bitdepth 32 ++windowed 0 +DisableMovies 1\r\n' \

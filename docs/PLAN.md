@@ -867,6 +867,39 @@ NOLF2's file order. Recorded: the launcher 284 of 344 functions identical (98.9%
     checks the LETMEIN CRCs and kicks on a mismatch, which the client
     never hears of) or server.dll's connect sequence (the
     FinishClientConnect stopgap, KickClient). **Next for game/engine.**
+- On master 0b58af7 (the game's connect flow), the mixed runs (mptest on
+  a game directory of mixed parts; retail's DLLs from Update_v1x1.rez and
+  GameDLL.rez):
+  - ours against ours: no crash any more; the client gets its ID, then
+    "Disconnected from server" (Disconnected(4)), before entering the
+    world; the server lists no player.
+  - our client (Lithtech.exe, CShell) against retail's server
+    (ContractJackServer.exe, server.dll, Object.lto): the same plain
+    "Disconnected from server" (Disconnected(3)), no reason shown;
+  - retail's client DLLs on our engine against our server: "Invalid game
+    assets." -- eDisconnect_BadFiles, sent by our Object.lto's handshake
+    (one of its CRC checks: weapons, CShell file, modelbutes, surface,
+    damagefx -- or the order/masking of the LETMEIN fields);
+  - retail's client DLLs on our engine against retail's server: "CD-Key
+    verification failed" (expected: no key, GameSpy gone).
+  So both sides break the join: our server rejects retail's client at
+  the asset check, and our client is dropped by retail's server (as by
+  ours) before the CD-key step that retail's client reaches -- our
+  client's side of the handshake/CD-key exchange differs from retail's.
+- The main menu against retail's (the hybrid run): retail has no fourth
+  item (ours adds NOLF2's LAN item, which CJ's CRes labels "TEAM SAY:");
+  retail's version text is "v1.1 - Retail": CShell.dll's string is still
+  "CJ v1.1" (VersionMgr), so retail's ScreenMain shows it without its
+  "CJ " and its mod name is "Retail" with no mod (the string "Retail" is
+  next to "host"/"join" in CShell.dll's data); ours shows "CJ v1.1 - ".
+- The control for multiplayer is Contract J.A.C.K.'s multiplayer demo
+  (rez/demos/contractjack_demo_mp.exe: `rez/tools/sfxcab.py`, then
+  `rez/tools/unshield/unshield x` on its data1.cab; Program_Files and
+  System_Files as the game directory, `-rez Game.rez`, MPTEST_MISSION=0):
+  its own engine, server and game DLLs host DE_Italy and the client joins
+  and plays it, in the same mptest run -- the harness and Wine are not
+  what stops ours. (Its game DLLs do not load on our engine: "Invalid
+  shell DLL", the demo's interfaces are not retail's.)
 - **For the game package**: retail writes one `MPMissions.txt` for
   deathmatch and doomsday (Object.lto and CShell.dll both name it; ours
   writes `DMMissions.txt` and `DDMissions.txt`); retail's main menu has no
