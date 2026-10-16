@@ -71,3 +71,12 @@ addr,reason
 0x00504722,NOT A FUNCTION: interior block of CD3DRenderStateMgr::SetVertexShaderConstants (0x00504610): a pointer or jump target inside it split its extent
 0x00504753,NOT A FUNCTION: interior block of CD3DRenderStateMgr::SetVertexShaderConstants (0x00504610): a pointer or jump target inside it split its extent
 0x0050492f,NOT A FUNCTION: interior block of CD3DRenderStateMgr::SetVertexShaderConstants (0x00504610): a pointer or jump target inside it split its extent
+0x00540000,NOT A FUNCTION: interior block of the static initializer at 0x0053fff0 (an operand byte of its mov to 0x58aa60)
+0x00540020,NOT A FUNCTION: interior block of the static initializer at 0x00540010 (an operand byte of its mov to 0x58aa60)
+0x00540082,NOT A FUNCTION: interior block of the static initializer at 0x00540070 (an operand byte of its mov to 0x58aa60)
+0x0054069b,NOT A FUNCTION: interior block of the static initializer at 0x00540690 (an operand byte of its mov to 0x58aa60)
+0x0054159f,NOT A FUNCTION: interior block of the static initializer at 0x00541590 (an operand byte of its fstps)
+0x0054197c,NOT A FUNCTION: interior block of the static initializer at 0x00541970 (the fstps after its fmuls)
+0x005429fa,NOT A FUNCTION: interior block of the static initializer at 0x005429f0 (an operand byte of its fstps)
+0x00542852,NOT A FUNCTION: interior block of the static initializer at 0x00542850 (the operand of its flds)
+0x00549461,NOT A FUNCTION: zero fill at the end of .text, 1053 bytes of 00 in the shipped and the demo's images
