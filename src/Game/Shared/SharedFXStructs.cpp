@@ -704,7 +704,7 @@ void PVCREATESTRUCT::Write(ILTMessage_Write *pMsg)
 
     SFXCREATESTRUCT::Write(pMsg);
 
-	pMsg->Writeuint8(ePhysicsModel);
+	pMsg->Writeuint8(nVehicleId);
 }
 
 // ----------------------------------------------------------------------- //
@@ -721,7 +721,7 @@ void PVCREATESTRUCT::Read(ILTMessage_Read *pMsg)
 
     SFXCREATESTRUCT::Read(pMsg);
 
-    ePhysicsModel = (PlayerPhysicsModel) pMsg->Readuint8();
+    nVehicleId = pMsg->Readuint8();
 }
 
 

@@ -411,12 +411,13 @@ struct PVCREATESTRUCT : public SFXCREATESTRUCT
     virtual void Write(ILTMessage_Write *pMsg);
     virtual void Read(ILTMessage_Read *pMsg);
 
-	PlayerPhysicsModel	ePhysicsModel;
+	// cjacksrc: Contract J.A.C.K.'s vehicle, a VehicleButeMgr id.
+	uint8	nVehicleId;
 };
 
 inline PVCREATESTRUCT::PVCREATESTRUCT()
 {
-	ePhysicsModel = PPM_NORMAL;
+	nVehicleId = 0xFF;
 }
 
 

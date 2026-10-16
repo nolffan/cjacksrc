@@ -42,6 +42,7 @@
 // use the LINKTO_MODULE/LINKFROM_MODULE pair and put the header in this file.
 #include "AI.h"
 #include "AIHuman.h"
+#include "VehicleButeMgr.h"
 #include "AINode.h"
 #include "AINodeGuard.h"
 #include "AINodeSensing.h"
@@ -265,7 +266,13 @@ LTBOOL CGlobalServerMgr::Init()
 		TriggerTypeMgr.Init();
 	}
 
-	// RETAIL: 0x100e45ec (after the vehicles, CVehicleButeMgr, still to come)
+	// RETAIL: 0x100e45d3: Contract J.A.C.K.'s vehicles.
+	if( !g_pVehicleButeMgr )
+	{
+		CVehicleButeMgr & VehicleButeMgr = CVehicleButeMgr::Instance();
+		VehicleButeMgr.Init();
+	}
+
 	if( !ChassisButeMgr::Instance( ).IsInitialized( ))
 	{
 		ChassisButeMgr::Instance( ).Init( );

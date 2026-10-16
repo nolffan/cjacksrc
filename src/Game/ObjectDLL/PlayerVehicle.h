@@ -30,7 +30,8 @@ class PlayerVehicle : public Prop
 
 		void	SetRidden(bool bRidden);
 
-		PlayerPhysicsModel GetPhysicsModel() const { return m_ePPhysicsModel; }
+		// cjacksrc: Contract J.A.C.K.'s vehicles are VehicleButeMgr records.
+		uint8	GetVehicleId() const { return m_nVehicleId; }
 
 		// Returns last time someone rode this vehicle.
 		float	GetLastRideTime( ) { return m_fLastRideTime; }
@@ -76,7 +77,7 @@ class PlayerVehicle : public Prop
 		bool		m_bLocked;
 		HSTRING		m_hstrLockedCommand;
 
-		PlayerPhysicsModel m_ePPhysicsModel;  // Corresponds to vehicle type
+		uint8		m_nVehicleId;	// cjacksrc: the VehicleType, a VehicleButeMgr id
 
 		PVCREATESTRUCT	m_PlayerVehicleStruct;
 
@@ -84,6 +85,7 @@ class PlayerVehicle : public Prop
 
 		float		m_fLastRideTime;
 		bool		m_bVirgin;
+		bool		m_bBlinking;	// cjacksrc: RETAIL: +0x8ad, about to respawn (multiplayer)
 
 		static PlayerVehicleList		m_lstPlayerVehicles;
 };
@@ -106,6 +108,13 @@ class CPlayerVehiclePlugin : public CPropPlugin
 											  const	GenericProp	&gpPropValue,
 													ILTPreInterface	*pInterface,
 											  const char		*szModifiers );
+
+		// cjacksrc: RETAIL: Object 0x101168b0: the vehicle's model.
+		virtual LTRESULT PreHook_Dims( const char *szRezPath,
+									   const char *szPropValue,
+									   char *szModelFilenameBuf,
+									   int nModelFilenameBufLen,
+									   LTVector &vDims );
 
 	protected: // Members...
 

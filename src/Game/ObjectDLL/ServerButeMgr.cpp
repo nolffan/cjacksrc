@@ -278,6 +278,18 @@ float CServerButeMgr::GetDoomsDayDeviceDamageAmount( )
 	return ( float )m_buteMgr.GetDouble( SBMGR_DOOMSDAYDEVICE_TAG, "DamageAmount", 5.0f );
 }
 
+// cjacksrc: RETAIL: Object 0x1013e260, 0x1013e280: Contract J.A.C.K.'s
+// vehicles in multiplayer.
+float CServerButeMgr::GetVehicleRespawnTime( )
+{
+	return ( float )m_buteMgr.GetDouble( SBMGR_MISC_TAG, "VehicleRespawnTime", 60.0f );
+}
+
+float CServerButeMgr::GetVehicleBlinkTime( )
+{
+	return ( float )m_buteMgr.GetDouble( SBMGR_MISC_TAG, "VehicleBlinkTime", 10.0f );
+}
+
 float CServerButeMgr::GetDoomsDayDeviceDamageInterval( )
 {
 	return ( float )m_buteMgr.GetDouble( SBMGR_DOOMSDAYDEVICE_TAG, "DamageInterval", 3.0f );

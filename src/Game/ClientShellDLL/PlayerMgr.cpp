@@ -57,6 +57,7 @@ CPlayerMgr* g_pPlayerMgr = NULL;
 #define DEFAULT_LOD_OFFSET				0.0f
 
 #define DEFAULT_CSENDRATE				15.0f
+#define DEFAULT_CSENDRATE_MIN			2.0f	// cjacksrc: RETAIL: 0x1009e16e
 
 namespace
 {
@@ -79,6 +80,7 @@ void SVModelHook(ModelHookData *pData, void *pUser);
 
 
 VarTrack			g_CV_CSendRate;		// The SendRate console variable.
+VarTrack			g_vtCSendRateMin;	// cjacksrc: RETAIL: 0x1017e5f4, CSendRate_Min
 VarTrack			g_vtPlayerRotate;	// The PlayerRotate console variable
 // cjacksrc: RETAIL: CShell 0x1017e5cc: how long the recoil has been
 // recovering (StartWeaponRecoil, DecayWeaponRecoil).
@@ -353,6 +355,7 @@ LTBOOL CPlayerMgr::Init()
 	InitTargetMgr();
 
 	g_CV_CSendRate.Init(g_pLTClient, "CSendRate", NULL, DEFAULT_CSENDRATE);
+	g_vtCSendRateMin.Init(g_pLTClient, "CSendRate_Min", NULL, DEFAULT_CSENDRATE_MIN);
 	g_vtPlayerRotate.Init(g_pLTClient, "PlayerRotate", NULL, 1.0f);
 	g_vtCamZoom1MaxDist.Init(g_pLTClient, "CamZoom1MaxDist", NULL, 600.0f);
 	g_vtCamZoom2MaxDist.Init(g_pLTClient, "CamZoom2MaxDist", NULL, 1000.0f);
@@ -2144,6 +2147,14 @@ void CPlayerMgr::UpdateWeaponModel()
 		 ( g_pInterfaceMgr->GetGameState() == GS_PLAYING ) )
 	{
 		bFire = true;
+	}
+
+	// RETAIL: CShell 0x1009edf2: a vehicle with a weapon fires that.
+	CVehicleMgr* pVehicleMgr = m_pMoveMgr->GetVehicleMgr();
+	if (pVehicleMgr->IsVehiclePhysics() && pVehicleMgr->HasVehicleWeapon())
+	{
+		pVehicleMgr->UpdateVehicleWeapon( rRot, vPos, bFire, eFireType );
+		return;
 	}
 
 	// Update the model position and state...
@@ -3942,6 +3953,42 @@ void CPlayerMgr::UpdatePlayerFlags()
 
 // ----------------------------------------------------------------------- //
 //
+//	ROUTINE:	IsSameMessage()
+//
+//	PURPOSE:	RETAIL: CShell 0x10099260: do two messages hold the same
+//				bits?  (Their read positions are kept.)
+//
+// ----------------------------------------------------------------------- //
+
+static bool IsSameMessage( ILTMessage_Read* pMsgA, ILTMessage_Read* pMsgB )
+{
+	if( !pMsgA || !pMsgB )
+		return ( pMsgA == pMsgB );
+
+	if( pMsgA->Size( ) != pMsgB->Size( ))
+		return false;
+
+	uint32 nPosA = pMsgA->Tell( );
+	uint32 nPosB = pMsgB->Tell( );
+	pMsgA->SeekTo( 0 );
+	pMsgB->SeekTo( 0 );
+
+	bool bSame = true;
+	while( !pMsgA->EOM( ))
+	{
+		bSame &= ( pMsgA->ReadBits( 32 ) == pMsgB->ReadBits( 32 ));
+		if( !bSame )
+			break;
+	}
+
+	pMsgA->SeekTo( nPosA );
+	pMsgB->SeekTo( nPosB );
+
+	return bSame;
+}
+
+// ----------------------------------------------------------------------- //
+//
 //	ROUTINE:	CPlayerMgr::UpdatePlayerInfo()
 //
 //	PURPOSE:	Tell the player about the new camera stuff
@@ -3977,7 +4024,8 @@ void CPlayerMgr::UpdatePlayerInfo(bool bPlaying)
 	{
 		CAutoMessage cMsg;
 		cMsg.Writeuint8(MID_PLAYER_UPDATE);
-		cMsg.Writeuint16(CLIENTUPDATE_ALLOWINPUT);
+		// RETAIL: CShell 0x1009f650: the flags are a byte.
+		cMsg.Writeuint8(CLIENTUPDATE_ALLOWINPUT);
 		cMsg.Writeuint8((uint8)m_bAllowPlayerMovement);
 		g_pLTClient->SendToServer(cMsg.Read(), MESSAGE_GUARANTEED);
 		m_nPlayerInfoChangeFlags &= ~CLIENTUPDATE_ALLOWINPUT;
@@ -3987,164 +4035,207 @@ void CPlayerMgr::UpdatePlayerInfo(bool bPlaying)
 	float fSendRate  = 1.0f / g_CV_CSendRate.GetFloat(DEFAULT_CSENDRATE);
 	float fSendDelta = (fCurTime - m_fPlayerInfoLastSendTime);
 
-	if ( m_pMoveMgr->IsInWorld() && (!g_pClientMultiplayerMgr->IsConnectedToRemoteServer( ) || fSendDelta > fSendRate))
+	// RETAIL: CShell 0x1009f6f5: Contract J.A.C.K. sends what did not
+	// change only every 1/CSendRate_Min seconds.
+	bool bSendAll = true;
+	if (1.0f / g_vtCSendRateMin.GetFloat(DEFAULT_CSENDRATE_MIN) >= fCurTime - m_fPlayerInfoLastFullSendTime)
 	{
-		CAutoMessage cMsg;
+		bSendAll = false;
+	}
 
-		cMsg.Writeuint8(MID_PLAYER_UPDATE);
+	if (!m_pMoveMgr->IsInWorld())
+		return;
 
-		if (g_vtPlayerRotate.GetFloat(1.0) > 0.0)
+	if (g_pClientMultiplayerMgr->IsConnectedToRemoteServer( ) && !(fSendDelta > fSendRate))
+		return;
+
+	CAutoMessage cMsg;
+
+	cMsg.Writeuint8(MID_PLAYER_UPDATE);
+
+	LTRotation rPlayerRot(m_fPlayerPitch, m_fPlayerYaw, m_fPlayerRoll);
+	uint8 nRotation = CompressRotationByte(&rPlayerRot);
+	uint8 nPitch = CompressAngleToByte(m_fPitch);
+
+	if (g_vtPlayerRotate.GetFloat(1.0) > 0.0)
+	{
+		if( PPM_SNOWMOBILE == m_pMoveMgr->GetVehicleMgr()->GetPhysicsModel() )
 		{
-			if( PPM_SNOWMOBILE == m_pMoveMgr->GetVehicleMgr()->GetPhysicsModel() )
+			m_nPlayerInfoChangeFlags |= CLIENTUPDATE_FULLPLAYERROT;
+			
+			m_nPlayerInfoChangeFlags &= ~CLIENTUPDATE_ACCURATEPLAYERROT;
+			m_nPlayerInfoChangeFlags &= ~CLIENTUPDATE_PLAYERROT;
+		}
+		else if( m_bServerAccurateRotation )
+		{
+			m_nPlayerInfoChangeFlags |= CLIENTUPDATE_ACCURATEPLAYERROT;
+			
+			m_nPlayerInfoChangeFlags &= ~CLIENTUPDATE_PLAYERROT;
+			m_nPlayerInfoChangeFlags &= ~CLIENTUPDATE_FULLPLAYERROT;
+		}
+		else
+		{
+			// RETAIL: CShell 0x1009f858: only a changed rotation.
+			if (!bSendAll && nRotation == m_nPlayerInfoLastSent[0] && nPitch == m_nPlayerInfoLastSent[1])
 			{
-				m_nPlayerInfoChangeFlags |= CLIENTUPDATE_FULLPLAYERROT;
-				
-				m_nPlayerInfoChangeFlags &= ~CLIENTUPDATE_ACCURATEPLAYERROT;
 				m_nPlayerInfoChangeFlags &= ~CLIENTUPDATE_PLAYERROT;
-			}
-			else if( m_bServerAccurateRotation )
-			{
-				m_nPlayerInfoChangeFlags |= CLIENTUPDATE_ACCURATEPLAYERROT;
-				
-				m_nPlayerInfoChangeFlags &= ~CLIENTUPDATE_PLAYERROT;
-				m_nPlayerInfoChangeFlags &= ~CLIENTUPDATE_FULLPLAYERROT;
 			}
 			else
 			{
 				m_nPlayerInfoChangeFlags |= CLIENTUPDATE_PLAYERROT;
-				
-				m_nPlayerInfoChangeFlags &= ~CLIENTUPDATE_ACCURATEPLAYERROT;
-				m_nPlayerInfoChangeFlags &= ~CLIENTUPDATE_FULLPLAYERROT;
 			}
+			
+			m_nPlayerInfoChangeFlags &= ~CLIENTUPDATE_ACCURATEPLAYERROT;
+			m_nPlayerInfoChangeFlags &= ~CLIENTUPDATE_FULLPLAYERROT;
 		}
+	}
 
-		if ( m_bSendCameraOffsetToServer )
+	if ( m_bSendCameraOffsetToServer )
+	{
+		m_nPlayerInfoChangeFlags |= CLIENTUPDATE_CAMERAOFFSET;
+	}
+
+    cMsg.Writeuint8((uint8)m_nPlayerInfoChangeFlags);
+
+	if (m_nPlayerInfoChangeFlags & CLIENTUPDATE_PLAYERROT)
+	{
+		// Set the player's rotation (don't allow model to rotate up/down).
+
+        cMsg.Writeuint8(nRotation);
+		m_nPlayerInfoLastSent[0] = nRotation;
+	}
+	else if ( m_nPlayerInfoChangeFlags & CLIENTUPDATE_ACCURATEPLAYERROT )
+	{
+
+        LTRotation rPlayerRot( m_fPlayerPitch, m_fPlayerYaw, m_fPlayerRoll );
+        cMsg.Writeuint16( CompressRotationShort( &rPlayerRot ) );
+	}
+	else if( m_nPlayerInfoChangeFlags & CLIENTUPDATE_FULLPLAYERROT )
+	{
+		LTRotation rPlayerRot( m_fPlayerPitch, m_fPlayerYaw, m_fPlayerRoll);
+		cMsg.WriteCompLTRotation( rPlayerRot );
+	}
+
+	if ( m_nPlayerInfoChangeFlags & ( CLIENTUPDATE_PLAYERROT | CLIENTUPDATE_ACCURATEPLAYERROT ) )
+	{
+		// and write the pitch to the message.
+		cMsg.Writeuint8( nPitch );
+		m_nPlayerInfoLastSent[1] = nPitch;
+	}
+
+	// write the camera offset
+	if ( m_nPlayerInfoChangeFlags & CLIENTUPDATE_CAMERAOFFSET )
+	{
+		LTRESULT ltResult;
+
+		// Get the fire position from the camera
+		LTVector vCameraPosition;
+
+		// get the camera
+		HOBJECT hCamera = g_pPlayerMgr->GetCamera();
+
+		if ( g_pPlayerMgr->IsFirstPerson() &&
+		     ( !g_pPlayerMgr->IsUsingExternalCamera() ) && 
+		     ( 0 != hCamera ) )
 		{
-			m_nPlayerInfoChangeFlags |= CLIENTUPDATE_CAMERAOFFSET;
+			// we're in 1st person and not using an external camera,
+
+			// get the camera's position
+			ltResult = g_pLTClient->GetObjectPos( hCamera, &vCameraPosition );
+			ASSERT( LT_OK == ltResult );
 		}
-
-        cMsg.Writeuint16(m_nPlayerInfoChangeFlags);
-
-		if (m_nPlayerInfoChangeFlags & CLIENTUPDATE_PLAYERROT)
+		else
 		{
-			// Set the player's rotation (don't allow model to rotate up/down).
+			HMODELNODE hPlayerHeadNode;
+			LTransform transHeadNode;
 
-            LTRotation rPlayerRot(m_fPlayerPitch, m_fPlayerYaw, m_fPlayerRoll);
-            cMsg.Writeuint8(CompressRotationByte(&rPlayerRot));
-		}
-		else if ( m_nPlayerInfoChangeFlags & CLIENTUPDATE_ACCURATEPLAYERROT )
-		{
+			// external camera, figure out where the model's head
+			// is and use that.  It won't be as accurate but it is
+			// better than nothing.
 
-            LTRotation rPlayerRot( m_fPlayerPitch, m_fPlayerYaw, m_fPlayerRoll );
-            cMsg.Writeuint16( CompressRotationShort( &rPlayerRot ) );
-		}
-		else if( m_nPlayerInfoChangeFlags & CLIENTUPDATE_FULLPLAYERROT )
-		{
-			LTRotation rPlayerRot( m_fPlayerPitch, m_fPlayerYaw, m_fPlayerRoll);
-			cMsg.WriteCompLTRotation( rPlayerRot );
-		}
-
-		if ( m_nPlayerInfoChangeFlags & ( CLIENTUPDATE_PLAYERROT | CLIENTUPDATE_ACCURATEPLAYERROT ) )
-		{
-			//
-			// pitch
-			//
-
-			// and write it to the message.
-			cMsg.Writeuint8( CompressAngleToByte( m_fPitch ) );
-		}
-
-		// write the camera offset
-		if ( m_nPlayerInfoChangeFlags & CLIENTUPDATE_CAMERAOFFSET )
-		{
-			LTRESULT ltResult;
-
-			// Get the fire position from the camera
-			LTVector vCameraPosition;
-
-			// get the camera
-			HOBJECT hCamera = g_pPlayerMgr->GetCamera();
-
-			if ( g_pPlayerMgr->IsFirstPerson() &&
-			     ( !g_pPlayerMgr->IsUsingExternalCamera() ) && 
-			     ( 0 != hCamera ) )
-			{
-				// we're in 1st person and not using an external camera,
-
-				// get the camera's position
-				ltResult = g_pLTClient->GetObjectPos( hCamera, &vCameraPosition );
-				ASSERT( LT_OK == ltResult );
-			}
-			else
-			{
-				HMODELNODE hPlayerHeadNode;
-				LTransform transHeadNode;
-
-				// external camera, figure out where the model's head
-				// is and use that.  It won't be as accurate but it is
-				// better than nothing.
-
-				// get the head node
-				ltResult = g_pModelLT->GetNode( g_pLTClient->GetClientObject(),
-				                                "Head_node",
-				                                hPlayerHeadNode );
-				ASSERT( LT_OK == ltResult );
-
-				// get the node's transform
-				ltResult =
-					g_pModelLT->GetNodeTransform( g_pLTClient->GetClientObject(),
-					                              hPlayerHeadNode,
-					                              transHeadNode,
-					                              true );
-				ASSERT( LT_OK == ltResult );
-
-				// fake the camera position
-				ltResult =
-					g_pLTClient->GetTransformLT()->GetPos( transHeadNode,
-					                                       vCameraPosition );
-				ASSERT( LT_OK == ltResult );
-			}
-
-			// get the player's position
-			LTVector vPlayerPosition;
-			ltResult = g_pLTClient->GetObjectPos( g_pMoveMgr->GetObject(),
-			                                      &vPlayerPosition );
+			// get the head node
+			ltResult = g_pModelLT->GetNode( g_pLTClient->GetClientObject(),
+			                                "Head_node",
+			                                hPlayerHeadNode );
 			ASSERT( LT_OK == ltResult );
 
-			// get the camera offset
-			LTVector vOffset = vCameraPosition - vPlayerPosition;
+			// get the node's transform
+			ltResult =
+				g_pModelLT->GetNodeTransform( g_pLTClient->GetClientObject(),
+				                              hPlayerHeadNode,
+				                              transHeadNode,
+				                              true );
+			ASSERT( LT_OK == ltResult );
 
-			TVector3< short > vCompressedOffset;
-
-			// compress the offset
-			bool result = CompressOffset( &vCompressedOffset, vOffset, 100 );
-			ASSERT( true == result );
-
-			// write the offset to the message
-			cMsg.Writeuint16( vCompressedOffset.x );
-
-			cMsg.Writeuint16( vCompressedOffset.y );
-
-			cMsg.Writeuint16( vCompressedOffset.z );
-
+			// fake the camera position
+			ltResult =
+				g_pLTClient->GetTransformLT()->GetPos( transHeadNode,
+				                                       vCameraPosition );
+			ASSERT( LT_OK == ltResult );
 		}
 
-		// Write the control flags
+		// get the player's position
+		LTVector vPlayerPosition;
+		ltResult = g_pLTClient->GetObjectPos( g_pMoveMgr->GetObject(),
+		                                      &vPlayerPosition );
+		ASSERT( LT_OK == ltResult );
 
-		if (bPlaying)
-			cMsg.Writeuint32(g_pMoveMgr->GetControlFlags());
-		else
-			cMsg.Writeuint32(g_pMoveMgr->GetControlFlags() & BC_CFLG_DUCK);
+		// get the camera offset
+		LTVector vOffset = vCameraPosition - vPlayerPosition;
 
-		// Write position info...
+		TVector3< short > vCompressedOffset;
 
-		m_pMoveMgr->WritePositionInfo(cMsg);
+		// compress the offset
+		bool result = CompressOffset( &vCompressedOffset, vOffset, 100 );
+		ASSERT( true == result );
 
-		g_pLTClient->SendToServer(cMsg.Read(), 0);
+		// write the offset to the message
+		cMsg.Writeuint16( vCompressedOffset.x );
 
-		m_fPlayerInfoLastSendTime = fCurTime;
-		m_nPlayerInfoChangeFlags  = 0;
+		cMsg.Writeuint16( vCompressedOffset.y );
+
+		cMsg.Writeuint16( vCompressedOffset.z );
+
 	}
+
+	// Write the control flags
+
+	if (bPlaying)
+		cMsg.Writeuint32(g_pMoveMgr->GetControlFlags());
+	else
+		cMsg.Writeuint32(g_pMoveMgr->GetControlFlags() & BC_CFLG_DUCK);
+
+	// Write position info, if it changed (RETAIL: CShell 0x1009faf7)...
+
+	{
+		CAutoMessage cPositionMsg;
+		m_pMoveMgr->WritePositionInfo(cPositionMsg);
+		CLTMsgRef_Read cPositionRead = cPositionMsg.Read();
+
+		if (!bSendAll && IsSameMessage(cPositionRead, m_cLastPlayerExtraMsg))
+		{
+			cMsg.Writebool(false);
+		}
+		else
+		{
+			cMsg.Writebool(true);
+			cMsg.WriteMessageRaw(cPositionRead);
+			m_cLastPlayerExtraMsg = cPositionRead;
+		}
+	}
+
+	// Send it, if it changed...
+
+	CLTMsgRef_Read cRead = cMsg.Read();
+	if (bSendAll || !IsSameMessage(cRead, m_cLastPlayerInfoMsg))
+	{
+		m_cLastPlayerInfoMsg = cRead;
+		g_pLTClient->SendToServer(cRead, 0);
+		m_fPlayerInfoLastFullSendTime = fCurTime;
+	}
+
+	m_fPlayerInfoLastSendTime = fCurTime;
+	m_nPlayerInfoChangeFlags  = 0;
 }
 
 

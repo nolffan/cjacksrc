@@ -20,6 +20,7 @@
 #include "ParsedMsg.h"
 #include "PlayerObj.h"
 #include "KeyMgr.h"
+#include "VehicleButeMgr.h"
 
 #include <queue>
 
@@ -28,6 +29,11 @@ LINKFROM_MODULE( PlayerVehicle );
 
 
 PlayerVehicle::PlayerVehicleList PlayerVehicle::m_lstPlayerVehicles;
+
+// cjacksrc: RETAIL: Object 0x102282e8: how long before respawning a
+// multiplayer vehicle blinks (ServerButeMgr's VehicleBlinkTime is never
+// read).
+static float s_fVehicleBlinkTime = 10.0f;
 
 
 // ----------------------------------------------------------------------- //
@@ -39,16 +45,16 @@ PlayerVehicle::PlayerVehicleList PlayerVehicle::m_lstPlayerVehicles;
 // ----------------------------------------------------------------------- //
 
 BEGIN_CLASS(PlayerVehicle)
-	ADD_STRINGPROP_FLAG(Filename, "Props\\Models\\Snowmobile.ltb", PF_HIDDEN | PF_DIMS | PF_LOCALDIMS | PF_FILENAME | PF_MODEL)
-	ADD_STRINGPROP_FLAG(Skin, "Props\\Skins\\Snowmobile.dtx", PF_FILENAME | PF_HIDDEN)
+	// cjacksrc: RETAIL: Object 0x102282ec: the model comes from the vehicle.
+	ADD_STRINGPROP_FLAG(Filename, "", PF_HIDDEN | PF_FILENAME | PF_MODEL)
+	ADD_STRINGPROP_FLAG(Skin, "", PF_FILENAME | PF_HIDDEN)
 	ADD_VECTORPROP_VAL_FLAG(Scale, 1.0f, 1.0f, 1.0f, PF_HIDDEN)
 	ADD_VISIBLE_FLAG(1, PF_HIDDEN)
 	ADD_SOLID_FLAG(0, PF_HIDDEN)
 	ADD_GRAVITY_FLAG(0, PF_HIDDEN)
 	ADD_SHADOW_FLAG(1, PF_HIDDEN)
     ADD_BOOLPROP_FLAG(MoveToFloor, LTTRUE, PF_HIDDEN)
-	ADD_STRINGPROP_FLAG(VehicleType, "", PF_STATICLIST)
-	ADD_REALPROP(RespawnTime, -1.0f)
+	ADD_STRINGPROP_FLAG(VehicleType, "", PF_STATICLIST | PF_DIMS | PF_LOCALDIMS)
 	ADD_BOOLPROP_FLAG(Locked, LTFALSE, 0)
 	ADD_STRINGPROP_FLAG(LockedCommand, "", PF_NOTIFYCHANGE)
 END_CLASS_DEFAULT_FLAGS_PLUGIN(PlayerVehicle, Prop, NULL, NULL, 0, CPlayerVehiclePlugin)
@@ -73,7 +79,7 @@ CMDMGR_END_REGISTER_CLASS( PlayerVehicle, Prop )
 
 PlayerVehicle::PlayerVehicle() : Prop ()
 {
-	m_fRespawnTime = -1.0f;
+	m_fRespawnTime = 0.0f;
 
 	m_vOriginalPos.Init();
 	m_vOriginalDims.Init(10, 10, 10);
@@ -89,6 +95,8 @@ PlayerVehicle::PlayerVehicle() : Prop ()
 
 	m_fLastRideTime = 0;
 	m_bVirgin = true;
+	m_bBlinking = false;
+	m_nVehicleId = VBMGR_INVALID_ID;
 
 	// Add this instance to a list of all bodies.
 	m_lstPlayerVehicles.push_back( this );
@@ -197,14 +205,15 @@ void PlayerVehicle::ReadProp(ObjectCreateStruct *pInfo)
 
 	GenericProp genProp;
 
+	// RETAIL: Object 0x10116995: the VehicleType names a vehicle of
+	// VehicleButes.txt.  There is no RespawnTime any more.
     if (g_pLTServer->GetPropGeneric("VehicleType", &genProp) == LT_OK)
 	{
-		m_ePPhysicsModel = GetPlayerPhysicsModelFromPropertyName(genProp.m_String);
-	}
-
-    if (g_pLTServer->GetPropGeneric("RespawnTime", &genProp) == LT_OK)
-	{
-		m_fRespawnTime = genProp.m_Float;
+		VEHICLEBUTES* pVehicle = g_pVehicleButeMgr->GetVehicle(genProp.m_String);
+		if (pVehicle)
+		{
+			m_nVehicleId = pVehicle->nId;
+		}
 	}
 
 	if( g_pLTServer->GetPropGeneric( "Locked", &genProp ) == LT_OK )
@@ -220,7 +229,7 @@ void PlayerVehicle::ReadProp(ObjectCreateStruct *pInfo)
 		}
 	}
 
-	m_PlayerVehicleStruct.ePhysicsModel = m_ePPhysicsModel;
+	m_PlayerVehicleStruct.nVehicleId = m_nVehicleId;
 }
 
 
@@ -236,6 +245,18 @@ void PlayerVehicle::PostPropRead(ObjectCreateStruct *pStruct)
 {
 	if (!pStruct) return;
 
+	// RETAIL: Object 0x10116510: vehicles respawn in multiplayer only.
+	if (!IsMultiplayerGame())
+	{
+		m_fRespawnTime = 0.0f;
+	}
+	else
+	{
+		m_fRespawnTime = g_pServerButeMgr->GetVehicleRespawnTime();
+	}
+
+	m_bCanDeactivate = !IsMultiplayerGame();
+
 	// Make us activateable...
 
 	// Need rayhit to activate.
@@ -246,87 +267,18 @@ void PlayerVehicle::PostPropRead(ObjectCreateStruct *pStruct)
 
 	m_dwSavedFlags = m_dwFlags;
 
+	// Set the vehicle's model, skins and render styles...
 
-    char* pModelAttribute	= LTNULL;
-    char* pSkin1Attribute	= LTNULL;
-    char* pSkin2Attribute	= LTNULL;
-	char* pSkin3Attribute	= LTNULL;
-	char* pRenderStyle1Bute	= LTNULL;
-	char* pRenderStyle2Bute	= LTNULL;
-	char* pRenderStyle3Bute = LTNULL;
-	char* pModelTranslucent = LTNULL;
+	VEHICLEBUTES* pVehicle = g_pVehicleButeMgr->GetVehicle(m_nVehicleId);
+	if (!pVehicle) return;
 
-	switch (m_ePPhysicsModel)
+	SAFE_STRCPY(pStruct->m_Filename, pVehicle->sModel.c_str());
+	pVehicle->blrSkins.CopyList(0, pStruct->m_SkinNames[0], MAX_CS_FILENAME_LEN+1);
+	pVehicle->blrRenderStyles.CopyList(0, pStruct->m_RenderStyleNames[0], MAX_CS_FILENAME_LEN+1);
+
+	if (pVehicle->bTranslucent)
 	{
-		case PPM_SNOWMOBILE :
-		{
-			pModelAttribute		= PLAYER_BUTE_SNOWMOBILEMODEL;
-			pSkin1Attribute		= PLAYER_BUTE_SNOWMOBILESKIN;
-			pSkin2Attribute		= PLAYER_BUTE_SNOWMOBILESKIN2;
-			pSkin3Attribute		= PLAYER_BUTE_SNOWMOBILESKIN3;
-			pRenderStyle1Bute	= PLAYER_BUTE_SNOWMOBILERS;
-			pRenderStyle2Bute	= PLAYER_BUTE_SNOWMOBILERS2;
-			pRenderStyle3Bute	= PLAYER_BUTE_SNOWMOBILERS3;
-			pModelTranslucent	= PLAYER_BUTE_SNOWMOBILETRANSLUCENT;
-		}
-		break;
-
-		default :
-		break;
-	}
-
-	// Set the correct filename and skin...
-
-	if (pModelAttribute)
-	{
-		g_pServerButeMgr->GetPlayerAttributeString(pModelAttribute,
-			pStruct->m_Filename, ARRAY_LEN(pStruct->m_Filename));
-	}
-
-	if (pSkin1Attribute)
-	{
-		g_pServerButeMgr->GetPlayerAttributeString(pSkin1Attribute,
-			pStruct->m_SkinNames[0], ARRAY_LEN(pStruct->m_SkinNames[0]));
-	}
-
-	if (pSkin2Attribute)
-	{
-		g_pServerButeMgr->GetPlayerAttributeString(pSkin2Attribute,
-			pStruct->m_SkinNames[1], ARRAY_LEN(pStruct->m_SkinNames[1]));
-	}
-
-	if (pSkin3Attribute)
-	{
-		g_pServerButeMgr->GetPlayerAttributeString(pSkin3Attribute,
-			pStruct->m_SkinNames[2], ARRAY_LEN(pStruct->m_SkinNames[2]));
-	}
-
-	if (pRenderStyle1Bute)
-	{
-		g_pServerButeMgr->GetPlayerAttributeString(pRenderStyle1Bute,
-			pStruct->m_RenderStyleNames[0], ARRAY_LEN(pStruct->m_RenderStyleNames[0]));
-	}
-
-	if (pRenderStyle2Bute)
-	{
-		g_pServerButeMgr->GetPlayerAttributeString(pRenderStyle2Bute,
-			pStruct->m_RenderStyleNames[1], ARRAY_LEN(pStruct->m_RenderStyleNames[1]));
-	}
-
-	if (pRenderStyle3Bute)
-	{
-		g_pServerButeMgr->GetPlayerAttributeString(pRenderStyle3Bute,
-			pStruct->m_RenderStyleNames[2], ARRAY_LEN(pStruct->m_RenderStyleNames[2]));
-	}
-
-	if(pModelTranslucent)
-	{
-		int nTranslucent = g_pServerButeMgr->GetPlayerAttributeInt(pModelTranslucent, 0);
-
-		if(nTranslucent)
-		{
-			pStruct->m_Flags2 |= FLAG2_FORCETRANSLUCENT;
-		}
+		pStruct->m_Flags2 |= FLAG2_FORCETRANSLUCENT;
 	}
 }
 
@@ -412,21 +364,8 @@ void PlayerVehicle::InitialUpdate()
 
 void PlayerVehicle::Respawn()
 {
-    LTFLOAT fRespawnTime = m_fRespawnTime;
-
-	if (fRespawnTime >= 0.0f)
-	{
-		g_pLTServer->SetObjectPos(m_hObject, &m_vOriginalPos);
-		g_pLTServer->SetObjectRotation(m_hObject, &m_rOriginalRot);
-
-        LTVector vZero(0, 0, 0);
-		g_pPhysicsLT->SetVelocity(m_hObject, &vZero);
-	}
-	else
-	{
-		fRespawnTime = 0.0f;
-	}
-
+	// RETAIL: Object 0x101165e0: the vehicle stays where it was left
+	// (Update puts it back when its respawn timer runs out).
 
 	// Try to set our dims (make sure we fit where we were placed)...
 
@@ -441,7 +380,6 @@ void PlayerVehicle::Respawn()
 
 	g_pCommonLT->SetObjectFlags(m_hObject, OFT_Flags, FLAG_VISIBLE, FLAG_VISIBLE );
 
-	m_RespawnTimer.Start(fRespawnTime);
     SetNextUpdate(UPDATE_NEXT_FRAME);
 
 	MoveObjectToFloor(m_hObject);
@@ -457,14 +395,82 @@ void PlayerVehicle::Respawn()
 
 void PlayerVehicle::Update()
 {
-	if (m_RespawnTimer.Stopped())
+	// RETAIL: Object 0x10116fe0: in multiplayer a vehicle left alone goes
+	// back to where it was placed when its respawn timer runs out, and
+	// blinks for the last seconds before.
+
+	if (m_fRespawnTime <= 0.0f)
 	{
+		SetNextUpdate(UPDATE_NEVER);
+		return;
+	}
+
+	bool bWasBlinking = m_bBlinking;
+
+	if (m_RespawnTimer.On() && m_RespawnTimer.Stopped())
+	{
+		LTVector vPos;
+		g_pLTServer->GetObjectPos(m_hObject, &vPos);
+
+		if (m_bVirgin)
+		{
+			// (Retail writes this message and never sends it.)
+			CAutoMessage cMsg;
+			cMsg.Writeuint8(MID_SFX_MESSAGE);
+			cMsg.Writeuint8(SFX_PLAYERVEHICLE_ID);
+			cMsg.WriteObject(m_hObject);
+			cMsg.Writeuint8(PVFX_STOPBLINK);
+		}
+		else
+		{
+			// Tell the clients the vehicle moves back.
+			CAutoMessage cMsg;
+			cMsg.Writeuint8(MID_SFX_MESSAGE);
+			cMsg.Writeuint8(SFX_PLAYERVEHICLE_ID);
+			cMsg.WriteObject(m_hObject);
+			cMsg.Writeuint8(PVFX_MOVE);
+			cMsg.WriteLTVector(vPos);
+			cMsg.WriteLTVector(m_vOriginalPos);
+			g_pLTServer->SendToClient(cMsg.Read(), LTNULL, MESSAGE_GUARANTEED);
+		}
+
+		g_pLTServer->SetObjectPos(m_hObject, &m_vOriginalPos);
+		g_pLTServer->SetObjectRotation(m_hObject, &m_rOriginalRot);
+
+		LTVector vZero(0, 0, 0);
+		g_pPhysicsLT->SetVelocity(m_hObject, &vZero);
+
 		g_pCommonLT->SetObjectFlags(m_hObject, OFT_Flags, FLAG_VISIBLE, FLAG_VISIBLE);
-        SetNextUpdate(UPDATE_NEVER);
+
+		MoveObjectToFloor(m_hObject);
+
+		m_RespawnTimer.Stop();
+		SetNextUpdate(UPDATE_NEVER);
+		m_bBlinking = false;
 	}
 	else
 	{
-        SetNextUpdate(UPDATE_NEXT_FRAME);
+		if (m_RespawnTimer.On() && m_RespawnTimer.GetCountdownTime() < s_fVehicleBlinkTime)
+		{
+			if (!m_bBlinking)
+			{
+				CAutoMessage cMsg;
+				cMsg.Writeuint8(MID_SFX_MESSAGE);
+				cMsg.Writeuint8(SFX_PLAYERVEHICLE_ID);
+				cMsg.WriteObject(m_hObject);
+				cMsg.Writeuint8(PVFX_BLINK);
+				g_pLTServer->SendToClient(cMsg.Read(), LTNULL, MESSAGE_GUARANTEED);
+			}
+
+			m_bBlinking = true;
+		}
+
+		SetNextUpdate(UPDATE_NEXT_FRAME);
+	}
+
+	if (bWasBlinking != m_bBlinking)
+	{
+		CreateSFXMsg();
 	}
 }
 
@@ -530,13 +536,25 @@ void PlayerVehicle::SetRidden(bool bRidden)
 	{
 		g_pCommonLT->GetObjectFlags(m_hObject, OFT_Flags, m_dwSavedFlags);
 
-		bool bRH = !!(m_dwSavedFlags & FLAG_RAYHIT);
-
 		// Remove flags that cause the vehicle to go through extensive moveobjects.  It will
 		// reset its own flags under the respawn.
 		g_pCommonLT->SetObjectFlags(m_hObject, OFT_Flags, FLAG_FORCEOPTIMIZEOBJECT, FLAG_GRAVITY | FLAG_SOLID | FLAG_RAYHIT | FLAG_TOUCH_NOTIFY | FLAG_FORCEOPTIMIZEOBJECT);
 
 		g_pCommonLT->SetObjectFlags(m_hObject, OFT_User, USRFLG_ATTACH_HIDE1SHOW3, USRFLG_ATTACH_HIDE1SHOW3);
+
+		// RETAIL: Object 0x10117319: no respawn while ridden; tell the
+		// clients.
+		SetNextUpdate(UPDATE_NEVER);
+		m_RespawnTimer.Stop();
+		m_bBlinking = false;
+		CreateSFXMsg();
+
+		CAutoMessage cMsg;
+		cMsg.Writeuint8(MID_SFX_MESSAGE);
+		cMsg.Writeuint8(SFX_PLAYERVEHICLE_ID);
+		cMsg.WriteObject(m_hObject);
+		cMsg.Writeuint8(PVFX_STOPBLINK);
+		g_pLTServer->SendToClient(cMsg.Read(), LTNULL, MESSAGE_GUARANTEED);
 
 		// We have now been ridden.
 		m_bVirgin = false;
@@ -548,11 +566,11 @@ void PlayerVehicle::SetRidden(bool bRidden)
 
 		uint32 dwFlags;
 		g_pCommonLT->GetObjectFlags(m_hObject, OFT_Flags, dwFlags);
-		bool bRH = !!(dwFlags & FLAG_RAYHIT);
 
 		// Record the last time this vehicle has been ridden.
 		m_fLastRideTime = g_pLTServer->GetTime( );
 
+		m_RespawnTimer.Start(m_fRespawnTime);
 		Respawn();
 	}
 
@@ -575,7 +593,7 @@ void PlayerVehicle::Save(ILTMessage_Write *pMsg)
 	SAVE_VECTOR(m_vOriginalDims);
 	SAVE_ROTATION(m_rOriginalRot);
  	SAVE_FLOAT(m_fRespawnTime);
-	SAVE_BYTE((uint8)m_ePPhysicsModel);
+	SAVE_BYTE(m_nVehicleId);
 	SAVE_bool( m_bLocked );
 	SAVE_bool( m_bRidden );
 	SAVE_HSTRING( m_hstrLockedCommand );
@@ -603,7 +621,7 @@ void PlayerVehicle::Load(ILTMessage_Read *pMsg)
 	LOAD_VECTOR(m_vOriginalDims);
 	LOAD_ROTATION(m_rOriginalRot);
  	LOAD_FLOAT(m_fRespawnTime);
-	LOAD_BYTE_CAST(m_ePPhysicsModel, PlayerPhysicsModel);
+	LOAD_BYTE(m_nVehicleId);
 	LOAD_bool( m_bLocked );
 	LOAD_bool( m_bRidden );
 	LOAD_HSTRING( m_hstrLockedCommand );
@@ -628,6 +646,8 @@ void PlayerVehicle::CreateSFXMsg()
 	CAutoMessage cMsg;
 	cMsg.Writeuint8(SFX_PLAYERVEHICLE_ID);
     m_PlayerVehicleStruct.Write(cMsg);
+	// RETAIL: Object 0x10116eb4.
+	cMsg.Writebool(m_bBlinking);
 	g_pLTServer->SetObjectSFXMessage(m_hObject, cMsg.Read());
 }
 
@@ -735,12 +755,26 @@ LTRESULT CPlayerVehiclePlugin::PreHook_EditStringList(
 
 	if (_strcmpi("VehicleType", szPropName) == 0)
 	{
-		for (int i=PPM_FIRST; i < PPM_NUM_MODELS; i++)
+		// RETAIL: Object 0x10116770: the vehicles of VehicleButes.txt.
+		if (!g_pVehicleButeMgr)
+		{
+			char szFile[256];
+			sprintf(szFile, "%s\\%s", szRezPath, VBMGR_DEFAULT_FILE);
+			CVehicleButeMgr::Instance().SetInRezFile(LTFALSE);
+			CVehicleButeMgr::Instance().Init(szFile);
+		}
+
+		uint8 nNumVehicles = g_pVehicleButeMgr->GetNumVehicles();
+		for (uint8 i=0; i < nNumVehicles; i++)
 		{
 			_ASSERT(cMaxStrings > (*pcStrings) + 1);
 			if (cMaxStrings > (*pcStrings) + 1)
 			{
-				strcpy(aszStrings[(*pcStrings)++], GetPropertyNameFromPlayerPhysicsModel((PlayerPhysicsModel)i));
+				VEHICLEBUTES* pVehicle = g_pVehicleButeMgr->GetVehicle(i);
+				if (pVehicle && !pVehicle->sName.empty())
+				{
+					LTStrCpy(aszStrings[(*pcStrings)++], pVehicle->sName.c_str(), cMaxStringLength);
+				}
 			}
 		}
 
@@ -748,6 +782,43 @@ LTRESULT CPlayerVehiclePlugin::PreHook_EditStringList(
 	}
 
 	return LT_UNSUPPORTED;
+}
+
+// ----------------------------------------------------------------------- //
+//
+//  ROUTINE:	CPlayerVehiclePlugin::PreHook_Dims
+//
+//  PURPOSE:	RETAIL: Object 0x101168b0: the vehicle's model, for the
+//				vehicle's dims in WorldEdit
+//
+// ----------------------------------------------------------------------- //
+
+LTRESULT CPlayerVehiclePlugin::PreHook_Dims(
+	const char* szRezPath,
+	const char* szPropValue,
+	char* szModelFilenameBuf,
+	int nModelFilenameBufLen,
+	LTVector & vDims)
+{
+	if (!szModelFilenameBuf || nModelFilenameBufLen < 1) return LT_UNSUPPORTED;
+
+	szModelFilenameBuf[0] = '\0';
+
+	if (!g_pVehicleButeMgr)
+	{
+		char szFile[256];
+		sprintf(szFile, "%s\\%s", szRezPath, VBMGR_DEFAULT_FILE);
+		CVehicleButeMgr::Instance().SetInRezFile(LTFALSE);
+		CVehicleButeMgr::Instance().Init(szFile);
+	}
+
+	VEHICLEBUTES* pVehicle = g_pVehicleButeMgr->GetVehicle(szPropValue);
+	if (!pVehicle || pVehicle->sModel.empty()) return LT_UNSUPPORTED;
+
+	LTStrCpy(szModelFilenameBuf, pVehicle->sModel.c_str(), nModelFilenameBufLen);
+	ConvertLTBFilename(szModelFilenameBuf);
+
+	return LT_OK;
 }
 
 // ----------------------------------------------------------------------- //
