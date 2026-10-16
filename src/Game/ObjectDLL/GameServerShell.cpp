@@ -5175,8 +5175,9 @@ void CGameServerShell::ServerAppShellUpdate( )
 
 		cMsg.Writeuint16( g_pLTServer->GetClientID( hClient ));
 		cMsg.WriteString( pPlayer->GetNetUniqueName( ));
+		// RETAIL: Object 0x100ddd1b: kills and score, as the server app reads
+		// them.
 		cMsg.Writeint16( pPlayer->GetPlayerScore()->GetFrags( ));
-		cMsg.Writeint16( pPlayer->GetPlayerScore()->GetTags( ));
 		cMsg.Writeint16( pPlayer->GetPlayerScore()->GetScore( ));
 	}
 
