@@ -155,6 +155,7 @@ class CWeaponFX : public CSpecialFX
 		void	CreateExitDebris();
         void    CreateMark(const LTVector &vPos, const LTVector &vNorm, const LTRotation &rRot, SurfaceType eType);
 		void	CreateTracer();
+		void		CreateBeamFX();		// RETAIL: 0x1010f630
         void    CreateBulletTrail(const LTVector &vStartPos);
 
 		void	CreateWeaponSpecificFX();

@@ -2269,6 +2269,28 @@ void CPlayerMgr::StartWeaponRecoil()
 //
 // ----------------------------------------------------------------------- //
 
+// RETAIL: 0x10099230: a body, or a chassis piece the chassis attributes
+// call heavy.
+bool CPlayerMgr::IsCarryingHeavyObject() const
+{
+	if( m_nCarryingObject == CFX_CARRY_BODY )
+		return true;
+
+	if( m_nCarryingObject == CFX_CARRY_DD_CORE && m_pCarryingChassisPiece )
+		return m_pCarryingChassisPiece->m_bHeavy;
+
+	return false;
+}
+
+// RETAIL: 0x10098cd0: how far the recoil is to its most, 0 to 1.
+float CPlayerMgr::GetRecoilPercent()
+{
+	float fPercent = (float)sqrt( m_fRecoil / GetConsoleFloat("CamRecoilMax", 10.0f) );
+	if (fPercent > 1.0f)
+		fPercent = 1.0f;
+	return fPercent;
+}
+
 void CPlayerMgr::DecayWeaponRecoil()
 {
 	// RETAIL: CShell 0x10098b80: the recoil recovers once the weapon has not

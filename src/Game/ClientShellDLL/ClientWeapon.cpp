@@ -1567,6 +1567,8 @@ void CClientWeapon::UpdateMovementPerturb()
 //
 // ----------------------------------------------------------------------- //
 
+// RETAIL: 0x10023410. Contract J.A.C.K.'s firing perturb is the camera's
+// recoil.
 void CClientWeapon::UpdateFiringPerturb(LTBOOL bFiredWeapon)
 {
 	ASSERT(m_pWeapon);
@@ -1578,20 +1580,7 @@ void CClientWeapon::UpdateFiringPerturb(LTBOOL bFiredWeapon)
 		return;
 	}
 
-	LTFLOAT fDelta = g_pGameClientShell->GetFrameTime();
-	LTFLOAT fFirePerturb = bFiredWeapon ? 1.0f : 0.0f;
-    LTFLOAT fDiff = (LTFLOAT)fabs(fFirePerturb - m_fFiringPerturb);
-
-	if (fFirePerturb > m_fFiringPerturb)
-	{
-		fDelta *= ns_vtFiringPerturbIncreaseSpeed.GetFloat();
-		m_fFiringPerturb += Min(fDelta, fDiff);
-	}
-	else if (fFirePerturb < m_fFiringPerturb)
-	{
-		fDelta *= (ns_vtFiringPerturbDecreaseSpeed.GetFloat() * g_pPlayerStats->GetSkillModifier(SKL_AIM,AimModifiers::eCorrection));
-		m_fFiringPerturb -= Min(fDelta, fDiff);
-	}
+	m_fFiringPerturb = g_pPlayerMgr->GetRecoilPercent();
 }
 
 
@@ -4381,6 +4370,20 @@ void CClientWeapon::RemoveHeatFX()
 //
 // ----------------------------------------------------------------------- //
 
+// RETAIL: 0x100241d0
+void CClientWeapon::AddHeat()
+{
+	WEAPON const* pWeapon = GetWeapon();
+	if( !pWeapon || pWeapon->fHeatFactor <= 0.0f )
+		return;
+
+	m_fHeat += pWeapon->fHeatFactor;
+	if( m_fHeat >= 1.0f )
+		m_fHeat = 1.0f;
+
+	m_fLastHeatTime = g_pLTClient->GetTime();
+}
+
 void CClientWeapon::UpdateHeat()
 {
 	if( m_fHeat <= 0.0f )
@@ -4769,6 +4772,9 @@ void CClientWeapon::Fire( bool bFire )
 
 	// send a fire message to the server
 	SendFireMessage( bFire, fPerturb, vFirePos, vF, vObjectImpactPos, hObjectImpact );
+
+	// RETAIL: 0x10029a91, every shot heats the weapon.
+	AddHeat( );
 }
 
 
