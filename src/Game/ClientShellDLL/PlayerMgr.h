@@ -103,6 +103,7 @@ public:
     LTBOOL		IsPlayerMovementAllowed()       { return m_bAllowPlayerMovement;}
     LTBOOL      IsZoomed()          const       { return (m_nZoomView > 0 || m_bZooming); }
 	bool		IsManualAim()		const		{ return m_bManualAim; }
+	float		GetRecoilPercent();		// RETAIL: 0x10098cd0
 	LTBOOL		IsZooming()			const		{ return m_bZooming; }
     LTBOOL      IsUnderwater()      const       { return IsLiquid(m_eCurContainerCode); }
     bool		UsingSpyVision()    const       { return m_bSpyVision; }
@@ -206,7 +207,7 @@ public:
 	// Carrying methods...
 
 	uint8		GetCarryingObject() const { return m_nCarryingObject; }
-	bool		IsCarryingHeavyObject() const { return m_nCarryingObject == CFX_CARRY_BODY || m_nCarryingObject == CFX_CARRY_DD_CORE;}
+	bool		IsCarryingHeavyObject() const;	// RETAIL: 0x10099230
 	void		SetCarryingObject( uint8 nCarry, struct CHASSISPIECE const* pChassisPiece, bool bUpdateCameraDip );
 	struct CHASSISPIECE const* GetCarryingChassisPiece() const { return m_pCarryingChassisPiece; }
 	uint8		CanCarryObject( class CSpecialFX** ppFX = LTNULL );

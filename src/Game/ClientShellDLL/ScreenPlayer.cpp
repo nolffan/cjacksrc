@@ -205,40 +205,19 @@ void CScreenPlayer::OnFocus(LTBOOL bFocus)
 			m_pBandwidth->Show(LTTRUE);
 		}
 
+		// RETAIL: Contract J.A.C.K.'s player picks a deathmatch model in every
+		// game type (UpdateChar, 0x100d66f0).
 		int n = 0;
-		switch (g_pGameClientShell->GetGameType())
+		for (n = 0; n < g_pModelButeMgr->GetNumDMModels(); n++)
 		{
-		case eGameTypeCooperative:
-			for (n = 0; n < g_pModelButeMgr->GetNumCPModels(); n++)
-			{
-				ModelId id = g_pModelButeMgr->GetCPModel(n);
-				HMODELDB dummy = NULL;
-				g_pILTModelClient->CacheModelDB(g_pModelButeMgr->GetModelFilename(id),dummy);
-			}
-			m_nCurrentModel = pProfile->m_nCPPlayerModel;
-			m_pLeft->Show(LTTRUE);
-			m_pRight->Show(LTTRUE);
-			m_pModel->Show(LTTRUE);
-			break;
-		case eGameTypeDeathmatch:
-			for (n = 0; n < g_pModelButeMgr->GetNumDMModels(); n++)
-			{
-				ModelId id = g_pModelButeMgr->GetDMModel(n);
-				HMODELDB dummy = NULL;
-				g_pILTModelClient->CacheModelDB(g_pModelButeMgr->GetModelFilename(id),dummy);
-			}
-			m_nCurrentModel = pProfile->m_nDMPlayerModel;
-			m_pLeft->Show(LTTRUE);
-			m_pRight->Show(LTTRUE);
-			m_pModel->Show(LTTRUE);
-			break;
-		case eGameTypeTeamDeathmatch:
-		case eGameTypeDoomsDay:
-			m_pLeft->Show(LTFALSE);
-			m_pRight->Show(LTFALSE);
-			m_pModel->Show(LTFALSE);
-			break;
-		};
+			ModelId id = g_pModelButeMgr->GetDMModel(n);
+			HMODELDB dummy = NULL;
+			g_pILTModelClient->CacheModelDB(g_pModelButeMgr->GetModelFilename(id),dummy);
+		}
+		m_nCurrentModel = pProfile->m_nDMPlayerModel;
+		m_pLeft->Show(LTTRUE);
+		m_pRight->Show(LTTRUE);
+		m_pModel->Show(LTTRUE);
 
 		m_sPlayerName = pProfile->m_sPlayerName;
 		
@@ -256,25 +235,12 @@ void CScreenPlayer::OnFocus(LTBOOL bFocus)
 		UpdateData();
 		pProfile->m_sPlayerName = m_sPlayerName;
 		int n = 0;
-		switch (g_pGameClientShell->GetGameType())
+		for (n = 0; n < g_pModelButeMgr->GetNumDMModels(); n++)
 		{
-		case eGameTypeCooperative:
-			for (n = 0; n < g_pModelButeMgr->GetNumCPModels(); n++)
-			{
-				ModelId id = g_pModelButeMgr->GetCPModel(n);
-				g_pILTModelClient->UncacheModelDB(g_pModelButeMgr->GetModelFilename(id));
-			}
-			pProfile->m_nCPPlayerModel = m_nCurrentModel;
-			break;
-		case eGameTypeDeathmatch:
-			for (n = 0; n < g_pModelButeMgr->GetNumDMModels(); n++)
-			{
-				ModelId id = g_pModelButeMgr->GetDMModel(n);
-				g_pILTModelClient->UncacheModelDB(g_pModelButeMgr->GetModelFilename(id));
-			}
-			pProfile->m_nDMPlayerModel = m_nCurrentModel;
-			break;
-		};
+			ModelId id = g_pModelButeMgr->GetDMModel(n);
+			g_pILTModelClient->UncacheModelDB(g_pModelButeMgr->GetModelFilename(id));
+		}
+		pProfile->m_nDMPlayerModel = m_nCurrentModel;
 
 		pProfile->m_nBandwidthClient = m_nBandwidth;
 		pProfile->m_nBandwidthClientCustom = (uint16)atol(m_sBandwidth);
@@ -409,50 +375,24 @@ LTBOOL CScreenPlayer::OnMouseMove(int x, int y)
 	return bHandled;
 }
 
+// RETAIL: 0x100d6bd0. Contract J.A.C.K.'s player has a deathmatch model in
+// every game type.
 void CScreenPlayer::NextModel()
 {
-	switch (g_pGameClientShell->GetGameType())
-	{
-	case eGameTypeCooperative:
-		m_nCurrentModel++;
-		if (m_nCurrentModel >= g_pModelButeMgr->GetNumCPModels())
-			m_nCurrentModel = 0;
-		break;
-	case eGameTypeDeathmatch:
-		m_nCurrentModel++;
-		if (m_nCurrentModel >= g_pModelButeMgr->GetNumDMModels())
-			m_nCurrentModel = 0;
-		break;
-	case eGameTypeTeamDeathmatch:
-	case eGameTypeDoomsDay:
-	default:
-		return;
-	};
+	m_nCurrentModel++;
+	if (m_nCurrentModel >= g_pModelButeMgr->GetNumDMModels())
+		m_nCurrentModel = 0;
 
 	UpdateChar();
 }
 
+// RETAIL: 0x100d6c00
 void CScreenPlayer::PrevModel()
 {
-	switch (g_pGameClientShell->GetGameType())
-	{
-	case eGameTypeCooperative:
-		if (!m_nCurrentModel)
-			m_nCurrentModel = g_pModelButeMgr->GetNumCPModels();
-		m_nCurrentModel--;
+	if (!m_nCurrentModel)
+		m_nCurrentModel = g_pModelButeMgr->GetNumDMModels();
+	m_nCurrentModel--;
 
-		break;
-	case eGameTypeDeathmatch:
-		if (!m_nCurrentModel)
-			m_nCurrentModel = g_pModelButeMgr->GetNumDMModels();
-		m_nCurrentModel--;
-		break;
-	case eGameTypeTeamDeathmatch:
-	case eGameTypeDoomsDay:
-	default:
-		return;
-	};
-		
 	UpdateChar();
 }
 
@@ -462,34 +402,13 @@ void CScreenPlayer::UpdateChar()
 	HOBJECT hChar = m_CharSFX.GetObject();
 	if (hChar)
 	{
-		ModelId id = eModelIdInvalid;
-
-		switch (g_pGameClientShell->GetGameType())
+		// RETAIL: 0x100d66f0, the deathmatch models whatever the game type.
+		if (m_nCurrentModel >= g_pModelButeMgr->GetNumDMModels())
 		{
-		case eGameTypeCooperative:
-			if (m_nCurrentModel >= g_pModelButeMgr->GetNumCPModels())
-			{
-				m_nCurrentModel = 0;
-			}
-			id = g_pModelButeMgr->GetCPModel(m_nCurrentModel);
-			g_pLTClient->Common()->SetObjectFlags( hChar, OFT_Flags, FLAG_VISIBLE, FLAG_VISIBLE );
-			break;
-		case eGameTypeDeathmatch:
-			if (m_nCurrentModel >= g_pModelButeMgr->GetNumDMModels())
-			{
-				m_nCurrentModel = 0;
-			}
-			id = g_pModelButeMgr->GetDMModel(m_nCurrentModel);
-			g_pLTClient->Common()->SetObjectFlags( hChar, OFT_Flags, FLAG_VISIBLE, FLAG_VISIBLE );
-			break;
-		case eGameTypeTeamDeathmatch:
-		case eGameTypeDoomsDay:
-		default:
-			g_pInterfaceMgr->RemoveInterfaceSFX(&m_CharSFX);
-			m_CharSFX.Reset();
-			m_CharSFX.Term();
-			return;
-		};
+			m_nCurrentModel = 0;
+		}
+		ModelId id = g_pModelButeMgr->GetDMModel(m_nCurrentModel);
+		g_pLTClient->Common()->SetObjectFlags( hChar, OFT_Flags, FLAG_VISIBLE, FLAG_VISIBLE );
 
 
 		ObjectCreateStruct createStruct;

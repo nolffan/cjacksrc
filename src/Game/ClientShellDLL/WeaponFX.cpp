@@ -534,6 +534,9 @@ LTBOOL CWeaponFX::CreateObject(ILTClient* pClientDE)
 		CreateTracer();
 	}
 
+	// RETAIL: 0x10110caf
+	CreateBeamFX();
+
 	if (g_bCanSeeFirePos)
 	{
 		CreateMuzzleFX();
@@ -863,10 +866,10 @@ void CWeaponFX::CreateTracer()
 //
 // ----------------------------------------------------------------------- //
 
-void CWeaponFX::CreateWeaponSpecificFX()
+// RETAIL: 0x1010f630, the fire fx's beam, from the fire position to the
+// impact.
+void CWeaponFX::CreateBeamFX()
 {
-	// Do fire fx beam fx...
-
 	if (m_pAmmo->pFireFX && m_pAmmo->pFireFX->szBeamFXName )
 	{
 	 	CLIENTFX_CREATESTRUCT fxInit( m_pAmmo->pFireFX->szBeamFXName, 0, m_vFirePos );
@@ -874,7 +877,10 @@ void CWeaponFX::CreateWeaponSpecificFX()
 		fxInit.m_vTargetPos = m_vPos;
 		g_pClientFXMgr->CreateClientFX( LTNULL, fxInit, LTTRUE );	
 	}
+}
 
+void CWeaponFX::CreateWeaponSpecificFX()
+{
 	// Only do impact fx if the client can see the impact position
 	// or the impact fx may last a little while...
 

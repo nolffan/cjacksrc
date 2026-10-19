@@ -40,12 +40,11 @@ inline LTBOOL IsVehicleModel(PlayerPhysicsModel eModel)
     return LTFALSE;
 }
 
-#if !defined(_CLIENTBUILD) || defined(__PSX2)
+// RETAIL: in the client too.
 
 char* GetPropertyNameFromPlayerPhysicsModel(PlayerPhysicsModel ePPModel);
 PlayerPhysicsModel GetPlayerPhysicsModelFromPropertyName(char* pPropertyName);
 
-#endif // ! _CLIENTBUILD
 
 
 
