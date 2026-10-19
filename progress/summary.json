@@ -42,16 +42,16 @@
       "kind": "image",
       "middleware": 0,
       "middleware_bytes": 0,
-      "near": 483,
+      "near": 484,
       "small": 330,
       "started": true,
-      "todo": 32,
+      "todo": 31,
       "unlinked": 7348,
       "unlinked_bytes": 223532,
       "unplaced": 393,
       "unplaced_bytes": 8832,
-      "unwritten": 32,
-      "unwritten_bytes": 2528
+      "unwritten": 31,
+      "unwritten_bytes": 2496
     },
     "ClientFx.fxd": {
       "attempted": 0,
@@ -320,12 +320,12 @@
     "bytes_total": 4625569,
     "funcs": 29305,
     "identical": 25426,
-    "near": 1142,
+    "near": 1143,
     "small": 2612,
-    "todo": 125,
+    "todo": 124,
     "unplaced": 3085,
     "unplaced_bytes": 63115,
-    "unwritten": 125,
-    "unwritten_bytes": 20438
+    "unwritten": 124,
+    "unwritten_bytes": 20406
   }
 }
