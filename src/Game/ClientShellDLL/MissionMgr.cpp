@@ -169,7 +169,7 @@ bool CMissionMgr::StartGameFromLevel( char const* pszFilename )
 
 	m_eStartGameState = eStartGameFromLevel;
 	// Set our new level name.
-	if( !SetNewLevel( pszFilename ))
+	if( !SetNewLevel( pszFilename ) || !SetLoadingLevel( ))
 		return false;
 
 	return true;
@@ -198,7 +198,7 @@ bool CMissionMgr::StartPerformanceLevel()
 
 	m_eStartGameState = eStartGameFromLevel;
 	// Set our new level name.
-	if( !SetNewLevel("worlds\\RetailSinglePlayer\\performance" ))
+	if( !SetNewLevel("worlds\\RetailSinglePlayer\\performance" ) || !SetLoadingLevel( ))
 		return false;
 
 	return true;
@@ -261,7 +261,7 @@ bool CMissionMgr::StartGameFromQuickSave( )
 	bool bOk = true;
 
 	// Set this as the level we'll be playing.
-	bOk = SetNewLevel( szWorldName );
+	bOk = SetupSavedLevel( szWorldName );
 
 
 	if( !bOk )
@@ -331,7 +331,7 @@ bool CMissionMgr::StartGameFromSaveSlot( int nSlot )
 	bool bOk = true;
 
 	// Set this as the level we'll be playing.
-	bOk = bOk && SetNewLevel( szWorldName );
+	bOk = bOk && SetupSavedLevel( szWorldName );
 
 	if( !bOk )
 	{
@@ -401,7 +401,7 @@ bool CMissionMgr::StartGameFromReload( )
 	bool bOk = true;
 
 	// Set this as the level we'll be playing.
-	bOk = bOk && SetNewLevel( szWorldName );
+	bOk = bOk && SetupSavedLevel( szWorldName );
 
 	if( !bOk )
 	{
@@ -470,7 +470,7 @@ bool CMissionMgr::StartGameFromCheckpoint( )
 	bool bOk = true;
 
 	// Set this as the level we'll be playing.
-	bOk = bOk && SetNewLevel( szWorldName );
+	bOk = bOk && SetupSavedLevel( szWorldName );
 
 	if( !bOk )
 	{
@@ -544,7 +544,7 @@ bool CMissionMgr::StartGameFromContinue( )
 	bool bOk = true;
 
 	// Set this as the level we'll be playing.
-	bOk = bOk && SetNewLevel( szWorldName );
+	bOk = bOk && SetupSavedLevel( szWorldName );
 
 	if( !bOk )
 	{
@@ -715,6 +715,9 @@ bool CMissionMgr::HandleExitLevel( ILTMessage_Read& msg  )
 	// Consider ourselves to be exiting.
 	m_bExitingLevel = true;
 
+	// RETAIL: 0x10088561 takes the loading screen down first.
+	g_pInterfaceMgr->HideLoadScreen( );
+
 	// Change to the exiting level state.
 	g_pInterfaceMgr->ChangeState(GS_EXITINGLEVEL);
 
@@ -800,7 +803,7 @@ bool CMissionMgr::FinishExitLevel( )
 	}
 
 	// Set our new level information.
-	if( !SetNewLevel( m_sNewWorldName ))
+	if( !SetNewLevel( m_sNewWorldName ) || !SetLoadingLevel( ))
 	{
 		g_pInterfaceMgr->LoadFailed( );
 		return false;
@@ -878,8 +881,9 @@ bool CMissionMgr::SetNewLevel( char const* pszWorldName )
 	// Check if this is a valid mission level.
 	if (g_pMissionButeMgr->IsMissionLevel( pszWorldName, nMissionId, nLevel))
 	{
-		// Check if we're switching missions.
-		if( m_bNewMission )
+		// Check if we're switching missions (RETAIL: 0x10088350, from a
+		// mission level).
+		if( !m_bCustomLevel && m_bNewMission )
 		{
 			// Starting new mission.
 			ClearMissionInfo( );
@@ -902,12 +906,25 @@ bool CMissionMgr::SetNewLevel( char const* pszWorldName )
 		m_nNewLevel = -1;
 	}
 
-	// Go to the loading state.
-	if( !SetLoadingLevel( ))
+	// RETAIL: the callers go to the loading state.
+	return true;
+}
+
+// --------------------------------------------------------------------------- //
+//
+//	ROUTINE:	CMissionMgr::SetupSavedLevel
+//
+//	PURPOSE:	Set up a saved game's world and go to its loading screen.
+//
+// --------------------------------------------------------------------------- //
+
+// RETAIL: 0x10088810
+bool CMissionMgr::SetupSavedLevel( char const* pszWorldName )
+{
+	if( !pszWorldName || !pszWorldName[0] )
 		return false;
 
-
-	return true;
+	return ( SetNewLevel( pszWorldName ) && SetLoadingLevel( ));
 }
 
 // --------------------------------------------------------------------------- //
@@ -1024,7 +1041,7 @@ bool CMissionMgr::PreLoadWorld( char const* pszNewWorldName )
 
 	// If we just joined a remote server, this is the first time we
 	// know the new world name.
-	if( !SetNewLevel( szTmp ))
+	if( !SetNewLevel( szTmp ) || !SetLoadingLevel( ))
 		return false;
 
 	return true;

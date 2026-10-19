@@ -52,8 +52,6 @@ public:
 	void		ForceDisconnect() {	m_bForceDisconnect = true;}	
 
 
-	bool		SetupClient(char const* pszIpAddress, char const* pszHostName, char const* pszPassword);
-
 	// RETAIL: 0x1001f2c0. Contract J.A.C.K.'s, from the join screen: the
 	// server's GameSpy addresses ("ip:port"), whether to reach it through
 	// NAT negotiation and which of its addresses to try first.

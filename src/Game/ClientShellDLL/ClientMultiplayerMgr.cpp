@@ -296,51 +296,6 @@ void ClientMultiplayerMgr::DoTaunt(uint32 nClientID, uint32 nTauntID)
 
 
 
-bool ClientMultiplayerMgr::SetupClient(char const* pszIpAddress, char const* pszHostName, char const* pszPassword)
-{
-	// Check inputs.
-	if( !pszIpAddress || !pszIpAddress[0] )
-	{
-		ASSERT( !"ClientMultiplayerMgr::SetupClient: Invalid inputs." );
-		return false;
-	}
-
-	// Start the game...
-
-	memset( &m_StartGameRequest, 0, sizeof( m_StartGameRequest ));
-	// No socket of our own yet (StartGameRequest::m_hSocket): the engine opens one.
-	m_StartGameRequest.m_hSocket = (uint32)-1;
-	m_ServerGameOptions.Clear( );
-	memset( &m_NetClientData, 0, sizeof( m_NetClientData ));
-
-	if( !UpdateNetClientData( ))
-		return false;
-
-	m_StartGameRequest.m_Type = STARTGAME_CLIENTTCP;
-	strncpy( m_StartGameRequest.m_TCPAddress, pszIpAddress, MAX_SGR_STRINGLEN);
-	if( pszHostName && pszHostName[0] )
-	{
-		SAFE_STRCPY(m_StartGameRequest.m_HostInfo.m_sName ,pszHostName);
-	}
-
-	if (pszPassword)
-	{
-		m_nClientPass = str_Hash(pszPassword);
-	}
-	else
-	{
-		m_nClientPass = 0;
-	}
-
-	// cjacksrc: the one address, for StartClient's retries.
-	m_bNatNegotiate = false;
-	m_bUsePublicAddress = false;
-	m_sPublicAddress = pszIpAddress;
-	m_sPrivateAddress = pszIpAddress;
-
-	return true;
-}
-
 // --------------------------------------------------------------------------- //
 //
 //	ROUTINE:	ClientMultiplayerMgr::SetupClient
@@ -466,7 +421,22 @@ bool ClientMultiplayerMgr::SetupServerHost( int nPort, bool bLANOnly )
 		LTStrCpy( m_StartGameRequest.m_HostInfo.m_sName, pProfile->m_ServerGameOptions.GetDoomsday().m_sSessionName.c_str( ),
 					sizeof(m_StartGameRequest.m_HostInfo.m_sName));
 		break;
+	// RETAIL: 0x1001f450
+	case eGameTypeDemolition:
+	    m_StartGameRequest.m_HostInfo.m_dwMaxConnections = pProfile->m_ServerGameOptions.GetDemolition().m_nMaxPlayers-1;
+		LTStrCpy( m_StartGameRequest.m_HostInfo.m_sName, pProfile->m_ServerGameOptions.GetDemolition().m_sSessionName.c_str( ),
+					sizeof(m_StartGameRequest.m_HostInfo.m_sName));
+		break;
 	};
+
+	// RETAIL: an Internet server takes no more players than its bandwidth allows.
+	if( !m_ServerGameOptions.m_bLANOnly )
+	{
+		uint32 nMaxPlayers = pProfile->m_ServerGameOptions.GetMaxPlayersForBandwidth( );
+		if( m_StartGameRequest.m_HostInfo.m_dwMaxConnections < nMaxPlayers )
+			nMaxPlayers = m_StartGameRequest.m_HostInfo.m_dwMaxConnections;
+		m_StartGameRequest.m_HostInfo.m_dwMaxConnections = nMaxPlayers;
+	}
 
 
 	m_StartGameRequest.m_HostInfo.m_bHasPassword = pProfile->m_ServerGameOptions.m_bUsePassword;

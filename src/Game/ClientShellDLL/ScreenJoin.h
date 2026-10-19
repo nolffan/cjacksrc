@@ -75,6 +75,9 @@ public:
 
 	void	CheckPassword();
 
+	// Forget the servers found (RETAIL: 0x100cb4a0).
+	void	ClearServers();
+
 	virtual void Escape();
 
 

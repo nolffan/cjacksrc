@@ -491,8 +491,12 @@ void CMusic::Play(int32 nIntensity /* = -1 */, int32 nStart /* = LTDMEnactDefaul
 	if (!IsLevelInitialized()) return;
 	if (m_pMusicMgr == NULL) return;
 
+	// RETAIL: 0x1008d640, only while the music is on.
+	if (!GetConsoleInt("MusicActive",0)) return;
+
 	if ( !m_State.bPlaying )
 	{
+		DebugCPrint(2,"CMusic::Play()");
 		m_pMusicMgr->Play();
 	}
 
@@ -528,6 +532,9 @@ void CMusic::Stop(const LTDMEnactTypes nStart)
 	// Stop playing music
 	m_pMusicMgr->Stop(nStart);
     m_State.bPlaying = LTFALSE;
+
+	// RETAIL: 0x1008d6c0
+	DebugCPrint(2,"CMusic::Stop()");
 }
 
 

@@ -224,7 +224,7 @@ void WriteConsoleInt(char const* sKey, int nValue)
 	}
 }
 
-void WriteConsoleBool(char const* sKey, int bValue)
+void WriteConsoleBool(char const* sKey, bool bValue)	// RETAIL: 0x10021f80 takes a bool, as declared
 {
     if (g_pLTClient)
 	{

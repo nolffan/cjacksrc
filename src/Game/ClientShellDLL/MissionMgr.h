@@ -130,6 +130,8 @@ class CMissionMgr
 
 		// Setup new level information.
 		bool			SetNewLevel( char const* pszWorldName );
+		// RETAIL: 0x10088810, SetNewLevel then SetLoadingLevel for a save's world.
+		bool			SetupSavedLevel( char const* pszWorldName );
 
 		// Go to the loading state.
 		bool			SetLoadingLevel( );

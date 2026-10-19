@@ -1,0 +1,21 @@
+addr,reason
+0x1001ed88,NOT A FUNCTION: interior block of ClientMultiplayerMgr::StartClient (0x1001ed10): its NAT negotiation branch after the early return split its extent
+0x10016307,NOT A FUNCTION: interior block of CCharacterFX::OnServerMessage (0x100161f0): a case of its jump table (0x10016a4c) split its extent
+0x10016321,NOT A FUNCTION: interior block of CCharacterFX::OnServerMessage (0x100161f0): a case of its jump table (0x10016a4c) split its extent
+0x10063f0b,NOT A FUNCTION: interior block of the function at 0x10063ee0 (a CInterfaceMgr command handler): the branch after its early return split its extent
+0x10117278,NOT A FUNCTION: interior block of the function at 0x10117190 (CWinUtil): the branch after its early return split its extent
+0x100ecc3d,NOT A FUNCTION: interior block of the function at 0x100ecc30 (a lookup in a table of three strings): the branch after its early return split its extent
+0x1001cb61,NOT A FUNCTION: interior block of CClientFXMgr::UpdateInstanceSuspended (0x1001cab0): the branch after its early return split its extent
+0x10094ed8,NOT A FUNCTION: interior block of CPerformanceMgr::IsCurrentConfig (0x10094e40): the branch after its early returns split its extent
+0x1002b618,NOT A FUNCTION: interior block of CMoveMgr::ResetDims (0x1002b580): the branch after its early return split its extent
+0x10017ad4,NOT A FUNCTION: interior block of ChassisButeMgr::Init (0x10017a90): the branch after its early return split its extent
+0x1001e2be,NOT A FUNCTION: interior block of CClientInfoMgr::UpdateClient (0x1001e280): the branch after its early return split its extent
+0x1007eda6,NOT A FUNCTION: interior block of CLoadingScreen::Init (0x1007ed70): the branch after its early returns split its extent
+0x1001bb0a,NOT A FUNCTION: interior block of CClientFXDB::LoadFxGroups (0x1001bae0): the branch after its early return split its extent
+0x10021a34,NOT A FUNCTION: interior block of CClientSoundMgr::PlaySound (0x10021a10): the branch after its early return split its extent
+0x1001d706,NOT A FUNCTION: interior block of CClientFXMgr::UpdateAllActiveFX (0x1001d6f0): the branch after its early return split its extent
+0x10097844,NOT A FUNCTION: interior block of CPlayerCamera::CreateCameraCollisionObject (0x10097830): a stray reference to its third instruction split its extent
+0x1000f18f,NOT A FUNCTION: interior block of CBodyFX::Init (0x1000f180): a stray reference to its fourth instruction split its extent
+0x1008d9d1,NOT A FUNCTION: interior block of CMusic::InitLevel (0x1008d9b0): the branch after its early return split its extent
+0x10002560,NOT GAME CODE: the compiler's `vector constructor iterator' (ptr; size; count; ctor; ret 10h) emitted into an object of the game; ours comes from the runtime library
+0x1000c030,NOT GAME CODE: the compiler's `vector destructor iterator' (ptr; size; count; dtor) emitted into an object of the game; ours comes from the runtime library

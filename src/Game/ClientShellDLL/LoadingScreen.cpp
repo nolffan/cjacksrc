@@ -268,48 +268,7 @@ LTBOOL CLoadingScreen::Init()
 	// use defaults.
 	if( !bGotMission )
 	{
-		// If connecting to a remote server, set our mission descriptor to 
-		// the ip we're connecting to.
-		if( g_pClientMultiplayerMgr->IsConnectedToRemoteServer( ))
-		{
-			// Make a loading string using the IP to be joined.
-			char szLoadingString[256];
-
-			if (strlen(g_pClientMultiplayerMgr->GetStartGameRequest( ).m_HostInfo.m_sName))
-			{
-				sprintf( szLoadingString, "%s:  %s", LoadTempString(IDS_CONNECTING_TO_SERVER), 
-					g_pClientMultiplayerMgr->GetStartGameRequest( ).m_HostInfo.m_sName );
-			}
-			else
-			{
-				sprintf( szLoadingString, "%s", LoadTempString(IDS_CONNECTING_TO_SERVER));
-			}
-			m_missionname = szLoadingString;
-
-			sprintf( szLoadingString, "    (%s)", g_pClientMultiplayerMgr->GetStartGameRequest( ).m_TCPAddress );
-
-			m_levelname = szLoadingString;
-		}
-		// Local game, set the mission descriptor to the level name.
-		else
-		{
-			if (g_pGameClientShell->IsRunningPerformanceTest())
-			{
-				m_missionname = LoadTempString( IDS_TITLE_PERFORMANCE_TEST );
-				m_levelname = "";
-			}
-			else
-			{
-				m_missionname = LoadTempString( IDS_CUSTOM_LEVEL );
-				// Split the worldname up into parts so we can get the load string.
-				char const* pszWorldName = g_pMissionMgr->GetCurrentWorldName( );
-				char szWorldTitle[MAX_PATH] = "";
-				_splitpath( pszWorldName, NULL, NULL, szWorldTitle, NULL );
-				m_levelname = szWorldTitle;
-
-			}
-
-		}
+		SetDefaultMissionNames( );
 
 		m_layout = "LoadScreenDefault";
 		m_briefing = "";
@@ -690,6 +649,62 @@ int CLoadingScreen::RunThread()
 	return 0;
 }
 
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	CLoadingScreen::SetDefaultMissionNames
+//
+//	PURPOSE:	The names to show without a mission: the server we join,
+//				the performance test or the custom level.
+//
+// ----------------------------------------------------------------------- //
+
+// RETAIL: 0x1007e230
+void CLoadingScreen::SetDefaultMissionNames()
+{
+	// If connecting to a remote server, set our mission descriptor to 
+	// the ip we're connecting to.
+	if( g_pClientMultiplayerMgr->IsConnectedToRemoteServer( ))
+	{
+		// Make a loading string using the IP to be joined.
+		char szLoadingString[256];
+
+		if (strlen(g_pClientMultiplayerMgr->GetStartGameRequest( ).m_HostInfo.m_sName))
+		{
+			sprintf( szLoadingString, "%s:  %s", LoadTempString(IDS_CONNECTING_TO_SERVER), 
+				g_pClientMultiplayerMgr->GetStartGameRequest( ).m_HostInfo.m_sName );
+		}
+		else
+		{
+			sprintf( szLoadingString, "%s", LoadTempString(IDS_CONNECTING_TO_SERVER));
+		}
+		m_missionname = szLoadingString;
+
+		sprintf( szLoadingString, "    (%s)", g_pClientMultiplayerMgr->GetStartGameRequest( ).m_TCPAddress );
+
+		m_levelname = szLoadingString;
+	}
+	// Local game, set the mission descriptor to the level name.
+	else
+	{
+		if (g_pGameClientShell->IsRunningPerformanceTest())
+		{
+			m_missionname = LoadTempString( IDS_TITLE_PERFORMANCE_TEST );
+			m_levelname = "";
+		}
+		else
+		{
+			m_missionname = LoadTempString( IDS_CUSTOM_LEVEL );
+			// Split the worldname up into parts so we can get the load string.
+			char const* pszWorldName = g_pMissionMgr->GetCurrentWorldName( );
+			char szWorldTitle[MAX_PATH] = "";
+			_splitpath( pszWorldName, NULL, NULL, szWorldTitle, NULL );
+			m_levelname = szWorldTitle;
+
+		}
+
+	}
+}
+
 LTBOOL CLoadingScreen::Update()
 {
 	// Make sure we're in a valid state...
@@ -992,7 +1007,16 @@ void CLoadingScreen::UpdateMissionInfo()
 			}
 
 		}
+		else
+		{
+			SetDefaultMissionNames( );
+		}
 
+	}
+	else
+	{
+		// RETAIL: 0x1007e400 names a custom level or a server too.
+		SetDefaultMissionNames( );
 	}
 
 	m_pMissionNameStr->SetText(m_missionname.c_str());

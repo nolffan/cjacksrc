@@ -1202,8 +1202,26 @@ Round 1 (branch `cshell`), the items 8b leaves open:
   GameSpy answers on port+1 and the join goes there. That is the game
   package's (ObjectDLL/GameServerShell.cpp). Other agents' test servers
   on the default docker bridge show in the LAN list.
-- Where it stops: CShell has 62 unwritten functions; next are the rest
-  of them, then CJ code among the unplaced.
+- Unwritten rows, round 2 (61 -> 32): rows the enumerator split inside a
+  function are in progress/CShell-screen-exclude.csv (each cites its
+  container) and missed starts in extent-splits.csv; functions retail
+  keeps though nothing calls them are linked in with /include pragmas
+  (GameClientShell.cpp). Written for retail's behaviour: PlayerMgr::Term
+  letting go of the last messages, the respawn keeping the last
+  orientation, InitTargetMgr making CAutoTargetMgr; the loading screen's
+  SetDefaultMissionNames; OnCommandOff's retail cases; the mouse buttons
+  ending the movies after the first run; ConnectionFailed and LoadFailed
+  as retail's; StartingNewGame clearing the join screen and the patch
+  check; SetupMenuMusic after a disconnection; CMusic::Play/Stop;
+  SetNewLevel no longer going to the loading state (its callers do,
+  SetupSavedLevel for saves); +join's +publicserver; LauncherServerApp
+  starting ContractJackServer.exe; SetupServerHost's Demolition case and
+  bandwidth limit; CSnowFX's on/off message (m_bFromTop is not used yet).
+- Where it stops: 32 unwritten. Several left are tiny out-of-line stubs
+  (ret, ret 4) retail keeps unfolded, and object-order pairings
+  (GameClientShell.obj, ClientMultiplayerMgr.obj) where the size-based
+  pairing leaves a retail row over. Then CCharacterFX reading the pitch
+  from the object's unguaranteed data (the coordinator's item).
 
 ### 8d. playtest coverage (branch `apps2`)
 

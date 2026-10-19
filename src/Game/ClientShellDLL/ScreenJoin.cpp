@@ -246,19 +246,23 @@ CScreenJoin::~CScreenJoin()
 	DeleteCriticalSection( &m_csPendingServers );
 }
 
-// RETAIL: 0x100cb6d0
-void CScreenJoin::Term()
+// RETAIL: 0x100cb4a0
+void CScreenJoin::ClearServers()
 {
-	HaltRequests( );
-
-	if( m_pServerListCtrl )
+	if( m_bInit && m_pServerListCtrl )
 		m_pServerListCtrl->RemoveAll( );
 	m_cServers.clear( );
 
 	EnterCriticalSection( &m_csPendingServers );
 	m_cPendingServers.clear( );
 	LeaveCriticalSection( &m_csPendingServers );
+}
 
+// RETAIL: 0x100cb6d0
+void CScreenJoin::Term()
+{
+	HaltRequests( );
+	ClearServers( );
 	CBaseScreen::Term( );
 }
 
