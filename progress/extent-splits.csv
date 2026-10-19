@@ -126,3 +126,24 @@ CShell.dll,0x1003bd20,an empty client-build Cache(CFXButeMgr*) of FXButeMgr.cpp 
 CShell.dll,0x1003bd30,an empty client-build Cache(CFXButeMgr*) of FXButeMgr.cpp (ret 4) after the int3 padding that ends the one before; nothing calls it directly
 CShell.dll,0x10124dc0,CString::MakeLower (mfcs_string.obj) after the int3 padding that ends CString::MakeUpper (0x10124db0)
 CShell.dll,0x10124dd0,CString::MakeReverse (mfcs_string.obj) after the int3 padding that ends CString::MakeLower (0x10124dc0)
+Object.lto,0x1007d9a0,CAIVolumeMgr::GetVolume(const char*) (jmp 0x10071940): a 5-byte thunk after the padding that ends CAIVolumeMgr::GetVolume(uint32) at 0x1007d990 (jmp 0x100719b0); nothing calls it directly
+Object.lto,0x10173980,CString::MakeLower (mov eax,[ecx]; call _strlwr): after the padding that ends CString::MakeUpper at 0x10173970; nothing calls it
+Object.lto,0x10173990,CString::MakeReverse (mov eax,[ecx]; call _strrev): after the padding that ends CString::MakeLower at 0x10173980; nothing calls it
+Object.lto,0x101609f0,CWeaponMgr::GetPExplFX (mov ecx,g_pFXButeMgr; jmp 0x100cec00): after the padding that ends CWeaponMgr::GetScaleFX at 0x101609e0
+Object.lto,0x10160a00,CWeaponMgr::GetDLightFX (mov ecx,g_pFXButeMgr; jmp 0x100ced50): after the padding that ends the forwarder at 0x101609f0
+Object.lto,0x10160a10,CWeaponMgr::GetImpactFX (mov ecx,g_pFXButeMgr; jmp 0x100ce970): after the padding that ends the forwarder at 0x10160a00
+Object.lto,0x10160a20,CWeaponMgr::GetProjectileFX (mov ecx,g_pFXButeMgr; jmp 0x100ce760): after the padding that ends the forwarder at 0x10160a10
+Object.lto,0x10160a30,CWeaponMgr::GetFireFX (mov ecx,g_pFXButeMgr; jmp 0x100ceac0): after the padding that ends the forwarder at 0x10160a20
+Object.lto,0x10174810,CRect::TopLeft (mov eax,ecx; ret): after the int3 padding that ends the CRect function at 0x101747a0; nothing calls it (mfcs_rect.obj keeps it)
+Object.lto,0x10174820,CRect::BottomRight (lea eax,[ecx+8]; ret): after the int3 padding that ends CRect::TopLeft at 0x10174810; nothing calls it
+Object.lto,0x10174830,CRect::TopLeft const (mov eax,ecx; ret): after the int3 padding that ends CRect::BottomRight at 0x10174820; nothing calls it
+Object.lto,0x10174840,CRect::BottomRight const (lea eax,[ecx+8]; ret): after the int3 padding that ends CRect::TopLeft const at 0x10174830; nothing calls it
+CShell.dll,0x10125c50,CRect::TopLeft (mov eax,ecx; ret): after the int3 padding that ends the CRect function at 0x10125be0; nothing calls it (mfcs_rect.obj keeps it)
+CShell.dll,0x10125c60,CRect::BottomRight (lea eax,[ecx+8]; ret): after the int3 padding that ends CRect::TopLeft at 0x10125c50; nothing calls it
+CShell.dll,0x10125c70,CRect::TopLeft const (mov eax,ecx; ret): after the int3 padding that ends CRect::BottomRight at 0x10125c60; nothing calls it
+CShell.dll,0x10125c80,CRect::BottomRight const (lea eax,[ecx+8]; ret): after the int3 padding that ends CRect::TopLeft const at 0x10125c70; nothing calls it
+Object.lto,0x10119b20,PowerArmor::HandleOff (ret): after the int3 padding that ends PowerArmor::~PowerArmor at 0x10119b00 (jmp Prop::~Prop)
+Object.lto,0x10119b30,PowerArmor::HandleOn (ret): after the int3 padding that ends PowerArmor::HandleOff at 0x10119b20
+Object.lto,0x100c2fc0,an empty function (ret 0xc) after the int3 padding that ends the empty function (ret 8) at 0x100c2fb0
+CShell.dll,0x10124db0,CString::MakeUpper (mov eax,[ecx]; call _strupr): after the padding that ends CString::CompareNoCase at 0x10124d90; nothing calls it
+Object.lto,0x10173970,CString::MakeUpper (mov eax,[ecx]; call _strupr): after the padding that ends CString::CompareNoCase at 0x10173950; nothing calls it

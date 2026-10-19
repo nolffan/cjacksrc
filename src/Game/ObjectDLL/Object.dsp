@@ -501,6 +501,8 @@ SOURCE=.\AIVolume.cpp
 # Begin Source File
 
 SOURCE=.\AIVolumeMgr.cpp
+# ADD CPP /Ox /GF
+# SUBTRACT CPP /O2
 # End Source File
 # Begin Source File
 
@@ -860,6 +862,8 @@ SOURCE=.\Group.cpp
 # Begin Source File
 
 SOURCE=.\GunMount.cpp
+# ADD CPP /Ox /GF
+# SUBTRACT CPP /O2
 # End Source File
 # Begin Source File
 
@@ -1310,6 +1314,8 @@ SOURCE=.\TeamDeathMatchMissionMgr.cpp
 # Begin Source File
 
 SOURCE=..\Shared\TeamMgr.cpp
+# ADD CPP /Ox /GF
+# SUBTRACT CPP /O2
 # End Source File
 # Begin Source File
 
@@ -1402,6 +1408,8 @@ SOURCE=.\WeaponItems.cpp
 # Begin Source File
 
 SOURCE=..\Shared\WeaponMgr.cpp
+# ADD CPP /Ox /GF
+# SUBTRACT CPP /O2
 # End Source File
 # Begin Source File
 
@@ -1410,6 +1418,8 @@ SOURCE=.\Weapons.cpp
 # Begin Source File
 
 SOURCE=..\Shared\WinUtil.cpp
+# ADD CPP /Ox /GF
+# SUBTRACT CPP /O2
 # End Source File
 # Begin Source File
 
