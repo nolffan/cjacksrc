@@ -52,7 +52,11 @@ public:
 	void		ForceDisconnect() {	m_bForceDisconnect = true;}	
 
 
-	bool		SetupClient(char const* pszIpAddress, char const* pszHostName, char const* pszPassword);
+	// RETAIL: 0x1001f2c0. Contract J.A.C.K.'s, from the join screen: the
+	// server's GameSpy addresses ("ip:port"), whether to reach it through
+	// NAT negotiation and which of its addresses to try first.
+	bool		SetupClient(char const* pszHostName, char const* pszPassword, bool bNatNegotiate,
+					bool bUsePublicAddress, char const* pszPublicAddress, char const* pszPrivateAddress);
 
 	// Setup the server for singleplayer.
 	bool		SetupServerSinglePlayer( );
@@ -85,6 +89,7 @@ public:
 	// 0x1001e9b0); the Internet one answers a server's CD key challenge.
 	bool		CreateGameSpyBrowsers( );
 	IGameSpyBrowser*	GetGameSpyBrowser( ) const { return m_pGameSpyBrowser; }
+	IGameSpyBrowser*	GetGameSpyLANBrowser( ) const { return m_pGameSpyLANBrowser; }
 
 
 	// This client is connected to remote server.
@@ -130,6 +135,22 @@ protected :
 	bool		StartServerAsHost( );
 	bool		StartClient( );
 
+	// cjacksrc: the steps of joining a server (RETAIL: 0x1001f670).
+	enum EJoinState
+	{
+		eJoinState_None,
+		eJoinState_NatNegotiating,	// waiting for GameSpy's NAT negotiation
+		eJoinState_NatWait,			// letting the server's NAT settle
+		eJoinState_Join,			// ready to connect
+		eJoinState_Joined,
+		eJoinState_Failed,
+	};
+
+	void		UpdateJoinState( );		// RETAIL: 0x1001f670
+	void		UpdateNatNegotiation( );	// RETAIL: 0x1001f190
+	void		UpdateNatWait( );		// RETAIL: 0x1001f260
+	void		JoinServer( );			// RETAIL: 0x1001ea70
+
 private:
 
 	// Must be filled out before StartLocalGame, StartNetworkGameAsXXX calls.
@@ -170,6 +191,17 @@ private:
 	// cjacksrc: RETAIL: 0x1688, 0x168c (CreateGameSpyBrowsers).
 	IGameSpyBrowser*	m_pGameSpyBrowser;
 	IGameSpyBrowser*	m_pGameSpyLANBrowser;
+
+	// cjacksrc: RETAIL: 0x1690 to 0x16e4 (SetupClient, StartClient, UpdateJoinState).
+	bool		m_bNatNegotiate;
+	EJoinState	m_eJoinState;
+	float		m_fNatWaitStart;
+	float		m_fNatWaitTime;
+	float		m_fNatWaitNow;		// a fixed time instead of the engine's, when above 0
+	bool		m_bNatNegotiated;
+	bool		m_bUsePublicAddress;
+	std::string	m_sPublicAddress;
+	std::string	m_sPrivateAddress;
 	
 };
 

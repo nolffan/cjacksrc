@@ -500,6 +500,10 @@ protected:
 	// RETAIL: Contract J.A.C.K.'s manual aim (COMMAND_ID_MANUALAIM); retail's
 	// member is at 0x1cd, kept here at the end for now
 	bool		m_bManualAim;
+	// RETAIL: 0x1ce, 0x1d0: a respawn we asked for keeps the last orientation
+	// the server sent (HandleRespawn, HandleMsgPlayerOrientation).
+	bool		m_bRespawnRequested;
+	LTVector	m_vLastOrientation;
 };
 
 extern CPlayerMgr* g_pPlayerMgr;

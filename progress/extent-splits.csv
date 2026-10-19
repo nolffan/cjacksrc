@@ -117,3 +117,12 @@ server.dll,0x1000c7d0,function after the int3 padding that ends the getter at 0x
 server.dll,0x1000d460,function after the int3 padding that ends the getter at 0x1000d450 (`xor eax,eax; ret`)
 Lithtech.exe,0x00419680,con_CycleCommandsBack (push -1; mov ecx console; call CConsole::CycleCommands; ret): console.obj after con_SetErrorLog 0x419670; enumerated inside its row
 Lithtech.exe,0x00419690,con_CycleCommandsForward (push 1; the same): enumerated inside con_SetErrorLog 0x419670
+CShell.dll,0x1001ee70,function after the int3 padding that ends ClientMultiplayerMgr::StartClient (0x1001ed10); nothing calls it directly
+CShell.dll,0x1001ef60,function after the int3 padding that ends the one at 0x1001ee70; nothing calls it directly
+CShell.dll,0x10062ec0,function after the int3 padding that ends CInterfaceMgr::HideLoadScreen (0x10062eb0); a file-static helper of InterfaceMgr.obj, inlined where called
+CShell.dll,0x1003bd00,an empty client-build Cache(CFXButeMgr*) of FXButeMgr.cpp (ret 4) after the int3 padding that ends the one before; nothing calls it directly
+CShell.dll,0x1003bd10,an empty client-build Cache(CFXButeMgr*) of FXButeMgr.cpp (ret 4) after the int3 padding that ends the one before; nothing calls it directly
+CShell.dll,0x1003bd20,an empty client-build Cache(CFXButeMgr*) of FXButeMgr.cpp (ret 4) after the int3 padding that ends the one before; nothing calls it directly
+CShell.dll,0x1003bd30,an empty client-build Cache(CFXButeMgr*) of FXButeMgr.cpp (ret 4) after the int3 padding that ends the one before; nothing calls it directly
+CShell.dll,0x10124dc0,CString::MakeLower (mfcs_string.obj) after the int3 padding that ends CString::MakeUpper (0x10124db0)
+CShell.dll,0x10124dd0,CString::MakeReverse (mfcs_string.obj) after the int3 padding that ends CString::MakeLower (0x10124dc0)

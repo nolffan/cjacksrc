@@ -1185,8 +1185,7 @@ Round 1 (branch `cshell`), the items 8b leaves open:
   Escape of its own, and the default campaign listing DE_ worlds for
   deathmatch and Demolition.
 - ClientMultiplayerMgr has no WON server directory member (m_sModName at
-  0x166c as retail's). GetServerDir() returns NULL for NOLF2's join
-  screen until CScreenJoin is rewritten (below).
+  0x166c as retail's); GetServerDir() returns NULL.
 - The checkpoint save: CSaveLoadMgr::CheckpointSaveExists and
   GetCheckpointSaveFile ("CheckpointSave", "Checkpoint.sav"),
   kLoadGameTypeCheckpoint (3, so kLoadGameTypeContinue is 4),
@@ -1203,17 +1202,75 @@ Round 1 (branch `cshell`), the items 8b leaves open:
   SFX_AIMMAGNET_ID bank and message); the skeletons' Node%dAutoTarget
   (CModelButeMgr's node 0xb9, at most eight a skeleton) and
   COMMAND_ID_MANUALAIM toggling it off. A weapon's UseAutoTarget decides:
-  0 never, 1 on easy, 2 always. Left: the locked-on crosshair
-  (CHUDCrosshair::Render 0x1005571d draws at GetCrosshairPos; ours is
-  NOLF2's), the vehicle weapon's aim (0x10004682), CPlayerMgr's
+  0 never, 1 on easy, 2 always. CHUDCrosshair::Render is retail's
+  (0x10055620): once locked on, the crosshair is drawn at GetCrosshairPos
+  with a dot left at the centre (behaviour; the block order still
+  differs). Left: the vehicle weapon's aim (0x10004682), CPlayerMgr's
   m_bManualAim at its retail offset (0x1cd; ours is the last member), and
   **for the game package** the server's AimMagnet objects (Object.lto
   has AimMagnet and CAimMagnetPlugin) that create the magnets.
-- Where it stops: CScreenJoin is NOLF2's (WON); retail's
-  (0x100c8f40..0x100d09c0, about 30 KB with its sort instantiations) is a
-  GameSpy browser with a port column, a game type filter and nine sort
-  columns, and holds most of CShell's largest unwritten rows
-  (0x100cedd0, 0x100d06b0, 0x100ce580, 0x100ce850). It is next.
+- Mouse look (8d's finding) is not a game code fault. Instrumented runs
+  (CPlayerMgr::CalculateCameraRotation logging the axis offsets) show
+  ours pitches and turns as retail: in M01S01 the player starts seated on
+  a PlayerLure (PPM_LURE, camera limited to 40 up and 55 down), in ours
+  and in the control alike (their shots after `turn 0 200` and `turn 0
+  400` are the same), and in M03S02 the turned and look-down shots match
+  the control's. What differs between runs is the harness: Wine's
+  pointer re-centring sometimes reports a step back (negative x offsets
+  between xdotool's 40-pixel steps), so a 400-pixel turn lands short in
+  some runs of either game. Smaller, slower steps (`turn 400 0 40`)
+  should make the scripted runs comparable.
+- CScreenJoin is retail's GameSpy browser (0x100c8f40..0x100d06b0), in
+  behaviour: its states (Startup, UpdateDir, QueryDetails, Waiting), the
+  search order (LAN on the retail and the demo browser, then the
+  Internet on both while it answers), the LAN port column (the profile's
+  client port), filters (version, players, ping, game type), six sort
+  columns (name, type, ping, players, lock, version), the details window
+  (mission, options parsed from the "options" key, players) and the
+  password prompt. Retail keeps the servers in a hash_map and makes
+  their rows on the browser's thread; ours keeps a std::map and hands
+  the servers to the screen's update through a locked queue, so neither
+  thread waits on the other's lock. The sort instantiations stay
+  unwritten.
+- ClientMultiplayerMgr joins as retail: SetupClient with the server's
+  public and private addresses (0x1001f2c0), StartClient's GameSpy NAT
+  negotiation on the engine's socket (0x1001ed10), the join states run
+  from Update (0x1001f670: the NAT wait, the two seconds' grace, then
+  JoinServer trying our address, the private one, the public one). Ours
+  connects at once when there is no NAT negotiation (retail waits for
+  the next update). CTO2GameClientShell::ProcessPacket hands packets to
+  the browser (0x100fa150); CInterfaceMgr::LoadFailed shows "server
+  full" for LT_REJECTED (0x10063960). Shared/NetDefs.cpp gained
+  "Demolition" (as the game branch's).
+- Tested by hand (a scratch copy of mptest.sh clicking through the
+  menus on a private docker network): the server is listed, its details
+  show, and Join game enters it -- **once the server shares its socket
+  with GameSpy**: Object.lto's GameSpy startup (0x100dfa33) takes
+  g_pLTServer->GetUDPSocket (ILTServer vtable 0x118) into
+  StartupInfo::m_hSocket and fails without it; ours passes 0, so
+  GameSpy answers on port+1 and the join goes there. That is the game
+  package's (ObjectDLL/GameServerShell.cpp). Other agents' test servers
+  on the default docker bridge show in the LAN list.
+- Unwritten rows, round 2 (61 -> 32): rows the enumerator split inside a
+  function are in progress/CShell-screen-exclude.csv (each cites its
+  container) and missed starts in extent-splits.csv; functions retail
+  keeps though nothing calls them are linked in with /include pragmas
+  (GameClientShell.cpp). Written for retail's behaviour: PlayerMgr::Term
+  letting go of the last messages, the respawn keeping the last
+  orientation, InitTargetMgr making CAutoTargetMgr; the loading screen's
+  SetDefaultMissionNames; OnCommandOff's retail cases; the mouse buttons
+  ending the movies after the first run; ConnectionFailed and LoadFailed
+  as retail's; StartingNewGame clearing the join screen and the patch
+  check; SetupMenuMusic after a disconnection; CMusic::Play/Stop;
+  SetNewLevel no longer going to the loading state (its callers do,
+  SetupSavedLevel for saves); +join's +publicserver; LauncherServerApp
+  starting ContractJackServer.exe; SetupServerHost's Demolition case and
+  bandwidth limit; CSnowFX's on/off message (m_bFromTop is not used yet).
+- Where it stops: 32 unwritten. Several left are tiny out-of-line stubs
+  (ret, ret 4) retail keeps unfolded, and object-order pairings
+  (GameClientShell.obj, ClientMultiplayerMgr.obj) where the size-based
+  pairing leaves a retail row over. Then CCharacterFX reading the pitch
+  from the object's unguaranteed data (the coordinator's item).
 
 ### 8d. playtest coverage (branch `apps2`)
 

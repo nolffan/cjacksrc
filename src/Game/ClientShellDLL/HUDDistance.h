@@ -29,6 +29,7 @@ class CHUDDistance : public CHUDItem
 		~CHUDDistance();
 
 		LTBOOL      Init();
+		void		Term();		// RETAIL: 0x10057580
 		void        Render();
 		void        Update();
 		void        UpdateLayout();

@@ -16,6 +16,8 @@
 #include "msgids.h"
 
 #include "clientmultiplayermgr.h"
+#include "IGameSpy.h"
+#include <malloc.h>
 #include "iserverdir.h"
 
 // Sample rate
@@ -78,6 +80,18 @@ LTRESULT CTO2GameClientShell::ProcessPacket(ILTMessage_Read *pMsg, uint8 senderA
 	// Gotta have some data...
 	if (pMsg->Size() < 16)
 		return LT_OK;
+
+	// RETAIL: 0x100fa150. GameSpy's packets come to the game's socket: let
+	// the browser see them (its NAT negotiation and queries need them).
+	IGameSpyBrowser* pGameSpyBrowser = g_pClientMultiplayerMgr->GetGameSpyBrowser( );
+	if( pGameSpyBrowser )
+	{
+		uint32 nDataLen = pMsg->Size( ) / 8;
+		uint8* pData = ( uint8* )_alloca(( nDataLen + 3 ) & ~3 );
+		pMsg->ReadData( pData, nDataLen * 8 );
+		pGameSpyBrowser->HandleNetMessage( pData, nDataLen, senderAddr, senderPort );
+		pMsg->SeekTo( 0 );
+	}
 
 	// Skip the engine-side portion of the message header
 	CLTMsgRef_Read cSubMsg(pMsg->SubMsg(8));

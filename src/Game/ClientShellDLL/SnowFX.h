@@ -97,6 +97,8 @@ private:
 	static bool tableInit;
 	static float sinTable[SNOWFX_TABLESIZE+SNOWFX_COSOFFSET];
 	static uint32 rndTable[SNOWFX_TABLESIZE];
+
+	friend class CSnowFX;
 };
 
 
@@ -115,7 +117,7 @@ struct SNOWCREATESTRUCT : public SFXCREATESTRUCT
 	bool bUseLighting;
 	bool bUseSaturate;
 	HSTRING hstrTextureName;
-	bool bOn;			// RETAIL: CShell 0x100eedd0, Contract J.A.C.K.'s snow can be off
+	bool bOn;						// RETAIL: Contract J.A.C.K.'s, snowing to start with
 };
 
 
@@ -151,6 +153,7 @@ protected:
 	LTBOOL OnServerMessage( ILTMessage_Read* pMsg );
 
 private:
+	float m_fTopY;									// RETAIL: the volume's top (0x38)
 	LTVector m_vDims;
 	float m_fDensity;
 	float m_fParticleRadius;
@@ -164,7 +167,11 @@ private:
 	bool m_bUseLighting;
 	bool m_bUseSaturate;
 	HSTRING m_hstrTextureName;
-	bool m_bOn;										// RETAIL: false while the server's volume is turned off
+	// RETAIL: Contract J.A.C.K.'s: the server turns the snow on and off
+	// (OnServerMessage, 0x100eef30); once on again it falls from the top
+	// of the volume until every airspace has started over.
+	bool m_bOn;
+	bool m_bFromTop;
 
 	LTVector m_vMinBounds;							// bounding box min value
 	LTVector m_vMaxBounds;							// bounding box max value

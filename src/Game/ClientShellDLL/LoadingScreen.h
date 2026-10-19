@@ -65,6 +65,8 @@ public:
 
 // Internal functions
 protected:
+	// RETAIL: 0x1007e230
+	void	SetDefaultMissionNames();
 #ifdef NOPS2
 	static unsigned long WINAPI ThreadBootstrap(void *pData);
 	int RunThread();
