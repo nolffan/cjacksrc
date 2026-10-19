@@ -115,6 +115,7 @@ struct SNOWCREATESTRUCT : public SFXCREATESTRUCT
 	bool bUseLighting;
 	bool bUseSaturate;
 	HSTRING hstrTextureName;
+	bool bOn;			// RETAIL: CShell 0x100eedd0, Contract J.A.C.K.'s snow can be off
 };
 
 
@@ -131,6 +132,7 @@ inline SNOWCREATESTRUCT::SNOWCREATESTRUCT()
 	bUseLighting = false;
 	bUseSaturate = false;
 	hstrTextureName = LTNULL;
+	bOn = true;
 }
 
 
@@ -162,6 +164,7 @@ private:
 	bool m_bUseLighting;
 	bool m_bUseSaturate;
 	HSTRING m_hstrTextureName;
+	bool m_bOn;										// RETAIL: false while the server's volume is turned off
 
 	LTVector m_vMinBounds;							// bounding box min value
 	LTVector m_vMaxBounds;							// bounding box max value

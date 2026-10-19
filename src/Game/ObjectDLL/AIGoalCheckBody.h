@@ -75,6 +75,7 @@ class CAIGoalCheckBody : public CAIGoalAbstractSearch
 		LTObjRefNotifier	m_hBody;
 		SeenBodyList		m_lstSeenBodies;
 		LTVector			m_vStimulusPos;
+		LTFLOAT				m_fIgnoreBodiesTime;	// RETAIL: Object 0x10024da0, no bodies until then after seeing an enemy
 };
 
 

@@ -14,6 +14,7 @@
 #include "MsgIDs.h"
 #include "SnowVolume.h"
 #include "DEditColors.h"
+#include "ParsedMsg.h"
 
 extern HSTRING ReadHStringProp(const char* pszPropName, ILTServer* pServer);
 
@@ -32,6 +33,7 @@ BEGIN_CLASS(SnowVolume)
 	ADD_BOOLPROP(UseLighting, FALSE)
 	ADD_BOOLPROP(UseSaturate, TRUE)
 	ADD_STRINGPROP_FLAG(TextureName, "", PF_FILENAME)
+	ADD_BOOLPROP(StartOn, TRUE)
 END_CLASS_DEFAULT_FLAGS(SnowVolume, VolumeEffect, NULL, NULL, CF_ALWAYSLOAD)
 
 
@@ -47,6 +49,7 @@ SnowVolume::SnowVolume()
 	m_bUseLighting = false;
 	m_bUseSaturate = true;
 	m_hstrTextureName = LTNULL;
+	m_bOn = true;
 }
 
 
@@ -82,7 +85,10 @@ uint32 SnowVolume::EngineMessageFn( uint32 messageID, void* pData, LTFLOAT fData
 		break;
 
 	case MID_INITIALUPDATE:
-		InitialUpdate();
+		// RETAIL: Object 0x10149580.  A saved game's volume sends its
+		// message once it's loaded.
+		if( fData == INITIALUPDATE_WORLDFILE )
+			UpdateSFX( false );
 		break;
 	}
 
@@ -105,17 +111,144 @@ bool SnowVolume::ReadProp( ObjectCreateStruct* pOCS )
 	g_pLTServer->GetPropBool( "UseLighting", &m_bUseLighting );
 	g_pLTServer->GetPropBool( "UseSaturate", &m_bUseSaturate );
 	m_hstrTextureName = ReadHStringProp( "TextureName", g_pLTServer );
+	g_pLTServer->GetPropBool( "StartOn", &m_bOn );
 	
 	return true;
 }
 
 
-void SnowVolume::InitialUpdate( void )
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	SnowVolume::OnTrigger
+//
+//	PURPOSE:	RETAIL: Object 0x10149490.  ON / OFF
+//
+// ----------------------------------------------------------------------- //
+
+bool SnowVolume::OnTrigger( HOBJECT hSender, const CParsedMsg &cMsg )
 {
+	static CParsedMsg::CToken s_cTok_On( "ON" );
+	static CParsedMsg::CToken s_cTok_Off( "OFF" );
+
+	if( cMsg.GetArg(0) == s_cTok_On )
+	{
+		TurnOn( true );
+	}
+	else if( cMsg.GetArg(0) == s_cTok_Off )
+	{
+		TurnOn( false );
+	}
+	else
+		return VolumeEffect::OnTrigger( hSender, cMsg );
+
+	return true;
+}
+
+
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	SnowVolume::TurnOn
+//
+//	PURPOSE:	RETAIL: Object 0x101492a0.  Tell the clients' snow to start
+//				or stop.
+//
+// ----------------------------------------------------------------------- //
+
+void SnowVolume::TurnOn( bool bOn )
+{
+	if( m_bOn == bOn )
+		return;
+
+	m_bOn = bOn;
+
 	CAutoMessage cMsg;
+	cMsg.Writeuint8( MID_SFX_MESSAGE );
 	cMsg.Writeuint8( SFX_SNOW_ID );
-	WriteSnowInfo( cMsg );
-	g_pLTServer->SetObjectSFXMessage( m_hObject, cMsg.Read() );
+	cMsg.WriteObject( m_hObject );
+	cMsg.Writeuint8( SNOWFX_MSG_ON );
+	cMsg.Writebool( m_bOn );
+	g_pLTServer->SendToClient( cMsg.Read(), LTNULL, MESSAGE_GUARANTEED );
+
+	UpdateSFX( false );
+}
+
+
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	SnowVolume::UpdateSFX
+//
+//	PURPOSE:	RETAIL: Object 0x10149150.  Set our special fx message, and
+//				send it to the clients already in the world.
+//
+// ----------------------------------------------------------------------- //
+
+void SnowVolume::UpdateSFX( bool bSendToClients )
+{
+	{
+		CAutoMessage cMsg;
+		cMsg.Writeuint8( SFX_SNOW_ID );
+		WriteSnowInfo( cMsg );
+		g_pLTServer->SetObjectSFXMessage( m_hObject, cMsg.Read() );
+	}
+
+	if( bSendToClients )
+	{
+		CAutoMessage cMsg;
+		cMsg.Writeuint8( MID_SFX_MESSAGE );
+		cMsg.Writeuint8( SFX_SNOW_ID );
+		cMsg.WriteObject( m_hObject );
+		WriteSnowInfo( cMsg );
+		g_pLTServer->SendToClient( cMsg.Read(), LTNULL, MESSAGE_GUARANTEED );
+	}
+}
+
+
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	SnowVolume::Save / Load
+//
+// ----------------------------------------------------------------------- //
+
+void SnowVolume::Save( ILTMessage_Write *pMsg )
+{
+	if( !pMsg )
+		return;
+
+	VolumeEffect::Save( pMsg );
+
+	SAVE_FLOAT( m_fDensity );
+	SAVE_FLOAT( m_fParticleRadius );
+	SAVE_FLOAT( m_fFallRate );
+	SAVE_FLOAT( m_fTumbleRate );
+	SAVE_FLOAT( m_fTumbleRadius );
+	SAVE_FLOAT( m_fMaxDrawDist );
+	SAVE_VECTOR( m_vAmbientColor );
+	SAVE_bool( m_bUseLighting );
+	SAVE_bool( m_bUseSaturate );
+	SAVE_HSTRING( m_hstrTextureName );
+	SAVE_bool( m_bOn );
+}
+
+void SnowVolume::Load( ILTMessage_Read *pMsg )
+{
+	if( !pMsg )
+		return;
+
+	VolumeEffect::Load( pMsg );
+
+	LOAD_FLOAT( m_fDensity );
+	LOAD_FLOAT( m_fParticleRadius );
+	LOAD_FLOAT( m_fFallRate );
+	LOAD_FLOAT( m_fTumbleRate );
+	LOAD_FLOAT( m_fTumbleRadius );
+	LOAD_FLOAT( m_fMaxDrawDist );
+	LOAD_VECTOR( m_vAmbientColor );
+	LOAD_bool( m_bUseLighting );
+	LOAD_bool( m_bUseSaturate );
+	LOAD_HSTRING( m_hstrTextureName );
+	LOAD_bool( m_bOn );
+
+	UpdateSFX( true );
 }
 
 
@@ -132,4 +265,5 @@ void SnowVolume::WriteSnowInfo( ILTMessage_Write& cMsg )
 	cMsg.Writeuint8( m_bUseLighting );
 	cMsg.Writeuint8( m_bUseSaturate );
 	cMsg.WriteHString( m_hstrTextureName );
+	cMsg.Writebool( m_bOn );	// RETAIL: Object 0x10148f90
 }

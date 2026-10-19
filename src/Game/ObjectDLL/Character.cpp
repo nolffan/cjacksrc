@@ -1774,6 +1774,12 @@ void CCharacter::SetPitch( float fPitch )
 		{
 			m_fLastPitch = m_fPitch;
 
+			// RETAIL: Object 0x1009eea0 sends the pitch as the object's
+			// unguaranteed data.  cjacksrc: our client still reads the
+			// CFX_PITCH message below, so it is sent too.
+
+			g_pLTServer->SetObjectUnguaranteedData( m_hObject, CompressAngleToByte( fPitch ));
+
 			LTRESULT ltResult;
 			CAutoMessage cMsg;
 

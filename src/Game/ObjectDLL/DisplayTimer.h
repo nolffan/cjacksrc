@@ -42,7 +42,7 @@ class DisplayTimer : public GameBase
         LTBOOL   m_bRemoveWhenDone;  // Remove the timer when done?
 
 		CTimer	m_Timer;			// Timer
-		uint8	m_nTeamId;			// Team this timer is for.
+		uint8	m_nTeamId;			// RETAIL: the timer's type (s_aszTimerTypes): the game's, a team's or a demolition bomb's
 
 		void	ReadProp(ObjectCreateStruct *pData);
 		void	InitialUpdate();

@@ -8559,6 +8559,8 @@ CAIHumanStateCharge::CAIHumanStateCharge()
 	m_bYelled = LTFALSE;
 	m_fYellDistanceSqr = 900.f * 900.f;
 	m_fStopDistanceSqr = 200.f * 200.f;
+	m_bLimitDistance = LTFALSE;
+	m_vStartPos.Init();
 
 	m_pStrategyFollowPath = AI_FACTORY_NEW(CAIHumanStrategyFollowPath);
 }
@@ -8636,6 +8638,10 @@ void CAIHumanStateCharge::Update()
 
 		// Head and Torso tracking.
 	
+		// RETAIL: Object 0x1004a200 remembers where the charge started.
+
+		m_vStartPos = GetAI()->GetPosition();
+
 		GetAI()->SetNodeTrackingTarget( kTrack_AimAt, GetAI()->GetTarget()->GetObject(), "Head" );
 	}
 
@@ -8792,6 +8798,8 @@ void CAIHumanStateCharge::Load(ILTMessage_Read *pMsg)
 	LOAD_FLOAT(m_fYellDistanceSqr);
 	LOAD_BOOL(m_bStopped);
 	LOAD_FLOAT(m_fStopDistanceSqr);
+	LOAD_VECTOR(m_vStartPos);
+	LOAD_BOOL(m_bLimitDistance);
 }
 
 // ----------------------------------------------------------------------- //
@@ -8813,6 +8821,8 @@ void CAIHumanStateCharge::Save(ILTMessage_Write *pMsg)
 	SAVE_FLOAT(m_fYellDistanceSqr);
 	SAVE_BOOL(m_bStopped);
 	SAVE_FLOAT(m_fStopDistanceSqr);
+	SAVE_VECTOR(m_vStartPos);
+	SAVE_BOOL(m_bLimitDistance);
 }
 
 // ----------------------------------------------------------------------- //

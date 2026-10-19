@@ -544,6 +544,12 @@ AINode* CAINodeMgr::FindNearestNodeInRadius(CAI* pAI, EnumAINodeType eNodeType, 
 
 AINode* CAINodeMgr::FindNearestNodeFromThreat(CAI* pAI, EnumAINodeType eNodeType, const LTVector& vPos, HOBJECT hThreat, LTFLOAT fSearchFactor)
 {
+	// RETAIL: Object 0x10065610
+	return FindNearestNodeFromThreat( pAI, eNodeType, vPos, hThreat, fSearchFactor, LTNULL );
+}
+
+AINode* CAINodeMgr::FindNearestNodeFromThreat(CAI* pAI, EnumAINodeType eNodeType, const LTVector& vPos, HOBJECT hThreat, LTFLOAT fSearchFactor, HOBJECT hOwner)
+{
     LTFLOAT fMinDistance = (float)INT_MAX;
     AINode*	pClosestNode = LTNULL;
 
@@ -580,6 +586,13 @@ AINode* CAINodeMgr::FindNearestNodeFromThreat(CAI* pAI, EnumAINodeType eNodeType
 
 		if( ( pNode->GetRequiredRelationTemplateID() != -1 ) &&
 			( pNode->GetRequiredRelationTemplateID() != pAI->GetRelationMgr()->GetTemplateID() ) )
+		{
+			continue;
+		}
+
+		// Skip nodes owned by someone else.
+
+		if( pNode->GetNodeOwner() != hOwner )
 		{
 			continue;
 		}

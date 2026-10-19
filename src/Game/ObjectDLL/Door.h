@@ -77,6 +77,7 @@ class Door : public ActiveWorldModel
 
 		virtual void	SetPowerOn( );
 		virtual void	SetPowerOff( );
+		virtual void	UpdatePowerOff( const LTFLOAT &fCurTime );	// RETAIL: Object 0x100c9a30
 
 		// Activation...
 

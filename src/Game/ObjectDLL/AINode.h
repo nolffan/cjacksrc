@@ -738,6 +738,35 @@ public:
 
 //---------------------------------------------------------------------------
 
+// RETAIL: Contract J.A.C.K.'s sniper perch (Object.lto 0x10067140..
+// 0x100673f0): a smart object node that is only good while the threat is
+// outside its threat radius and inside its field of view.
+class AINodeSniper : public AINodeUseObject
+{
+	typedef AINodeUseObject super;
+
+	public :
+
+		AINodeSniper();
+		virtual ~AINodeSniper();
+
+		virtual void ReadProp(ObjectCreateStruct *pocs);
+
+		virtual void Load(ILTMessage_Read *pMsg);
+		virtual void Save(ILTMessage_Write *pMsg);
+
+		virtual void Init();
+
+		virtual EnumNodeStatus	GetStatus(CAI* pAI, const LTVector& vPos, HOBJECT hThreat) const;
+
+	protected :
+
+		LTFLOAT		m_fFovDp;
+		LTFLOAT		m_fThreatRadiusSqr;
+};
+
+//---------------------------------------------------------------------------
+
 class AINodeBackup : public AINode
 {
 	typedef AINode super;

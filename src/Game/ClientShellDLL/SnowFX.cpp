@@ -68,6 +68,7 @@ CSnowFX::CSnowFX() : CSpecialFX()
 	m_bUseLighting = false;
 	m_bUseSaturate = true;
 	m_hstrTextureName = LTNULL;
+	m_bOn = true;
 
 	m_nInternalTime = 0;
 
@@ -128,6 +129,7 @@ LTBOOL CSnowFX::Init( SFXCREATESTRUCT* psfxCreateStruct )
 	m_bUseLighting = cs->bUseLighting;
 	m_bUseSaturate = cs->bUseSaturate;
 	m_hstrTextureName = cs->hstrTextureName;
+	m_bOn = cs->bOn;
 
 	// setup console variables
 	if( !g_cvarSnowEnable.IsInitted() )
@@ -305,7 +307,8 @@ static inline float DistSqToAABB( const LTVector& pos, const LTVector& min, cons
 bool CSnowFX::UpdateAirspaces( void )
 {
 	// make sure there are no active airspaces if the snow isn't enabled
-	if( !m_bEnabled )
+	// (or the server turned it off)
+	if( !m_bEnabled || !m_bOn )
 	{
 		std::set<CSnowFXAirspace*>::iterator it = activeAirspaces.begin();
 		for( ; it != activeAirspaces.end(); it++ )
@@ -355,6 +358,25 @@ bool CSnowFX::UpdateAirspaces( void )
 
 LTBOOL CSnowFX::OnServerMessage( ILTMessage_Read* pMsg )
 {
+	if( !pMsg )
+		return LTFALSE;
+
+	// RETAIL: CShell 0x100eef30.  The server's SnowVolume was turned on or
+	// off.  (Contract J.A.C.K. also lets the snow already falling finish;
+	// this stops it at once.)
+
+	switch( pMsg->Readuint8() )
+	{
+		case SNOWFX_MSG_ON:
+		{
+			m_bOn = pMsg->Readbool();
+		}
+		break;
+
+		default:
+		break;
+	}
+
 	return LTTRUE;
 }
 

@@ -14,6 +14,9 @@
 #include "AIGoalMgr.h"
 #include "AnimatorPlayer.h"
 #include "AI.h"
+#include "AIVolumeMgr.h"
+#include "AIVolume.h"
+#include "AISenseRecorderAbstract.h"
 
 DEFINE_AI_FACTORY_CLASS_SPECIFIC(Goal, CAIGoalAttackMelee, kGoal_AttackMelee);
 
@@ -62,3 +65,35 @@ void CAIGoalAttackMelee::ActivateGoal()
 	super::ActivateGoal();
 }
 
+
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	CAIGoalAttackMelee::HandleGoalSenseTrigger
+//
+//	PURPOSE:	RETAIL: Object 0x1001eef0.  Only go for a melee attack when
+//				there is a straight walk to the stimulus.
+//
+// ----------------------------------------------------------------------- //
+
+LTBOOL CAIGoalAttackMelee::HandleGoalSenseTrigger(AISenseRecord* pSenseRecord)
+{
+	if( !super::HandleGoalSenseTrigger( pSenseRecord ) )
+	{
+		return LTFALSE;
+	}
+
+	if( m_pGoalMgr->IsCurGoal( this ) )
+	{
+		return LTTRUE;
+	}
+
+	uint32 dwExcludeVolumes =	AIVolume::kVolumeType_Ladder |
+								AIVolume::kVolumeType_Stairs |
+								AIVolume::kVolumeType_Ledge |
+								AIVolume::kVolumeType_JumpUp |
+								AIVolume::kVolumeType_JumpOver |
+								AIVolume::kVolumeType_Teleport |
+								AIVolume::kVolumeType_AmbientLife;
+
+	return g_pAIVolumeMgr->StraightPathExists( m_pAI, m_pAI->GetPosition(), pSenseRecord->vLastStimulusPos, m_pAI->GetVerticalThreshold() * 2.f, dwExcludeVolumes, m_pAI->GetLastVolume() );
+}

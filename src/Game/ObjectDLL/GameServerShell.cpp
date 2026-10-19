@@ -3550,8 +3550,13 @@ void CGameServerShell::SetSwitchingWorldsState( SwitchingWorldsState eSwitchingW
 void CGameServerShell::StartSwitchingWorlds( )
 {
 	// Pause the game until all the clients are in.  There is an unpause
-	// in FinishSwitchingWorlds.
-	PauseGame( true );
+	// in FinishSwitchingWorlds.  RETAIL: Object 0x100dec70 pauses only
+	// when not already switching, so the pauses match the unpause.
+	if( m_eSwitchingWorldsState == eSwitchingWorldsStateFinished ||
+		m_eSwitchingWorldsState == eSwitchingWorldsStateNone )
+	{
+		PauseGame( true );
+	}
 	SetSwitchingWorldsState( eSwitchingWorldsStatePlayerHookup );
 }
 

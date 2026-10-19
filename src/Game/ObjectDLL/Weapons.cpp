@@ -30,6 +30,19 @@
 CBankedList<CWeapon> s_bankCWeapon;
 
 
+
+// RETAIL: Contract J.A.C.K.'s MID_PICKEDUP carries three flags: picked up,
+// show it, leave the item (PickupItem::ObjectMessageFn, Object 0x10104590).
+static void SendPickedUpMsg(HOBJECT hSource, HOBJECT hDest)
+{
+	CAutoMessage cMsg;
+	cMsg.Writeuint32(MID_PICKEDUP);
+	cMsg.Writebool(true);
+	cMsg.Writebool(true);
+	cMsg.Writebool(false);
+	g_pLTServer->SendToObject(cMsg.Read(), hSource, hDest, MESSAGE_GUARANTEED);
+}
+
 // ----------------------------------------------------------------------- //
 //
 //	ROUTINE:	CWeapons::CWeapons()
@@ -368,7 +381,7 @@ LTBOOL CWeapons::AddWeapon(LPBASECLASS pObject, HOBJECT hSender, uint8 nWeaponId
 		// Tell weapon powerup it was picked up...
 		if (pObject)
 		{
-			SendEmptyObjectMsg(MID_PICKEDUP, pObject->m_hObject, hSender);
+			SendPickedUpMsg(pObject->m_hObject, hSender);
 		}
 
 		// Send the appropriate message to the client...
@@ -489,7 +502,7 @@ LTBOOL CWeapons::AddAmmoBox(LPBASECLASS pObject, HOBJECT hSender, ILTMessage_Rea
 	else
 	{
         // Tell ammo powerup it was picked up...
-		SendEmptyObjectMsg(MID_PICKEDUP, pObject->m_hObject, hSender);
+		SendPickedUpMsg(pObject->m_hObject, hSender);
 	}
 
 
@@ -603,6 +616,7 @@ LTBOOL CWeapons::AddMod(LPBASECLASS pObject, HOBJECT hSender, ILTMessage_Read *p
 		cMsg.Writeuint32(MID_PICKEDUP);
 		cMsg.Writebool(bPickedUp);
 		cMsg.Writebool(true);
+		cMsg.Writebool(false);
 		g_pLTServer->SendToObject(cMsg.Read(), pObject->m_hObject, hSender, MESSAGE_GUARANTEED);
 	}
 

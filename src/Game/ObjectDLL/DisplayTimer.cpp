@@ -26,7 +26,7 @@ BEGIN_CLASS(DisplayTimer)
 	ADD_STRINGPROP_FLAG(StartCommand, "", PF_NOTIFYCHANGE)
 	ADD_STRINGPROP_FLAG(EndCommand, "", PF_NOTIFYCHANGE)
     ADD_BOOLPROP(RemoveWhenDone, LTTRUE)
-	ADD_STRINGPROP_FLAG(Team, "NoTeam", PF_STATICLIST)
+	ADD_STRINGPROP_FLAG(Type, "None", PF_STATICLIST)	// RETAIL: Contract J.A.C.K.'s timer types
 END_CLASS_DEFAULT_FLAGS_PLUGIN(DisplayTimer, GameBase, NULL, NULL, 0, CDisplayTimerPlugin)
 #pragma force_active off
 
@@ -40,9 +40,22 @@ CMDMGR_BEGIN_REGISTER_CLASS( DisplayTimer )
 	CMDMGR_ADD_MSG( KILL,	1,	NULL,	"KILL" )
 	CMDMGR_ADD_MSG( PAUSE,	1,	NULL,	"PAUSE" )
 	CMDMGR_ADD_MSG( RESUME,	1,	NULL,	"RESUME" )
-	CMDMGR_ADD_MSG( TEAM,	2,	NULL,	"TEAM <0, 1, -1>" )
+	CMDMGR_ADD_MSG( TYPE,	2,	NULL,	"TYPE <0:none, 1:red, 2:blue, 3-5:bombtarget" )
 
 CMDMGR_END_REGISTER_CLASS( DisplayTimer, GameBase )
+
+// RETAIL: Object 0x102174ac: the timer types, sent to the clients as the
+// timer's id (CInterfaceMgr::HandleDisplayTimerMsg).
+static char const* s_aszTimerTypes[] =
+{
+	"None",
+	"Team0",
+	"Team1",
+	"BombTarget1",
+	"BombTarget2",
+	"BombTarget3",
+};
+static uint32 const s_nNumTimerTypes = sizeof( s_aszTimerTypes ) / sizeof( s_aszTimerTypes[0] );
 
 LTRESULT CDisplayTimerPlugin::PreHook_EditStringList(
 	const char* szRezPath,
@@ -54,21 +67,13 @@ LTRESULT CDisplayTimerPlugin::PreHook_EditStringList(
 {
 	// See if we can handle the property...
 
-	// Handle team...
+	// RETAIL: Object 0x100c68f0: the timer types.
 
-	if( _stricmp( "Team", szPropName ) == 0 )
+	if( _stricmp( "Type", szPropName ) == 0 )
 	{
-		char szTeam[32] = {0};
-
-		_ASSERT(cMaxStrings > (*pcStrings) + 1);
-		strcpy( aszStrings[(*pcStrings)++], "NoTeam" );
-		
-		for( int i = 0; i < MAX_TEAMS; ++i )
+		for( uint32 i = 0; i < s_nNumTimerTypes; ++i )
 		{
-			_ASSERT(cMaxStrings > (*pcStrings) + 1);
-
-			sprintf( szTeam, "Team%i", i );
-			strcpy( aszStrings[(*pcStrings)++], szTeam );
+			strcpy( aszStrings[(*pcStrings)++], s_aszTimerTypes[i] );
 		}
 
 		return LT_OK;
@@ -121,7 +126,7 @@ DisplayTimer::DisplayTimer() : GameBase(OT_NORMAL)
     m_hstrStartCmd      = LTNULL;
     m_hstrEndCmd        = LTNULL;
     m_bRemoveWhenDone   = LTTRUE;
-	m_nTeamId			= INVALID_TEAM;
+	m_nTeamId			= 0;
 }
 
 // ----------------------------------------------------------------------- //
@@ -235,30 +240,18 @@ void DisplayTimer::ReadProp(ObjectCreateStruct *)
 		m_bRemoveWhenDone = genProp.m_Bool;
 	}
 
-	// Get the team this object belongs to.
-	if( IsTeamGameType() )
+	// RETAIL: Object 0x100c6af0 reads the timer's type.
+
+	if( g_pLTServer->GetPropGeneric( "Type", &genProp ) == LT_OK && genProp.m_String[0] )
 	{
-		if( g_pLTServer->GetPropGeneric( "Team", &genProp ) == LT_OK )
+		for( uint32 i = 0; i < s_nNumTimerTypes; ++i )
 		{
-			if( genProp.m_String[0] )
+			if( !_stricmp( genProp.m_String, s_aszTimerTypes[i] ))
 			{
-				// The team string should be TeamN, when N is the team id.
-				char const szTeam[] = "Team";
-				int nLen = strlen( szTeam );
-				if( !_strnicmp( genProp.m_String, szTeam, nLen ))
-				{
-					uint32 nTeamId = atoi( &genProp.m_String[ nLen ] );
-					if( nTeamId < MAX_TEAMS )
-					{
-						m_nTeamId = nTeamId;
-					}
-				}
+				m_nTeamId = ( uint8 )i;
+				break;
 			}
 		}
-	}
-	else
-	{
-		m_nTeamId = INVALID_TEAM;
 	}
 }
 
@@ -321,7 +314,7 @@ bool DisplayTimer::OnTrigger(HOBJECT hSender, const CParsedMsg &cMsg)
 	static CParsedMsg::CToken s_cTok_Kill("KILL");
 	static CParsedMsg::CToken s_cTok_Pause("PAUSE");
 	static CParsedMsg::CToken s_cTok_Resume("RESUME");
-	static CParsedMsg::CToken s_cTok_Team("TEAM");
+	static CParsedMsg::CToken s_cTok_Team("TYPE");
 
 	if ((cMsg.GetArg(0) == s_cTok_Start) ||
 		(cMsg.GetArg(0) == s_cTok_On))
@@ -359,15 +352,9 @@ bool DisplayTimer::OnTrigger(HOBJECT hSender, const CParsedMsg &cMsg)
 	{
 		if( cMsg.GetArgCount( ) > 1 )
 		{
-			uint32 nTeamId = atoi( cMsg.GetArg( 1 ));
-			if( nTeamId < MAX_TEAMS )
-			{
-				m_nTeamId = nTeamId;
-			}
-			else
-			{
-				m_nTeamId = INVALID_TEAM;
-			}
+			// RETAIL: Object 0x100c7160
+			uint32 nType = atoi( cMsg.GetArg( 1 ));
+			m_nTeamId = ( uint8 )( nType < s_nNumTimerTypes ? nType : 0 );
 
 			UpdateClients( );
 		}

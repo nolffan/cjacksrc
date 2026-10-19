@@ -204,6 +204,10 @@ void CLiteObjectMgr::Clear()
 
 void CLiteObjectMgr::ActivateObject(GameBaseLite *pObject)
 {
+	// RETAIL: Object 0x100f2920 ignores objects the manager doesn't hold
+	if (!pObject->IsRegistered())
+		return;
+
 	// Make sure we're going about this the right way
 	if (!pObject->IsActive())
 	{
@@ -227,6 +231,10 @@ void CLiteObjectMgr::ActivateObject(GameBaseLite *pObject)
 
 void CLiteObjectMgr::DeactivateObject(GameBaseLite *pObject)
 {
+	// RETAIL: Object 0x100f2980 ignores objects the manager doesn't hold
+	if (!pObject->IsRegistered())
+		return;
+
 	// Make sure we're going about this the right way
 	if (pObject->IsActive())
 	{

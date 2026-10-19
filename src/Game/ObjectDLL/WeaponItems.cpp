@@ -344,11 +344,13 @@ void WeaponItem::ObjectTouch(HOBJECT hObject, bool bForcePickup/*=false*/)
 //
 // ----------------------------------------------------------------------- //
 
-void WeaponItem::PickedUp( ILTMessage_Read *pMsg )
+void WeaponItem::PickedUp( bool bWasPickedUp, bool bDisplayMsg, bool bLeaveItem )
 {
-	PickupItem::PickedUp( pMsg );
+	PickupItem::PickedUp( bWasPickedUp, bDisplayMsg, bLeaveItem );
 
-	if( m_bRespawn )
+	// RETAIL: Object 0x101603b0: a weapon left lying keeps its look.
+
+	if( !bLeaveItem && m_bRespawn )
 	{
 		WEAPON const *pWeapon = g_pWeaponMgr->GetWeapon( m_nWeaponId );
 		if( !pWeapon )

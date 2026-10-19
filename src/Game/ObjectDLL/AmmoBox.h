@@ -26,7 +26,7 @@ class AmmoBox : public PickupItem
 
 		AmmoBox();
 
-		virtual void	PickedUp(ILTMessage_Read *pMsg);
+		virtual void	PickedUp(bool bWasPickedUp, bool bDisplayMsg, bool bLeaveItem);
 		virtual void	Respawn( );
 
 	protected :
@@ -44,6 +44,8 @@ class AmmoBox : public PickupItem
 		
 		std::string		m_sPowerupFX;
 		std::string		m_sRespawnWaitFX;
+		std::string		m_sFilename;		// RETAIL: Object 0x10080b10: the box's own model
+		std::string		m_sSkin;			// and skin, put back when it respawns
 
 		CButeListReader	m_blrRespawnWaitSkins;
 		CButeListReader	m_blrRespawnWaitRenderStyles;

@@ -34,6 +34,10 @@ class CAIGoalAttackMelee : public CAIGoalAttack
 
 		virtual void ActivateGoal();
 
+		// Sense Triggers.
+
+		virtual LTBOOL HandleGoalSenseTrigger(AISenseRecord* pSenseRecord);
+
 	protected:
 
 };

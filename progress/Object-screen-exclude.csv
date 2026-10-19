@@ -1,0 +1,27 @@
+addr,reason
+0x10010000,NOT A FUNCTION: interior of CAI::HandleCommand (0x1000f710): the integer 0x10010000 pushed at 0x100903f0 reads as a code address and split its extent
+0x1002ee1b,NOT A FUNCTION: mid-instruction inside CAIGoalMgr::HandleCommand (0x1002e9e0; the strlen loop at 0x1002ee17): a stray call target split its extent
+0x10033859,NOT A FUNCTION: interior block of CAIGoalSearch::HandleNameValuePair (0x10033820) after its early return (je at 0x10033846)
+0x10060dc4,NOT A FUNCTION: interior block of AINodeUseObjectPlugin::PreHook_EditStringList (0x10060d20) after the Movement case's return (jne at 0x10060d7e)
+0x100699e6,NOT A FUNCTION: interior block of 0x100698b0 after an early return (jb at 0x100699d9)
+0x100781d8,NOT A FUNCTION: mid-instruction inside 0x10078050 (the je at 0x100781d7): a stray call target split its extent
+0x100deaa9,NOT A FUNCTION: case block of CGameServerShell::HandlePlayerCheat (0x100de9e0; jump table at 0x100debb0)
+0x100deab9,NOT A FUNCTION: case block of CGameServerShell::HandlePlayerCheat (0x100de9e0; jump table at 0x100debb0)
+0x100deac9,NOT A FUNCTION: case block of CGameServerShell::HandlePlayerCheat (0x100de9e0; jump table at 0x100debb0)
+0x100deae7,NOT A FUNCTION: case block of CGameServerShell::HandlePlayerCheat (0x100de9e0; jump table at 0x100debb0)
+0x100deaf7,NOT A FUNCTION: case block of CGameServerShell::HandlePlayerCheat (0x100de9e0; jump table at 0x100debb0)
+0x100deb06,NOT A FUNCTION: case block of CGameServerShell::HandlePlayerCheat (0x100de9e0; jump table at 0x100debb0)
+0x100deb32,NOT A FUNCTION: case block of CGameServerShell::HandlePlayerCheat (0x100de9e0; jump table at 0x100debb0)
+0x100deb42,NOT A FUNCTION: case block of CGameServerShell::HandlePlayerCheat (0x100de9e0; jump table at 0x100debb0)
+0x100deb52,NOT A FUNCTION: case block of CGameServerShell::HandlePlayerCheat (0x100de9e0; jump table at 0x100debb0)
+0x100deb62,NOT A FUNCTION: case block of CGameServerShell::HandlePlayerCheat (0x100de9e0; jump table at 0x100debb0)
+0x100deb72,NOT A FUNCTION: case block of CGameServerShell::HandlePlayerCheat (0x100de9e0; jump table at 0x100debb0)
+0x100deb82,NOT A FUNCTION: case block of CGameServerShell::HandlePlayerCheat (0x100de9e0; jump table at 0x100debb0)
+0x100deba0,NOT A FUNCTION: last case block and the jump tables of CGameServerShell::HandlePlayerCheat (0x100de9e0)
+0x100f29aa,NOT A FUNCTION: interior block of CLiteObjectMgr::DeactivateObject (0x100f2980; je at 0x100f299c)
+0x101681f8,NOT A FUNCTION: interior block of CWinUtil::GetMoviesPath (0x10168110; je at 0x1016813c and 0x101681d6)
+0x10168110,CWinUtil::GetMoviesPath (src/Game/Shared/WinUtil.cpp): nothing in Object.lto calls it, so our link drops it (/OPT:REF)
+0x100957fe,NOT A FUNCTION: interior block of Body::EngineMessageFn (0x100957a0) after a case's return
+0x10111bf0,NOT A FUNCTION: case block of CPlayerObj::EngineMessageFn (0x10111b10; jump table at 0x10111c64)
+0x100ae2e4,NOT A FUNCTION: interior block of 0x100ae2a0 after its early return (jne at 0x100ae2d6)
+0x10139774,NOT A FUNCTION: interior block of 0x10139700 after its early return (jg at 0x10139742)

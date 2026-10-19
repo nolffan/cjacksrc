@@ -252,12 +252,12 @@ void ModItem::Load(ILTMessage_Read *pMsg, uint32 dwLoadFlags)
 //
 // ----------------------------------------------------------------------- //
 
-void ModItem::PickedUp(ILTMessage_Read *pMsg)
+void ModItem::PickedUp(bool bWasPickedUp, bool bDisplayMsg, bool bLeaveItem)
 {
 	// Did we really pick it up?
 
-	bool bPickedUp  = (pMsg ? pMsg->Readbool() : true);
-	bool bDisplaMsg = (pMsg ? pMsg->Readbool() : true);
+	bool bPickedUp  = bWasPickedUp;
+	bool bDisplaMsg = bDisplayMsg;
 
 	// If we were touched by a player, our m_hPlayerObj data member will be
 	// set.  Send a message to that player's client letting it know that an
@@ -285,7 +285,7 @@ void ModItem::PickedUp(ILTMessage_Read *pMsg)
 
 	if (bPickedUp)
 	{
-		PickupItem::PickedUp(pMsg);
+		PickupItem::PickedUp(bWasPickedUp, bDisplayMsg, bLeaveItem);
 		
 		if( m_bRespawn )
 		{

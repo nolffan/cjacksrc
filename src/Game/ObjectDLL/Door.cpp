@@ -557,6 +557,37 @@ void Door::SetPowerOff( )
 
 // ----------------------------------------------------------------------- //
 //
+//  ROUTINE:	Door::UpdatePowerOff
+//
+//  PURPOSE:	RETAIL: Object 0x100c9a30.  A closing door opens again for
+//				an AI standing in it.
+//
+// ----------------------------------------------------------------------- //
+
+void Door::UpdatePowerOff( const LTFLOAT &fCurTime )
+{
+	CTList<CCharacter*> lstChars;
+
+	LTVector vPos;
+	g_pLTServer->GetObjectPos( m_hObject, &vPos );
+
+	if( g_pCharacterMgr->FindCharactersWithinRadius( &lstChars, vPos, 64.0f, CCharacterMgr::kList_AIs ))
+	{
+		CCharacter** ppChar = lstChars.GetItem( TLIT_FIRST );
+		if( ppChar && *ppChar )
+		{
+			m_hActivateObj = (*ppChar)->m_hObject;
+			SetPowerOn( );
+			return;
+		}
+	}
+
+	ActiveWorldModel::UpdatePowerOff( fCurTime );
+}
+
+
+// ----------------------------------------------------------------------- //
+//
 //  ROUTINE:	Door::OnSave
 //
 //  PURPOSE:	Save the Door

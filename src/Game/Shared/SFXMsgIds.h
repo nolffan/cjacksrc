@@ -147,6 +147,10 @@
 #define PVFX_STOPBLINK					1	// Ridden (respawn stopped)
 #define PVFX_MOVE						2	// Back to its place: from, to
 
+// cjacksrc: Contract J.A.C.K.'s SnowVolume messages (RETAIL: Object
+// 0x101492a0, CShell 0x100eef30).
+#define SNOWFX_MSG_ON					1	// Snow on or off: bool
+
 // CameraFX messages...
 
 #define CAMFX_FOV						1

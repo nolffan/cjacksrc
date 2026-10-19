@@ -54,6 +54,7 @@ class VolumeBrush : public GameBase
 
 		void Show();
 		void Hide();
+		void UpdatePlayerContainers();
 
 		// These variables don't need to be saved since they will be saved in the
 		// special fx message...
