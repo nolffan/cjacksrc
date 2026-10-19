@@ -176,8 +176,8 @@ BOOL CLauncherApp::InitInstance()
 	// retail installer (from the disc) leaves. RETAIL: with no key, the
 	// launcher skipped all of this -- no rez files found, no command line
 	// read -- and offered only "Install", the disc's setup program. Here
-	// the key is made when it is missing, and if even that fails (no
-	// right to write HKEY_LOCAL_MACHINE), the rest runs with the defaults.
+	// the key is made when it is missing (the user's, APPS-7), and if even
+	// that fails, the rest runs with the defaults.
 	OpenRegistryKey();
 	{
 #else
@@ -780,15 +780,17 @@ CString CLauncherApp::GetAdvancedOptionsCommandLineString()
 BOOL CLauncherApp::OpenRegistryKey()
 {
 #ifdef CJACK_MODERN
-	// MODERN.md APPS-5: the key the installer would have made, made here
-	// when there is none, so the launcher's settings are kept. It stays
-	// under HKEY_LOCAL_MACHINE, where the game (CVersionMgr) keeps its
-	// values too.
-	if(m_RegMgr.OpenKey(HKEY_LOCAL_MACHINE,"SOFTWARE","Monolith Productions",(char*)GAME_NAME,(char *)(LPCTSTR)m_csAppVersion))
+	// MODERN.md APPS-5, APPS-7: the key, made here when there is none so
+	// the launcher's settings are kept, is the user's: the same path under
+	// HKEY_CURRENT_USER, where the game (CVersionMgr) keeps its values too,
+	// so the launcher still sees the profile the game wrote. What a retail
+	// install left under the machine's key is not read: the launcher needs
+	// none of it (APPS-5), and everything else has its default.
+	if(m_RegMgr.OpenKey(HKEY_CURRENT_USER,"SOFTWARE","Monolith Productions",(char*)GAME_NAME,(char *)(LPCTSTR)m_csAppVersion))
 	{
 		return TRUE;
 	}
-	return(m_RegMgr.CreateKey(HKEY_LOCAL_MACHINE,"SOFTWARE","Monolith Productions",(char*)GAME_NAME,(char *)(LPCTSTR)m_csAppVersion));
+	return(m_RegMgr.CreateKey(HKEY_CURRENT_USER,"SOFTWARE","Monolith Productions",(char*)GAME_NAME,(char *)(LPCTSTR)m_csAppVersion));
 #else
 	return(m_RegMgr.OpenKey(HKEY_LOCAL_MACHINE,"SOFTWARE","Monolith Productions",(char*)GAME_NAME,(char *)(LPCTSTR)m_csAppVersion));
 #endif

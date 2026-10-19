@@ -27,6 +27,10 @@ BOOL CWinUtil::GetMoviesPath (char* strPath)
 		}
 	}
 
+#ifdef CJACK_MODERN
+	// MODERN.md APPS-8: the movies are in the game directory, never on a
+	// disc: no CD-ROM drive is looked at.
+#else
 	while (chDrive <= 'Z')
 	{
 		sprintf(strPath, "%c:\\", chDrive);
@@ -39,6 +43,7 @@ BOOL CWinUtil::GetMoviesPath (char* strPath)
 
 		chDrive++;
 	}
+#endif
 
 	strPath[0] = '\0';
 
