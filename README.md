@@ -76,3 +76,32 @@ make            # out/cjack-legacy-release/: what is built so far, with the reta
 make progress   # score the build against the retail binaries
 make help       # everything else
 ```
+
+Each build also makes two archives of its game directory
+(`build/package.sh`): `out/<name>-private.tar.gz`, with the retail game's
+data, for your own machines, and `out/<name>-public.tar.gz`, without
+anything from the retail game, to give to other people. The public one
+carries scripts that copy the data out of the player's own images of both
+discs (European or USA; a plain `.iso`, redump's `.bin`/`.cue` or its
+`.zip`) and the English 1.1 update, `contractjack_update_en_10_11.exe`,
+checking every file they write (`tools/mkinstall.py`):
+
+```sh
+cjack-modern-release/linux-install.sh disc1.zip disc2.zip contractjack_update_en_10_11.exe    # Linux
+cjack-modern-release/mac-install.command disc1.zip disc2.zip contractjack_update_en_10_11.exe # a Mac, for CrossOver
+```
+
+On Windows, drop the three files onto `windows-install.bat`. Each script
+also finds them in the game directory or the one above it by itself
+(double-click `mac-install.command` in Finder), and can be run again.
+
+## Releases
+
+GitHub Actions (`.github/workflows/public-archives.yml`) builds the four
+public archives on every push and pull request. Pushing a tag `v*` makes a
+GitHub release of it with the modern build's two public archives
+(`cjacksrc-<tag>.tar.gz` and `cjacksrc-debug-<tag>.tar.gz`; a tag with a
+hyphen is a pre-release), and every push to `master` whose builds pass
+replaces the pre-release `nightly` with that commit's
+(`cjacksrc-nightly-<commit>.tar.gz`). The release text is
+`.github/release-notes.md`.
