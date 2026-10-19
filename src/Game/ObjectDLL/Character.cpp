@@ -1775,30 +1775,11 @@ void CCharacter::SetPitch( float fPitch )
 			m_fLastPitch = m_fPitch;
 
 			// RETAIL: Object 0x1009eea0 sends the pitch as the object's
-			// unguaranteed data.  cjacksrc: our client still reads the
-			// CFX_PITCH message below, so it is sent too.
+			// unguaranteed data (CCharacterFX reads it).
 
 			g_pLTServer->SetObjectUnguaranteedData( m_hObject, CompressAngleToByte( fPitch ));
 
-			LTRESULT ltResult;
-			CAutoMessage cMsg;
-
-			cMsg.Writeuint8(MID_SFX_MESSAGE);
-
-			cMsg.Writeuint8( SFX_CHARACTER_ID );
-
-			cMsg.WriteObject( m_hObject );
-
-			cMsg.Writeuint8( CFX_PITCH );
-
-			// and write it to the message.
-			cMsg.Writeuint8( CompressAngleToByte( fPitch ) );
-			
-			// then send the message
-			ltResult = g_pLTServer->SendToClient( cMsg.Read(), LTNULL, 0);
-			ASSERT( LT_OK == ltResult );
-
-			CreateSpecialFX();
+			CreateSpecialFX( false );
 		}
 	}
 }
