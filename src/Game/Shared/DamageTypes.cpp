@@ -71,7 +71,6 @@ LTBOOL CDTButeMgr::Init(const char* szAttributeFile)
 		DTInfoArray[i].bGadget = (LTBOOL)m_buteMgr.GetInt(pDTNames[i],"Gadget",0);
 		DTInfoArray[i].bAccuracy = (LTBOOL)m_buteMgr.GetInt(pDTNames[i],"Accuracy",0);
 		DTInfoArray[i].fSlowMove = (LTFLOAT)m_buteMgr.GetDouble(pDTNames[i],"SlowMovement",0.0);
-		DTInfoArray[i].bScoreTag = (LTBOOL)m_buteMgr.GetInt(pDTNames[i],"ScoreTag",0);
 		DTInfoArray[i].bGrief = (LTBOOL)m_buteMgr.GetInt(pDTNames[i],"Grief",0);
 		DTInfoArray[i].bHurtAnim = !!m_buteMgr.GetInt(pDTNames[i],"HurtAnim",0);
 
@@ -220,27 +219,6 @@ LTBOOL IsJarCameraType(DamageType eType)
 
 // ----------------------------------------------------------------------- //
 //
-//	ROUTINE:	IsScoreTagType()
-//
-//	PURPOSE:	Does this damage type score a tag in deathmatch
-//
-// ----------------------------------------------------------------------- //
-
-LTBOOL IsScoreTagType(DamageType eType)
-{
-	for (int i=0; i < kNumDamageTypes; i++)
-	{
-		if (DTInfoArray[i].eType == eType)
-		{
-			return DTInfoArray[i].bScoreTag;
-		}
-	}
-
-	return LTFALSE;
-}
-
-// ----------------------------------------------------------------------- //
-//
 //	ROUTINE:	IsGriefType()
 //
 //	PURPOSE:	Should the player be protected against multiple instances of 
@@ -316,10 +294,9 @@ LTBOOL IsAccuracyType(DamageType eType)
 //
 // ----------------------------------------------------------------------- //
 
-// RETAIL: the client's alone.  Object.lto's DamageTypes.obj keeps its
-// uncalled functions (no /Gy) and has no copy of this one
+// RETAIL: in both DLLs (Object 0x100bbdd0 reads the float at DTINFO+0x24
+// once DTINFO has no bScoreTag).
 
-#ifndef _SERVERBUILD
 LTFLOAT SlowMovementDuration(DamageType eType)
 {
 	for (int i=0; i < kNumDamageTypes; i++)
@@ -332,7 +309,6 @@ LTFLOAT SlowMovementDuration(DamageType eType)
 
 	return 0.0f;
 }
-#endif
 
 // ----------------------------------------------------------------------- //
 //

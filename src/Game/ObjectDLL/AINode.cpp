@@ -572,6 +572,7 @@ BEGIN_CLASS(AINodeCover)
 	ADD_REALPROP_FLAG(Fov,						60.0f,			0|PF_FIELDOFVIEW)
 	ADD_REALPROP_FLAG(Radius,					384.0f,			0|PF_RADIUS)
 	ADD_REALPROP_FLAG(ThreatRadius,				256.0f,			0|PF_RADIUS)
+	ADD_REALPROP_FLAG(PlayerRadius,				768.0f,			0|PF_RADIUS)	// RETAIL: Object .data 0x10204e80
 	ADD_STRINGPROP_FLAG(Object,					"",				0|PF_OBJECTLINK)
 	ADD_REALPROP_FLAG(Timeout,					5.0f,			0)
 	ADD_REALPROP_FLAG(HitpointsBoost,			2.0f,			0)
@@ -589,6 +590,7 @@ AINodeCover::AINodeCover()
 	m_hstrObject = LTNULL;
 	m_fRadiusSqr = 0.0f;
 	m_fThreatRadiusSqr = 0.0f;
+	m_fPlayerRadiusSqr = 0.0f;
 	m_fTimeout = 999999.0f;
 	m_fHitpointsBoost = 2.0f;
 }
@@ -636,6 +638,10 @@ void AINodeCover::ReadProp(ObjectCreateStruct* pocs)
 		if ( g_gp.m_String[0] )
 			m_fThreatRadiusSqr = g_gp.m_Float*g_gp.m_Float;
 
+    if ( g_pLTServer->GetPropGeneric( "PlayerRadius", &g_gp ) == LT_OK )
+		if ( g_gp.m_String[0] )
+			m_fPlayerRadiusSqr = g_gp.m_Float*g_gp.m_Float;
+
     if ( g_pLTServer->GetPropGeneric( "Object", &g_gp ) == LT_OK )
 		if ( g_gp.m_String[0] )
             m_hstrObject = g_pLTServer->CreateString( g_gp.m_String );
@@ -679,6 +685,7 @@ void AINodeCover::Save(ILTMessage_Write *pMsg)
 	SAVE_DWORD(m_dwFlags);
 	SAVE_HSTRING(m_hstrObject);
 	SAVE_FLOAT(m_fThreatRadiusSqr);
+	SAVE_FLOAT(m_fPlayerRadiusSqr);		// RETAIL: 0x10060b05
 	SAVE_FLOAT(m_fTimeout);
 	SAVE_FLOAT(m_fHitpointsBoost);
 }
@@ -692,6 +699,7 @@ void AINodeCover::Load(ILTMessage_Read *pMsg)
 	LOAD_DWORD(m_dwFlags);
 	LOAD_HSTRING(m_hstrObject);
 	LOAD_FLOAT(m_fThreatRadiusSqr);
+	LOAD_FLOAT(m_fPlayerRadiusSqr);		// RETAIL: 0x10061e50
 	LOAD_FLOAT(m_fTimeout);
 	LOAD_FLOAT(m_fHitpointsBoost);
 }
@@ -728,9 +736,16 @@ EnumNodeStatus AINodeCover::GetStatus(CAI* pAI, const LTVector& vPos, HOBJECT hT
 		}
 	}
 
-	if ( VEC_DISTSQR(m_vPos, vThreatPos) < m_fThreatRadiusSqr )
+	LTFLOAT fThreatDistSqr = VEC_DISTSQR(m_vPos, vThreatPos);
+	if ( fThreatDistSqr < m_fThreatRadiusSqr )
 	{
 		return kStatus_ThreatInsideRadius;
+	}
+
+	// RETAIL: 0x1005f525: a threat beyond the player radius is too far.
+	if ( fThreatDistSqr > m_fPlayerRadiusSqr )
+	{
+		return kStatus_TooFar;
 	}
 
 	if ( IsIgnoreDir() ) return kStatus_Ok;

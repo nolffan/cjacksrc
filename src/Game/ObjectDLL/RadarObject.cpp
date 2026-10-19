@@ -410,13 +410,8 @@ bool RadarObject::OnLoad( ILTMessage_Read *pMsg )
 
 	LOAD_HOBJECT( m_hTarget );
 
-	if( g_pVersionMgr->GetCurrentSaveVersion( ) < CVersionMgr::kSaveVersion__1_3 )
-	{
-	}
-	else
-	{
-		LOAD_BYTE( m_nTeamId );
-	}
+	// RETAIL: no save version check in Contract J.A.C.K. (0x1012b5c0)
+	LOAD_BYTE( m_nTeamId );
 
 	return true;
 }

@@ -88,6 +88,12 @@ class CAIGoalAttack : public CAIGoalAbstractStimulated
 		EnumAnimProp		m_ePosture;
 		LTBOOL				m_bPanicCanActivate;
 
+		// RETAIL: 0xac, set by SEEKPLAYER (Object 0x1001eced), cleared once
+		// the goal is triggered (0x1001d773): the attractor search goes on
+		// without a stimulus (0x1001d508).
+
+		LTBOOL				m_bSeekPlayer;
+
 		// Some attacks are node-based (cover, vantage, view).
 
 		LTBOOL				m_bNodeBased;

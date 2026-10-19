@@ -4040,29 +4040,10 @@ void CCharacter::Load(ILTMessage_Read *pMsg)
 	LOAD_DWORD_CAST( m_eEnemyVisibleStimID, EnumAIStimulusID );
 	LOAD_DWORD_CAST( m_eUndeterminedVisibleStimID, EnumAIStimulusID );
 
-	if( g_pVersionMgr->GetCurrentSaveVersion( ) < CVersionMgr::kSaveVersion__1_2 )
-	{
-		// The player used to call SetTracking in SetClientLoaded, now it
-		// calls SetRadarVisible.  For the player, consider it not tracked,
-		// but load the radarvisible flag.
-		if( dynamic_cast< CPlayerObj* >( this ))
-		{
-			m_bTracking = false;
-			LOAD_bool( m_bRadarVisible );
-
-			m_pcs->bTracking = false;
-			m_pcs->bRadarVisible = m_bRadarVisible;
-		}
-		else
-		{
-			LOAD_bool( m_bTracking );
-		}
-	}
-	else
-	{
-		LOAD_bool( m_bTracking );
-		LOAD_bool( m_bRadarVisible );
-	}
+	// RETAIL: Contract J.A.C.K. has no NOLF2 1.2 save to read (Load
+	// 0x100a6f53: both flags, unconditionally).
+	LOAD_bool( m_bTracking );
+	LOAD_bool( m_bRadarVisible );
 
 
 	LOAD_BYTE( m_nCarrying );

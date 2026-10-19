@@ -143,6 +143,7 @@ typedef struct
 	LTFLOAT	fAttackPoseCrouchTime;
 	LTFLOAT fAttackGrenadeThrowTime;
 	LTFLOAT fAttackGrenadeThrowChance;
+	LTFLOAT fAttackGrenadeThrowOffset;		// RETAIL: 0xe4, read at Object 0x10015137
 	LTFLOAT fAttackCoverCheckTime;
 	LTFLOAT fAttackCoverCheckChance;
 	LTFLOAT fAttackSoundTimeMin;

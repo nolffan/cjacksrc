@@ -39,6 +39,7 @@ CHUDDistance::CHUDDistance()
 	m_bFadeOut			( false ),
 	m_fFadeOutSpeed		( 0.0f ),
 	m_fMaxAlpha			( 0.0f ),
+	m_bFirstUpdate		( true ),
 	m_hIcon				( LTNULL )
 {
 	m_UpdateFlags = kHUDDistance;
@@ -82,6 +83,7 @@ void CHUDDistance::Term()
 	m_nFadeDir = 1;
 	m_bFadeOut = false;
 	m_hIcon = LTNULL;
+	m_bFirstUpdate = true;
 }
 
 // ----------------------------------------------------------------------- //
@@ -94,7 +96,7 @@ void CHUDDistance::Term()
 
 void CHUDDistance::Render()
 {
-	if (!m_bDraw) return;
+	if (!m_bDraw || m_bFirstUpdate) return;
 
 	if( m_bFadeOut )
 	{
@@ -149,6 +151,13 @@ void CHUDDistance::Render()
 
 void CHUDDistance::Update()
 {
+	if( m_bFirstUpdate )
+	{
+		m_bFirstUpdate = false;
+		g_pHUDMgr->QueueUpdate( kHUDDistance );
+		return;
+	}
+
 	m_fDistPercent = g_pPlayerMgr->GetDistanceIndicatorPercent();
 	m_hIcon = g_pPlayerMgr->GetDistanceIndicatorIcon();
 	m_bDraw = (m_fDistPercent > 0.0f && m_hIcon);

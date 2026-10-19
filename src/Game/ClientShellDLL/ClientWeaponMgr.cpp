@@ -870,6 +870,14 @@ bool CClientWeaponMgr::SetDefaultWeapon( uint8 nWeaponId )
 		return false;
 
 	m_nDefaultWeaponId = nWeaponId;
+
+	// RETAIL: 0x1002a8d0. With no weapon out, Contract J.A.C.K. draws the
+	// new default weapon at once.
+	if( m_iCurrentWeapon == -1 || !m_pCurrentWeapon )
+	{
+		ChangeWeapon( m_nDefaultWeaponId );
+	}
+
 	return true;
 }
 
@@ -882,9 +890,12 @@ bool CClientWeaponMgr::SetDefaultWeapon( uint8 nWeaponId )
 //
 // ----------------------------------------------------------------------- //
 
+// RETAIL: 0x1002a730. Contract J.A.C.K. holsters to the weapon mgr's
+// holster weapon, and with weapons disabled it still switches, without the
+// deselect animation.
 void CClientWeaponMgr::ToggleHolster( bool bPlayDeselect )
 {
-	if (!WeaponsEnabled()) return;
+	bPlayDeselect = bPlayDeselect && WeaponsEnabled();
 
 	// [kml] 3/26/02 Sanity check because we entered a world
 	// without a current weapon
@@ -892,17 +903,21 @@ void CClientWeaponMgr::ToggleHolster( bool bPlayDeselect )
 	{
 		// when bPlayDeselect == FALSE, ToggleHolster will force 
 		// the weapon to change without the deselect animation
-		if ( m_nDefaultWeaponId == m_pCurrentWeapon->GetWeaponId() )
+		if ( g_pWeaponMgr->GetHolsterWeapon() == m_pCurrentWeapon->GetWeapon() )
 		{
-			// the current weapon is the default, get out the holstered weapon
+			// the current weapon is the holster weapon, get out the holstered weapon
 			ChangeWeapon( m_nHolsterWeaponId, WMGR_INVALID_ID, -1, bPlayDeselect );
 			m_nHolsterWeaponId = WMGR_INVALID_ID;
 		}
 		else
 		{
-			// put the current weapon away and switch to the default
+			// put the current weapon away and switch to the holster weapon
 			m_nHolsterWeaponId = m_pCurrentWeapon->GetWeaponId();
-			ChangeWeapon( m_nDefaultWeaponId, WMGR_INVALID_ID, -1, bPlayDeselect );
+			WEAPON const *pHolster = g_pWeaponMgr->GetHolsterWeapon();
+			if( pHolster )
+			{
+				ChangeWeapon( pHolster->nId, WMGR_INVALID_ID, -1, bPlayDeselect );
+			}
 		}
 	}
 }

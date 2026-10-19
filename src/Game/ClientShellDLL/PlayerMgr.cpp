@@ -542,6 +542,19 @@ void CPlayerMgr::Save(ILTMessage_Write *pMsg, SaveDataState eSaveDataState)
 
 	
 	pMsg->Writeuint8( m_nCarryingObject );
+	// RETAIL: Contract J.A.C.K. saves the name of the chassis piece carried
+	// (CShell 0x1009c293), "" for none.
+	if( m_nCarryingObject == CFX_CARRY_CHASSISPIECE )
+	{
+		if( m_pCarryingChassisPiece )
+			pMsg->WriteString( m_pCarryingChassisPiece->m_sName.c_str( ));
+		else
+			pMsg->WriteString( "" );
+	}
+	else
+	{
+		pMsg->WriteString( "" );
+	}
 	pMsg->Writebool( m_bCanDropCarriedObject );
 
 	pMsg->Writebool( m_bCameraAttachedToHead );
@@ -607,20 +620,12 @@ void CPlayerMgr::Load(ILTMessage_Read *pMsg, SaveDataState eLoadDataState)
     m_fFovXFXDir                = pMsg->Readfloat();
     m_fSaveLODScale             = pMsg->Readfloat();
 
-	uint8 nCarryingObject = 0;
-	if( g_pVersionMgr->GetCurrentSaveVersion( ) < CVersionMgr::kSaveVersion__1_3 )
-	{
-		bool bCarryingObject	= pMsg->Readbool();
-		if (bCarryingObject)
-			nCarryingObject = CFX_CARRY_BODY;
-		else
-			nCarryingObject = CFX_CARRY_NONE;
-	}
-	else
-	{
-		nCarryingObject		= pMsg->Readuint8();
-	}
-	SetCarryingObject( nCarryingObject, LTNULL, false );
+	// RETAIL: no save version check, and the chassis piece carried is
+	// loaded by name (CShell 0x1009c596).
+	uint8 nCarryingObject = pMsg->Readuint8();
+	char szChassisPiece[256];
+	pMsg->ReadString( szChassisPiece, sizeof( szChassisPiece ));
+	SetCarryingObject( nCarryingObject, ChassisButeMgr::Instance( ).GetPiece( szChassisPiece ), false );
 
 	m_bCanDropCarriedObject		= pMsg->Readbool();
 
@@ -633,10 +638,7 @@ void CPlayerMgr::Load(ILTMessage_Read *pMsg, SaveDataState eLoadDataState)
 	m_fMultiplayerDeathCamMoveTimer = pMsg->Readfloat();
 	m_fMultiAttachDeathCamTimer = pMsg->Readfloat();
 
-	if( g_pVersionMgr->GetCurrentSaveVersion( ) > CVersionMgr::kSaveVersion__1_2 )
-	{
-		m_bLerpAttachedCamera = pMsg->Readbool();
-	}
+	m_bLerpAttachedCamera = pMsg->Readbool();
 }
 
 
@@ -4309,6 +4311,13 @@ void CPlayerMgr::UpdatePlayerInfo(bool bPlaying)
 LTBOOL CPlayerMgr::IsFirstPerson()
 {
 	return m_pPlayerCamera->IsFirstPerson();
+}
+
+// RETAIL: 0x10098f00. CClientWeapon::Select shows the weapon while the
+// camera is still going to first person.
+LTBOOL CPlayerMgr::IsGoingFirstPerson()
+{
+	return m_pPlayerCamera->IsGoingFirstPerson();
 }
 
 

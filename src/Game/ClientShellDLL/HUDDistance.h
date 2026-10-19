@@ -48,6 +48,10 @@ class CHUDDistance : public CHUDItem
 		bool		m_bFadeOut;
 		float		m_fFadeOutSpeed;
 		float		m_fMaxAlpha;
+
+		// RETAIL: 0x34: nothing is drawn until the first update has queued
+		// another (CShell Update 0x10057736, Render 0x10057631).
+		bool		m_bFirstUpdate;
 		
 		float		m_fDistPercent;
 

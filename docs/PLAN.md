@@ -563,6 +563,50 @@ dedicated server (package 7).
   a fatal error (a missing #include, C1020, ...): out-of-tree runs use a
   watchdog that kills a compile after ten minutes.
 
+### 4b. layouts
+
+Class layouts and save/load against retail, in both game DLLs (branch
+`layouts`).
+
+- **Method.** Every near Save/Load (and message reader/writer) is
+  compared by its call signature: the ILTMessage vtable slots called, in
+  order, with the bit widths pushed (WriteBits 0x24/ReadBits 0x3c, 8, 32,
+  1 ...). Object.lto's ClassDefs give every object class's size and
+  property list (static PropDefs); after this round all 207 sizes and
+  property lists are retail's. RTTI complete object locators give the
+  secondary-base offsets: all agree. tools/layoutscan.py's uniform shifts
+  pointed at the rest.
+- **Save streams fixed** (the likely cause of retail crashing on our
+  saves): CAI no longer saves the sight grid ranges (4 floats);
+  AINodeCover saves its PlayerRadius; CAIGoalAttack its seek-player flag
+  and CAIHumanStateAttackFromCover the same; CPlayerMgr saves the carried
+  chassis piece's name; no NOLF2 save-version checks in any load
+  (CCharacter, Body, DisplayTimer, PickupItem, CProjectile,
+  StartupCommand, PropType, RadarObject, WorldProperties, CPlayerMgr).
+  MID_SAVE_GAME's failure carries the level-switch flag.
+- **Layouts fixed**: AINodeCover (PlayerRadius 0xc8 and its prop),
+  CAIGoalAttack (0xac seek player), CAIHumanStateAttackFromCover (0x88),
+  AIBM_Brain (AttackGrenadeThrowOffset 0xe4), CAIHumanStrategyFollowPath
+  (door animation flag 0x38, m_vDest 0x3c), DTINFO (no bScoreTag, 0x40),
+  Body (0xc24), GADGETTARGET (AmmoType 0xb8), WorldProperties (no
+  AIMaxNumber prop); CShell: CTargetMgr (0x458), CHUDDistance (0x34),
+  CClientWeapon (flash time before position), CScreenHostWeapons (no Add
+  All), CScreenHostLevels (no loop toggle).
+- **Scores**: Object.lto 8628 -> 8782 identical, CShell.dll 5757 -> 5809
+  (with master's merge).
+- **Left** (seen, not done): CSearchable::Enable sets only
+  USRFLG_CAN_ACTIVATE in retail (no search flag); CAmmoChooser
+  (WeaponChooser.obj, -432); CScreenJoin's server entry (+36);
+  the plugins' layouts (CExplosionPlugin, CVolumePlugin, CAIHumanPlugin);
+  CGadgetTargetMgr::Init and AIGoalSearch/DrawWeapon +4 shifts; WEAPON's
+  constructor (mixed shifts); message readers whose pairing is by size
+  and not trustworthy (CMissionMgr::HandleExitLevel's row,
+  HandleMsgMultiplayerOptions reads a second bool after friendly fire,
+  CWeapons::AddWeapon/AddAmmoBox, CPlayerObj::HandleWeaponFireMessage,
+  ScmdServer's option messages). CTO2PlayerStats::Load now re-adds the
+  keys to the HUD; AttackGrenadeThrowOffset is read but not yet used
+  (CAIHumanStrategyGrenadeThrow::Update 0x10055f30, the game agent's).
+
 ### 5. gamespy
 
 `src/Game/Libs/GameSpy/GameSpy.dsw` builds `GameSpy.dll` (and

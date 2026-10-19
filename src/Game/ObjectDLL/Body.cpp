@@ -160,6 +160,8 @@ Body::Body() : Prop()
 
 	// Add this instance to a list of all bodies.
 	m_lstBodies.push_back( this );
+
+	m_bCanDeactivate = true;
 }
 
 // ----------------------------------------------------------------------- //
@@ -289,6 +291,7 @@ uint32 Body::EngineMessageFn(uint32 messageID, void *pData, LTFLOAT fData)
 
 		case MID_INITIALUPDATE:
 		{
+			m_bCanDeactivate = false;	// RETAIL: Object 0x10094e7c
 			uint32 dwRet = Prop::EngineMessageFn(messageID, pData, fData);
 
             SetNextUpdate(s_fUpdateDelta);
@@ -409,7 +412,11 @@ uint32 Body::ObjectMessageFn(HOBJECT hSender, ILTMessage_Read *pMsg)
 
 uint32 Body::OnDeactivate()
 {
-	return super::OnDeactivate();
+	// RETAIL: Object 0x10092e20.
+	if( m_bCanDeactivate )
+		return super::OnDeactivate();
+
+	return 0;
 }
 
 // --------------------------------------------------------------------------- //
@@ -1827,14 +1834,8 @@ void Body::Load(ILTMessage_Read *pMsg, uint32 dwLoadFlags)
 	LOAD_bool( m_bBeingCarried );
 	LOAD_HOBJECT( m_hCarrier );
 
-	if( g_pVersionMgr->GetCurrentSaveVersion( ) < CVersionMgr::kSaveVersion__1_3 )
-	{
-		m_bCanRevive = false;
-	}
-	else
-	{
-		LOAD_bool( m_bCanRevive );
-	}
+	// RETAIL: no save version check in Contract J.A.C.K. (0x10093720)
+	LOAD_bool( m_bCanRevive );
 
 	g_pCharacterMgr->AddDeathScene(&m_DeathScene);
 

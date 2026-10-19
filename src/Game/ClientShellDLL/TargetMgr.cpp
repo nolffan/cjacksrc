@@ -104,6 +104,7 @@ CTargetMgr::CTargetMgr()
 	m_bMoveTarget = false;
 	m_bCanActivate = false;
 	m_bFirstUpdate = true;
+	m_bTargetJustLocked = false;
 }
 
 
@@ -150,7 +151,10 @@ void CTargetMgr::Update()
 		//are we disabling a GadgetTarget?
 		if (g_pPlayerMgr->IsDisabling())
 		{
-			SetGadgetTarget( true );
+			// RETAIL: CShell 0x100f7d37.
+			if( !m_bTargetJustLocked )
+				SetGadgetTarget( true );
+			m_bTargetJustLocked = false;
 			return;
 		}
 
@@ -342,7 +346,10 @@ void CTargetMgr::Update()
 			if (IsGadgetActivatable(m_hTarget) && (fDistAway <= fGadgetDistance))
 			{
 				// looks like we can use a gadget on it...
-				SetGadgetTarget( false );
+				// RETAIL: CShell 0x100f7f63.
+				if( !m_bTargetJustLocked )
+					SetGadgetTarget( false );
+				m_bTargetJustLocked = false;
 				return;
 			}
 		}

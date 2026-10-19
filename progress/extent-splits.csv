@@ -186,4 +186,6 @@ Object.lto,0x1004f3d0,a stub (xor eax,eax; ret): after the padding that ends the
 Object.lto,0x100a7ec0,a constant getter (mov eax,2; ret): after the padding that ends the function at 0x100a7eb0 (fld; ret 4)
 Object.lto,0x10150a40,CSurfaceMgr::GetScaleFX (mov ecx,g_pFXButeMgr; jmp 0x100ce350): after the padding that ends the function at 0x101509a0; uncalled, kept as SurfaceMgr.obj keeps its uncalled functions
 Object.lto,0x10059ef0,AimMagnet::AimMagnet (push 0; call GameBase::GameBase): after the jump tables and padding that end AimMagnet::EngineMessageFn at 0x10059d70
+CShell.dll,0x1002a730,CClientWeaponMgr::ToggleHolster: two bytes of int3 after CClientWeaponMgr::ChangeWeapon (0x1002a520); CPlayerMgr::ToggleHolster (0x10098d30) jumps to it
+CShell.dll,0x10034de0,DamageFlagToType: uncalled, kept by DamageTypes.obj (/Ox, no /Gy); enumerated with the empty function at 0x10034dd0
 Object.lto,0x10152770,CTeamMgr::IsAttackingTeam (a team lookup and its attacking flag, ret 4): after the padding that ends CTeamMgr::SetAttackingTeam at 0x10152700; nothing calls it

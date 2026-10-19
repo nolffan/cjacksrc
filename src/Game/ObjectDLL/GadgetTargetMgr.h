@@ -91,6 +91,9 @@ struct GADGETTARGET
 	LTBOOL			bInfiniteDisables;
 	LTBOOL			bInfiniteActivates;
 
+	// RETAIL: 0xb8, the ammo a defused bomb leaves (Init Object 0x100d77aa;
+	// Bombable::SetupDefusedState 0x1009cbb0).
+	char			*szAmmoType;
 };
 
 typedef CTList<GADGETTARGET*> GadgetTargetList;

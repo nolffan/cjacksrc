@@ -386,6 +386,7 @@ class AINodeCover : public AINodeChangeWeapons
 		uint32		m_dwFlags;
 		HSTRING		m_hstrObject;
 		LTFLOAT		m_fThreatRadiusSqr;
+		LTFLOAT		m_fPlayerRadiusSqr;		// RETAIL: 0xc8 ("PlayerRadius", ReadProp 0x10061c04)
 		LTBOOL		m_bIgnoreDir;
 		LTFLOAT		m_fFovDp;
 		LTFLOAT		m_fTimeout;
