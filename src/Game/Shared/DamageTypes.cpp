@@ -71,7 +71,6 @@ LTBOOL CDTButeMgr::Init(const char* szAttributeFile)
 		DTInfoArray[i].bGadget = (LTBOOL)m_buteMgr.GetInt(pDTNames[i],"Gadget",0);
 		DTInfoArray[i].bAccuracy = (LTBOOL)m_buteMgr.GetInt(pDTNames[i],"Accuracy",0);
 		DTInfoArray[i].fSlowMove = (LTFLOAT)m_buteMgr.GetDouble(pDTNames[i],"SlowMovement",0.0);
-		DTInfoArray[i].bScoreTag = (LTBOOL)m_buteMgr.GetInt(pDTNames[i],"ScoreTag",0);
 		DTInfoArray[i].bGrief = (LTBOOL)m_buteMgr.GetInt(pDTNames[i],"Grief",0);
 		DTInfoArray[i].bHurtAnim = !!m_buteMgr.GetInt(pDTNames[i],"HurtAnim",0);
 
@@ -217,27 +216,6 @@ LTBOOL IsJarCameraType(DamageType eType)
 	return LTFALSE;
 }
 
-
-// ----------------------------------------------------------------------- //
-//
-//	ROUTINE:	IsScoreTagType()
-//
-//	PURPOSE:	Does this damage type score a tag in deathmatch
-//
-// ----------------------------------------------------------------------- //
-
-LTBOOL IsScoreTagType(DamageType eType)
-{
-	for (int i=0; i < kNumDamageTypes; i++)
-	{
-		if (DTInfoArray[i].eType == eType)
-		{
-			return DTInfoArray[i].bScoreTag;
-		}
-	}
-
-	return LTFALSE;
-}
 
 // ----------------------------------------------------------------------- //
 //

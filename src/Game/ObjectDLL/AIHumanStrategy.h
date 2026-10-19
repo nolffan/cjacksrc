@@ -254,6 +254,7 @@ class CAIHumanStrategyFollowPath : public CAIHumanStrategy
 		LTBOOL					m_bModifiedMovement;
 		uint32					m_cStuckOnDoorUpdates;
 		LTBOOL					m_bDoorShootThroughable;
+		LTBOOL					m_bDoorAnimationLocked;	// RETAIL: 0x38 (Object 0x10056bdc), not saved
 		LTVector				m_vDest;
 		LTBOOL					m_bCheckAnimStatus;
 

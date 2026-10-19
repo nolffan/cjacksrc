@@ -253,6 +253,11 @@ class Body : public Prop, public IHitBoxUser
 		bool				m_bCanRevive;
 		
 		BODYCREATESTRUCT	m_BCS;
+
+		// RETAIL: 0xc24, true from the constructor (Object 0x10096321) until
+		// the initial update (0x10094e7c); only then may the body deactivate
+		// (OnDeactivate 0x10092e20).
+		bool				m_bCanDeactivate;
 };
 
 #endif // __BODY_PROP_H__

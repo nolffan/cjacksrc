@@ -82,7 +82,7 @@ BEGIN_CLASS(WorldProperties)
 	ADD_STRINGPROP_FLAG(MinMusicMood, "Routine", PF_STATICLIST)
 
     ADD_BOOLPROP(LMAnimStatic, LTFALSE)
-	ADD_LONGINTPROP( AIMaxNumber, 30 )
+	// RETAIL: no AIMaxNumber property (ReadProps still asks for it, 0x1016cd5f)
 	ADD_LONGINTPROP( VehicleMaxNumber, 12 )
 
 END_CLASS_DEFAULT_FLAGS_PLUGIN(WorldProperties, BaseClass, NULL, NULL, 0, CWorldPropertiesPlugin)
@@ -1007,15 +1007,10 @@ void WorldProperties::Load(ILTMessage_Read *pMsg, uint32 dwLoadFlags)
 
 		LOAD_FLOAT(m_fWorldTimeSpeed);
 
-		if( g_pVersionMgr->GetCurrentSaveVersion( ) < CVersionMgr::kSaveVersion__1_3 )
-		{
-		}
-		else
-		{
-			char szTemp[256];
-			LOAD_CHARSTRING( szTemp, ARRAY_LEN( szTemp ));
-			m_sLevelEndCmd = szTemp;
-		}
+		// RETAIL: no save version check in Contract J.A.C.K. (0x1016bec4)
+		char szTemp[256];
+		LOAD_CHARSTRING( szTemp, ARRAY_LEN( szTemp ));
+		m_sLevelEndCmd = szTemp;
 	}
 }
 

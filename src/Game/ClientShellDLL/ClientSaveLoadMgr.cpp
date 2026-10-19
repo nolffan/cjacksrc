@@ -462,9 +462,18 @@ bool CClientSaveLoadMgr::HandleSaveData( ILTMessage_Read& msg )
 bool CClientSaveLoadMgr::HandleSaveGameMsg( ILTMessage_Read& msg )
 {
 	bool bSucceed = msg.Readbool();
+	// RETAIL: CShell 0x10020cdf: a failed save for a level switch fails the
+	// load too.
+	bool bSwitchingLevels = msg.Readbool();
 
 	if (!bSucceed)
 	{
+		if( bSwitchingLevels )
+		{
+			g_pInterfaceMgr->LoadFailed( );
+			return true;
+		}
+
 		// Can't quicksave now...
 		g_pGameClientShell->CSPrint(LoadTempString(IDS_CANTQUICKSAVE));
 		g_pClientSoundMgr->PlayInterfaceSound("Interface\\Snd\\Nosave.wav");

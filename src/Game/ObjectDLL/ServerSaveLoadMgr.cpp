@@ -1327,6 +1327,8 @@ void CServerSaveLoadMgr::HandleSaveFailed()
 	CAutoMessage cMsg;
 	cMsg.Writeuint8( MID_SAVE_GAME );
 	cMsg.Writebool(false);
+	// RETAIL: Object 0x101409df: whether it was the save for a level switch.
+	cMsg.Writebool( m_eSaveDataState == eSaveDataStateSwitchLevels );
 	g_pLTServer->SendToClient( cMsg.Read(), LTNULL, MESSAGE_GUARANTEED );
 
 	// the save failed so return to a normal state so the game can continue

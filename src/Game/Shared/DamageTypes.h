@@ -55,7 +55,6 @@ struct DTINFO
 		bGadget		= LTFALSE;
 		bAccuracy	= LTFALSE;
 		fSlowMove	= 0.0f;
-		bScoreTag	= LTFALSE;
 		bGrief		= LTFALSE;
 		bHurtAnim	= false;
 	}
@@ -70,7 +69,8 @@ struct DTINFO
 	LTBOOL		bGadget;
 	LTBOOL		bAccuracy;
 	LTFLOAT		fSlowMove;
-	LTBOOL		bScoreTag;
+	// RETAIL: no bScoreTag in Contract J.A.C.K. (no tags; DTINFO is 0x40 bytes,
+	// Object .data 0x10214760..0x10215020)
 	LTBOOL		bGrief;
 	bool		bHurtAnim;
 	StringArray saPlayerDamageSounds;
@@ -115,16 +115,6 @@ inline bool SpecificObjectFilterFn(HOBJECT hObj, void *pUserData)
 // ----------------------------------------------------------------------- //
 
 LTBOOL IsJarCameraType(DamageType eType);
-
-// ----------------------------------------------------------------------- //
-//
-//	ROUTINE:	IsScoreTagType()
-//
-//	PURPOSE:	Does this damage type score a tag in deathmatch
-//
-// ----------------------------------------------------------------------- //
-
-LTBOOL IsScoreTagType(DamageType eType);
 
 // ----------------------------------------------------------------------- //
 //
