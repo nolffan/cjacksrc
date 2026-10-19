@@ -115,7 +115,7 @@ test: image
 
 mptest: image
 	@[ -f $(TEST_GAME)/ContractJackServer.exe ] || { echo "error: no $(TEST_GAME)/ -- build it first" >&2; exit 1; }
-	$(DOCKER_RUN) env MPTEST_TYPE=$(or $(MPTEST_TYPE),dm) bash build/mptest.sh $(TEST_GAME)
+	$(DOCKER_RUN) env MPTEST_TYPE=$(or $(MPTEST_TYPE),dm) $(if $(MPTEST_CDKEY),MPTEST_CDKEY=$(MPTEST_CDKEY)) bash build/mptest.sh $(TEST_GAME)
 
 # The single-player campaign level by level (build/campaign.sh): every world,
 # or CAMPAIGN_WORLDS="M01S01 M04S02 ..."; CAMPAIGN_CONTROL=cjack-control

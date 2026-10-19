@@ -364,10 +364,20 @@ void    CScreenMulti::OnFocus(LTBOOL bFocus)
 		m_sLastValidCDKey = m_sCurCDKey;
 
 		m_eCurState = eState_Ready;
+#ifdef CJACK_MODERN
+		// MODERN.md APPS-6: no CD key. Servers no longer check one (their
+		// check went to GameSpy's servers, which are gone), so the field is
+		// hidden and Join and Host need none.
+		if (m_pCDKeyCtrl)
+			m_pCDKeyCtrl->Show(LTFALSE);
+		m_pJoin->Enable(LTTRUE);
+		m_pHost->Enable(LTTRUE);
+#else
 		if (m_pCDKeyCtrl)
 			m_pCDKeyCtrl->Show(LTTRUE);
 		m_pJoin->Enable(m_pCDKeyCtrl ? m_sCurCDKey.length() : LTTRUE);
 		m_pHost->Enable(m_pCDKeyCtrl ? m_sCurCDKey.length() : LTTRUE);
+#endif
 		m_pWait->Show(LTFALSE);
 		m_pUpdate->Show(LTFALSE);
 		m_pStatusCtrl->Show(LTFALSE);
@@ -384,9 +394,13 @@ void    CScreenMulti::OnFocus(LTBOOL bFocus)
 		//since several failure states can drop us here, make sure that we return to main screen on escape
 		m_pScreenMgr->AddScreenToHistory( SCREEN_ID_MAIN );
 
+#ifdef CJACK_MODERN
+		// MODERN.md APPS-6: no CD key to ask for
+#else
 		// RETAIL: no key yet, ask for one
 		if (m_sCurCDKey.empty())
 			ChangeCDKey();
+#endif
 	}
 
 }

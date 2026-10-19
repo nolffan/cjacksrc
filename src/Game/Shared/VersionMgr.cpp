@@ -155,7 +155,17 @@ CVersionMgr::CVersionMgr()
 {
 	m_bLowViolence	= false;
 
+#ifdef CJACK_MODERN
+	// MODERN.md APPS-7: the game's values (the CD key, the profile last
+	// used, the cheats' and the missions' flags) under HKEY_CURRENT_USER,
+	// where the modern launcher keeps its own. RETAIL: HKEY_LOCAL_MACHINE,
+	// opened for writing (and made if missing), which without an
+	// administrator -- or UAC's registry virtualization -- fails, so
+	// nothing was kept.
+	m_regMgr.Init("Monolith Productions", GAME_NAME, "1.0", NULL, HKEY_CURRENT_USER);
+#else
 	m_regMgr.Init("Monolith Productions", GAME_NAME, "1.0");
+#endif
 
 	char szTemp[256];
 	uint32 nBufSize = sizeof(szTemp);

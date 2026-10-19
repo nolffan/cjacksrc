@@ -28,14 +28,15 @@ too, since Contract J.A.C.K. was built from the same code: check each
 against the retail binary before listing it. Those Contract J.A.C.K. no
 longer has go at the end, so nobody looks again.
 
-**Fixed so far** (in the modern build): fifteen -- the two GameSpy handle
+**Fixed so far** (in the modern build): sixteen -- the two GameSpy handle
 bugs (MODERN.md GS-1), GetCommandName (GAME-1), the chassis's update
 (GAME-2), the world shaders' section order (EN-1), ShowVersionInfo (EN-3),
 the music thread's handle (EN-4), a failed transition segment (EN-5),
 batched screen quads' colours (EN-6), SoundSys's null Term (EN-7),
 SetCamera's unset viewport (EN-8), the launcher's path overrun (APPS-1),
-find handles (APPS-2) and "Contract J.A.C.K. 2" (APPS-4), and the dedicated
-server's console formats (APPS-3).
+find handles (APPS-2), "Contract J.A.C.K. 2" (APPS-4) and the registry
+opened for writing (APPS-7), and the dedicated server's console formats
+(APPS-3).
 
 ## Format
 
@@ -284,6 +285,24 @@ APPS-4).
 
 Fixed in the modern build: src/Game/Launcher/TO2/RES/Lang/EN/Launcher.rc,
 MODERN.md APPS-4.
+
+### The launcher and the game open the machine's registry key for writing just to read it
+
+ContractJack.exe 0x406080 (CLauncherApp::OpenRegistryKey,
+src/Game/Launcher/Launcher.cpp, through CRegMgr32::OpenKey), CShell.dll
+0x1010d040 and Object.lto 0x1015cce0 (CVersionMgr::CVersionMgr,
+src/Game/Shared/VersionMgr.cpp, through CRegMgr::Init). Both open
+`HKEY_LOCAL_MACHINE\SOFTWARE\Monolith Productions\Contract Jack\1.0`
+for reading and writing -- the game creates every key on the way -- even
+where they only read it, and the launcher decides from that open alone
+whether the game is installed. Only an administrator may write there: a
+user who is not one is served by UAC's registry virtualization (the
+programs have no manifest) or not at all, when the launcher finds no
+installation and the game keeps nothing (the profile last used). NOLF2's
+launcher and game have the same code.
+
+Fixed in the modern build: src/Game/Launcher/Launcher.cpp,
+src/Game/Shared/VersionMgr.cpp, MODERN.md APPS-7.
 
 ## NOLF2's bugs Contract J.A.C.K. no longer has
 
