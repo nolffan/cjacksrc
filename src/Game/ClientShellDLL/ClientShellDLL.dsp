@@ -1163,6 +1163,8 @@ SOURCE=.\WeaponFX.cpp
 # Begin Source File
 
 SOURCE=..\Shared\WeaponMgr.cpp
+# ADD CPP /Ox /GF
+# SUBTRACT CPP /O2
 # End Source File
 # Begin Source File
 

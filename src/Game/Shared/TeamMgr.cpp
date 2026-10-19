@@ -488,6 +488,16 @@ void CTeamMgr::UpdateClient(HCLIENT hClient)
 	}
 }
 
+void CTeamMgr::UpdateClient(HCLIENT hClient, bool bScoreOnly)
+{
+	TeamArray::iterator iter = m_teams.begin();
+	while (iter != m_teams.end())
+	{
+		(*iter)->UpdateClient(bScoreOnly,hClient);
+		iter++;
+	}
+}
+
 void CTeamMgr::AddToScore( uint8 nTeamID, int32 nScore /* = 1  */ )
 {
 	CTeam *pTeam = GetTeam( nTeamID );

@@ -40,12 +40,12 @@ private:
 
 	size_t		Convert(const std::string &pKey) const
 	{
+		// RETAIL: Object 0x10101790 walks the string's iterators.
 		uint32 nHash = 0;
 
-		const char *pName = &(*pKey.begin());
-		for (; *pName; ++pName)
+		for (std::string::const_iterator iter = pKey.begin(); iter != pKey.end(); iter++)
 		{
-			nHash = 13 * nHash + (toupper(*pName) - '@');
+			nHash = 13 * nHash + (toupper(*iter) - '@');
 		}
 
 		return nHash;

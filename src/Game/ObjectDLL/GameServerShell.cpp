@@ -3631,6 +3631,15 @@ void CGameServerShell::UpdateSwitchingWorlds( )
 			// match any of the clientrefs, we have to wait until they get their
 			// OnClientEnterWorld called.  If none of the clients match a clientref, then
 			// we're done with the switchworld.
+
+			// RETAIL: Object 0x100decc0: a server that can't save doesn't
+			// wait for the clients to hook up either.
+			if( !g_pServerSaveLoadMgr->CanSaveGame( ))
+			{
+				SetSwitchingWorldsState( eSwitchingWorldsStateWaitForClient );
+				return;
+			}
+
 			HCLIENT hNextClient = g_pLTServer->GetNextClient( LTNULL );
 			bool bWaitLonger = false;
 			while( hNextClient )
@@ -3725,20 +3734,59 @@ void CGameServerShell::UpdateSwitchingWorlds( )
 		}
 		break;
 
-		// Wait for at least one player to be loaded.
+		// Wait for at least one player to be loaded (RETAIL: Object
+		// 0x100decc0: in a team game, one on each team that has clients).
 		case eSwitchingWorldsStateWaitForClient:
 		{
-			// Iterate over all the players and see if any of them have finished loading.
-			CPlayerObj::PlayerObjList::const_iterator iter = CPlayerObj::GetPlayerObjList( ).begin( );
-			while( iter != CPlayerObj::GetPlayerObjList( ).end( ))
+			uint32 anTeamClients[2] = { 0, 0 };
+			uint32 anTeamLoaded[2] = { 0, 0 };
+			uint32 nLoaded = 0;
+
+			ClientDataList::iterator iter = m_ClientDataList.begin( );
+			for( ; iter != m_ClientDataList.end( ); iter++ )
 			{
-				CPlayerObj* pPlayerObj = *iter;
-				if( pPlayerObj->IsClientLoaded( ))
+				ClientData* pClientData = *iter;
+				if( !pClientData )
+					continue;
+
+				// Kick the client if they are too slow to play.
+				if( ClientConnectionInTrouble( pClientData->m_hClient ))
 				{
-					FinishSwitchingWorlds( );
-					return;
+					g_pLTServer->KickClient( pClientData->m_hClient );
+					continue;
 				}
-				iter++;
+
+				if( pClientData->m_nTeamId < 2 )
+					anTeamClients[pClientData->m_nTeamId]++;
+
+				if( !pClientData->m_hClient )
+					continue;
+
+				CPlayerObj* pPlayerObj = ( CPlayerObj* )g_pLTServer->GetClientUserData( pClientData->m_hClient );
+				if( pPlayerObj && pPlayerObj->IsClientLoaded( ))
+				{
+					nLoaded++;
+					if( pClientData->m_nTeamId < 2 )
+						anTeamLoaded[pClientData->m_nTeamId]++;
+				}
+			}
+
+			if( IsTeamGameType( ))
+			{
+				for( uint8 nTeam = 0; nTeam < 2; nTeam++ )
+				{
+					if( anTeamClients[nTeam] && !anTeamLoaded[nTeam] )
+						return;
+				}
+
+				FinishSwitchingWorlds( );
+				return;
+			}
+
+			if( nLoaded > 0 )
+			{
+				FinishSwitchingWorlds( );
+				return;
 			}
 		}
 		break;

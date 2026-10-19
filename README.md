@@ -49,13 +49,13 @@ those functions make up.
 | `GameSpy.dll` | the GameSpy services | 163 / 181 | 19,242 / 20,193 bytes | `███████████████████░` 95.2% | 0 | 13 |
 | `ContractJack.exe` | the launcher | 284 / 344 | 40,336 / 40,759 bytes | `███████████████████░` 98.9% | 0 | 2 |
 | `ContractJackServer.exe` | the dedicated server | 551 / 644 | 74,668 / 75,608 bytes | `███████████████████░` 98.7% | 0 | 47 |
-| `CShell.dll` | the game: client | 5,723 / 6,541 | 953,642 / 1,155,024 bytes | `████████████████░░░░` 82.5% | 21 | 392 |
-| `Object.lto` | the game: server objects | 8,605 / 9,773 | 1,426,209 / 1,634,003 bytes | `█████████████████░░░` 87.2% | 13 | 669 |
+| `CShell.dll` | the game: client | 5,725 / 6,541 | 952,544 / 1,155,024 bytes | `████████████████░░░░` 82.4% | 19 | 393 |
+| `Object.lto` | the game: server objects | 8,622 / 9,771 | 1,431,467 / 1,634,011 bytes | `█████████████████░░░` 87.6% | 3 | 662 |
 | `ClientFx.fxd` | the game: client effects | 431 / 450 | 101,838 / 104,716 bytes | `███████████████████░` 97.2% | 0 | 48 |
 | `ltmsg.dll` | the engine's messages, not in the total | 5 / 5 resources | 2,054 / 2,054 bytes | `████████████████████` 100.0% | 0 | -- |
 | `CRes.dll` | the game's client resources, not in the total | 457 / 457 resources | 330,555 / 330,555 bytes | `████████████████████` 100.0% | 0 | -- |
 | `SRes.dll` | the game's server resources, not in the total | no resources | -- | -- | -- | -- |
-| **All** | | **25,603 / 29,298** | **4,152,423 / 4,626,351 bytes** | `█████████████████░░░` **89.7%** | **34** | **3,071** |
+| **All** | | **25,622 / 29,296** | **4,156,583 / 4,626,359 bytes** | `█████████████████░░░` **89.8%** | **22** | **3,065** |
 <!-- progress:end -->
 
 Every function in that table is recorded in `progress/identical.txt`, and

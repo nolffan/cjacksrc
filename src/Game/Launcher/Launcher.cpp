@@ -26,11 +26,8 @@ static char THIS_FILE[] = __FILE__;
 COLORREF crHighlightText = RGB(255, 255, 0);
 COLORREF crNormalText = RGB(192, 160, 32);
 
-// RETAIL: GAME_NAME, Contract J.A.C.K.'s "Contract Jack", is the shared
-// VersionMgr.cpp's, which the launcher compiles too (CVersionMgr: the CD key
-// in the registry). The retail image has the string among this file's
-// (0x40e778), so this file may have defined it there; VersionMgr.cpp
-// defines it for the game DLLs.
+// RETAIL: GAME_NAME is a literal (Launcher.h, VersionMgr.h): the image
+// has its one pooled copy among this file's strings (0x40e778).
 
 /////////////////////////////////////////////////////////////////////////////
 // CLauncherApp

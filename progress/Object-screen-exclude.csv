@@ -29,3 +29,5 @@ addr,reason
 0x100b2954,NOT A FUNCTION: interior block of CheckExpression (0x100b2780) after a return (jne at 0x100b2800)
 0x100071a0,NOT GAME CODE: the compiler's vector constructor iterator (??_H; called from 0x101019c1); ours is the same bytes (AI.obj's COMDAT at 0x100070b0) but progress.py leaves ??_H/??_I out of the pairing as compiler code
 0x100120a0,NOT GAME CODE: the compiler's vector destructor iterator (??_I; called from 0x100bb623); ours is the same bytes (AI.obj's COMDAT) but progress.py leaves ??_H/??_I out of the pairing as compiler code
+0x10120b20,NOT A FUNCTION: mid-instruction inside CProjectile::UpdateHeatSeeking (0x10120620; the movl at 0x10120b18 runs to 0x10120b23): a stray call target split its extent
+0x100e0609,NOT A FUNCTION: interior block of CGameServerShell::OnAddClient (0x100e04b0) after the banned-client return (jne at 0x100e055b)

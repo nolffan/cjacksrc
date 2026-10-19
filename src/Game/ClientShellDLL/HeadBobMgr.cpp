@@ -118,9 +118,12 @@ void CHeadBobMgr::Update()
 	// We check CanDoFootstep instead of on ground since CanDoFootstep
 	// handles stairs much better...
 
-	if ( (!g_pPlayerMgr->IsSpectatorMode() && g_pPlayerMgr->IsFirstPerson() && pMoveMgr->CanDoFootstep() &&
-		 g_pPlayerMgr->IsPlayerMovementAllowed() && pMoveMgr->GetAllowMovement()) ||
-		 pMoveMgr->GetVehicleMgr()->IsVehiclePhysics() )
+	// RETAIL: CShell 0x1004f890: no bobbing on a lure, and none for the
+	// vehicles either.
+
+	if ( pMoveMgr->GetVehicleMgr()->AllowHeadBob() &&
+		 !g_pPlayerMgr->IsSpectatorMode() && g_pPlayerMgr->IsFirstPerson() && pMoveMgr->CanDoFootstep() &&
+		 g_pPlayerMgr->IsPlayerMovementAllowed() && pMoveMgr->GetAllowMovement() )
 	{
 		UpdateHeadBob();
 		UpdateHeadCant();

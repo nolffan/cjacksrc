@@ -57,6 +57,8 @@ class CVehicleMgr
     uint32      GetControlFlags()	const { return m_dwControlFlags; }
  
 	bool		CanShowCrosshair()	const;
+	bool		AllowHeadBob()		const;		// RETAIL: 0x10105630
+	bool		OnModelKey(HLOCALOBJ hObj, ArgList* pArgs);	// RETAIL: 0x101055f0
 	void		SaveVehicleButes();
 	LTBOOL      IsVehiclePhysics();
 

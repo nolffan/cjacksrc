@@ -166,7 +166,7 @@ class CAnimationProps
 
 		void Clear();
 		void Set(const CAnimationProp& Prop);
-		bool IsSet(const CAnimationProp& Prop) const;
+		LTBOOL IsSet(const CAnimationProp& Prop) const;	// RETAIL: an LTBOOL (Object 0x10082ed0)
 
 		void Set(EnumAnimPropGroup eAnimPropGroup, EnumAnimProp eAnimProp);
 		LTBOOL IsSet(EnumAnimPropGroup eAnimPropGroup, EnumAnimProp eAnimProp) const;	// RETAIL: an LTBOOL (Object 0x10082f10 returns it unextended)

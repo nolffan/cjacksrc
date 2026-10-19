@@ -147,7 +147,9 @@ extern CLauncherApp theApp;
 
 extern COLORREF crHighlightText;
 extern COLORREF crNormalText;
-extern char const GAME_NAME[];
+#ifndef GAME_NAME
+#define GAME_NAME	"Contract Jack"	// RETAIL: a literal (in Launcher.cpp's strings, 0x40e778)
+#endif
 
 
 

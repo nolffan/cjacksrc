@@ -115,7 +115,7 @@ struct DamageStruct : public ILTObjRefReceiver
 
 	void Clear()
 	{
-		vDir.Init();
+		vDir.Init(0.0f, 1.0f, 0.0f);	// RETAIL: Object 0x10012170: up
 		fDamage		= 0.0f;
 		fDuration	= 0.0f;
 		eType		= DT_UNSPECIFIED;

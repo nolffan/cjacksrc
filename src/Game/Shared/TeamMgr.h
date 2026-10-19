@@ -105,6 +105,7 @@ public:
 	
 
 	void	UpdateClient(HCLIENT hClient = NULL);
+	void	UpdateClient(HCLIENT hClient, bool bScoreOnly);	// RETAIL: Object 0x101526d0 (nothing calls it)
 
 	void	AddToScore( uint8 nTeamID, int32 nScore = 1 );
 	void	WonRound( uint8 nTeamID );

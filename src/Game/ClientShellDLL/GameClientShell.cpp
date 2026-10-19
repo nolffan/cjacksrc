@@ -4353,6 +4353,9 @@ void CGameClientShell::OnModelKey(HLOCALOBJ hObj, ArgList *pArgs)
 	{
 		// try the sfx mgr
 		m_sfxMgr.OnModelKey(hObj, pArgs);
+
+		// RETAIL: CShell 0x10047df0: and the vehicle's weapon.
+		g_pMoveMgr->GetVehicleMgr()->OnModelKey(hObj, pArgs);
 	}
 }
 

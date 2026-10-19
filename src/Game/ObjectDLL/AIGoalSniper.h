@@ -46,6 +46,8 @@ class CAIGoalSniper : public CAIGoalAbstractUseObject
 
 		virtual LTBOOL	HandleNameValuePair(const char *szName, const char *szValue);
 
+		virtual void	OnLinkBroken( LTObjRefNotifier *pRef, HOBJECT hObj );
+
 	protected:
 
 		// State Handling.
@@ -69,7 +71,7 @@ class CAIGoalSniper : public CAIGoalAbstractUseObject
 		// RETAIL: Contract J.A.C.K.'s (Object 0x10035100): a sniper can
 		// look for the player before seeing him, and pick view nodes
 		// without regard to their radius.
-		LTObjRef	m_hSeekTarget;
+		LTObjRefNotifier	m_hSeekTarget;	// RETAIL: a notifier (OnLinkBroken, Object 0x100352e0)
 		LTBOOL		m_bSeekPlayer;
 		LTBOOL		m_bNoRadius;
 };

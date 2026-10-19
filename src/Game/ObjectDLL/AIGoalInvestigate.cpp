@@ -536,9 +536,26 @@ void CAIGoalInvestigate::HandleStateInvestigate()
 					m_pAI->FaceDir( m_vAllyForward );
 				}
 
-				// Search or go aware.
+				// Search or go aware.  RETAIL: Object 0x1002a9d0 has
+				// SearchOrAware( LTFALSE ) written out here.
 
-				SearchOrAware( LTFALSE );
+				m_nStimulusAlarmLevel	= 0; 
+				m_eStimulusID			= kStimID_Unset; 
+
+				if( (m_pAI->IsMajorlyAlarmed() || m_bSearch) && m_pAI->CanSearch() )
+				{
+					SetStateSearch();
+					return;
+				}
+
+				if( m_pAI->GetState()->GetStateType() == kState_HumanUseObject )
+				{
+					m_pAI->FaceDir( -m_pAI->GetForwardVector() );
+				}
+
+				m_pAI->SetState( kState_HumanAware );
+				m_pGoalMgr->UnlockGoal(this);
+				m_bInvestigationFailed = LTTRUE;
 			}
 			break;
 
