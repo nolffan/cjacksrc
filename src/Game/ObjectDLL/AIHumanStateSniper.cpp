@@ -158,6 +158,16 @@ void CAIHumanStateSniper::Update()
 			if( GetAI()->HasTarget() )
 			{
 				HOBJECT hTarget = GetAI()->GetTarget()->GetObject();
+
+				// RETAIL: Object 0x100521f8: the sniper leaves a node that
+				// no longer covers its target.
+
+				AINode* pNode = m_pUseNode;
+				if( pNode->GetStatus( GetAI(), GetAI()->GetPosition(), hTarget ) != kStatus_Ok )
+				{
+					m_eStateStatus = kSStat_StateComplete;
+					return;
+				}
 	
 				// Target has changed.
 
