@@ -1195,5 +1195,18 @@ crash and a vehicle save to start from.
   zips of both releases cached; four builds; `make progress` on the legacy
   release). Lints clean (actionlint); not yet run on GitHub (nothing is
   pushed). It needs the submodules' commits pushed before the superproject.
+- Releases, as nolfsrc's and nolf2src's: a tag `v*` makes a GitHub release
+  with the modern build's public archives (`cjacksrc-<tag>.tar.gz`,
+  `cjacksrc-debug-<tag>.tar.gz`), and each push to master whose builds pass
+  moves the pre-release `nightly` to it, with its archives
+  (`cjacksrc-nightly-<commit>.tar.gz`); text from `.github/release-notes.md`
+  and `nightly-notes.md`. The release step was dry-run with a stand-in `gh`
+  (new and existing tag, nightly new, moved and stale).
+- `mac-install.command` (Perl, `build/game-scripts/`; `tools/mkinstall.py`
+  appends the same list as linux-install.sh's): checked on Linux to write
+  the same 18 files as linux-install.sh, matching the private directory,
+  from the European `.iso`s, from the USA `.zip`s found beside the folder,
+  and from a USA `.cue`/`.bin` with the other disc's `.iso`; not yet run on
+  a Mac.
 - To do: `linux-run.sh` (and a launcher script) in the game directory once
   the engine runs, and the Windows install script tested under PowerShell.

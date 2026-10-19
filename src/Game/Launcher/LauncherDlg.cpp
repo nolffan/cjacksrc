@@ -249,6 +249,13 @@ BOOL CLauncherDlg::OnInitDialog()
 		GetDlgItem(IDC_UNINSTALL)->EnableWindow(FALSE);
 	}
 
+#ifdef CJACK_MODERN
+	// MODERN.md APPS-5: Uninstall started the retail installer's setup.exe
+	// from InstallDir; a game that was never installed from the disc has
+	// none, and nothing to remove but its folder.
+	GetDlgItem(IDC_UNINSTALL)->EnableWindow(FALSE);
+#endif
+
 	// Make sure the play button is default.
 	SetDefID( IDC_PLAY );
 
@@ -387,6 +394,16 @@ void CLauncherDlg::OnPlay()
 #ifndef _FINAL
 #define SELFINSTALL
 #endif // _FINAL
+
+#ifdef CJACK_MODERN
+		// MODERN.md APPS-5: "Install" is offered only to a launcher with no
+		// Lithtech.exe beside it and no InstallDir in the registry. RETAIL:
+		// it started the disc's setup program, and without the disc said
+		// "Unable to launch the setup program"; here it says that the game
+		// is not where the launcher is.
+		theApp.MessageBox(IDS_CANTLAUNCHCLIENTEXE, IDS_GAME_NAME, MB_OK | MB_ICONSTOP);
+		return;
+#endif
 
 #ifdef SELFINSTALL
 
@@ -852,6 +869,16 @@ BOOL CLauncherDlg::LaunchGame(DWORD dwAction)
 	// Get the install path from the registry...
 
 	CRegMgr32* pReg = &theApp.m_RegMgr;
+#ifdef CJACK_MODERN
+	// MODERN.md APPS-5: the game directory is the one InitInstance chose
+	// (the launcher's own, or InstallDir); a missing key or InstallDir is
+	// no error. The key, if there is one, still names the updates' and the
+	// mod's archives below.
+	theApp.OpenRegistryKey();
+	char sDir[256];
+	strncpy(sDir, theApp.m_csInstallDir, sizeof(sDir) - 1);
+	sDir[sizeof(sDir) - 1] = '\0';
+#else
 	if(!pReg->OpenKey(HKEY_LOCAL_MACHINE,"SOFTWARE","Monolith Productions",( char* )GAME_NAME,(char *)(LPCTSTR)theApp.m_csAppVersion))
 	{
 		theApp.MessageBox( IDS_CANTLAUNCHCLIENTEXE, IDS_GAME_NAME, MB_OK | MB_ICONSTOP );
@@ -866,6 +893,7 @@ BOOL CLauncherDlg::LaunchGame(DWORD dwAction)
 		theApp.MessageBox( IDS_CANTLAUNCHCLIENTEXE, IDS_GAME_NAME, MB_OK | MB_ICONSTOP );
 		return FALSE;
 	}
+#endif
 
 #ifdef _FINAL
 	SetCurrentDirectory(sDir);
@@ -942,7 +970,10 @@ BOOL CLauncherDlg::LaunchGame(DWORD dwAction)
 	sNewCmdLine += theApp.m_csRezBase;
 	sNewCmdLine += "l.rez";
 
+#ifndef CJACK_MODERN
+	// (MODERN.md APPS-5: in the modern build custom comes after the updates)
 	sNewCmdLine += " -rez custom";
+#endif
 
 	sNewCmdLine += " -rez ";	// " -rez <game>p.rez"	(patch rez file)
 	sNewCmdLine += theApp.m_csRezBase;
@@ -998,6 +1029,24 @@ BOOL CLauncherDlg::LaunchGame(DWORD dwAction)
 			}
 		}
 	}
+#ifdef CJACK_MODERN
+	else if(GetFileAttributes("Update_v1x1.rez") != INVALID_FILE_ATTRIBUTES)
+	{
+		// MODERN.md APPS-5: no updates in the registry (the 1.1 update's
+		// installer never ran here): its archive, as its UpdateCommandLine0
+		// names it
+		sNewCmdLine += " -rez Update_v1x1.rez";
+	}
+
+	// MODERN.md APPS-5: custom/ -- the game DLLs built from source -- after
+	// every update, so that no archive's copies of them (the update's
+	// replace the retail ones, and in this build they are emptied) come
+	// last. RETAIL: custom came before the patches and the updates.
+	if(sNewCmdLine.Right(12) != " -rez custom")
+	{
+		sNewCmdLine += " -rez custom";
+	}
+#endif
 
 	// Now add all the .rez files associated with the selected mod, if we have one...
 

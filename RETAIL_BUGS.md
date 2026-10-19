@@ -28,13 +28,14 @@ too, since Contract J.A.C.K. was built from the same code: check each
 against the retail binary before listing it. Those Contract J.A.C.K. no
 longer has go at the end, so nobody looks again.
 
-**Fixed so far** (in the modern build): fourteen -- the two GameSpy handle
+**Fixed so far** (in the modern build): fifteen -- the two GameSpy handle
 bugs (MODERN.md GS-1), GetCommandName (GAME-1), the chassis's update
 (GAME-2), the world shaders' section order (EN-1), ShowVersionInfo (EN-3),
 the music thread's handle (EN-4), a failed transition segment (EN-5),
 batched screen quads' colours (EN-6), SoundSys's null Term (EN-7),
-SetCamera's unset viewport (EN-8), the launcher's path overrun (APPS-1) and
-find handles (APPS-2), and the dedicated server's console formats (APPS-3).
+SetCamera's unset viewport (EN-8), the launcher's path overrun (APPS-1),
+find handles (APPS-2) and "Contract J.A.C.K. 2" (APPS-4), and the dedicated
+server's console formats (APPS-3).
 
 ## Format
 
@@ -271,6 +272,18 @@ clients, and can crash it. NOLF2's dedicated server has the same code.
 
 Fixed in the modern build: src/Game/ServerApp/
 ScmdConsoleDriver_ServerApp.cpp, MODERN.md APPS-3.
+
+### The launcher calls the game "Contract J.A.C.K. 2"
+
+ContractJack.exe, string table (IDS_CANTFINDREZFILE, 25;
+src/Game/Launcher/TO2/RES/Lang/EN/Launcher.rc). The message for a missing
+Game.rez reads "Please make sure that Contract J.A.C.K. 2 is installed
+properly": NOLF2's "No One Lives Forever 2" replaced word for word. It also
+sends the player to the disc, which the game never reads (MODERN.md
+APPS-4).
+
+Fixed in the modern build: src/Game/Launcher/TO2/RES/Lang/EN/Launcher.rc,
+MODERN.md APPS-4.
 
 ## NOLF2's bugs Contract J.A.C.K. no longer has
 

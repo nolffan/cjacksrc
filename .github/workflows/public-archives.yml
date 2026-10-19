@@ -15,11 +15,36 @@
 # the docker image into a layer cache; then the four builds run at the same
 # time, each in a job of its own that restores both. None of the builds
 # needs another's output.
+#
+# Pushing a tag (v*, e.g. v0.1.0-alpha) also makes a GitHub release of it,
+# with the modern build's public archives attached (the job "release"),
+# named for the tag: cjack-modern-release-public.tar.gz as
+# cjacksrc-<tag>.tar.gz and cjack-modern-debug-public.tar.gz as
+# cjacksrc-debug-<tag>.tar.gz, each repacked to unpack to a directory of
+# that name. The legacy build is not attached. A tag with a hyphen in it is
+# marked a pre-release. A release of that tag made by hand beforehand is
+# kept, with its text; the archives are added to it, replacing ones of the
+# same name. A new release's text is .github/release-notes.md, followed by
+# GitHub's generated list of changes.
+#
+# A push to master whose four builds pass updates the pre-release "nightly"
+# the same way: the tag nightly is moved to the commit, its archives are
+# replaced by the commit's -- named for it, cjacksrc-nightly-<commit>.tar.gz
+# and cjacksrc-debug-nightly-<commit>.tar.gz (the first 7 digits of the
+# hash), each unpacking to a directory of that name, so a download and an
+# install say what they were built from -- and the text is
+# .github/nightly-notes.md (the commit and date) followed by
+# release-notes.md. The new archives go up before the old ones are deleted.
+# It is edited in place, not made anew, so its page stays the same and
+# watchers are not notified of every merge, and it is never marked the
+# latest release. A run whose commit is no longer master's head (one re-run
+# later, say) leaves it alone.
 name: Public archives
 
 on:
   push:
     branches: [master]
+    tags: ['v*']
   pull_request:
   workflow_dispatch:
 
@@ -165,3 +190,102 @@ jobs:
           path: out/${{ matrix.name }}-public.tar.gz
           archive: false
           if-no-files-found: error
+
+  release:
+    if: >-
+      startsWith(github.ref, 'refs/tags/v') ||
+      (github.event_name == 'push' && github.ref == 'refs/heads/master')
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: write          # create the release and upload to it
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github
+          sparse-checkout-cone-mode: false
+
+      # Each by its name: the build jobs upload the .tar.gz itself
+      # (archive: false), which download-artifact reads from v8 on.
+      - uses: actions/download-artifact@v8
+        with:
+          name: cjack-modern-release-public.tar.gz
+          path: dist
+      - uses: actions/download-artifact@v8
+        with:
+          name: cjack-modern-debug-public.tar.gz
+          path: dist
+
+      - name: Release ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || 'nightly' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          SHA: ${{ github.sha }}
+          TAG: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || 'nightly' }}
+        run: |
+          # The archives' names after cjacksrc-: the tag, or for the nightly
+          # the commit it was built from.
+          ARCHIVE="$TAG"
+          if [ "$TAG" = nightly ]; then ARCHIVE="nightly-${SHA:0:7}"; fi
+
+          find dist -type f -ls
+          notes() {   # the release text for $TAG, into notes.md
+            sed -e "s|{{TAG}}|$TAG|g" -e "s|{{ARCHIVE}}|$ARCHIVE|g" -e "s|{{REPO}}|$GH_REPO|g" \
+                .github/release-notes.md | sed '/^<!--/,/^-->/d' > body.md
+            if [ "$TAG" = nightly ]; then
+              sed -e "s|{{SHA}}|$SHA|g" -e "s|{{SHORT}}|${SHA:0:7}|g" \
+                  -e "s|{{REPO}}|$GH_REPO|g" -e "s|{{DATE}}|$(date -u '+%Y-%m-%d %H:%M UTC')|g" \
+                  .github/nightly-notes.md | cat - body.md > notes.md
+            else
+              mv body.md notes.md
+            fi
+          }
+          if [ "$TAG" = nightly ]; then
+            head="$(gh api "repos/$GH_REPO/git/ref/heads/master" --jq .object.sha)"
+            if [ "$head" != "$SHA" ]; then
+              echo "master is at $head now, not $SHA: the nightly is left as it is"
+              exit 0
+            fi
+            notes
+            if gh release view nightly >/dev/null 2>&1; then
+              # Moved, or made again if it was deleted by hand.
+              gh api -X PATCH "repos/$GH_REPO/git/refs/tags/nightly" \
+                  -f sha="$SHA" -F force=true >/dev/null ||
+                gh api -X POST "repos/$GH_REPO/git/refs" \
+                    -f ref=refs/tags/nightly -f sha="$SHA" >/dev/null
+              gh release edit nightly --prerelease --latest=false \
+                  --title "Nightly (${SHA:0:7})" --notes-file notes.md
+            else
+              gh release create nightly --target "$SHA" --prerelease --latest=false \
+                  --title "Nightly (${SHA:0:7})" --notes-file notes.md
+            fi
+          elif ! gh release view "$TAG" >/dev/null 2>&1; then
+            pre=; case "$TAG" in *-*) pre=--prerelease ;; esac
+            notes
+            gh release create "$TAG" --verify-tag --notes-file notes.md \
+                --generate-notes $pre --title "$TAG"
+          fi
+          # Repacked so that each unpacks to a directory of its own name,
+          # not the build's cjack-modern-release/ or cjack-modern-debug/.
+          repack() {   # <build name> <release name>
+            rm -rf x && mkdir x
+            tar -C x -xzpf "$(find dist -name "$1-public.tar.gz")"
+            mv "x/$1" "x/$2"
+            tar -C x -cf - "$2" | gzip -6 > "up/$2.tar.gz"
+          }
+          mkdir up
+          repack cjack-modern-release "cjacksrc-$ARCHIVE"
+          repack cjack-modern-debug "cjacksrc-debug-$ARCHIVE"
+          for f in up/*.tar.gz; do echo "$f: $(tar -tzf "$f" | head -1)"; done
+          gh release upload "$TAG" up/*.tar.gz --clobber
+          # The nightly keeps only this commit's archives, deleted once the
+          # new ones are up so the page is never without a download.
+          if [ "$TAG" = nightly ]; then
+            gh release view nightly --json assets --jq '.assets[].name' |
+              while read -r a; do
+                case "$a" in "cjacksrc-nightly-${SHA:0:7}.tar.gz"|"cjacksrc-debug-nightly-${SHA:0:7}.tar.gz") ;;
+                  *) echo "deleting $a"; gh release delete-asset nightly "$a" --yes < /dev/null ;;
+                esac
+              done
+          fi
