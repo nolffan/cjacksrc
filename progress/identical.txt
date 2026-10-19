@@ -3520,7 +3520,6 @@ CShell.dll	sub_1009ea80
 CShell.dll	sub_1009ef80
 CShell.dll	sub_1009efe0
 CShell.dll	sub_1009f220
-CShell.dll	sub_1009fd80
 CShell.dll	sub_100a02c0
 CShell.dll	sub_100a0370
 CShell.dll	sub_100a0500
@@ -7251,6 +7250,7 @@ ContractJackServer.exe	sub_411ad0
 ContractJackServer.exe	sub_411ba0
 ContractJackServer.exe	sub_411bf0
 ContractJackServer.exe	sub_411c20
+ContractJackServer.exe	sub_411d50
 ContractJackServer.exe	sub_411f90
 ContractJackServer.exe	sub_412050
 ContractJackServer.exe	sub_4120b0
