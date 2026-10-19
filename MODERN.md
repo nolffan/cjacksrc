@@ -87,12 +87,56 @@ modes at any size; our Bink player on FFmpeg in place of RAD's
   left only to a launcher away from its game, says the game is not
   installed properly instead of looking for the disc (nolf2src's M-L6;
   src/Game/Launcher/Launcher.cpp InitInstance, OpenRegistryKey,
-  LauncherDlg.cpp OnInitDialog, OnPlay, LaunchGame). The key stays under
-  HKEY_LOCAL_MACHINE, where the game's CVersionMgr keeps the profile name
-  and the CD key too; nolf2src's move of both to HKEY_CURRENT_USER (its
-  M-L7, M-G71) needs src/Game/Shared/VersionMgr.cpp as well. Tested as
-  APPS-4: the launcher offered Play with no registry values, and its
-  command line ended `-rez Update_v1x1.rez -rez custom`.
+  LauncherDlg.cpp OnInitDialog, OnPlay, LaunchGame). The key is the
+  user's (APPS-7). Tested as APPS-4: the launcher offered Play with no
+  registry values, and its command line ended `-rez Update_v1x1.rez -rez
+  custom`.
+* **APPS-6: no CD key.** A server published with GameSpy (every multiplayer
+  server, a LAN one too) sent each joining client a CD-key challenge, had
+  GameSpy's servers check the answer, and turned the client away with
+  "CD-Key verification failed" (MID_HANDSHAKE_CDKEYREJECTED) when the
+  check failed -- as it does for a client with no key, whose answer is
+  empty; and the multiplayer screen asked for a key at once and kept Join
+  and Host off until one was typed. GameSpy's key servers are gone. In
+  the modern build the server sends no challenge (the handshake message
+  keeps its flag, set to "none", and MsgIDs.h keeps every value) and lets
+  the client in when its handshake is done, so no client waits for a key
+  check (UpdateClientCDKeyChecks finds none, and never rejects one); the
+  multiplayer screen hides the key and never asks for it. The client's
+  answer to a challenge (ClientMultiplayerMgr) is left as it is: a modern
+  server sends none, so it does not run. A modern client is not meant to
+  join a retail server (nolf2src's M-G17;
+  src/Game/ObjectDLL/GameServerShell.cpp ProcessHandshake,
+  src/Game/ClientShellDLL/ScreenMulti.cpp OnFocus). `MPTEST_CDKEY=none`
+  runs build/mptest.sh with no key in the registry. Tested: `make mptest
+  MPTEST_CDKEY=none` on the modern build, no CDKey anywhere in the Wine
+  prefix: the dedicated server hosts DM_Khios and the client joins and
+  plays.
+* **APPS-7: settings in the user's registry.** The launcher, the game DLLs
+  (CVersionMgr: the profile last used, the CD key, the cheats' and the
+  missions' flags) and the dedicated server kept their values under
+  `HKEY_LOCAL_MACHINE\SOFTWARE\Monolith Productions\Contract Jack\1.0`,
+  opened for writing even to read (`RETAIL_BUGS.md`). In the modern build
+  they use the same path under HKEY_CURRENT_USER, made on the first run.
+  As in nolf2src (M-L7, M-G71), nothing is carried over from the
+  machine's key: the launcher needs none of it (APPS-5), and everything
+  else starts at its default (the detail dialog comes once more, on the
+  first Play). The dedicated server hosts without the key -- the retail
+  server did not host at all without the machine's -- and, with no update
+  values in the user's key, adds `Update_v1x1.rez` itself, as the launcher
+  does (nolf2src's M-G50) (src/Game/Launcher/Launcher.cpp
+  OpenRegistryKey, src/Game/Shared/VersionMgr.cpp CVersionMgr::CVersionMgr,
+  src/Game/ServerApp/ServerDlg.cpp DoHost, AddResources). Tested under
+  Wine in a fresh prefix: the launcher (Play, the detail dialog) and the
+  game wrote their values, `ProfileName` among them, under the user's key
+  only, nothing under the machine's; a second launcher run read them and
+  started the game without the detail dialog. In build/mptest.sh the
+  modern server hosted from the user's key, which has none of the values
+  the script writes under the machine's.
+* **APPS-8: no movies on a disc.** CWinUtil::GetMoviesPath, when the game
+  directory has no `intro.smk`, looked for a `Movies\` folder on every
+  CD-ROM drive. Nothing calls it; the modern build drops the drive scan
+  (src/Game/Shared/WinUtil.cpp).
 * **EN-1: the world shaders' section order.** The sections compare by
   world only among equal base sections, so the sort gets a strict weak
   ordering (`RETAIL_BUGS.md`; src/Engine/runtime/render_a/src/sys/d3d/
