@@ -1363,6 +1363,25 @@ longer crashes).
 | Multiplayer after the CD key dialog; Player setup | Return goes on into Player setup; no player model | stays on Multiplayer; the model shown | **cshell** |
 | Vehicles | unreachable: no console to Teleport to them (see above) | -- | **engine** (a developer console) |
 
+**Unplaced functions (ours with no shipped function placed), where the
+apps agent stopped** (master 9384c60 merged into `apps3`, the rebuild
+stopped part way: rebuild before `make progress`). The coordinator's
+decision: record per function, with evidence, in progress/ (a
+`<target>-ours-exclude.csv` and, if needed, a small neutral hook in
+progress.py on tools a22f499), and fix the real ones first.
+
+| Image | Unplaced | What they are |
+|---|---|---|
+| ContractJackServer.exe | 47 | all ButeMgr.obj's exception-handling helpers the compiler emits (`__ehhandler$...`, `$L...` unwind stubs) |
+| ClientFx.fxd | 48 | 30 clientfx.obj exit-time destructor pairs for its global banks (`_$E23`..`_$E66`: `push; call atexit` and `mov ecx, bank; jmp Term`; retail has as many of both shapes, 17 each, so likely the shape count against retail's function table); 11 initializers (ltmodule.obj, stdafx.obj, 19 bytes); 5 exception-handler helpers (lightningfx.obj); 2 real: CPlaySoundFX::SuspendedUpdate and CPlayRandomSoundFX::SuspendedUpdate (64 bytes, the same body: retail may fold them or not override) |
+| GameSpy.dll | 13 | 11 exception-handler helpers; NatNegProgressCallback and NatNegCompletedCallback (one `ret` each) |
+| SndDrv.dll | 33 | initializers and exception-handler helpers; real: CounterFinal::CountMS, LTMemTerm, CSample::~CSample, WaveFile::~WaveFile |
+| server.dll | 475 | not gone through (world_blind_object_data.obj 14, s_client.obj 11, serverde_impl.obj 10, ...) |
+| Lithtech.exe | 1,392 | not gone through (d3d_renderworld.obj 172, ...); the engine agent: mostly math_phys.h initializers |
+
+Next: for each real one, whether retail has it (inlined, folded, under
+another pairing) or not, then the exclusion file for the compiler's own.
+
 ### 11. release
 
 - `build/package.sh` makes `<dir>-private.tar.gz` and `-public.tar.gz` for
