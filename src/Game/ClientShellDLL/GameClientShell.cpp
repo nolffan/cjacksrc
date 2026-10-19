@@ -33,6 +33,8 @@
 #pragma comment(linker, "/include:?WriteData@CTeam@@QAEXPAVILTMessage_Write@@_N@Z")
 #pragma comment(linker, "/include:?Init@CTeam@@QAEXEPBDI@Z")
 #pragma comment(linker, "/include:?UpdateEffectsNoRender@CGameClientShell@@IAEXXZ")
+#pragma comment(linker, "/include:?GetPropertyNameFromPlayerPhysicsModel@@YAPADW4PlayerPhysicsModel@@@Z")
+#pragma comment(linker, "/include:?GetPlayerPhysicsModelFromPropertyName@@YA?AW4PlayerPhysicsModel@@PAD@Z")
 #include "WeaponStringDefs.h"
 #include "iltmath.h"
 #include "iltphysics.h"

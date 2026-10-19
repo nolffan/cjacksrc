@@ -3019,8 +3019,13 @@ void CCharacterFX::KillWeaponLoopSound()
 void CCharacterFX::HandlePitchMsg( ILTMessage_Read *pMsg )
 {
 	// Unpack the pitch.  It comes from the server in a byte.
-	uint8 ucPitch = pMsg->Readuint8( );
+	HandlePitch( pMsg->Readuint8( ));
+}
 
+// RETAIL: 0x10012680. The pitch, a byte, from the server's message or the
+// object's unguaranteed data (UpdatePitch).
+void CCharacterFX::HandlePitch( uint8 ucPitch )
+{
 	// remap it to a float
 	UncompressAngleFromByte( ucPitch, &m_cs.fPitch );
 
@@ -3065,6 +3070,12 @@ void CCharacterFX::UpdatePitch( )
 	// Only players can pitch...
 	if( !m_cs.bIsPlayer ) 
 		return;
+
+	// RETAIL: 0x10012842. The server sends the pitch, a byte, as the
+	// object's unguaranteed data.
+	uint32 nData = 0;
+	if( g_pLTClient->GetObjectUnguaranteedData( m_hServerObject, &nData ) == LT_OK )
+		HandlePitch(( uint8 )nData );
 
 	// Don't allow tracking when playing special damage fx anim or riding vehicle.
 	bool bEnable = !m_bDamageFxTrackingOverride && !m_bOnVehicle && g_vtPlayerPitchTracking.GetFloat( );

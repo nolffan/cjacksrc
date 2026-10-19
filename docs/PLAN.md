@@ -1287,11 +1287,23 @@ Round 1 (branch `cshell`), the items 8b leaves open:
   SetupSavedLevel for saves); +join's +publicserver; LauncherServerApp
   starting ContractJackServer.exe; SetupServerHost's Demolition case and
   bandwidth limit; CSnowFX's on/off message (m_bFromTop is not used yet).
-- Where it stops: 32 unwritten. Several left are tiny out-of-line stubs
-  (ret, ret 4) retail keeps unfolded, and object-order pairings
-  (GameClientShell.obj, ClientMultiplayerMgr.obj) where the size-based
-  pairing leaves a retail row over. Then CCharacterFX reading the pitch
-  from the object's unguaranteed data (the coordinator's item).
+- Round 3 (32 -> 21): the weapon's heat per shot and the recoil as the
+  firing perturb; IsCarryingHeavyObject from the chassis attributes; the
+  lean ray's filter; CWeaponFX::CreateBeamFX; SharedMovement in the
+  client ("Vehicle", as retail's tables); the player setup screen's
+  deathmatch model in every game type (the playtest's missing 3D model).
+  CCharacterFX reads the pitch from the object's unguaranteed data
+  (UpdatePitch -> HandlePitch, retail 0x10012820/0x10012680); the old
+  CFX_PITCH message still works until the server drops it.
+- Where it stops: 21 unwritten. Left: about 10 empty stubs our linker's
+  ICF folds (NOICF cost 184 unplaced, reverted), size-pairing leftovers
+  in GameClientShell.obj, ClientMultiplayerMgr.obj and ClientWeapon.obj,
+  VehicleMgr's (the game package's), CMissionMgr's constructor (retail's
+  world names are std::string), a ScreenJoin sort helper, and
+  ScreenHostWeapons' Escape (retail's screen works differently). The
+  CD-key dialog's Return could not be reproduced in a scripted run (the
+  dialog closes, nothing behind it acts); mouse look is as in 8d's
+  finding.
 
 ### 8d. playtest coverage (branch `apps2`)
 
