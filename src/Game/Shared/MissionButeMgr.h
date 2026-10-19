@@ -105,6 +105,7 @@ struct MISSION
 
 	std::string sName;
 	std::string sPhoto;
+	uint8	nNumSecrets;	// RETAIL: 0xf1c, "NumSecrets" (CShell 0x10087b63)
 
 protected :
 	int		BuildWeaponsList(char *pszStr, int* pArray, int nArrayLen);

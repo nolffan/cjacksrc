@@ -874,7 +874,8 @@ void CSearchable::Enable(bool bEnable)
 
 	if (m_hObject)
 	{
-		g_pCommonLT->SetObjectFlags( m_hObject, OFT_User, bEnable ? USRFLG_CAN_SEARCH | USRFLG_CAN_ACTIVATE : 0, USRFLG_CAN_SEARCH | USRFLG_CAN_ACTIVATE );
+		// RETAIL: Object 0x10138130: activation only, no USRFLG_CAN_SEARCH.
+		g_pCommonLT->SetObjectFlags( m_hObject, OFT_User, bEnable ? USRFLG_CAN_ACTIVATE : 0, USRFLG_CAN_ACTIVATE );
 	}
 }
 

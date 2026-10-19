@@ -1428,13 +1428,13 @@ WEAPON::WEAPON()
 	szSelectSound		= LTNULL;
 	szDeselectSound		= LTNULL;
 	szPVMuzzleFxName	= LTNULL;
+	szHeatPVOverheatFxName = LTNULL;
 	szHHMuzzleFxName	= LTNULL;
 	szHolsterAttachment	= LTNULL;
 	szPrimitiveType		= LTNULL;
 	szSubroutineNeeded	= LTNULL;
 	szPowerupFX			= LTNULL;
 	szRespawnWaitFX		= LTNULL;
-	szHeatPVOverheatFxName = LTNULL;
 
 	for( i = 0; i < WMGR_MAX_RELOAD_SNDS; ++i )
 	{
@@ -1553,13 +1553,13 @@ WEAPON::~WEAPON()
 	debug_deletea( szSelectSound );
 	debug_deletea( szDeselectSound );
 	debug_deletea( szPVMuzzleFxName );
+	debug_deletea( szHeatPVOverheatFxName );
 	debug_deletea( szHHMuzzleFxName );
 	debug_deletea( szHolsterAttachment );
 	debug_deletea( szPrimitiveType );
 	debug_deletea( szSubroutineNeeded );
 	debug_deletea( szPowerupFX );
 	debug_deletea( szRespawnWaitFX );
-	debug_deletea( szHeatPVOverheatFxName );
 
 	for( i = 0; i < WMGR_MAX_RELOAD_SNDS; ++i )
 	{

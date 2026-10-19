@@ -69,22 +69,20 @@ uint32 SearchProp::EngineMessageFn(uint32 messageID, void *pData, LTFLOAT fData)
             uint32 dwRet = PropType::EngineMessageFn(messageID, pData, fData);
 
 			m_search.Enable(true);
-			m_bTouchable = LTFALSE;
 			m_damage.SetMaxHitPoints(1.0f);
 			m_damage.SetHitPoints(1.0f);
 			m_damage.SetCanDamage(LTFALSE);
+			m_bTouchable = LTFALSE;
 
 			return dwRet;
 		}
 		break;
 
+		// RETAIL: Object 0x1013baf0: no search flag on the initial update
+		// (Contract J.A.C.K.'s searchables are activated, CSearchable::Enable).
 		case MID_INITIALUPDATE:
 		{
-			uint32 dwRet = PropType::EngineMessageFn(messageID, pData, fData);
-
-			g_pCommonLT->SetObjectFlags( m_hObject, OFT_User, m_search.IsEnabled() ? USRFLG_CAN_SEARCH : 0, USRFLG_CAN_SEARCH );
-
-			return dwRet;
+			return PropType::EngineMessageFn(messageID, pData, fData);
 		};
 		break;
 
