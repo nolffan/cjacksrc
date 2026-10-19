@@ -232,6 +232,8 @@ CPlayerMgr::CPlayerMgr()
 	m_bCameraAttachedToHead	= false;
 	m_bLerpAttachedCamera	= false;
 	m_bManualAim			= false;
+	m_bRespawnRequested		= false;
+	m_vLastOrientation.Init( );
 
 	m_nPlayerInfoChangeFlags	= 0;
 	m_fPlayerInfoLastSendTime	= 0.0f;
@@ -481,6 +483,9 @@ void CPlayerMgr::Term()
         m_hCamera = NULL;
 	}
 
+	// RETAIL: 0x1009bfc0 lets go of the last messages sent.
+	m_cLastPlayerInfoMsg = NULL;
+	m_cLastPlayerExtraMsg = NULL;
 }
 
 
@@ -1504,6 +1509,7 @@ void CPlayerMgr::HandleMsgPlayerOrientation (ILTMessage_Read *pMsg)
 
     uint8		nID = pMsg->Readuint8();
 	LTVector	vVec = pMsg->ReadLTVector();
+	m_vLastOrientation = vVec;	// RETAIL: 0x1009ced5
 
 	switch( nID )
 	{
@@ -3242,6 +3248,14 @@ void CPlayerMgr::HandleMsgPlayerStateChange (ILTMessage_Read *pMsg)
 
 			g_pInterfaceMgr->ForceScreenFadeIn(g_vtScreenFadeInTime.GetFloat());
 
+			// RETAIL: 0x1009d527, back facing the way the server last set.
+			if( m_bRespawnRequested )
+			{
+				m_fPitch = m_vLastOrientation.x;
+				m_fYaw = m_vLastOrientation.y;
+				m_fRoll = m_vLastOrientation.z;
+			}
+
 			AttachCameraToHead(LTFALSE);
 
 			g_pInterfaceMgr->SetHUDRenderLevel(kHUDRenderFull);
@@ -3277,6 +3291,8 @@ void CPlayerMgr::HandleMsgPlayerStateChange (ILTMessage_Read *pMsg)
 					}
 				}
 			}
+
+			m_bRespawnRequested = false;
 		}
 		break;
 
@@ -3327,6 +3343,7 @@ void CPlayerMgr::HandleRespawn()
 	if (IsMultiplayerGame())
 	{
 		// send a message to the server telling it that it's ok to respawn us now...
+		m_bRespawnRequested = true;	// RETAIL: 0x1009a68d
 		SendEmptyServerMsg(MID_PLAYER_RESPAWN);
 		return;
 	}
@@ -5444,6 +5461,9 @@ void CPlayerMgr::InitTargetMgr()
 {
 	m_pTargetMgr = debug_new( CTargetMgr );				 
 	ASSERT( 0 != m_pTargetMgr );
+
+	// RETAIL: 0x1009b6ef makes the auto targeting too.
+	CAutoTargetMgr::Instance( );
 }
 
 

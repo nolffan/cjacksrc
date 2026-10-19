@@ -44,7 +44,9 @@ class PickupItem : public GameBase
         uint32          ObjectMessageFn (HOBJECT hSender, ILTMessage_Read *pMsg);
 		bool			OnTrigger(HOBJECT hSender, const CParsedMsg &cMsg);
 
-		virtual void	PickedUp(ILTMessage_Read *pMsg);
+		// RETAIL: Object 0x10104590 reads the three flags the picker sends:
+		// picked up, show it, and leave the item where it is.
+		virtual void	PickedUp(bool bWasPickedUp, bool bDisplayMsg, bool bLeaveItem);
 		virtual void	Respawn( );
 
 		virtual void	PlayPickedupSound();

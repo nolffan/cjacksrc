@@ -674,7 +674,25 @@ namespace
 		float		fDistSqr;
 		bool		bCharacter;
 
-		bool operator<( HeatSeekingTarget const& other ) const { return fDistSqr < other.fDistSqr; }
+	};
+
+	// RETAIL: Object 0x101211c0 (its std::sort's median of three):
+	// characters before AimMagnets, then the nearest first.
+	// The predicate is 12 bytes, all zero, in retail (pushed by value at
+	// 0x10120a50); what they held is not used by the comparison.
+	struct HeatSeekingTargetLesser
+	{
+		HeatSeekingTargetLesser() : m_vUnused(0.0f, 0.0f, 0.0f) {}
+
+		LTVector m_vUnused;
+
+		bool operator()( HeatSeekingTarget const& a, HeatSeekingTarget const& b ) const
+		{
+			if( a.bCharacter != b.bCharacter )
+				return a.bCharacter;
+
+			return a.fDistSqr < b.fDistSqr;
+		}
 	};
 }
 
@@ -771,7 +789,7 @@ void CProjectile::UpdateHeatSeeking()
 
 	// Go for the nearest one we can see...
 
-	std::sort(aTargets.begin(), aTargets.end());
+	std::sort(aTargets.begin(), aTargets.end(), HeatSeekingTargetLesser());
 
 	IntersectQuery qInfo;
 	IntersectInfo iInfo;
@@ -1664,50 +1682,64 @@ struct VectorFilterFnUserData
 
 bool DoVectorFilterFn(HOBJECT hObj, void *pUserData)
 {
-	// Filter out the specified objects...
+	// RETAIL: Object 0x1011eef0 looks the classes up once.
+
+	static HCLASS hClassCharacter		= g_pLTServer->GetClass( "CCharacter" );
+	static HCLASS hClassCharacterHitBox	= g_pLTServer->GetClass( "CCharacterHitBox" );
+	static HCLASS hClassBody			= g_pLTServer->GetClass( "Body" );
+	static HCLASS hClassIntelligence	= g_pLTServer->GetClass( "Intelligence" );
+	static HCLASS hClassProjectile		= g_pLTServer->GetClass( "CProjectile" );
+	static HCLASS hClassWeaponItem		= g_pLTServer->GetClass( "WeaponItem" );
+
 	VectorFilterFnUserData* pVectFilterFnUserData = ( VectorFilterFnUserData* )pUserData;
-	if (ObjListFilterFn(hObj, pVectFilterFnUserData->m_pFilterList))
+
+	HCLASS hClass = g_pLTServer->GetObjectClass( hObj );
+
+	// Filter out the specified objects...
+
+	HOBJECT* pFilterList = pVectFilterFnUserData->m_pFilterList;
+	if( pFilterList )
 	{
-		// CharacterHitBox objects are used for vector impacts, don't
-		// impact on the character/body prop object itself....
-
-		// RETAIL: Object 0x1011f0be: nor other projectiles and dropped
-		// weapons.
-
-		if (IsCharacter(hObj) || IsBody(hObj) || IsKindOf(hObj, "Intelligence") ||
-			IsKindOf(hObj, "CProjectile") || IsKindOf(hObj, "WeaponItem"))
+		while( *pFilterList )
 		{
-            return false;
+			if( *pFilterList == hObj )
+				return false;
+
+			pFilterList++;
 		}
-
-		// Check special character hit box cases...
-
-		if (IsCharacterHitBox(hObj))
-		{
-            CCharacterHitBox *pCharHitBox = (CCharacterHitBox*) g_pLTServer->HandleToObject(hObj);
-			if (pCharHitBox)
-			{
-				// NOTE: The first object in the filter list MUST be m_hFiredFrom!!!!!
-
-				HOBJECT hUs = pVectFilterFnUserData->m_pFilterList[0];
-
-				HOBJECT hTestObj = pCharHitBox->GetModelObject();
-                if (!hTestObj) return LTFALSE;
-
-				if (hTestObj == hUs)
-				{
-                    return false;
-				}
-
-
-				return CanCharacterHitCharacter( pVectFilterFnUserData->m_pProjectile, hTestObj );
-			}
-		}
-
-        return true;
 	}
 
-    return false;
+	// CharacterHitBox objects are used for vector impacts, don't
+	// impact on the character/body prop object itself, nor (Contract
+	// J.A.C.K.) other projectiles and dropped weapons...
+
+	if( g_pLTServer->IsKindOf( hClass, hClassCharacter ) ||
+		g_pLTServer->IsKindOf( hClass, hClassBody ) ||
+		g_pLTServer->IsKindOf( hClass, hClassIntelligence ) ||
+		g_pLTServer->IsKindOf( hClass, hClassProjectile ) ||
+		g_pLTServer->IsKindOf( hClass, hClassWeaponItem ))
+	{
+		return false;
+	}
+
+	// Check special character hit box cases...
+
+	if( g_pLTServer->IsKindOf( hClass, hClassCharacterHitBox ))
+	{
+		CCharacterHitBox *pCharHitBox = (CCharacterHitBox*) g_pLTServer->HandleToObject(hObj);
+		if (pCharHitBox)
+		{
+			// NOTE: The first object in the filter list MUST be m_hFiredFrom!!!!!
+
+			HOBJECT hTestObj = pCharHitBox->GetModelObject();
+			if( !hTestObj || hTestObj == pVectFilterFnUserData->m_pFilterList[0] )
+				return false;
+
+			return CanCharacterHitCharacter( pVectFilterFnUserData->m_pProjectile, hTestObj );
+		}
+	}
+
+	return true;
 }
 
 // ----------------------------------------------------------------------- //

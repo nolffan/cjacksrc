@@ -694,6 +694,7 @@ void CSFXMgr::HandleSFXMsg(HLOCALOBJ hObj, ILTMessage_Read *pMsg)
 			snow.bUseLighting = pMsg->Readuint8() > 0;
 			snow.bUseSaturate = pMsg->Readuint8() > 0;
 			snow.hstrTextureName = pMsg->ReadHString();
+			snow.bOn = pMsg->Readbool();	// RETAIL: Contract J.A.C.K.
 
 			CreateSFX( nId, &snow );
 		}

@@ -66,6 +66,14 @@ ClientMultiplayerMgr::ClientMultiplayerMgr( )
 
 	m_pGameSpyBrowser = NULL;
 	m_pGameSpyLANBrowser = NULL;
+
+	m_bNatNegotiate = false;
+	m_eJoinState = eJoinState_None;
+	m_fNatWaitStart = 0.0f;
+	m_fNatWaitTime = 0.0f;
+	m_fNatWaitNow = 0.0f;
+	m_bNatNegotiated = false;
+	m_bUsePublicAddress = false;
 }
 
 // --------------------------------------------------------------------------- //
@@ -288,16 +296,27 @@ void ClientMultiplayerMgr::DoTaunt(uint32 nClientID, uint32 nTauntID)
 
 
 
-bool ClientMultiplayerMgr::SetupClient(char const* pszIpAddress, char const* pszHostName, char const* pszPassword)
+// --------------------------------------------------------------------------- //
+//
+//	ROUTINE:	ClientMultiplayerMgr::SetupClient
+//
+//	PURPOSE:	Setup a client of a server the join screen found.
+//
+// --------------------------------------------------------------------------- //
+
+// RETAIL: 0x1001f2c0
+bool ClientMultiplayerMgr::SetupClient( char const* pszHostName, char const* pszPassword, bool bNatNegotiate,
+	bool bUsePublicAddress, char const* pszPublicAddress, char const* pszPrivateAddress )
 {
-	// Check inputs.
-	if( !pszIpAddress || !pszIpAddress[0] )
+	if( !pszPublicAddress || !pszPublicAddress[0] || !pszPrivateAddress || !pszPrivateAddress[0] )
 	{
 		ASSERT( !"ClientMultiplayerMgr::SetupClient: Invalid inputs." );
 		return false;
 	}
 
-	// Start the game...
+	m_sPublicAddress = pszPublicAddress;
+	m_sPrivateAddress = pszPrivateAddress;
+	m_bUsePublicAddress = bUsePublicAddress;
 
 	memset( &m_StartGameRequest, 0, sizeof( m_StartGameRequest ));
 	// No socket of our own yet (StartGameRequest::m_hSocket): the engine opens one.
@@ -308,21 +327,20 @@ bool ClientMultiplayerMgr::SetupClient(char const* pszIpAddress, char const* psz
 	if( !UpdateNetClientData( ))
 		return false;
 
+	strncpy( m_StartGameRequest.m_TCPAddress, ( m_bUsePublicAddress ? m_sPublicAddress : m_sPrivateAddress ).c_str( ),
+		MAX_SGR_STRINGLEN );
 	m_StartGameRequest.m_Type = STARTGAME_CLIENTTCP;
-	strncpy( m_StartGameRequest.m_TCPAddress, pszIpAddress, MAX_SGR_STRINGLEN);
-	if( pszHostName && pszHostName[0] )
-	{
-		SAFE_STRCPY(m_StartGameRequest.m_HostInfo.m_sName ,pszHostName);
-	}
 
-	if (pszPassword)
-	{
-		m_nClientPass = str_Hash(pszPassword);
-	}
+	strncpy( m_StartGameRequest.m_HostInfo.m_sName, ( pszHostName && pszHostName[0] ) ? pszHostName : "",
+		MAX_SGR_STRINGLEN );
+	m_StartGameRequest.m_HostInfo.m_sName[MAX_SGR_STRINGLEN - 1] = '\0';
+
+	if( pszPassword )
+		m_nClientPass = str_Hash( pszPassword );
 	else
-	{
 		m_nClientPass = 0;
-	}
+
+	m_bNatNegotiate = bNatNegotiate;
 
 	return true;
 }
@@ -403,7 +421,22 @@ bool ClientMultiplayerMgr::SetupServerHost( int nPort, bool bLANOnly )
 		LTStrCpy( m_StartGameRequest.m_HostInfo.m_sName, pProfile->m_ServerGameOptions.GetDoomsday().m_sSessionName.c_str( ),
 					sizeof(m_StartGameRequest.m_HostInfo.m_sName));
 		break;
+	// RETAIL: 0x1001f450
+	case eGameTypeDemolition:
+	    m_StartGameRequest.m_HostInfo.m_dwMaxConnections = pProfile->m_ServerGameOptions.GetDemolition().m_nMaxPlayers-1;
+		LTStrCpy( m_StartGameRequest.m_HostInfo.m_sName, pProfile->m_ServerGameOptions.GetDemolition().m_sSessionName.c_str( ),
+					sizeof(m_StartGameRequest.m_HostInfo.m_sName));
+		break;
 	};
+
+	// RETAIL: an Internet server takes no more players than its bandwidth allows.
+	if( !m_ServerGameOptions.m_bLANOnly )
+	{
+		uint32 nMaxPlayers = pProfile->m_ServerGameOptions.GetMaxPlayersForBandwidth( );
+		if( m_StartGameRequest.m_HostInfo.m_dwMaxConnections < nMaxPlayers )
+			nMaxPlayers = m_StartGameRequest.m_HostInfo.m_dwMaxConnections;
+		m_StartGameRequest.m_HostInfo.m_dwMaxConnections = nMaxPlayers;
+	}
 
 
 	m_StartGameRequest.m_HostInfo.m_bHasPassword = pProfile->m_ServerGameOptions.m_bUsePassword;
@@ -900,6 +933,144 @@ void ClientMultiplayerMgr::Update( )
 		m_bForceDisconnect = false;
 		return;
 	}
+
+	// RETAIL: 0x10020030 goes on with the join.
+	UpdateJoinState( );
+}
+
+// --------------------------------------------------------------------------- //
+//
+//	ROUTINE:	ClientMultiplayerMgr::UpdateJoinState
+//
+//	PURPOSE:	Take the join of a server a step further.
+//
+// --------------------------------------------------------------------------- //
+
+// RETAIL: 0x1001f670
+void ClientMultiplayerMgr::UpdateJoinState( )
+{
+	switch( m_eJoinState )
+	{
+		case eJoinState_NatNegotiating:
+			UpdateNatNegotiation( );
+			break;
+		case eJoinState_NatWait:
+			UpdateNatWait( );
+			break;
+		case eJoinState_Join:
+			JoinServer( );
+			break;
+		case eJoinState_Failed:
+			g_pInterfaceMgr->LoadFailed( SCREEN_ID_NONE, ( uint32 )-1 );
+			m_eJoinState = eJoinState_None;
+			break;
+		default:
+			break;
+	}
+}
+
+// RETAIL: 0x1001f190. GameSpy has negotiated, or failed to: join the
+// address it found, or try the server's own.
+void ClientMultiplayerMgr::UpdateNatNegotiation( )
+{
+	if( !m_pGameSpyBrowser )
+	{
+		m_StartGameRequest.m_hSocket = ( uint32 )-1;
+		m_eJoinState = eJoinState_Join;
+		return;
+	}
+
+	switch( m_pGameSpyBrowser->GetBrowserStatus( ))
+	{
+		case IGameSpyBrowser::eBrowserStatus_Idle:
+		case IGameSpyBrowser::eBrowserStatus_Error:
+			m_StartGameRequest.m_hSocket = ( uint32 )-1;
+			m_eJoinState = eJoinState_Join;
+			break;
+		case IGameSpyBrowser::eBrowserStatus_Complete:
+		{
+			// A sockaddr_in: its family, its port and its address, in the
+			// network's order.
+			uint32 aRemoteAddr[4];
+			memset( aRemoteAddr, 0, sizeof( aRemoteAddr ));
+			m_pGameSpyBrowser->GetNatNegotiationResult(( sockaddr_in* )aRemoteAddr );
+			uint8 const* pRemoteAddr = ( uint8 const* )aRemoteAddr;
+			sprintf( m_StartGameRequest.m_TCPAddress, "%d.%d.%d.%d:%d", pRemoteAddr[4], pRemoteAddr[5],
+				pRemoteAddr[6], pRemoteAddr[7], ( pRemoteAddr[2] << 8 ) | pRemoteAddr[3] );
+
+			// Give the server's NAT two seconds.
+			m_fNatWaitTime = 2.0f;
+			m_fNatWaitStart = g_pLTClient->GetTime( );
+			m_bNatNegotiated = true;
+			m_eJoinState = eJoinState_NatWait;
+			break;
+		}
+		default:
+			break;
+	}
+}
+
+// RETAIL: 0x1001f260
+void ClientMultiplayerMgr::UpdateNatWait( )
+{
+	float fNow = ( m_fNatWaitNow > 0.0f ) ? m_fNatWaitNow : g_pLTClient->GetTime( );
+	if( fNow - m_fNatWaitStart >= m_fNatWaitTime )
+		m_eJoinState = eJoinState_Join;
+}
+
+// RETAIL: 0x1001ea70. Connect, trying the address we have, then the
+// server's private address, then its public one.
+void ClientMultiplayerMgr::JoinServer( )
+{
+	int nAttempt = 0;
+	for( ;; )
+	{
+		int nRetries = 0;
+		while( nRetries >= 0 )
+		{
+			m_nLastConnectionResult = g_pLTClient->StartGame( &m_StartGameRequest );
+			if( m_nLastConnectionResult == LT_OK || m_nLastConnectionResult != LT_TIMEOUT )
+				break;
+
+			Sleep( 250 );
+			nRetries--;
+		}
+
+		if( m_nLastConnectionResult == LT_OK )
+		{
+			m_eJoinState = eJoinState_Joined;
+			break;
+		}
+
+		if( nAttempt == 0 )
+		{
+			strncpy( m_StartGameRequest.m_TCPAddress, m_sPrivateAddress.c_str( ), MAX_SGR_STRINGLEN );
+			nAttempt = 1;
+		}
+		else if( nAttempt == 1 )
+		{
+			strncpy( m_StartGameRequest.m_TCPAddress, m_sPublicAddress.c_str( ), MAX_SGR_STRINGLEN );
+			nAttempt = 2;
+		}
+		else
+		{
+			m_eJoinState = eJoinState_Failed;
+			break;
+		}
+	}
+
+	// The join is over; the browsers are made again when needed.
+	if( m_pGameSpyBrowser )
+	{
+		IGameSpyBrowser::Delete( m_pGameSpyBrowser );
+		m_pGameSpyBrowser = NULL;
+	}
+
+	if( m_pGameSpyLANBrowser )
+	{
+		IGameSpyBrowser::Delete( m_pGameSpyLANBrowser );
+		m_pGameSpyLANBrowser = NULL;
+	}
 }
 
 // --------------------------------------------------------------------------- //
@@ -958,8 +1129,10 @@ bool ClientMultiplayerMgr::SetService( )
 //
 // --------------------------------------------------------------------------- //
 
+// RETAIL: 0x1001ed10
 bool ClientMultiplayerMgr::StartClient( )
 {
+	m_eJoinState = eJoinState_None;
 
 	// Initialize the networking.  Always start a new server with hosted games.
     m_nLastConnectionResult = g_pLTClient->InitNetworking(NULL, 0);
@@ -976,27 +1149,45 @@ bool ClientMultiplayerMgr::StartClient( )
 	m_StartGameRequest.m_pClientData = &m_NetClientData;
 	m_StartGameRequest.m_ClientDataLen = sizeof( m_NetClientData );
 
-	int nRetries = 0;
-	while (nRetries >= 0)
+	if( m_bNatNegotiate )
 	{
-		// If successful, then we're done.
-		m_nLastConnectionResult = g_pLTClient->StartGame( const_cast< StartGameRequest * >( &m_StartGameRequest ));
-		if( m_nLastConnectionResult == LT_OK )
+		// Have GameSpy negotiate with the server's NAT, on our socket.
+		char szIP[MAX_SGR_STRINGLEN];
+		char const* pszPort = strchr( m_StartGameRequest.m_TCPAddress, ':' );
+		if( !pszPort || !pszPort[1] )
+			return false;
+
+		int nIPLen = pszPort - m_StartGameRequest.m_TCPAddress;
+		strncpy( szIP, m_StartGameRequest.m_TCPAddress, nIPLen );
+		szIP[nIPLen] = '\0';
+		unsigned short nPort = ( unsigned short )atoi( pszPort + 1 );
+
+		uint32 hSocket = ( uint32 )-1;
+		if( g_pLTClient->GetUDPSocket( &hSocket ) != LT_OK )
+			return false;
+
+		if( !m_pGameSpyBrowser )
+			CreateGameSpyBrowsers( );
+
+		if( m_pGameSpyBrowser && hSocket && m_pGameSpyBrowser->RequestNatNegotiation( hSocket, szIP, nPort ))
 		{
+			m_StartGameRequest.m_hSocket = hSocket;
+			m_eJoinState = eJoinState_NatNegotiating;
 			return true;
 		}
-
-		// If we didn't timeout, then there's no reason to try again.
-		if( m_nLastConnectionResult != LT_TIMEOUT )
-			break;
-
-		// Wait a sec and try again.
-		Sleep(1000);
-		nRetries--;
 	}
 
-	
-	return false;
+	// RETAIL: leaves the connection to the next update; cjacksrc: connects
+	// now, so a failure goes back the way NOLF2's did.
+	m_eJoinState = eJoinState_Join;
+	JoinServer( );
+	if( m_eJoinState != eJoinState_Joined )
+	{
+		m_eJoinState = eJoinState_None;
+		return false;
+	}
+
+	return true;
 }
 
 // --------------------------------------------------------------------------- //

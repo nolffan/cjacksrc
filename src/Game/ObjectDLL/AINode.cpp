@@ -17,6 +17,7 @@
 #include "ParsedMsg.h"
 #include "AnimationMgr.h"
 #include "AIState.h"
+#include "AIMovement.h"
 #include "Weapon.h"
 #include "Attachments.h"
 #include "RelationButeMgr.h"
@@ -708,7 +709,7 @@ void AINodeCover::Verify()
 	}
 }
 
-EnumNodeStatus AINodeCover::GetStatus(const LTVector& vPos, HOBJECT hThreat) const
+EnumNodeStatus AINodeCover::GetStatus(CAI* pAI, const LTVector& vPos, HOBJECT hThreat) const
 {
 	LTVector vThreatPos;
     g_pLTServer->GetObjectPos(hThreat, &vThreatPos);
@@ -719,7 +720,7 @@ EnumNodeStatus AINodeCover::GetStatus(const LTVector& vPos, HOBJECT hThreat) con
 	if ( VEC_DISTSQR(vPos, vThreatPos) < g_pAIButeMgr->GetSenses()->fThreatTooCloseDistanceSqr )
 	{
 		LTVector vToThreat = vThreatPos - vPos;
-		LTVector vToNode = m_vPos - vPos;
+		LTVector vToNode = ( pAI && pAI->GetAIMovement()->IsSet() ) ? pAI->GetAIMovement()->GetDest() - vPos : m_vPos - vPos;
 	
 		if( vToThreat.Dot( vToNode ) > 0.f )
 		{
@@ -867,7 +868,7 @@ void AINodeVantage::Load(ILTMessage_Read *pMsg)
 	LOAD_HSTRING(m_hstrObject);
 }
 
-EnumNodeStatus AINodeVantage::GetStatus(const LTVector& vPos, HOBJECT hThreat) const
+EnumNodeStatus AINodeVantage::GetStatus(CAI* pAI, const LTVector& vPos, HOBJECT hThreat) const
 {
 	LTVector vThreatPos;
     g_pLTServer->GetObjectPos(hThreat, &vThreatPos);
@@ -878,7 +879,7 @@ EnumNodeStatus AINodeVantage::GetStatus(const LTVector& vPos, HOBJECT hThreat) c
 	if ( VEC_DISTSQR(vPos, vThreatPos) < g_pAIButeMgr->GetSenses()->fThreatTooCloseDistanceSqr )
 	{
 		LTVector vToThreat = vThreatPos - vPos;
-		LTVector vToNode = m_vPos - vPos;
+		LTVector vToNode = ( pAI && pAI->GetAIMovement()->IsSet() ) ? pAI->GetAIMovement()->GetDest() - vPos : m_vPos - vPos;
 	
 		if( vToThreat.Dot( vToNode ) > 0.f )
 		{
@@ -1008,7 +1009,7 @@ void AINodeSearch::Search()
 	m_bSearched = LTTRUE;
 }
 
-EnumNodeStatus AINodeSearch::GetStatus(const LTVector& vPos, HOBJECT hThreat) const
+EnumNodeStatus AINodeSearch::GetStatus(CAI* pAI, const LTVector& vPos, HOBJECT hThreat) const
 {
 	if ( m_bSearched )
 	{
@@ -1189,6 +1190,93 @@ END_CLASS_DEFAULT_FLAGS_PLUGIN(AINodeUseObject, AINode, NULL, NULL, 0, AINodeUse
 
 CMDMGR_BEGIN_REGISTER_CLASS(AINodeUseObject)
 CMDMGR_END_REGISTER_CLASS(AINodeUseObject, AINode)
+
+// ----------------------------------------------------------------------- //
+//
+//	CLASS:		AINodeSniper
+//
+// ----------------------------------------------------------------------- //
+
+BEGIN_CLASS(AINodeSniper)
+
+	ADD_REALPROP_FLAG(Fov,						60.0f,			0|PF_FIELDOFVIEW)
+	ADD_REALPROP_FLAG(ThreatRadius,				256.0f,			0|PF_RADIUS)
+
+END_CLASS_DEFAULT_FLAGS_PLUGIN(AINodeSniper, AINodeUseObject, NULL, NULL, 0, AINodeUseObjectPlugin)
+
+CMDMGR_BEGIN_REGISTER_CLASS(AINodeSniper)
+CMDMGR_END_REGISTER_CLASS(AINodeSniper, AINodeUseObject)
+
+AINodeSniper::AINodeSniper()
+{
+	m_fFovDp = 0.0f;
+	m_fThreatRadiusSqr = 0.0f;
+}
+
+AINodeSniper::~AINodeSniper()
+{
+}
+
+void AINodeSniper::Init()
+{
+	super::Init();
+}
+
+void AINodeSniper::ReadProp(ObjectCreateStruct *pocs)
+{
+	super::ReadProp(pocs);
+
+    if ( g_pLTServer->GetPropGeneric( "Fov", &g_gp ) == LT_OK )
+		if ( g_gp.m_String[0] )
+			m_fFovDp = FOV2DP(g_gp.m_Float);
+
+    if ( g_pLTServer->GetPropGeneric( "ThreatRadius", &g_gp ) == LT_OK )
+		if ( g_gp.m_String[0] )
+			m_fThreatRadiusSqr = g_gp.m_Float*g_gp.m_Float;
+}
+
+void AINodeSniper::Load(ILTMessage_Read *pMsg)
+{
+	super::Load(pMsg);
+
+	LOAD_FLOAT(m_fFovDp);
+	LOAD_FLOAT(m_fThreatRadiusSqr);
+}
+
+void AINodeSniper::Save(ILTMessage_Write *pMsg)
+{
+	super::Save(pMsg);
+
+	SAVE_FLOAT(m_fFovDp);
+	SAVE_FLOAT(m_fThreatRadiusSqr);
+}
+
+//----------------------------------------------------------------------------
+//              
+//	ROUTINE:	AINodeSniper::GetStatus()
+//              
+//	PURPOSE:	RETAIL: Object 0x10067300
+//              
+//----------------------------------------------------------------------------
+EnumNodeStatus AINodeSniper::GetStatus(CAI* pAI, const LTVector& vPos, HOBJECT hThreat) const
+{
+	if ( !hThreat )
+		return kStatus_Ok;
+
+	LTVector vThreatPos;
+    g_pLTServer->GetObjectPos(hThreat, &vThreatPos);
+
+	if ( VEC_DISTSQR(m_vPos, vThreatPos) < m_fThreatRadiusSqr )
+		return kStatus_ThreatInsideRadius;
+
+	LTVector vToThreat = vThreatPos - m_vPos;
+	vToThreat.Normalize();
+
+	if ( vToThreat.Dot(m_vForward) > m_fFovDp )
+		return kStatus_Ok;
+
+	return kStatus_ThreatOutsideFOV;
+}
 
 AINodeUseObject::AINodeUseObject()
 {
@@ -1434,7 +1522,7 @@ void AINodeUseObject::PostActivate()
 	ResetActivationTime();
 }
 
-EnumNodeStatus AINodeUseObject::GetStatus(const LTVector& vPos, HOBJECT hThreat) const
+EnumNodeStatus AINodeUseObject::GetStatus(CAI* pAI, const LTVector& vPos, HOBJECT hThreat) const
 {
 	LTVector vThreatPos;
     g_pLTServer->GetObjectPos(hThreat, &vThreatPos);
@@ -1445,7 +1533,7 @@ EnumNodeStatus AINodeUseObject::GetStatus(const LTVector& vPos, HOBJECT hThreat)
 	if ( VEC_DISTSQR(vPos, vThreatPos) < g_pAIButeMgr->GetSenses()->fThreatTooCloseDistanceSqr )
 	{
 		LTVector vToThreat = vThreatPos - vPos;
-		LTVector vToNode = m_vPos - vPos;
+		LTVector vToNode = ( pAI && pAI->GetAIMovement()->IsSet() ) ? pAI->GetAIMovement()->GetDest() - vPos : m_vPos - vPos;
 	
 		if( vToThreat.Dot( vToNode ) > c_fFOV60 )
 		{
@@ -1716,7 +1804,7 @@ void AINodeBackup::ReadProp(ObjectCreateStruct* pocs)
 	}
 }
 
-EnumNodeStatus AINodeBackup::GetStatus(const LTVector& vPos, HOBJECT hThreat) const
+EnumNodeStatus AINodeBackup::GetStatus(CAI* pAI, const LTVector& vPos, HOBJECT hThreat) const
 {
 	LTVector vThreatPos;
     g_pLTServer->GetObjectPos(hThreat, &vThreatPos);
@@ -1727,7 +1815,7 @@ EnumNodeStatus AINodeBackup::GetStatus(const LTVector& vPos, HOBJECT hThreat) co
 	if ( VEC_DISTSQR(vPos, vThreatPos) < g_pAIButeMgr->GetSenses()->fThreatTooCloseDistanceSqr )
 	{
 		LTVector vToThreat = vThreatPos - vPos;
-		LTVector vToNode = m_vPos - vPos;
+		LTVector vToNode = ( pAI && pAI->GetAIMovement()->IsSet() ) ? pAI->GetAIMovement()->GetDest() - vPos : m_vPos - vPos;
 	
 		if( vToThreat.Dot( vToNode ) > c_fFOV60 )
 		{
@@ -2123,7 +2211,7 @@ void AINodeObstruct::Save(ILTMessage_Write *pMsg)
 //	PURPOSE:	
 //              
 //----------------------------------------------------------------------------
-EnumNodeStatus AINodeObstruct::GetStatus(const LTVector& vPos, HOBJECT hThreat) const
+EnumNodeStatus AINodeObstruct::GetStatus(CAI* pAI, const LTVector& vPos, HOBJECT hThreat) const
 {
 	LTVector vOrigin;
     g_pLTServer->GetObjectPos(hThreat, &vOrigin);

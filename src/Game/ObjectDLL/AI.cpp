@@ -441,6 +441,8 @@ CMDMGR_BEGIN_REGISTER_CLASS( CAI )
 	CMDMGR_ADD_MSG( DELCMD,			2,		VelidateDelcmd,			"DELCMD <activateon or activateoff>")
 	CMDMGR_ADD_MSG( HEALTHMOD,		2,		NULL,					"HEALTHMOD <mod>" )
 	CMDMGR_ADD_MSG( ARMORMOD,		2,		NULL,					"ARMORMOD <mod>" )
+	CMDMGR_ADD_MSG_ARG_RANGE( DRIVE,	2,	3,	NULL,				"DRIVE <1 or 0> [height]" )
+	CMDMGR_ADD_MSG( DEATHPOP,		2,		NULL,					"DEATHPOP <1 or 0>" )
 	CMDMGR_ADD_MSG( DESTROY,		1,		NULL,					"DESTROY" )
 
 	CMDMGR_ADD_MSG_SPECIAL( ValidateMsgGoalPrefix )
@@ -793,6 +795,8 @@ CAI::CAI() : CCharacter()
 	m_bBeingCarried = false;
 	m_bIsCinematicAI = false;
 	m_bCanWake = true;
+	m_bDriving = false;
+	m_bDeathPop = true;
 
 	m_bStuckWithTrackDart	= false;
 
@@ -2551,6 +2555,8 @@ bool CAI::HandleCommand(const CParsedMsg &cMsg)
 	static CParsedMsg::CToken s_cTok_ActivateOff("ACTIVATEOFF");
 	static CParsedMsg::CToken s_cTok_HealthMod("HEALTHMOD");
 	static CParsedMsg::CToken s_cTok_ArmorMod("ARMORMOD");
+	static CParsedMsg::CToken s_cTok_Drive("DRIVE");			// RETAIL: Object 0x10010417
+	static CParsedMsg::CToken s_cTok_DeathPop("DEATHPOP");		// RETAIL: Object 0x100104ba
 
 	// Let the goals have a whack at it.
 
@@ -2797,6 +2803,34 @@ bool CAI::HandleCommand(const CParsedMsg &cMsg)
 	{
 		float fMod = (float)atof( cMsg.GetArg(1).c_str() );
 		SetArmorPointsMod( fMod );
+	}
+	else if( cMsg.GetArg(0) == s_cTok_Drive )
+	{
+		// DRIVE 1 <height>: sit in the vehicle the AI is using, raised
+		// by height. DRIVE 0: get out.
+		if( cMsg.GetArgCount() > 1 )
+		{
+			if( IsTrueChar( *cMsg.GetArg(1).c_str() ))
+			{
+				if( m_pState && ( m_pState->GetStateType() == kState_HumanUseObject ))
+				{
+					float fHeight = (float)atof( cMsg.GetArg(2).c_str() );
+					((CAIHumanStateUseObject*)m_pState)->Drive( fHeight );
+				}
+			}
+			else
+			{
+				m_bDriving = false;
+				SetMoveToFloor( true );
+			}
+		}
+	}
+	else if( cMsg.GetArg(0) == s_cTok_DeathPop )
+	{
+		if( cMsg.GetArgCount() > 1 )
+		{
+			m_bDeathPop = !!IsTrueChar( *cMsg.GetArg(1).c_str() );
+		}
 	}
 	else
 	{
@@ -4870,6 +4904,8 @@ void CAI::Save(ILTMessage_Write *pMsg, uint32 dwSaveFlags)
 	SAVE_bool( m_bStuckWithTrackDart );
 	SAVE_bool( m_bIsCinematicAI );
 	SAVE_bool( m_bCanWake );
+	SAVE_bool( m_bDriving );
+	SAVE_bool( m_bDeathPop );
 }
 
 // ----------------------------------------------------------------------- //
@@ -5114,6 +5150,8 @@ void CAI::Load(ILTMessage_Read *pMsg, uint32 dwLoadFlags)
 	LOAD_bool( m_bStuckWithTrackDart );
 	LOAD_bool( m_bIsCinematicAI );
 	LOAD_bool( m_bCanWake );
+	LOAD_bool( m_bDriving );
+	LOAD_bool( m_bDeathPop );
 
 	// Recreate the specialfx message since we know all of our data is loaded and
 	// it may have gotten created inadvertently with default data by loading other
@@ -5641,7 +5679,8 @@ void CAI::UpdatePosition()
 	if (vVelocity.y > 0.0f) vVelocity.y = 0.0f;
 	g_pPhysicsLT->SetVelocity(m_hObject, &vVelocity);
 
-  	if ( ( !m_pAIMovement->IsRotationLocked() ) && ( m_fRotationTimer < m_fRotationTime ) )
+	// RETAIL: Object 0x1000acf2: a driving AI keeps its vehicle's facing.
+  	if ( ( !m_pAIMovement->IsRotationLocked() ) && ( m_fRotationTimer < m_fRotationTime ) && !m_bDriving )
    	{
 		m_fRotationTimer += g_pLTServer->GetFrameTime();
         m_fRotationTimer = Min<LTFLOAT>(m_fRotationTime, m_fRotationTimer);

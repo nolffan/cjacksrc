@@ -163,7 +163,7 @@ void CAIGoalAlarm::HandleStateUseObject()
 
 				AINodeUseObject* pNodeUseObject = (AINodeUseObject*)g_pLTServer->HandleToObject( m_hNodeUseObject );
 				if( ( !pNodeUseObject ) || 
-					( pNodeUseObject->GetStatus( m_pAI->GetPosition(), m_pAI->GetTarget()->GetObject() ) != kStatus_Ok ) )
+					( pNodeUseObject->GetStatus( m_pAI, m_pAI->GetPosition(), m_pAI->GetTarget()->GetObject() ) != kStatus_Ok ) )
 				{
 					m_fCurImportance = 0.f;
 				}
@@ -253,7 +253,7 @@ AINode* CAIGoalAlarm::FindNearestAttractorNode()
 
 	AINodeUseObject* pNodeUseObject = (AINodeUseObject*)FindGoalAttractors( LTFALSE, LTNULL );
 	if( pNodeUseObject && 
-		( pNodeUseObject->GetStatus( m_pAI->GetPosition(), m_hStimulusSource ) == kStatus_Ok ) )
+		( pNodeUseObject->GetStatus( m_pAI, m_pAI->GetPosition(), m_hStimulusSource ) == kStatus_Ok ) )
 	{
 		return pNodeUseObject;
 	}

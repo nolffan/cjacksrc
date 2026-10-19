@@ -12,6 +12,7 @@
 
 #include "stdafx.h"
 #include "InterfaceMgr.h"
+#include "ScreenJoin.h"
 #include "GameClientShell.h"
 #include "MsgIDs.h"
 #include "WeaponStringDefs.h"
@@ -134,6 +135,19 @@ const char* c_GameStateNames[] =
 	"GS_MOVIE",
 };
 
+
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	CInterfaceMgr::HideLoadScreen()
+//
+//	PURPOSE:	Called externally to hide the loading screen
+//
+// ----------------------------------------------------------------------- //
+// RETAIL: 0x10062eb0, first of InterfaceMgr.obj's code.
+void CInterfaceMgr::HideLoadScreen()
+{
+	m_LoadingScreen.Hide();
+}
 
 static LTMatrix GetCameraTransform(HOBJECT hCamera)
 {
@@ -1288,17 +1302,6 @@ void CInterfaceMgr::UpdateLoadingLevelState()
 	}
 }
 
-// ----------------------------------------------------------------------- //
-//
-//	ROUTINE:	CInterfaceMgr::HideLoadScreen()
-//
-//	PURPOSE:	Called externally to hide the loading screen
-//
-// ----------------------------------------------------------------------- //
-void CInterfaceMgr::HideLoadScreen()
-{
-	m_LoadingScreen.Hide();
-}
 
 
 // ----------------------------------------------------------------------- //
@@ -1439,7 +1442,15 @@ void CInterfaceMgr::EndSplashScreen()
 	GameType eGameType = GameStringTypeToGameType( szGameType );
 	g_pGameClientShell->SetGameType( eGameType );
 
-	if( !szIP[0] || !g_pClientMultiplayerMgr->SetupClient( szIP, NULL, szPassword ) || !g_pMissionMgr->StartGameAsClient( ))
+	// RETAIL: 0x10069d50. "+publicserver 0" joins without GameSpy's NAT
+	// negotiation; the multiplayer missions are read first.
+	char szPublicServer[256] = "";
+	LTStrCpy( szPublicServer, GetConsoleTempString( "publicserver", "1" ), ARRAY_LEN( szPublicServer ));
+	bool bPublicServer = ( atoi( szPublicServer ) != 0 );
+
+	if( !g_pMissionButeMgr->Init( MISSION_DM_FILE ) || !szIP[0] ||
+		!g_pClientMultiplayerMgr->SetupClient( NULL, szPassword, bPublicServer, true, szIP, szIP ) ||
+		!g_pMissionMgr->StartGameAsClient( ))
 	{
 		// drop them into the join menu
 		LoadFailed( SCREEN_ID_MAIN );
@@ -1637,6 +1648,59 @@ LTBOOL CInterfaceMgr::SetupMusic()
 	{
 		pMusic->ChangeIntensity(nIntensity);
 	}
+
+	m_ProfileMgr.ImplementMusicVolume();
+
+    return LTTRUE;
+}
+
+// ----------------------------------------------------------------------- //
+
+// RETAIL: 0x10065b10. Contract J.A.C.K.'s, after a disconnection: stop
+// what plays and start the menu's music.
+LTBOOL CInterfaceMgr::SetupMenuMusic()
+{
+	CMusic* pMusic = g_pGameClientShell->GetMusic();
+    if (!pMusic) return LTFALSE;
+
+	pMusic->Stop( LTDMEnactDefault );
+
+	if (!m_Settings.MusicEnabled() || !GetConsoleInt("MusicActive",0))
+		return LTTRUE;
+
+	char szFile[128] = "";
+	g_pClientButeMgr->GetInterfaceAttributeString("MenuMusicCtrlFile",szFile,sizeof(szFile));
+    if (!strlen(szFile)) return LTFALSE;
+
+	if (!pMusic->IsInitialized())
+	{
+        if (!pMusic->Init(g_pLTClient))
+		{
+            return LTFALSE;
+		}
+	}
+
+	char szDir[128] = "";
+	g_pClientButeMgr->GetInterfaceAttributeString("MenuMusicDir",szDir,sizeof(szDir));
+	if (!strlen(szDir))
+	{
+        return LTFALSE;
+	}
+
+	CMusicState MusicState;
+	MusicState.nIntensity = g_pLayoutMgr->GetScreenMusicIntensity(GetScreenMgr( )->GetCurrentScreenID());
+	strcpy(MusicState.szDirectory, szDir);
+	strcpy(MusicState.szControlFile, szFile);
+
+	if (!pMusic->RestoreMusicState(MusicState))
+	{
+		return LTFALSE;
+	}
+
+	if (!pMusic->IsPlaying())
+		pMusic->Play( -1, LTDMEnactDefault );
+
+	pMusic->ChangeIntensity( MusicState.nIntensity, LTDMEnactDefault );
 
 	m_ProfileMgr.ImplementMusicVolume();
 
@@ -2388,6 +2452,9 @@ LTBOOL CInterfaceMgr::OnEvent(uint32 dwEventID, uint32 dwParam)
 				Disconnected(dwParam);
 			}
 			m_bIntentionalDisconnect = false;
+
+			// RETAIL: 0x1006a1f5
+			SetupMenuMusic( );
 		}
 		break;
 
@@ -2841,50 +2908,9 @@ LTBOOL CInterfaceMgr::OnCommandOff(int command)
 		return LTTRUE;
 
 
+	// RETAIL: 0x10063ee0 has no activate, fire or holster cases.
 	switch (command)
 	{
-		case COMMAND_ID_ACTIVATE :
-		{
-            return LTFALSE;
-		}
-		break;
-
-		case COMMAND_ID_FIRING :
-		{
-			if (IsChoosingWeapon())
-			{
-                uint8 nCurrWeapon = m_WeaponChooser.GetCurrentSelection();
-				m_WeaponChooser.Close();
-				g_pPlayerMgr->ChangeWeapon( nCurrWeapon );
-
-                return LTTRUE;
-
-			}
-			else if (IsChoosingAmmo())
-			{
-                uint8 nCurrAmmo = m_AmmoChooser.GetCurrentSelection();
-				m_AmmoChooser.Close();
-
-				IClientWeaponBase *pClientWeapon = g_pPlayerMgr->GetCurrentClientWeapon();
-				if ( pClientWeapon )
-				{
-					pClientWeapon->ChangeAmmoWithReload( nCurrAmmo );
-				}
-
-                return LTTRUE;
-			}
-
-		}
-		break;
-
-		case COMMAND_ID_HOLSTER :
-		{
-			ASSERT( 0 != g_pPlayerMgr );
-			g_pPlayerMgr->ToggleHolster( true );
-			return LTTRUE;
-		}
-		break;
-
 		case COMMAND_ID_LASTWEAPON :
 		{
 			ASSERT( 0 != g_pPlayerMgr );
@@ -4526,7 +4552,11 @@ void CInterfaceMgr::OnLButtonDown(int x, int y)
 		case GS_MOVIE:
 		{
 			// They pressed a mouse button - next movie
-			NextMovie();
+			// RETAIL: 0x1006aa00, 0x1006aae0 end them all once the game has run before.
+			bool bEndMovies = false;
+			if( g_pVersionMgr && g_pVersionMgr->GetRegMgr( )->Get( "GameRuns", 0 ) > 1 )
+				bEndMovies = true;
+			NextMovie( bEndMovies );
 		}	
 		break;
 
@@ -4634,7 +4664,11 @@ void CInterfaceMgr::OnRButtonDown(int x, int y)
 		case GS_MOVIE:
 		{
 			// They pressed a button - next movie...
-			NextMovie();
+			// RETAIL: 0x1006aa00, 0x1006aae0 end them all once the game has run before.
+			bool bEndMovies = false;
+			if( g_pVersionMgr && g_pVersionMgr->GetRegMgr( )->Get( "GameRuns", 0 ) > 1 )
+				bEndMovies = true;
+			NextMovie( bEndMovies );
 		}	
 		break;
 		
@@ -5966,44 +6000,40 @@ void CInterfaceMgr::Disconnected(uint32 nDisconnectFlag)
 
 }
 
+// RETAIL: 0x10065080. Back to the join (or host) screen, or the main
+// one after a command line join, saying why.
 void CInterfaceMgr::ConnectionFailed(uint32 nConnectionError)
 {
-	if (GetGameState() == GS_LOADINGLEVEL)
-	{
-		if (IsMultiplayerGame())
-		{
-			// RETAIL: one join screen, for the internet and the LAN
-			LoadFailed(SCREEN_ID_JOIN);
+	uint32 nMsgId = (uint32)-1;
+	eScreenID eScreen = SCREEN_ID_MAIN;
 
-		}
-		else
+	if (IsMultiplayerGame())
+	{
+		bool bNoGame = ( g_pClientMultiplayerMgr->GetStartGameRequest( ).m_Type == 0 );
+		switch( g_pClientMultiplayerMgr->GetServerGameOptions( ).m_nServerStatus )
 		{
-			LoadFailed(SCREEN_ID_MAIN);
+			case 2:
+				nMsgId = IDS_NETERR_SELECTSERVICE;
+				break;
+			case 3:
+				nMsgId = bNoGame ? IDS_NETERR_HOSTSESSION : IDS_NETERR_JOINSESSION;
+				break;
+		}
+
+		if( !GetCommandLineJoin( ))
+		{
+			eScreen = bNoGame ? SCREEN_ID_HOST : SCREEN_ID_JOIN;
+			CScreenMgr* pScreenMgr = GetScreenMgr( );
+			pScreenMgr->ClearHistory( );
+			pScreenMgr->AddScreenToHistory( SCREEN_ID_MAIN );
+			pScreenMgr->AddScreenToHistory( SCREEN_ID_MULTI );
 		}
 	}
-	else
-	{
-		ClearAllScreenBuffers();
-		if (IsMultiplayerGame() && !GetCommandLineJoin( ))
-		{
-			SwitchToScreen(SCREEN_ID_MULTI);
-		}
-		else
-		{
-			SwitchToScreen(SCREEN_ID_MAIN);
-		}
-	}
 
-	MBCreate mb;
 	if (nConnectionError == LT_REJECTED)
-	{
-		ShowMessageBox(IDS_SERVERFULL,&mb);
-	}
-	else
-	{
-		ShowMessageBox(IDS_NETERR_JOINSESSION,&mb);
-	}
+		nMsgId = IDS_SERVERFULL;
 
+	LoadFailed( eScreen, nMsgId );
 }
 
 // hides or shows cursor based on current game state
@@ -6302,7 +6332,12 @@ bool CInterfaceMgr::HandleDisplayTimerMsg( ILTMessage_Read& msg )
 void CInterfaceMgr::LoadFailed(eScreenID eScreenToShow /*= SCREEN_ID_NONE*/, uint32 nLoadFailedMsgId /* = -1 */ )  
 {	
 	m_bLoadFailed = LTTRUE;
-	m_nLoadFailedMsgId = nLoadFailedMsgId;
+
+	// RETAIL: 0x10063960. A server that turned us away is full.
+	if( nLoadFailedMsgId == (uint32)-1 && g_pClientMultiplayerMgr->GetLastConnectionResult( ) == LT_REJECTED )
+		m_nLoadFailedMsgId = IDS_SERVERFULL;
+	else
+		m_nLoadFailedMsgId = nLoadFailedMsgId;
 
 	if (eScreenToShow == SCREEN_ID_NONE)
 	{
@@ -6355,6 +6390,18 @@ bool CInterfaceMgr::StartingNewGame( )
 {
 	GetClientInfoMgr()->RemoveAllClients();
 	SkipPreLoad( false );
+
+	// RETAIL: 0x10065560 forgets the servers the join screen found, and
+	// the patch check.
+	CScreenJoin* pJoin = dynamic_cast<CScreenJoin*>( GetScreenMgr( )->GetScreenFromID( SCREEN_ID_JOIN ));
+	if( pJoin )
+		pJoin->ClearServers( );
+
+	if( m_pGameSpyPatchInfo )
+	{
+		IGameSpyPatchInfo::Delete( m_pGameSpyPatchInfo );
+		m_pGameSpyPatchInfo = NULL;
+	}
 
 	return true;
 }

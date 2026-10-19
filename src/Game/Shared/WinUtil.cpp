@@ -7,6 +7,7 @@
 #include <IO.h>
 #include "ltbasedefs.h"
 
+// RETAIL: Object 0x10168110 (nothing in Object.lto calls it).
 BOOL CWinUtil::GetMoviesPath (char* strPath)
 {
 	char chDrive   = 'A';

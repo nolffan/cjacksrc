@@ -121,6 +121,13 @@ void CAIGoalSniper::UpdateGoal()
 {
 	// Intentionally do not call super.
 
+	// RETAIL: Object 0x100356e0: keep looking for whoever is targeted.
+
+	if( m_pAI->HasTarget() )
+	{
+		m_hSeekTarget = m_pAI->GetTarget()->GetObject();
+	}
+
 	CAIState* pState = m_pAI->GetState();
 
 	switch(pState->GetStateType())
@@ -169,7 +176,24 @@ void CAIGoalSniper::HandleStateSniper()
 			break;
 
 		case kSStat_StateComplete:
-			CompleteUseObject();
+			{
+				// RETAIL: Object 0x10035620: a perch the target has left the
+				// view of is not one to go back to.
+
+				EnumNodeStatus eStatus = kStatus_Ok;
+				AINodeUseObject* pNode = ((CAIHumanStateUseObject*)m_pAI->GetState())->GetUseNode();
+				if( pNode )
+				{
+					eStatus = pNode->GetStatus( m_pAI, m_pAI->GetPosition(), m_hSeekTarget );
+				}
+
+				CompleteUseObject();
+
+				if( eStatus != kStatus_Ok )
+				{
+					m_hLastNodeUseObject = LTNULL;
+				}
+			}
 			break;
 
 		// Unexpected StateStatus.
@@ -243,10 +267,10 @@ AINode* CAIGoalSniper::HandleTargetPos()
 
 		if( pGuardNode )
 		{
-			pSniperNode = pPlayerInfoVolume->FindOwnedViewNode( m_pAI, pTemplate->aAttractors[iAttractor], pGuardNode->m_hObject );
+			pSniperNode = pPlayerInfoVolume->FindOwnedViewNode( m_pAI, pTemplate->aAttractors[iAttractor], pGuardNode->m_hObject, m_hSeekTarget );
 		}
 		else {
-			pSniperNode = pPlayerInfoVolume->FindViewNode( m_pAI, pTemplate->aAttractors[iAttractor], m_pAI->GetPosition(), LTTRUE );
+			pSniperNode = pPlayerInfoVolume->FindViewNode( m_pAI, pTemplate->aAttractors[iAttractor], m_pAI->GetPosition(), LTTRUE, m_hSeekTarget );
 		}
 
 		if( pSniperNode )
@@ -283,22 +307,21 @@ AINode* CAIGoalSniper::FindNearestAttractorNode()
 		m_hSeekTarget = m_pAI->GetTarget()->GetObject();
 	}
 
-	AINode* pNode;
+	// RETAIL: the sniper's perch is the nearest sniper node (Contract
+	// J.A.C.K.'s AINodeSniper, a UseObject node) the target is in view of:
+	// one owned by the AI's guard node, or else an unowned one.
 
-	// Find a guard node owned by this AI.
+	AINode* pNode = LTNULL;
 
 	AINode* pGuardNode = g_pAINodeMgr->FindOwnedNode( kNode_Guard, m_pAI->m_hObject );
 	if( pGuardNode )
 	{
-		// Only find attractor nodes owned by the owner node.
-
-		pNode = FindGoalAttractors( LTTRUE, pGuardNode->m_hObject );
+		pNode = g_pAINodeMgr->FindNearestNodeFromThreat( m_pAI, kNode_Sniper, m_pAI->GetPosition(), m_hSeekTarget, 1.f, pGuardNode->m_hObject );
 	}
-	else
-	{
-		// Find an unowned node.
 
-		pNode = FindGoalAttractors( LTFALSE, LTNULL );
+	if( !pNode )
+	{
+		pNode = g_pAINodeMgr->FindNearestNodeFromThreat( m_pAI, kNode_Sniper, m_pAI->GetPosition(), m_hSeekTarget, 1.f );
 	}
 
 	// Without regard to the nodes' radius, any view of the target will do.
@@ -343,6 +366,17 @@ void CAIGoalSniper::SetSniperNode(AINodeUseObject* pNewNode)
 	}
 
 	m_hNodeUseObject = pNewNode ? pNewNode->m_hObject : LTNULL;
+
+	// RETAIL: Object 0x10034f90
+
+	if( pNewNode )
+	{
+		AITRACE( AIShowGoals, ( m_pAI->m_hObject, "SETTING SNIPER NODE: %s (%s)", ::ToString( pNewNode->GetName() ), pNewNode->GetNodeContainingVolume()->GetName() ) );
+	}
+	else
+	{
+		AITRACE( AIShowGoals, ( m_pAI->m_hObject, "SETTING SNIPER NODE: NULL" ) );
+	}
 }
 
 // ----------------------------------------------------------------------- //

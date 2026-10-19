@@ -525,58 +525,37 @@ void KeyFramer::GoInActive()
 
 LTBOOL KeyFramer::CreateKeyList()
 {
-	ObjArray <HOBJECT, MAX_OBJECT_ARRAY_SIZE> objArray;
-	int numObjects;
-	HOBJECT hObject;
+	// RETAIL: Object 0x100eb090
 
-	if (m_sObjectName.empty() || !m_hstrBaseKeyName || m_pObjectList)
+	if (!m_pKeys && !LoadKeys())
 		return LTFALSE;
 
-	// Make sure our object and key index are valid...
-
-    const char* pNames = m_sObjectName.c_str();
-	if (!pNames || !pNames[0])
+	if (!m_pObjectList && !CreateObjectList())
 		return LTFALSE;
 
+	return LTTRUE;
+}
 
-	// Find all the objects with the given names (m_hstrObjectName may be
-	// of the form: name1;name2;name3...
 
-	ConParse parse;
-	parse.Init(pNames);
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	KeyFramer::LoadKeys
+//
+//	PURPOSE:	Read our keys from the world's blind data.
+//
+// ----------------------------------------------------------------------- //
 
-    m_pObjectList = g_pLTServer->CreateObjectList();
-	if (!m_pObjectList)
-		return LTFALSE;
+bool KeyFramer::LoadKeys()
+{
+	// RETAIL: Object 0x100eab20
 
-	while (g_pCommonLT->Parse(&parse) == LT_OK)
+	while (m_pKeys)
 	{
-		if (parse.m_nArgs > 0 && parse.m_Args[0])
-		{
-			// Find the objects...
-
-            g_pLTServer->FindNamedObjects(parse.m_Args[0],objArray);
-
-			numObjects = objArray.NumObjects();
-
-			for (int i = 0; i < numObjects; i++)
-			{
-				hObject = objArray.GetObject(i);
-                g_pLTServer->AddObjectToList(m_pObjectList, hObject);
-                g_pLTServer->CreateInterObjectLink(m_hObject, hObject);
-			}
-		}
+		KEYNODE* pNext = m_pKeys->pNext;
+		debug_delete(m_pKeys);
+		m_pKeys = pNext;
 	}
-
-
-	// If there aren't any objects, don't continue...
-
-	if (m_pObjectList->m_nInList < 1)
-	{
-        g_pLTServer->RelinquishList(m_pObjectList);
-		m_pObjectList = LTNULL;
-		return LTFALSE;
-	}
+	m_pKeys = LTNULL;
 
 	// Create the list of keys...
 	LTFLOAT fTime = 0.0f;
@@ -584,17 +563,17 @@ LTBOOL KeyFramer::CreateKeyList()
 
 	// make sure we have valid blind data
 	if( m_nKeyDataIndex == 0xffffffff )
-		return LTFALSE;
+		return false;
 
 	// get the blind data for this keyframer
 	uint8* blindData = NULL;
 	uint32 blindDataSize = 0;
 	if( g_pLTServer->GetBlindObjectData( m_nKeyDataIndex, KEYFRAMER_BLINDOBJECTID, blindData, blindDataSize ) != LT_OK )
-		return LTFALSE;
+		return false;
 	uint8* curBlindData = blindData;
 
 	// grab the number of keys in the blind data
-	m_nNumKeys = *((uint32*)curBlindData);
+	m_nNumKeys = (uint16)*((uint32*)curBlindData);
 	curBlindData += 4;
 
 	for( uint32 i = 0; i < m_nNumKeys; i++ )
@@ -626,13 +605,82 @@ LTBOOL KeyFramer::CreateKeyList()
 	g_pLTServer->FreeBlindObjectData( m_nKeyDataIndex, KEYFRAMER_BLINDOBJECTID );
 
 
-	// If we didn't find any keys, return...
+	return (m_pKeys != LTNULL);
+}
 
-	if (!m_pKeys)
+
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	KeyFramer::CreateObjectList
+//
+//	PURPOSE:	Find the objects we key-frame.
+//
+// ----------------------------------------------------------------------- //
+
+bool KeyFramer::CreateObjectList()
+{
+	ObjArray <HOBJECT, MAX_OBJECT_ARRAY_SIZE> objArray;
+	int numObjects;
+	HOBJECT hObject;
+
+	// RETAIL: Object 0x100eadb0.  Contract J.A.C.K. builds the object list
+	// separately from the keys, and again whenever the keyframer is turned
+	// on without any objects (they may not have existed yet)...
+
+	if (!m_pKeys || m_sObjectName.empty())
+		return false;
+
+	if (m_pObjectList)
 	{
-		return LTFALSE;
+        g_pLTServer->RelinquishList(m_pObjectList);
+		m_pObjectList = LTNULL;
 	}
 
+	// Make sure our object and key index are valid...
+
+    const char* pNames = m_sObjectName.c_str();
+	if (!pNames || !pNames[0])
+		return false;
+
+
+	// Find all the objects with the given names (m_hstrObjectName may be
+	// of the form: name1;name2;name3...
+
+	ConParse parse;
+	parse.Init(pNames);
+
+    m_pObjectList = g_pLTServer->CreateObjectList();
+	if (!m_pObjectList)
+		return false;
+
+	while (g_pCommonLT->Parse(&parse) == LT_OK)
+	{
+		if (parse.m_nArgs > 0 && parse.m_Args[0])
+		{
+			// Find the objects...
+
+            g_pLTServer->FindNamedObjects(parse.m_Args[0],objArray);
+
+			numObjects = objArray.NumObjects();
+
+			for (int i = 0; i < numObjects; i++)
+			{
+				hObject = objArray.GetObject(i);
+                g_pLTServer->AddObjectToList(m_pObjectList, hObject);
+                g_pLTServer->CreateInterObjectLink(m_hObject, hObject);
+			}
+		}
+	}
+
+
+	// If there aren't any objects, don't continue...
+
+	if (m_pObjectList->m_nInList < 1)
+	{
+        g_pLTServer->RelinquishList(m_pObjectList);
+		m_pObjectList = LTNULL;
+		return false;
+	}
 
 	// See if we need to calculate the velocity info...
 
@@ -678,7 +726,7 @@ LTBOOL KeyFramer::CreateKeyList()
 		}
 	}
 
-	return LTTRUE;
+	return true;
 }
 
 
@@ -1334,7 +1382,15 @@ void KeyFramer::Update()
 	{
 		m_bFirstUpdate = LTFALSE;
 
-		CreateKeyList();
+		// RETAIL: Object 0x100ec990
+
+		if (m_pKeys || LoadKeys())
+		{
+			if (!m_pObjectList)
+			{
+				CreateObjectList();
+			}
+		}
 
 		if (m_hstrTargetName)
 		{
@@ -1346,6 +1402,11 @@ void KeyFramer::Update()
 
 		if (m_bStartActive || m_bStartPaused)
 		{
+			if ((!m_pObjectList || !m_pObjectList->m_nInList) && !CreateObjectList())
+			{
+				return;
+			}
+
 			GoActive();
 		}
 
@@ -2070,6 +2131,13 @@ void KeyFramer::On()
 	}
 	else
 	{
+		// RETAIL: Object 0x100eb830
+
+		if ((!m_pObjectList || !m_pObjectList->m_nInList) && !CreateObjectList())
+		{
+			return;
+		}
+
 		GoActive();
 	}
 }

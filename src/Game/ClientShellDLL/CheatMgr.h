@@ -67,7 +67,6 @@ class CCheatMgr
 		void	NextMission();
 		void	BootPlayer( CParsedMsg &cMsg );
 		void	Version();
-		void	BuildGuid();
 		void	GimmeGun( CParsedMsg &cMsg );
 		void	GimmeMod( CParsedMsg &cMsg	);
 		void	GimmeGear( CParsedMsg &cMsg );
@@ -91,6 +90,7 @@ class CCheatMgr
         void    Pos1stCam(LTBOOL bMode);
         void    SetCamPosRot(LTBOOL bMode);
 		void	ChaseToggle();
+		void	SaveVehicle();
 };
 
 extern CCheatMgr*		g_pCheatMgr;

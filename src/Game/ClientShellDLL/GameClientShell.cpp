@@ -25,6 +25,14 @@
 #include "VolumeBrushFX.h"
 #include "client_physics.h"
 #include "WinUtil.h"
+
+// RETAIL: CShell.dll keeps functions nothing calls: CWinUtil::GetMoviesPath
+// (0x10117190); the linker keeps ours too.
+#pragma comment(linker, "/include:?GetMoviesPath@CWinUtil@@SAHPAD@Z")
+// The same for the server's halves of CTeam (0x100f8a00, 0x100f8b60).
+#pragma comment(linker, "/include:?WriteData@CTeam@@QAEXPAVILTMessage_Write@@_N@Z")
+#pragma comment(linker, "/include:?Init@CTeam@@QAEXEPBDI@Z")
+#pragma comment(linker, "/include:?UpdateEffectsNoRender@CGameClientShell@@IAEXXZ")
 #include "WeaponStringDefs.h"
 #include "iltmath.h"
 #include "iltphysics.h"
@@ -628,6 +636,7 @@ CGameClientShell::CGameClientShell()
  
 	m_bRunningPerfTest = false;
 	m_pPerformanceTest = LTNULL;
+	m_bServerAppLaunched = false;
 }
 
 
@@ -1560,6 +1569,13 @@ void CGameClientShell::OnExitWorld()
 {
     ((ILTClientSoundMgr*)g_pLTClient->SoundMgr())->PauseSounds();
 
+	// RETAIL: 0x10045060 ends the level's asset list.
+	if( GetConsoleBool( "MakeAssetList", false ))
+	{
+		WriteConsoleBool( "ShowFileAccess", false );
+		g_pLTClient->CPrint( "EndList" );
+	}
+
 	// Not in world any more.
     m_bInWorld = false;
 
@@ -1809,7 +1825,7 @@ void CGameClientShell::PostUpdate()
 		m_bQuickSave = false;
 		if( !g_pClientSaveLoadMgr->QuickSave() )
 		{
-			g_pLTClient->CPrint( "ERROR - Quick Save Failed!" );
+			DebugCPrint( 1, "ERROR - Quick Save Failed!" );	// RETAIL: 0x10046473
 		}
 	}
 
@@ -4162,6 +4178,23 @@ void CGameClientShell::ResetDynamicWorldProperties(LTBOOL bUseWorldFog)
 
 // ----------------------------------------------------------------------- //
 //
+//	ROUTINE:	CGameClientShell::UpdateEffectsNoRender()
+//
+//	PURPOSE:	Update the effects as RenderCamera does, without rendering
+//
+// ----------------------------------------------------------------------- //
+
+// RETAIL: 0x10047da0
+void CGameClientShell::UpdateEffectsNoRender()
+{
+	GetPlayerMgr()->PreRender();
+	m_sfxMgr.UpdateSpecialFX();
+	m_ClientFXMgr.Pause(IsServerPaused());
+	m_ClientFXMgr.UpdateAllActiveFX( IsMultiplayerGame( ) || m_bMainWindowFocus );
+}
+
+// ----------------------------------------------------------------------- //
+//
 //	ROUTINE:	CGameClientShell::RenderCamera()
 //
 //	PURPOSE:	Sets up the client and renders the camera
@@ -4193,7 +4226,8 @@ void CGameClientShell::RenderCamera(bool bDrawInterface)
 	m_ClientFXMgr.Pause(IsServerPaused());
 
 	//update all the effects status as well as any that might effect the camera
-	m_ClientFXMgr.UpdateAllActiveFX( m_bMainWindowFocus );
+	// (RETAIL: 0x10047cdb, always in multiplayer)
+	m_ClientFXMgr.UpdateAllActiveFX( IsMultiplayerGame( ) || m_bMainWindowFocus );
 
     g_pLTClient->Start3D();
 
@@ -5020,44 +5054,20 @@ bool CGameClientShell::LaunchPatchUpdater( char const* pszURL )
 //
 // --------------------------------------------------------------------------- //
 
+// RETAIL: 0x10048320. Contract J.A.C.K.'s dedicated server, through the
+// shell like the patch updater.
 bool CGameClientShell::LauncherServerApp( char const* pszProfileFile )
 {
-	PROCESS_INFORMATION procInfo;
-	STARTUPINFO startInfo;
-	RMode rMode;
-
-	// Save the current render mode.  We'll need to restore it if the serverapp
-	// launching fails.
-	g_pLTClient->GetRenderMode( &rMode );
-
-	// Shutdown the renderer, minimize it, and hide it...
-	g_pLTClient->ShutdownRender( 0 ); // RSHUTDOWN_MINIMIZEWINDOW | RSHUTDOWN_HIDEWINDOW );
-
-	// Initialize the startup info.
-	memset( &startInfo, 0, sizeof( STARTUPINFO ));
-	startInfo.cb = sizeof( STARTUPINFO );
-
-	// Setup the command line.
-	std::string sCmdLine = "NOLF2Srv.exe -profile ";
-	
 	// Enclose the profile name in quotes since we allow spaces in the name...
+	std::string sParameters = "-profile ";
+	sParameters += "\"";
+	sParameters += pszProfileFile;
+	sParameters += "\"";
 
-	sCmdLine += "\"";
-	sCmdLine += pszProfileFile;
-	sCmdLine += "\"";
-
-	// Start the server app.
-	if( !CreateProcess( "NOLF2Srv.exe", ( char * )sCmdLine.c_str( ), NULL, NULL, FALSE, 0, NULL, NULL, 
-		&startInfo, &procInfo ))
-	{
-		// Serverapp failed.  Restore the render mode.
-		g_pLTClient->SetRenderMode( &rMode );
+	if( !LaunchApplication( "ContractJackServer.exe", sParameters.c_str( )))
 		return false;
-	}
 
-	// We're done with this process.
-	g_pLTClient->Shutdown();
-
+	m_bServerAppLaunched = true;
 	return true;
 }
 

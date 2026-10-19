@@ -534,8 +534,10 @@ class AIVolumePlayerInfo : public AIInformationVolume
 
 		// View nodes
 
-		AINode* FindViewNode(CAI* pAI, EnumAINodeType eNodeType, const LTVector& vPos, LTBOOL bMustBeUnowned) const;
-		AINode* FindOwnedViewNode(CAI* pAI, EnumAINodeType eNodeType, HOBJECT hOwner) const;
+		// RETAIL: Object 0x10079e30, 0x10079f90: Contract J.A.C.K. also skips
+		// nodes a target makes unsafe.
+		AINode* FindViewNode(CAI* pAI, EnumAINodeType eNodeType, const LTVector& vPos, LTBOOL bMustBeUnowned, HOBJECT hTarget = LTNULL) const;
+		AINode* FindOwnedViewNode(CAI* pAI, EnumAINodeType eNodeType, HOBJECT hOwner, HOBJECT hTarget = LTNULL) const;
 
 		// Handlers
 

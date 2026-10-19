@@ -930,6 +930,8 @@ class CAIHumanStateUseObject : public CAIHumanState
 		CMusicMgr::Mood GetMusicMood() { return CMusicMgr::eMoodRoutine; }
 
 		virtual LTBOOL SetNode(AINodeUseObject* pUseNode);
+		AINodeUseObject* GetUseNode() { return m_pUseNode; }
+		void Drive( float fHeight );	// RETAIL: Object 0x1003ea90
 		void StateHandlesNodeLocking(LTBOOL bStateHandlesNodeLocking) { m_bStateHandlesNodeLocking = bStateHandlesNodeLocking; }
 		void SetAwareness(EnumAnimProp eAwareness) { m_eAwareness = eAwareness; }
 		void SetActivity(EnumAnimProp eActivity) { m_eActivity = eActivity; }
@@ -1333,6 +1335,8 @@ class CAIHumanStateCharge : public CAIHumanState
 		LTFLOAT		m_fYellDistanceSqr;
 		LTBOOL		m_bStopped;
 		LTFLOAT		m_fStopDistanceSqr;
+		LTBOOL		m_bLimitDistance;	// RETAIL: Object 0x1004a200, charge no further than this from
+		LTVector	m_vStartPos;		// where the charge started
 };
 
 class CAIHumanStateAnimate : public CAIHumanState

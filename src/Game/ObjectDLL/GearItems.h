@@ -29,7 +29,7 @@ class GearItem : public PickupItem
         uint32          EngineMessageFn(uint32 messageID, void *pData, LTFLOAT fData);
 
 		virtual void	ObjectTouch(HOBJECT hObject, bool bForcePickup=false);
-		virtual void	PickedUp(ILTMessage_Read *pMsg);
+		virtual void	PickedUp(bool bWasPickedUp, bool bDisplayMsg, bool bLeaveItem);
 		virtual void	Respawn( );
 
         uint8           m_nGearId;

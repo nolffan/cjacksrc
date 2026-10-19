@@ -594,7 +594,7 @@ class CWeaponMgr : public CGameButeMgr
 
 #ifndef _CLIENTBUILD
         LTBOOL      ReadWeaponProp(char* pPropName, uint8 & m_nWeaponId, uint8 & m_nAmmoId);
-        void        ReadWeapon(char* szString, uint8 & nWeaponId, uint8 & nAmmoId);
+        void        ReadWeapon(char const* szString, uint8 & nWeaponId, uint8 & nAmmoId);
 #endif // _CLIENTBUILD
 
 		LTBOOL      Init(const char* szAttributeFile = WEAPON_DEFAULT_FILE);

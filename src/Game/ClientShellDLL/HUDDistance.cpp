@@ -72,6 +72,18 @@ LTBOOL CHUDDistance::Init()
 	return LTTRUE;
 }
 
+// RETAIL: 0x10057580: back to nothing shown.
+void CHUDDistance::Term()
+{
+	m_fAlpha = 0.0f;
+	m_bDraw = false;
+	m_bBlink = false;
+	m_fFadeIncrement = 0.0f;
+	m_nFadeDir = 1;
+	m_bFadeOut = false;
+	m_hIcon = LTNULL;
+}
+
 // ----------------------------------------------------------------------- //
 //
 //  ROUTINE:	CHUDDistance::Render

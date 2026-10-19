@@ -431,6 +431,76 @@ dedicated server (package 7).
   server prints "Could not find requested variable
   'Demolition_GameState'" (a world's command variable; not checked
   against retail's).
+- **Unwritten Object.lto functions (this round)**: written from retail:
+  Explosion's console variables (ExKillZone, ExRadiusMulti, ExSPKillZone,
+  ExSPRadiusMulti, ExIgnoreWalls, ExShowRadius; a single player's own
+  blasts are bigger), its kill zone and IsBlocked (only players are
+  shielded by walls); KeyFramer's LoadKeys/CreateObjectList (the object
+  list is rebuilt when turned on without one); EventCounterDebug; the
+  scatter and snow volumes' save/load and SFX resend, SnowVolume ON/OFF
+  with StartOn (client: SNOWFX_MSG_ON; ours stops the snow at once where
+  retail lets the falling snow finish); AINodeSniper (a UseObject node
+  with Fov and ThreatRadius; the sniper searches kNode_Sniper nodes,
+  owned by its guard node first, through
+  CAINodeMgr::FindNearestNodeFromThreat's new owner argument); the
+  sniper's StateComplete case; CAIGoalAttackFromCover SEEKPLAYER;
+  CAIGoalAttackMelee only with a straight path; CAIGoalCheckBody ignores
+  bodies for 30 s after seeing an enemy; the charge state's start
+  position; Door reopens for an AI within 64 while closing;
+  CDestructibleModel's world model surface from the override only;
+  MID_PICKEDUP carries three flags (picked up, show, leave the item;
+  PickupItem::PickedUp takes them); AmmoBox saves its model and skin;
+  DisplayTimer's Type (None, Team0, Team1, BombTarget1-3: the client
+  already reads it as the timer id; it was sending the team id); the
+  cheat list loses CHEAT_BUILDGUID and gains mpsavevehicle (the server
+  and CShell enumerations now agree with retail's: gimmegun is 16); the
+  heat-seeking sort prefers characters; CWeaponMgr::ReadWeapon copies its
+  string; DoVectorFilterFn caches its classes; CPlayerObj's team in
+  ClientData; the respawn body goes at once; VolumeBrush show/hide
+  resends the players' containers; SetPitch also sets the object's
+  unguaranteed data (our client still reads CFX_PITCH, which is sent too:
+  **cshell**, read GetObjectUnguaranteedData like retail's CCharacterFX);
+  StartSwitchingWorlds pauses only once; CLiteObjectMgr (de)activation
+  ignores unregistered objects. progress/Object-screen-exclude.csv
+  lists the enumerator's interior splits (jump-table cases, blocks after
+  an early return, stray targets). Object.lto: 83 -> 26 unwritten.
+  Also: InitGameType takes the host's options (OnServerInitialized
+  reads them), CPlayerAttachments::HideAttachments, CLiteObjectMgr::
+  HasObject, the sniper goal's UpdateGoal. Still
+  unwritten: the heat-seeking sort's instantiations (0x10121550..
+  0x10122330; the predicate did not pair them), CSoundFilterMgr's
+  constructor (0x1014a880: retail's filter list is a map and a vector,
+  not a CTList), the hash compare of ObjectTemplateMgr's hash_map
+  (0x10101790, inlined in ours), MFCStub CString's MakeUpper/MakeLower/
+  MakeReverse (0x10173970, nothing calls them), CWinUtil::GetMoviesPath
+  (0x10168110, nothing calls it in Object.lto), the vector constructor
+  iterators (0x100071a0, 0x100120a0), CAnimationContext::IsPropSet
+  (0x10082f10), CAIGoalInvestigate::HandleStateInvestigate's CJ changes
+  (0x1002a9d0), CPlayerObj::TransferWeapons (0x10109890),
+  CDestructible::DoDamage (0x100c1a00) and a few small ones the pairing
+  moved (0x100dbbb0, 0x100f2390, 0x101609e0, 0x100356e0, 0x100352e0,
+  0x1008f900, 0x1009eea0, 0x10110900).
+- **Kept functions, and the next 13**: retail keeps functions nothing
+  calls from some objects (no `/Gy`): MFCStub (CString::MakeUpper/Lower/
+  Reverse, CRect::TopLeft/BottomRight in both DLLs), and Object.lto's
+  WinUtil, TeamMgr, GunMount, WeaponMgr (the FX forwarders) and
+  AIVolumeMgr (the GetVolume thunks): those build with `/Ox /GF`. All of
+  Object.lto at `/Ox /GF` adds 78 unplaced functions, so retail's other
+  objects did have `/Gy`. Merged rows are split in extent-splits.csv; the
+  compiler's vector iterators are excluded (progress.py never pairs ours).
+  GameSpy now gets the server's own UDP socket (ILTServer::GetUDPSocket,
+  0x100dfa33): it answered on port+1 before. Object.lto: 13 unwritten,
+  each a function ours has that the pairing does not place:
+  0x10120b20 (the heat-seeking update since the sort predicate changed),
+  UpdateSwitchingWorlds 0x100decc0, TransferWeapons 0x10109890,
+  CDestructible::DoDamage 0x100c1a00, CSoundButeMgr's constructor
+  0x1014a880 (CHierarchicalButeMgr and its index hash_map inlined),
+  SaveOverlays 0x10110900, SetPitch 0x1009eea0 (also sends CFX_PITCH),
+  HandleStateInvestigate 0x1002a9d0, ObjectTemplateMgr's hash compare
+  0x10101790, CAIGoalSniper's OnLinkBroken 0x100352e0, DamageStruct::Clear
+  0x10012170, 0x10082ed0, 0x101526d0. CShell's four VehicleMgr rows
+  (0x101055f0 the lure's key handler, 0x10105630, 0x10107850, ...) are
+  game's now and not yet done.
 - **Where it stopped** (the coordinator's pause, after that commit).
   Next: 0x10121800/0x10121550/0x10122330 are std::sort's for the
   heat-seeking targets (ours instantiates its own); CJ's AI node
@@ -1136,8 +1206,7 @@ Round 1 (branch `cshell`), the items 8b leaves open:
   Escape of its own, and the default campaign listing DE_ worlds for
   deathmatch and Demolition.
 - ClientMultiplayerMgr has no WON server directory member (m_sModName at
-  0x166c as retail's). GetServerDir() returns NULL for NOLF2's join
-  screen until CScreenJoin is rewritten (below).
+  0x166c as retail's); GetServerDir() returns NULL.
 - The checkpoint save: CSaveLoadMgr::CheckpointSaveExists and
   GetCheckpointSaveFile ("CheckpointSave", "Checkpoint.sav"),
   kLoadGameTypeCheckpoint (3, so kLoadGameTypeContinue is 4),
@@ -1154,17 +1223,75 @@ Round 1 (branch `cshell`), the items 8b leaves open:
   SFX_AIMMAGNET_ID bank and message); the skeletons' Node%dAutoTarget
   (CModelButeMgr's node 0xb9, at most eight a skeleton) and
   COMMAND_ID_MANUALAIM toggling it off. A weapon's UseAutoTarget decides:
-  0 never, 1 on easy, 2 always. Left: the locked-on crosshair
-  (CHUDCrosshair::Render 0x1005571d draws at GetCrosshairPos; ours is
-  NOLF2's), the vehicle weapon's aim (0x10004682), CPlayerMgr's
+  0 never, 1 on easy, 2 always. CHUDCrosshair::Render is retail's
+  (0x10055620): once locked on, the crosshair is drawn at GetCrosshairPos
+  with a dot left at the centre (behaviour; the block order still
+  differs). Left: the vehicle weapon's aim (0x10004682), CPlayerMgr's
   m_bManualAim at its retail offset (0x1cd; ours is the last member), and
   **for the game package** the server's AimMagnet objects (Object.lto
   has AimMagnet and CAimMagnetPlugin) that create the magnets.
-- Where it stops: CScreenJoin is NOLF2's (WON); retail's
-  (0x100c8f40..0x100d09c0, about 30 KB with its sort instantiations) is a
-  GameSpy browser with a port column, a game type filter and nine sort
-  columns, and holds most of CShell's largest unwritten rows
-  (0x100cedd0, 0x100d06b0, 0x100ce580, 0x100ce850). It is next.
+- Mouse look (8d's finding) is not a game code fault. Instrumented runs
+  (CPlayerMgr::CalculateCameraRotation logging the axis offsets) show
+  ours pitches and turns as retail: in M01S01 the player starts seated on
+  a PlayerLure (PPM_LURE, camera limited to 40 up and 55 down), in ours
+  and in the control alike (their shots after `turn 0 200` and `turn 0
+  400` are the same), and in M03S02 the turned and look-down shots match
+  the control's. What differs between runs is the harness: Wine's
+  pointer re-centring sometimes reports a step back (negative x offsets
+  between xdotool's 40-pixel steps), so a 400-pixel turn lands short in
+  some runs of either game. Smaller, slower steps (`turn 400 0 40`)
+  should make the scripted runs comparable.
+- CScreenJoin is retail's GameSpy browser (0x100c8f40..0x100d06b0), in
+  behaviour: its states (Startup, UpdateDir, QueryDetails, Waiting), the
+  search order (LAN on the retail and the demo browser, then the
+  Internet on both while it answers), the LAN port column (the profile's
+  client port), filters (version, players, ping, game type), six sort
+  columns (name, type, ping, players, lock, version), the details window
+  (mission, options parsed from the "options" key, players) and the
+  password prompt. Retail keeps the servers in a hash_map and makes
+  their rows on the browser's thread; ours keeps a std::map and hands
+  the servers to the screen's update through a locked queue, so neither
+  thread waits on the other's lock. The sort instantiations stay
+  unwritten.
+- ClientMultiplayerMgr joins as retail: SetupClient with the server's
+  public and private addresses (0x1001f2c0), StartClient's GameSpy NAT
+  negotiation on the engine's socket (0x1001ed10), the join states run
+  from Update (0x1001f670: the NAT wait, the two seconds' grace, then
+  JoinServer trying our address, the private one, the public one). Ours
+  connects at once when there is no NAT negotiation (retail waits for
+  the next update). CTO2GameClientShell::ProcessPacket hands packets to
+  the browser (0x100fa150); CInterfaceMgr::LoadFailed shows "server
+  full" for LT_REJECTED (0x10063960). Shared/NetDefs.cpp gained
+  "Demolition" (as the game branch's).
+- Tested by hand (a scratch copy of mptest.sh clicking through the
+  menus on a private docker network): the server is listed, its details
+  show, and Join game enters it -- **once the server shares its socket
+  with GameSpy**: Object.lto's GameSpy startup (0x100dfa33) takes
+  g_pLTServer->GetUDPSocket (ILTServer vtable 0x118) into
+  StartupInfo::m_hSocket and fails without it; ours passes 0, so
+  GameSpy answers on port+1 and the join goes there. That is the game
+  package's (ObjectDLL/GameServerShell.cpp). Other agents' test servers
+  on the default docker bridge show in the LAN list.
+- Unwritten rows, round 2 (61 -> 32): rows the enumerator split inside a
+  function are in progress/CShell-screen-exclude.csv (each cites its
+  container) and missed starts in extent-splits.csv; functions retail
+  keeps though nothing calls them are linked in with /include pragmas
+  (GameClientShell.cpp). Written for retail's behaviour: PlayerMgr::Term
+  letting go of the last messages, the respawn keeping the last
+  orientation, InitTargetMgr making CAutoTargetMgr; the loading screen's
+  SetDefaultMissionNames; OnCommandOff's retail cases; the mouse buttons
+  ending the movies after the first run; ConnectionFailed and LoadFailed
+  as retail's; StartingNewGame clearing the join screen and the patch
+  check; SetupMenuMusic after a disconnection; CMusic::Play/Stop;
+  SetNewLevel no longer going to the loading state (its callers do,
+  SetupSavedLevel for saves); +join's +publicserver; LauncherServerApp
+  starting ContractJackServer.exe; SetupServerHost's Demolition case and
+  bandwidth limit; CSnowFX's on/off message (m_bFromTop is not used yet).
+- Where it stops: 32 unwritten. Several left are tiny out-of-line stubs
+  (ret, ret 4) retail keeps unfolded, and object-order pairings
+  (GameClientShell.obj, ClientMultiplayerMgr.obj) where the size-based
+  pairing leaves a retail row over. Then CCharacterFX reading the pitch
+  from the object's unguaranteed data (the coordinator's item).
 
 ### 8d. playtest coverage (branch `apps2`)
 

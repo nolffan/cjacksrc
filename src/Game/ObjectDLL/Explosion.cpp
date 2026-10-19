@@ -21,8 +21,18 @@
 #include "SharedFXStructs.h"
 #include "SFXMsgIds.h"
 #include "Character.h"
+#include "CharacterHitBox.h"
+#include "CVarTrack.h"
 
-#define MIN_RADIUS_PERCENT				0.25f
+// RETAIL: Object 0x100cbf70.  Contract J.A.C.K. tunes explosions with
+// console variables instead of NOLF2's fixed MIN_RADIUS_PERCENT.
+
+static CVarTrack g_vtExShowRadius;
+static CVarTrack g_vtExIgnoreWalls;
+static CVarTrack g_vtExKillZone;
+static CVarTrack g_vtExRadiusMulti;
+static CVarTrack g_vtExSPKillZone;
+static CVarTrack g_vtExSPRadiusMulti;
 
 LINKFROM_MODULE( Explosion );
 
@@ -73,6 +83,7 @@ bool ExplosionFilterFn(HOBJECT hObj, void *pUserData)
 Explosion::Explosion() : GameBase()
 {
 	m_fDamageRadius			= 200.0f;
+	m_fMinDamageRadius		= 50.0f;
 	m_fMaxDamage			= 200.0f;
 	m_eDamageType			= DT_UNSPECIFIED;
 
@@ -90,6 +101,31 @@ Explosion::Explosion() : GameBase()
 	m_vPos.Init();
 
 	m_nImpactFXId			= FXBMGR_INVALID_ID;
+
+	if (!g_vtExShowRadius.IsInitted())
+	{
+		g_vtExShowRadius.Init(g_pLTServer, "ExShowRadius", LTNULL, 0.0f);
+	}
+	if (!g_vtExIgnoreWalls.IsInitted())
+	{
+		g_vtExIgnoreWalls.Init(g_pLTServer, "ExIgnoreWalls", LTNULL, 0.0f);
+	}
+	if (!g_vtExKillZone.IsInitted())
+	{
+		g_vtExKillZone.Init(g_pLTServer, "ExKillZone", LTNULL, 0.25f);
+	}
+	if (!g_vtExRadiusMulti.IsInitted())
+	{
+		g_vtExRadiusMulti.Init(g_pLTServer, "ExRadiusMulti", LTNULL, 1.0f);
+	}
+	if (!g_vtExSPKillZone.IsInitted())
+	{
+		g_vtExSPKillZone.Init(g_pLTServer, "ExSPKillZone", LTNULL, 0.5f);
+	}
+	if (!g_vtExSPRadiusMulti.IsInitted())
+	{
+		g_vtExSPRadiusMulti.Init(g_pLTServer, "ExSPRadiusMulti", LTNULL, 1.5f);
+	}
 }
 
 // ----------------------------------------------------------------------- //
@@ -109,11 +145,14 @@ void Explosion::Setup(HOBJECT hFiredFrom, uint8 nAmmoId)
 
     m_bRemoveWhenDone = LTTRUE;
 
-    m_fDamageRadius = (LTFLOAT) pAmmo->nAreaDamageRadius;
+	// RETAIL: Object 0x100cc0e0 scales the ammo's radii by ExRadiusMulti
+	// (and Start() scales them again).
+
+    m_fDamageRadius = (LTFLOAT) pAmmo->nAreaDamageRadius * g_vtExRadiusMulti.GetFloat();
     m_fMaxDamage    = (LTFLOAT) pAmmo->nAreaDamage;
 	m_eDamageType	= pAmmo->eAreaDamageType;
 
-    m_fProgDamageRadius     = (LTFLOAT) pAmmo->fProgDamageRadius;
+    m_fProgDamageRadius     = (LTFLOAT) pAmmo->fProgDamageRadius * g_vtExRadiusMulti.GetFloat();
 	m_fProgDamageLifetime	= pAmmo->fProgDamageLifetime;
 	m_fProgDamage			= pAmmo->fProgDamage;
 	m_fProgDamageDuration	= pAmmo->fProgDamageDuration;
@@ -157,6 +196,26 @@ void Explosion::Start(HOBJECT hFiredFrom)
 	}
 
 	m_hFiredFrom = hFiredFrom;
+
+	// RETAIL: Object 0x100ccba0.  A single player's own explosions are
+	// bigger, with a bigger kill zone, than everyone else's.
+
+	LTFLOAT fKillZone;
+	if (!IsMultiplayerGame() && IsPlayer(m_hFiredFrom))
+	{
+		m_fDamageRadius		*= g_vtExSPRadiusMulti.GetFloat();
+		m_fProgDamageRadius	*= g_vtExSPRadiusMulti.GetFloat();
+		fKillZone = g_vtExSPKillZone.GetFloat();
+	}
+	else
+	{
+		m_fDamageRadius		*= g_vtExRadiusMulti.GetFloat();
+		m_fProgDamageRadius	*= g_vtExRadiusMulti.GetFloat();
+		fKillZone = g_vtExKillZone.GetFloat();
+	}
+
+	m_fMinDamageRadius = fKillZone * m_fDamageRadius;
+	m_fMinDamageRadius = Clamp(m_fMinDamageRadius, 0.0f, m_fDamageRadius);
 
 	// Do Area damage to the objects caught in the blast...
 
@@ -355,67 +414,30 @@ void Explosion::AreaDamageObject(HOBJECT hObj)
     LTVector vDir = vObjPos - m_vPos;
     LTFLOAT fDist = vDir.Mag();
 
-	if (fDist <= m_fDamageRadius)
+	if (fDist > m_fDamageRadius) return;
+
+	// RETAIL: Object 0x100cc7f0.  Only players can be shielded by walls...
+
+	if (IsBlocked(hObj)) return;
+
+	DamageStruct damage;
+	damage.hDamager = hDamager;
+	damage.vDir		= vDir;
+
+	// Full damage inside the kill zone, falling off to nothing at the
+	// edge of the blast...
+
+    LTFLOAT fMultiplier = 1.0f;
+
+	if (fDist > m_fMinDamageRadius)
 	{
-		// Make sure that Characters don't take damage if another object
-		// is blocking them from the explosion...
-	
-		LTBOOL bIntersect1 = LTFALSE;
-		LTBOOL bIntersect2 = LTFALSE;
-
-		if (IsCharacter(hObj) || IsCharacterHitBox(hObj))
-		{
-			// To do this test, do an intersect segment both directions
-			// (from the object to the explosion and from the explosion
-			// to the object).  This will ensure that neither point
-			// is inside a wall and that nothing is blocking the damage...
-
-			IntersectInfo iInfo;
-			IntersectQuery qInfo;
-
-			qInfo.m_Flags	  = INTERSECT_HPOLY | INTERSECT_OBJECTS | IGNORE_NONSOLID;
-			qInfo.m_FilterFn  = ExplosionFilterFn;
-
-			qInfo.m_From = m_vPos + vDir/fDist;
-			qInfo.m_To   = vObjPos;
-			
-			bIntersect1 = g_pLTServer->IntersectSegment(&qInfo, &iInfo);
-
-			qInfo.m_From = vObjPos;
-			qInfo.m_To   = m_vPos + vDir/fDist;
-
-			bIntersect2 = g_pLTServer->IntersectSegment(&qInfo, &iInfo);
-		}
-
-		if (!bIntersect1 && !bIntersect2)
-		{
-			DamageStruct damage;
-			damage.hDamager = hDamager;
-			damage.vDir		= vDir;
-
-            LTFLOAT fMinRadius  = m_fDamageRadius * MIN_RADIUS_PERCENT;
-            LTFLOAT fRange      = m_fDamageRadius - fMinRadius;
-
-			// Scale damage if necessary...
-
-            LTFLOAT fMultiplier = 1.0f;
-
-			if (fDist > fMinRadius)
-			{
-                LTFLOAT fPercent = (fDist - fMinRadius) / (m_fDamageRadius - fMinRadius);
-				fPercent = fPercent > 1.0f ? 1.0f : (fPercent < 0.0f ? 0.0f : fPercent);
-
-				fMultiplier = (1.0f - fPercent);
-			}
-
-			damage.eType	= m_eDamageType;
-			damage.fDamage	= m_fMaxDamage;
-
-			damage.fDamage *= fMultiplier;
-
-			damage.DoDamage(this, hObj, m_hObject);
-		}
+		fMultiplier = 1.0f - Clamp((fDist - m_fMinDamageRadius) / (m_fDamageRadius - m_fMinDamageRadius), 0.0f, 1.0f);
 	}
+
+	damage.eType	= m_eDamageType;
+	damage.fDamage	= m_fMaxDamage * fMultiplier;
+
+	damage.DoDamage(this, hObj, m_hObject);
 }
 
 
@@ -439,51 +461,80 @@ void Explosion::ProgDamageObject(HOBJECT hObj)
     LTVector vDir = vObjPos - m_vPos;
     LTFLOAT fDist = vDir.Mag();
 
-	if (fDist <= m_fProgDamageRadius)
+	if (fDist > m_fProgDamageRadius) return;
+
+	// RETAIL: Object 0x100cc970
+
+	if (IsBlocked(hObj)) return;
+
+	DamageStruct damage;
+	damage.hDamager		= hDamager;
+	damage.vDir			= vDir;
+	damage.eType		= m_eProgDamageType;
+	damage.fDuration	= m_fProgDamageDuration;
+	damage.fDamage		= m_fProgDamage;
+	damage.hContainer	= m_hObject;
+
+	damage.DoDamage(this, hObj, m_hObject);
+}
+
+
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	Explosion::IsBlocked()
+//
+//	PURPOSE:	RETAIL: Object 0x100cc2d0.  Is a player (or a player's
+//				hit box) shielded from the explosion by the world?  Other
+//				objects never are.
+//
+// ----------------------------------------------------------------------- //
+
+bool Explosion::IsBlocked(HOBJECT hObj)
+{
+	if (!hObj) return false;
+
+	if (g_vtExIgnoreWalls.GetFloat() != 0.0f) return false;
+
+	bool bPlayerHitBox = false;
+	if (IsCharacterHitBox(hObj))
 	{
-		// Make sure that Characters don't take damage if another object
-		// is blocking them from the explosion...
-	
-		LTBOOL bIntersect1 = LTFALSE;
-		LTBOOL bIntersect2 = LTFALSE;
-
-		if (IsCharacter(hObj) || IsCharacterHitBox(hObj))
+		CCharacterHitBox* pHitBox = dynamic_cast<CCharacterHitBox*>(g_pLTServer->HandleToObject(hObj));
+		if (pHitBox)
 		{
-			// To do this test, do an intersect segment both directions
-			// (from the object to the explosion and from the explosion
-			// to the object).  This will ensure that neither point
-			// is inside a wall and that nothing is blocking the damage...
-
-			IntersectInfo iInfo;
-			IntersectQuery qInfo;
-
-			qInfo.m_Flags	  = INTERSECT_HPOLY | INTERSECT_OBJECTS | IGNORE_NONSOLID;
-			qInfo.m_FilterFn  = ExplosionFilterFn;
-
-			qInfo.m_From = m_vPos + vDir/fDist;
-			qInfo.m_To   = vObjPos;
-			
-			bIntersect1 = g_pLTServer->IntersectSegment(&qInfo, &iInfo);
-
-			qInfo.m_From = vObjPos;
-			qInfo.m_To   = m_vPos + vDir/fDist;
-
-			bIntersect2 = g_pLTServer->IntersectSegment(&qInfo, &iInfo);
-		}
-
-		if (!bIntersect1 && !bIntersect2)
-		{
-			DamageStruct damage;
-			damage.hDamager		= hDamager;
-			damage.vDir			= vDir;
-			damage.eType		= m_eProgDamageType;
-			damage.fDuration	= m_fProgDamageDuration;
-			damage.fDamage		= m_fProgDamage;
-			damage.hContainer	= m_hObject;
-
-			damage.DoDamage(this, hObj, m_hObject);
+			bPlayerHitBox = !!IsPlayer(pHitBox->GetModelObject());
 		}
 	}
+
+	if (!IsPlayer(hObj) && !bPlayerHitBox) return false;
+
+	// To do this test, do an intersect segment both directions
+	// (from the object to the explosion and from the explosion
+	// to the object).  This will ensure that neither point
+	// is inside a wall and that nothing is blocking the damage...
+
+    LTVector vObjPos;
+	g_pLTServer->GetObjectPos(hObj, &vObjPos);
+
+	LTVector vDir = vObjPos - m_vPos;
+	LTVector vStart = m_vPos + vDir * (1.0f / vDir.Mag());
+
+	IntersectInfo iInfo;
+	IntersectQuery qInfo;
+
+	qInfo.m_Flags	  = INTERSECT_HPOLY | INTERSECT_OBJECTS | IGNORE_NONSOLID;
+	qInfo.m_FilterFn  = ExplosionFilterFn;
+
+	qInfo.m_From = vStart;
+	qInfo.m_To   = vObjPos;
+
+	bool bIntersect1 = !!g_pLTServer->IntersectSegment(&qInfo, &iInfo);
+
+	qInfo.m_From = vObjPos;
+	qInfo.m_To   = vStart;
+
+	bool bIntersect2 = !!g_pLTServer->IntersectSegment(&qInfo, &iInfo);
+
+	return bIntersect1 || bIntersect2;
 }
 
 
@@ -562,6 +613,7 @@ void Explosion::Save(ILTMessage_Write *pMsg, uint32 dwSaveFlags)
     SAVE_HOBJECT(m_hFiredFrom);
 	SAVE_VECTOR(m_vPos);
     SAVE_FLOAT(m_fDamageRadius);
+    SAVE_FLOAT(m_fMinDamageRadius);
     SAVE_FLOAT(m_fMaxDamage);
     SAVE_BYTE(m_eDamageType);
     SAVE_FLOAT(m_fProgDamage);
@@ -592,6 +644,7 @@ void Explosion::Load(ILTMessage_Read *pMsg, uint32 dwLoadFlags)
 
 	LOAD_VECTOR(m_vPos);
     LOAD_FLOAT(m_fDamageRadius);
+    LOAD_FLOAT(m_fMinDamageRadius);
     LOAD_FLOAT(m_fMaxDamage);
     LOAD_BYTE_CAST(m_eDamageType, DamageType);
     LOAD_FLOAT(m_fProgDamage);

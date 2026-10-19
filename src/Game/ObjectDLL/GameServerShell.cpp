@@ -198,7 +198,14 @@ LTRESULT CGameServerShell::OnServerInitialized()
 
 	m_SunVec[0] = m_SunVec[1] = m_SunVec[2] = 0;
 
-	if( !InitGameType())
+	// RETAIL: Object 0x100df6bb: the host's options are passed in.
+	ServerGameOptions** ppServerGameOptions = NULL;
+	uint32 dwLen = sizeof( ServerGameOptions* );
+	g_pLTServer->GetGameInfo((void**)&ppServerGameOptions, &dwLen);
+	if( !ppServerGameOptions || !*ppServerGameOptions )
+		return LT_ERROR;
+
+	if( !InitGameType( **ppServerGameOptions ))
 		return LT_ERROR;
 
 	// Create the AI class factory.
@@ -334,9 +341,6 @@ LTRESULT CGameServerShell::OnServerInitialized()
 	// (through the game options it was given) how its start went, and a
 	// multiplayer server publishes itself through GameSpy (Object.lto
 	// 0x100df9cd..0x100dfd4b).
-	ServerGameOptions** ppServerGameOptions = NULL;
-	uint32 dwLen = sizeof( ServerGameOptions* );
-	g_pLTServer->GetGameInfo((void**)&ppServerGameOptions, &dwLen);
 	ServerGameOptions* pHostOptions = ( ppServerGameOptions && *ppServerGameOptions ) ? *ppServerGameOptions : &m_ServerGameOptions;
 
 	if( !IsMultiplayerGame( ))
@@ -353,14 +357,19 @@ LTRESULT CGameServerShell::OnServerInitialized()
 		return LT_ERROR;
 	}
 
+	// RETAIL: Object 0x100dfa33: GameSpy shares the game's own socket.
+	uint32 hSocket = 0;
+	if( g_pLTServer->GetUDPSocket( &hSocket ) != LT_OK )
+	{
+		pHostOptions->m_nServerStatus = 2;
+		return LT_ERROR;
+	}
+
 	IGameSpyServer::StartupInfo startupInfo;
 	startupInfo.m_nGameType = eGameSpyGameType_Retail;
 	startupInfo.m_sIP = szIP;
 	startupInfo.m_nPort = nPort;
-	// The game's own socket, which retail gets from the engine (its
-	// ILTServer, vtable offset 0x118): GameSpy binds its own until the
-	// engine's interface has it.
-	startupInfo.m_hSocket = 0;
+	startupInfo.m_hSocket = hSocket;
 	startupInfo.m_bPublic = !m_ServerGameOptions.m_bLANOnly;
 	startupInfo.m_sUnused = g_pVersionMgr->GetNetRegion( );
 	startupInfo.m_sVersion = g_pVersionMgr->GetVersion( );
@@ -3565,8 +3574,13 @@ void CGameServerShell::SetSwitchingWorldsState( SwitchingWorldsState eSwitchingW
 void CGameServerShell::StartSwitchingWorlds( )
 {
 	// Pause the game until all the clients are in.  There is an unpause
-	// in FinishSwitchingWorlds.
-	PauseGame( true );
+	// in FinishSwitchingWorlds.  RETAIL: Object 0x100dec70 pauses only
+	// when not already switching, so the pauses match the unpause.
+	if( m_eSwitchingWorldsState == eSwitchingWorldsStateFinished ||
+		m_eSwitchingWorldsState == eSwitchingWorldsStateNone )
+	{
+		PauseGame( true );
+	}
 	SetSwitchingWorldsState( eSwitchingWorldsStatePlayerHookup );
 }
 
@@ -4199,16 +4213,9 @@ HCLIENT CGameServerShell::GetClientFromID(uint32 nID)
 //
 // ----------------------------------------------------------------------- //
 
-bool CGameServerShell::InitGameType()
+bool CGameServerShell::InitGameType( ServerGameOptions const& serverGameOptions )
 {
-	ServerGameOptions** ppServerGameOptions;
-    uint32 dwLen = sizeof( ServerGameOptions* );
-    g_pLTServer->GetGameInfo((void**)&ppServerGameOptions, &dwLen);
-
-	if( ppServerGameOptions && *ppServerGameOptions )
-	{
-		m_ServerGameOptions = **ppServerGameOptions;
-	}
+	m_ServerGameOptions = serverGameOptions;
 
 	// Toss any old missionmgr.
 	if( m_pServerMissionMgr )

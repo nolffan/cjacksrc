@@ -1501,7 +1501,12 @@ void CDestructible::HandleHeal(LPBASECLASS pObject, HOBJECT hSender, ILTMessage_
 
 	CAutoMessage cMsg;
 	cMsg.Writeuint32(MID_PICKEDUP);
-	cMsg.Writeuint8((uint8)bHealed);
+
+	// RETAIL: Object 0x100c2b90 answers like a weapon pickup does (picked
+	// up, show it, and a third flag).
+	cMsg.Writebool(!!bHealed);
+	cMsg.Writebool(true);
+	cMsg.Writebool(false);
 	g_pLTServer->SendToObject(cMsg.Read(), pObject->m_hObject, hSender, MESSAGE_GUARANTEED);
 }
 
@@ -1524,7 +1529,9 @@ void CDestructible::HandleAddGear(LPBASECLASS pObject, HOBJECT hSender, ILTMessa
 
 	CAutoMessage cMsg;
 	cMsg.Writeuint32(MID_PICKEDUP);
-	cMsg.Writeuint8((uint8)bAdded);
+	cMsg.Writebool(!!bAdded);		// RETAIL: picked up, show it, don't leave it
+	cMsg.Writebool(true);
+	cMsg.Writebool(false);
 	g_pLTServer->SendToObject(cMsg.Read(), pObject->m_hObject, hSender, MESSAGE_GUARANTEED);
 }
 
@@ -1672,7 +1679,9 @@ void CDestructible::HandleRepair(LPBASECLASS pObject, HOBJECT hSender, ILTMessag
 
 	CAutoMessage cMsg;
 	cMsg.Writeuint32(MID_PICKEDUP);
-	cMsg.Writeuint8((uint8)bRepaired);
+	cMsg.Writebool(!!bRepaired);	// RETAIL: picked up, show it, don't leave it
+	cMsg.Writebool(true);
+	cMsg.Writebool(false);
 	g_pLTServer->SendToObject(cMsg.Read(), pObject->m_hObject, hSender, MESSAGE_GUARANTEED);
 }
 

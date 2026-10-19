@@ -448,7 +448,7 @@ class CGameServerShell : public IServerShellStub
 
 		void CacheLevelSpecificFiles();
 
-		bool InitGameType();
+		bool InitGameType( ServerGameOptions const& serverGameOptions );	// RETAIL: Object 0x100dbbb0
 		void UpdateMultiplayer();
 		void FirstUpdate();
 

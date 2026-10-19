@@ -603,17 +603,7 @@ void SURFACE::Cache(CSurfaceMgr* pSurfaceMgr)
 		}
 	}
 
-	for (i=0; i < (int)aVehicleTypes.size(); i++)
-	{
-		SURFACEVEHICLE* pVehicle = aVehicleTypes[i];
-		for (uint8 j=0; j < pVehicle->blrSnds.GetNumItems(); j++)
-		{
-			if (pVehicle->blrSnds.GetItem(j)[0])
-			{
-				g_pLTServer->CacheFile(FT_SOUND, pVehicle->blrSnds.GetItem(j));
-			}
-		}
-	}
+	// RETAIL: Object 0x10150a70 doesn't cache the vehicle surface sounds.
 
 	if (szBodyFallSnd[0])
 	{

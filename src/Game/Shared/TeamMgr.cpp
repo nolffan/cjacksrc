@@ -53,6 +53,7 @@ void CTeam::Init(uint8 nID, const char *szName, uint32 nModel)
 	m_sName = szName;
 	m_nModel = nModel;
 	m_players.clear();
+	m_bAttacking = false;	// RETAIL: CShell 0x100f8bae
 }
 
 void CTeam::Init(uint8 nID, ILTMessage_Read *pMsg)

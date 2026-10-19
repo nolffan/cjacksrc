@@ -176,6 +176,9 @@ protected :
 	void		OnPlaySound(PlaySoundInfo* pPlaySoundInfo);
 
     void        RenderCamera(bool bDrawInterface = true);
+    // RETAIL: 0x10047da0, the effects' update without the render; nothing
+    // calls it.
+    void		UpdateEffectsNoRender();
 
 	void		OnLockRenderer();
 	void		OnUnLockRenderer();
@@ -387,6 +390,9 @@ private :
 	// Performance testing variables
 	bool				m_bRunningPerfTest;
 	CPerformanceTest	*m_pPerformanceTest;
+
+	// RETAIL: 0x88a8, the dedicated server has been started (LauncherServerApp).
+	bool				m_bServerAppLaunched;
 };
 
 void DefaultModelHook(ModelHookData *pData, void *pUser);

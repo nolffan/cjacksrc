@@ -259,6 +259,7 @@ class CInterfaceMgr
 		void	ClearAllScreenBuffers();
 
         LTBOOL   SetupMusic();
+        LTBOOL		SetupMenuMusic();	// RETAIL: 0x10065b10
         LTBOOL   RestoreGameMusic();
 
 		CGameSettings*	GetSettings()		{ return &m_Settings; }

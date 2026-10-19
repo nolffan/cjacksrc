@@ -231,9 +231,8 @@ void CDestructibleModel::SetSurfaceType()
 
 	if (GetObjectType(m_hObject) == OT_WORLDMODEL)
 	{
-        LTBOOL bDoBruteForce = LTTRUE;
-
-		// See if we have a surface override...
+		// RETAIL: Object 0x100c3ef0 takes a world model's surface from its
+		// surface override only (no intersect to find it).
 
 		if (m_hstrSurfaceOverride)
 		{
@@ -244,42 +243,6 @@ void CDestructibleModel::SetSurfaceType()
 				if (pSurf && pSurf->eType != ST_UNKNOWN)
 				{
 					eSurfType = pSurf->eType;
-					bDoBruteForce = LTFALSE;
-				}
-			}
-		}
-
-
-		// Determine our surface...the hard way...
-
-		if (bDoBruteForce)
-		{
-			IntersectQuery qInfo;
-			IntersectInfo iInfo;
-
-			LTVector vPos, vDims;
-			LTRotation rRot;
-
-			g_pLTServer->GetObjectPos(m_hObject, &vPos);
-			g_pLTServer->GetObjectRotation(m_hObject, &rRot);
-			g_pPhysicsLT->GetObjectDims(m_hObject, &vDims);
-
-			LTFLOAT fMaxDims = vDims.x;
-			fMaxDims = Max(fMaxDims, vDims.y);
-			fMaxDims = Max(fMaxDims, vDims.z);
-
-			qInfo.m_From = vPos + (rRot.Forward() * (fMaxDims + 1));
-			qInfo.m_To   = vPos;
-
-			qInfo.m_Flags = INTERSECT_OBJECTS | IGNORE_NONSOLID | INTERSECT_HPOLY;
-
-			SurfaceType eType = ST_UNKNOWN;
-
-			if (g_pLTServer->IntersectSegment(&qInfo, &iInfo))
-			{
-				if (iInfo.m_hObject == m_hObject)
-				{
-					eSurfType = GetSurfaceType(iInfo);
 				}
 			}
 		}
