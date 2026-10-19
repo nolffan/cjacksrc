@@ -11,7 +11,8 @@
 #   out/<name>-public.tar.gz    the same without anything that came from the
 #                               retail game (MANIFEST.txt's `data` and
 #                               `THIRD-PARTY` files), which its
-#                               linux-install.sh / windows-install.bat copy
+#                               linux-install.sh / windows-install.bat /
+#                               mac-install.command copy
 #                               out of the player's own disc images and 1.1
 #                               update (tools/mkinstall.py): the one to give
 #                               to other people. It needs the images of both
@@ -88,10 +89,12 @@ elif [ $rc != 0 ]; then
     exit $rc
 fi
 sed "s|^|$NAME/|" "$PARENT/$STAGE/disc-files.txt" > "$PARENT/$STAGE/exclude.txt"
+SCRIPTS=("$STAGE/linux-install.sh" "$STAGE/windows-install.bat")
+[ ! -f "$PARENT/$STAGE/mac-install.command" ] || SCRIPTS+=("$STAGE/mac-install.command")
 tar -C "$PARENT" -h -cf - "${EXCLUDE[@]}" \
     --anchored --no-wildcards --exclude-from="$PARENT/$STAGE/exclude.txt" \
     --transform="s|^$STAGE/|$NAME/|" \
-    "$NAME" "$STAGE/cjackcmds.txt" "$STAGE/linux-install.sh" "$STAGE/windows-install.bat" |
+    "$NAME" "$STAGE/cjackcmds.txt" "${SCRIPTS[@]}" |
     gzip -6 > "$PUB.part"
 mv "$PUB.part" "$PUB"
 echo "   $PUB: $(du -h "$PUB" | cut -f1) (unpacks to $NAME/; its data from the discs)"
