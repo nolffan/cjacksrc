@@ -437,6 +437,7 @@ class CAIHumanStateAttackFromCover : public CAIHumanState
 
 		void SetRetries(int32 nRetries) { m_nRetries = nRetries; }
 		void SetCoverNode(HOBJECT hCoverNode);
+		void SetSeekPlayer(LTBOOL bSeekPlayer) { m_bSeekPlayer = bSeekPlayer; }
 
 	protected :
 
@@ -452,6 +453,7 @@ class CAIHumanStateAttackFromCover : public CAIHumanState
 		int32			m_nRetries;
 		LTBOOL			m_bBoostedHitpoints;
 		LTBOOL			m_bCovered;
+		LTBOOL			m_bSeekPlayer;	// RETAIL: 0x88, the goal's SEEKPLAYER (Object 0x1001e2f6)
 };
 
 class CAIHumanStateAttackFromVantage : public CAIHumanState

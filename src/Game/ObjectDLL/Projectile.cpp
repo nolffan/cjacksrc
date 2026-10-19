@@ -2607,10 +2607,8 @@ void CProjectile::Load(ILTMessage_Read *pMsg, uint32 dwLoadFlags)
 	LOAD_DWORD(dwFlags);
 	g_pCommonLT->SetObjectFlags( m_hObject, OFT_Flags, dwFlags, FLAGMASK_ALL );
 
-	if( g_pVersionMgr->GetCurrentSaveVersion( ) > CVersionMgr::kSaveVersion__1_2 )
-	{
-		LOAD_BYTE( m_nTeamId );
-	}
+	// RETAIL: no save version check in Contract J.A.C.K. (0x1011d2e0)
+	LOAD_BYTE( m_nTeamId );
 }
 
 bool CProjectile::IsMyTeam( HOBJECT hPlayer ) const

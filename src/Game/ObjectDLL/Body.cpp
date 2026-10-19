@@ -1834,14 +1834,8 @@ void Body::Load(ILTMessage_Read *pMsg, uint32 dwLoadFlags)
 	LOAD_bool( m_bBeingCarried );
 	LOAD_HOBJECT( m_hCarrier );
 
-	if( g_pVersionMgr->GetCurrentSaveVersion( ) < CVersionMgr::kSaveVersion__1_3 )
-	{
-		m_bCanRevive = false;
-	}
-	else
-	{
-		LOAD_bool( m_bCanRevive );
-	}
+	// RETAIL: no save version check in Contract J.A.C.K. (0x10093720)
+	LOAD_bool( m_bCanRevive );
 
 	g_pCharacterMgr->AddDeathScene(&m_DeathScene);
 

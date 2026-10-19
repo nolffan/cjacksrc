@@ -4839,8 +4839,8 @@ void CAI::Save(ILTMessage_Write *pMsg, uint32 dwSaveFlags)
 	SAVE_BOOL(m_bSensesOn);
 	m_pAISenseRecorder->Save(pMsg);
 
-	SAVE_RANGE(m_rngSightGridX);
-	SAVE_RANGE(m_rngSightGridY);
+	// RETAIL: Contract J.A.C.K. does not save the sight grid ranges (Save
+	// 0x1000e14c: the sense recorder, then m_bPreserveActiveCmds).
 
 	SAVE_BOOL(m_bPreserveActiveCmds);
 
@@ -5066,8 +5066,7 @@ void CAI::Load(ILTMessage_Read *pMsg, uint32 dwLoadFlags)
 	LOAD_BOOL(m_bSensesOn);
 	m_pAISenseRecorder->Load(pMsg);
 
-	LOAD_RANGE_CAST(m_rngSightGridX, int);
-	LOAD_RANGE_CAST(m_rngSightGridY, int);
+	// RETAIL: nor load them (Load 0x10011a8b).
 
 	LOAD_BOOL(m_bPreserveActiveCmds);
 

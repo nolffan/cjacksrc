@@ -272,14 +272,9 @@ void StartupCommand::Load(ILTMessage_Read *pMsg, uint32 dwSaveFlags)
 	LOAD_CHARSTRING( szString, ARRAY_LEN( szString ));
 	m_sStartupCmd = szString;
 
-	if( g_pVersionMgr->GetCurrentSaveVersion( ) < CVersionMgr::kSaveVersion__1_3 )
-	{
-	}
-	else
-	{
-		LOAD_BYTE_CAST( m_eRoundCondition, RoundCondition );
-		LOAD_bool( m_bSafeExecute );
-	}
+	// RETAIL: no save version check in Contract J.A.C.K. (0x1014f700)
+	LOAD_BYTE_CAST( m_eRoundCondition, RoundCondition );
+	LOAD_bool( m_bSafeExecute );
 }
 
 
