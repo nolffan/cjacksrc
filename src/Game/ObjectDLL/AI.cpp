@@ -1019,16 +1019,7 @@ uint32 CAI::EngineMessageFn(uint32 messageID, void *pData, LTFLOAT fData)
 		{
 			int nInfo = (int)fData;
 
-			// Check if we're being spawned in.
-			if( nInfo == PRECREATE_STRINGPROP || nInfo == PRECREATE_NORMAL )
-			{
-				// If this ai puts us over the limit, then fail to create.
-				if( m_lstAIs.size( ) >= ( uint32 )g_AIMaxNumber.GetFloat( ))
-				{
-					g_pLTServer->CPrint("Spawned AI over the max limit");
-					return 0;
-				}
-			}
+			// RETAIL: Object 0x1000b478: no limit on spawned AIs.
 
             uint32 dwRet = CCharacter::EngineMessageFn(messageID, pData, fData);
 

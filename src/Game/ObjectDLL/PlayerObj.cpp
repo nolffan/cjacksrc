@@ -6713,6 +6713,12 @@ void CPlayerObj::HandleWeaponFireMessage(ILTMessage_Read *pMsg)
 
 	// get the object weapon
 	CWeapon* pWeapon = m_pPlayerAttachments->GetWeapon();
+
+	// RETAIL: Object 0x1010955a: on a vehicle, the vehicle's weapon fires.
+	if( IsVehicleModel( m_ePPhysicsModel ) && g_pWeaponMgr->IsValidWeaponId( m_nVehicleWeaponId ))
+	{
+		pWeapon = m_pPlayerAttachments->GetWeapon( m_nVehicleWeaponId );
+	}
 	
 	// Make sure everything's kosher...
 	if (!pWeapon || nWeaponId != pWeapon->GetId())
@@ -6856,22 +6862,8 @@ void CPlayerObj::HandleWeaponFireMessage(ILTMessage_Read *pMsg)
 
 
 
-	// If this is a projectile weapon, tell clients to play the fire sound (vector
-	// weapons do this in the weapon fx message)...
-
-	if (pAmmoData->eType == PROJECTILE)
-	{
-        uint8 nClientID = (uint8) g_pLTServer->GetClientID(GetClient( ));
-
-		CAutoMessage cSoundMsg;
-		cSoundMsg.Writeuint8(SFX_PLAYERSOUND_ID);
-		cSoundMsg.Writeuint8(bAltFire ? PSI_ALT_FIRE : PSI_FIRE);
-        cSoundMsg.Writeuint8(nWeaponId);
-        cSoundMsg.Writeuint8(nClientID);
-		cSoundMsg.WriteCompPos(weaponFireInfo.vFirePos);
-		g_pLTServer->SendSFXMessage(cSoundMsg.Read(), weaponFireInfo.vFirePos, 0);
-	}
-
+	// RETAIL: Object 0x10109849: no fire sound message for projectiles
+	// here.
 
 	// Reset the weapon state to none, firing takes priority
 
@@ -8556,10 +8548,29 @@ END HACK - for DM testing */
 
 
 	// If specified, switch to the selected weapon for this mission...
+	// RETAIL: Object 0x1010e40d: a mission's first level selects its
+	// weapon if the server allows it, else, for a mission that resets the
+	// player or a new game, the player's default weapon.
 
-	if (pMission->nSelectedWeapon != ( signed char )WMGR_INVALID_ID && nLevelId == 0)
+	if( nLevelId == 0 )
 	{
-		ChangeWeapon( g_pWeaponMgr->GetCommandId( pMission->nSelectedWeapon ), LTTRUE );
+		WEAPON const *pSelected = g_pWeaponMgr->GetWeapon( pMission->nSelectedWeapon );
+		if( pSelected && !pSelected->bServerRestricted )
+		{
+			ChangeWeapon( g_pWeaponMgr->GetCommandId( pMission->nSelectedWeapon ), LTTRUE );
+		}
+		else if( pMission->bResetPlayer || g_pGameServerShell->GetLGFlags() == LOAD_NEW_GAME )
+		{
+			char szWeaponName[256] = {0};
+			g_pServerButeMgr->GetPlayerAttributeString( PLAYER_BUTE_DEFAULTWEAPON,
+				szWeaponName, ARRAY_LEN( szWeaponName ));
+
+			WEAPON const *pDefault = g_pWeaponMgr->GetWeapon( szWeaponName );
+			if( pDefault )
+			{
+				ChangeWeapon( g_pWeaponMgr->GetCommandId( pDefault->nId ), LTTRUE );
+			}
+		}
 	}
 
 	return true;

@@ -32,11 +32,24 @@ LINKTO_MODULE( Body );
 
 struct BODYINITSTRUCT
 {
+	// RETAIL: Object 0x1009f354 and 0x10108043 start from these, and the
+	// body moves to the floor unless told otherwise (Body::Init 0x10096961)
+	BODYINITSTRUCT()
+		: pCharacter( LTNULL )
+		, eBodyState( kState_BodyNormal )
+		, bPermanentBody( false )
+		, fBodyLifetime( 0.0f )
+		, bCanRevive( false )
+		, bMoveToFloor( true )
+	{
+	}
+
 	CCharacter*		pCharacter;
 	EnumAIStateType	eBodyState;
 	bool			bPermanentBody;
 	float			fBodyLifetime;
 	bool			bCanRevive;
+	bool			bMoveToFloor;
 };
 
 // RETAIL: Contract J.A.C.K. has no CAnimatorBody: a body does not twitch.

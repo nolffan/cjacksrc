@@ -926,6 +926,7 @@ bool CCharacter::OnTrigger(HOBJECT hSender, const CParsedMsg &cMsg)
 	static CParsedMsg::CToken s_cTok_Unknown("UNKNOWN");
 	static CParsedMsg::CToken s_cTok_Find("FIND");
 	static CParsedMsg::CToken s_cTok_Remove("REMOVE");
+	static CParsedMsg::CToken s_cTok_MoveToFloor("MOVETOFLOOR");	// RETAIL: Object 0x100a4bd0
 
 	if ( (cMsg.GetArg(0) == s_cTok_Play_Sound) && (cMsg.GetArgCount() > 1) )
 	{
@@ -1035,6 +1036,11 @@ bool CCharacter::OnTrigger(HOBJECT hSender, const CParsedMsg &cMsg)
 
 		ResetCrosshair( );
 		return true;
+	}
+	else if ( ( cMsg.GetArg(0) == s_cTok_MoveToFloor ) && ( cMsg.GetArgCount() > 1 ) )
+	{
+		// RETAIL: Object 0x100a5138, and on to GameBase
+		SetMoveToFloor( IsTrueChar( cMsg.GetArg(1).c_str()[0] ) != 0 );
 	}
 
 	return GameBase::OnTrigger( hSender, cMsg );
@@ -3288,6 +3294,7 @@ void CCharacter::SetupBody(Body* pProp)
 	bi.bPermanentBody = m_bPermanentBody;
 	bi.fBodyLifetime = m_fBodyLifetime;
 	bi.bCanRevive = false;
+	bi.bMoveToFloor = m_bMoveToFloor;	// RETAIL: Object 0x1009f39e
 
 	pProp->Init(bi);
 }
