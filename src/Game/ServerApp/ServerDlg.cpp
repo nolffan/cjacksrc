@@ -520,11 +520,19 @@ DWORD CServerDlg::DoHost( )
 	// Open the registry.
 	CRegMgr32 regMgr;
 	regMgr.Init();
+#ifdef CJACK_MODERN
+	// MODERN.md APPS-7: the user's key, as the launcher's and the game's;
+	// with none (no launcher run here yet) the server hosts the retail
+	// game. RETAIL: the machine's key, and without it no hosting.
+	regMgr.OpenKey( HKEY_CURRENT_USER, "SOFTWARE", "Monolith Productions", (char*)REGPRODUCTNAME,
+		(char *)REGPRODUCTVER );
+#else
 	if( !regMgr.OpenKey( HKEY_LOCAL_MACHINE, "SOFTWARE", "Monolith Productions", (char*)REGPRODUCTNAME,
 		(char *)REGPRODUCTVER ))
 	{
 		return false;
 	}
+#endif
 
 	char szSelectedMod[256] = {0};
 	DWORD bufSize = sizeof(szSelectedMod);
@@ -1515,15 +1523,34 @@ bool CServerDlg::AddResources( )
 	// Open the registry.
 	CRegMgr32 regMgr;
 	regMgr.Init();
+#ifdef CJACK_MODERN
+	// MODERN.md APPS-7: the user's key, if there is one (as in DoHost).
+	regMgr.OpenKey( HKEY_CURRENT_USER, "SOFTWARE", "Monolith Productions", (char*)REGPRODUCTNAME,
+		(char *)REGPRODUCTVER );
+#else
 	if( !regMgr.OpenKey( HKEY_LOCAL_MACHINE, "SOFTWARE", "Monolith Productions", (char*)REGPRODUCTNAME,
 		(char *)REGPRODUCTVER ))
 	{
 		return false;
 	}
+#endif
 
 	// Add the rez files from registry.  Add the update after the content so it overrides.
 	ReadRezFromRegCommandLine( lstRez, regMgr, "ContentNum", "ContentCommandLine" );
 	ReadRezFromRegCommandLine( lstRez, regMgr, "UpdateNum", "UpdateCommandLine" );
+#ifdef CJACK_MODERN
+	{
+		// MODERN.md APPS-7: no updates in the user's key (the 1.1 update's
+		// installer wrote the machine's): its archive, as its
+		// UpdateCommandLine0 names it, as the modern launcher does (APPS-5)
+		DWORD nUpdateNum = 0;
+		if( !regMgr.GetField( "UpdateNum", &nUpdateNum ) &&
+			GetFileAttributes( "Update_v1x1.rez" ) != INVALID_FILE_ATTRIBUTES )
+		{
+			lstRez.AddTail( "Update_v1x1.rez" );
+		}
+	}
+#endif
 
 	lstRez.AddTail( "custom" );
 
