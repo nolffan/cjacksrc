@@ -1417,6 +1417,35 @@ void CVehicleMgr::SaveVehicleButes()
 
 // ----------------------------------------------------------------------- //
 //
+//	ROUTINE:	CVehicleMgr::OnModelKey
+//
+//	PURPOSE:	RETAIL: 0x101055f0: the vehicle's weapon gets its model keys
+//
+// ----------------------------------------------------------------------- //
+
+bool CVehicleMgr::OnModelKey(HLOCALOBJ hObj, ArgList* pArgs)
+{
+	if( m_bHasVehicleWeapon )
+		return m_VehicleWeapon.OnModelKey( hObj, pArgs );
+
+	return false;
+}
+
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	CVehicleMgr::AllowHeadBob
+//
+//	PURPOSE:	RETAIL: 0x10105630: the head bobs except on a lure
+//
+// ----------------------------------------------------------------------- //
+
+bool CVehicleMgr::AllowHeadBob() const
+{
+	return ( m_ePPhysicsModel != PPM_LURE );
+}
+
+// ----------------------------------------------------------------------- //
+//
 //	ROUTINE:	CVehicleMgr::CanShowCrosshair
 //
 //	PURPOSE:	RETAIL: 0x10105610: vehicles with weapons show it

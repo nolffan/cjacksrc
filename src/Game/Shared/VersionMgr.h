@@ -19,7 +19,12 @@
 
 extern LTGUID GAMEGUID;
 
-extern char const GAME_NAME[];
+// RETAIL: a literal, pooled: its one copy sits among the first object's
+// strings that uses it (SaveLoadMgr.cpp's in Object.lto, GameClientShell.cpp's
+// in CShell.dll, Launcher.cpp's in the launcher).
+#ifndef GAME_NAME
+#define GAME_NAME	"Contract Jack"
+#endif
 extern int const GAME_HANDSHAKE_VER_MAJOR;
 extern int const GAME_HANDSHAKE_VER_MINOR;
 extern int const GAME_HANDSHAKE_VER;

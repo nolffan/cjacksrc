@@ -670,57 +670,7 @@ void CDestructible::AddProgressiveDamage(DamageStruct & damage)
 		}
 	}
 
-	if (IsScoreTagType(damage.eType) && IsPlayer(hDamager) && m_bIsPlayer && !IsTakingProgressiveDamage(damage.eType))
-	{
-		CPlayerObj* pPlayer = dynamic_cast<CPlayerObj*> (g_pLTServer->HandleToObject(hDamager));
-		CPlayerObj* pTarget = dynamic_cast<CPlayerObj*> (g_pLTServer->HandleToObject(m_hObject));
-
-		if (hDamager == m_hObject)
-		{
-		}
-		else
-		{
-			if( IsTeamGameType() )
-			{
-				if( pPlayer->GetTeamID() == pTarget->GetTeamID() )
-				{
-					// The player is either stupid or a jack-ass so penalize him and the team...
-				
-				}
-				else
-				{
-					// The player tagged another player of a different team so this is valid...
-
-				}	
-			}
-			else
-			{
-			}
-		}
-
-		HCLIENT hClientTarget = pTarget->GetClient();
-		HCLIENT hClientPlayer = pPlayer->GetClient();
-		if (hClientTarget)
-		{
-			uint32 nTargetID = g_pLTServer->GetClientID (hClientTarget);
-			uint32 nPlayerID = g_pLTServer->GetClientID (hClientPlayer);
-
-			CAutoMessage cMsg;
-			cMsg.Writeuint8(MID_PLAYER_SCORED);
-			cMsg.Writebool(false);
-			cMsg.Writeuint32(nTargetID);
-			cMsg.Writeuint32(nPlayerID);
-			g_pLTServer->SendToClient(cMsg.Read(), LTNULL, MESSAGE_GUARANTEED);
-		}
-
-		if( g_pGameServerShell )
-		{
-			g_pGameServerShell->SetUpdateGameServ();
-		}
-	}
-
-
-
+	// RETAIL: Object 0x100c1a00: no tag scoring (Contract J.A.C.K. has none).
 
     for (i=0; i < MAX_PROGRESSIVE_DAMAGE; i++)
 	{

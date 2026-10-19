@@ -45,6 +45,31 @@ CAIGoalSniper::CAIGoalSniper()
 
 	m_bSeekPlayer = LTFALSE;
 	m_bNoRadius = LTFALSE;
+
+	m_hSeekTarget.SetReceiver( *this );
+}
+
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	CAIGoalSniper::OnLinkBroken
+//
+//	PURPOSE:	RETAIL: Object 0x100352e0: a sniper seeking players picks
+//				another when its target goes away.
+//
+// ----------------------------------------------------------------------- //
+
+void CAIGoalSniper::OnLinkBroken( LTObjRefNotifier *pRef, HOBJECT hObj )
+{
+	super::OnLinkBroken( pRef, hObj );
+
+	if( pRef == &m_hSeekTarget && m_bSeekPlayer )
+	{
+		CPlayerObj* pPlayer = g_pCharacterMgr->FindRandomPlayer( );
+		if( pPlayer )
+		{
+			m_hSeekTarget = pPlayer->m_hObject;
+		}
+	}
 }
 
 // ----------------------------------------------------------------------- //

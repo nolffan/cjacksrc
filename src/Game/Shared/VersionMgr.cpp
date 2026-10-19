@@ -25,7 +25,6 @@ LTGUID GAMEGUID =
 
 static const char* s_szVersion		= "CJ v1.1";
 
-char const GAME_NAME[] = "Contract Jack";
 
 int const GAME_HANDSHAKE_VER_MAJOR = 1;
 // RETAIL: 1.0, NOLF2's was 1.3 (GAME_HANDSHAKE_VER is 0x100 in Object.lto's

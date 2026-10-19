@@ -144,7 +144,7 @@ void CAnimationProps::Set(EnumAnimPropGroup eAnimPropGroup, EnumAnimProp eAnimPr
 }
 
 
-bool CAnimationProps::IsSet(const CAnimationProp& Prop) const
+LTBOOL CAnimationProps::IsSet(const CAnimationProp& Prop) const
 {
 	EnumAnimPropGroup eGroup = Prop.m_eGroup;
 	return ((m_aProps[eGroup].m_eProp == kAP_Any) || (m_aProps[eGroup].m_eProp == Prop.m_eProp));

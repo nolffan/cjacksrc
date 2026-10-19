@@ -1896,7 +1896,7 @@ void CPlayerObj::SaveOverlays( ILTMessage_Write *pMsg )
 {
 	pMsg->Writeuint16(( uint16 )m_Overlays.size( ));
 
-	for( OverlaySet::iterator iter = m_Overlays.begin( ); iter != m_Overlays.end( ); iter++ )
+	for( OverlaySet::iterator iter = m_Overlays.begin( ); iter != m_Overlays.end( ); ++iter )
 	{
 		pMsg->Writeuint8( *iter );
 	}
@@ -7382,128 +7382,43 @@ CAttachments* CPlayerObj::TransferAttachments( bool bRemove )
 
 void CPlayerObj::TransferWeapons(Body *pBody, bool bRemove )
 {
-	// Check if we are transferring weapons to a revivable body.
-	if( IsRevivePlayerGameType( ) && m_bCanBeRevived )
-	{
-		CCharacter::TransferWeapons(pBody, bRemove );
-		return;
-	}
+	// RETAIL: Object 0x10109890: Contract J.A.C.K.'s body drops only the
+	// weapon in hand, with the ammo in its clip.
 
-	// Get rid of powerups we already had on the body.
 	pBody->RemovePowerupObjects( );
 
-	//for deathmatch transefer all the weapons, not just the one in hand
-	if (m_pPlayerAttachments)
+	if( m_pPlayerAttachments )
 	{
-		// get first and last weapon indices
-		int nFirstWeaponCommandId =g_pWeaponMgr->GetFirstWeaponCommandId();
-		int nLastWeaponCommandId = g_pWeaponMgr->GetLastWeaponCommandId();
 		char szSpawn[1024] = "";
 
-		PickupList PUList;
-		PickupList::iterator iter;
-
-		// note: add 1 because the first and last are inclusive
-		int nMaxWeapons = nLastWeaponCommandId - nFirstWeaponCommandId + 1;
-
-		//step through each potential player weapon...
-		int i, nCommandId;
-		for (i = 0, nCommandId = nFirstWeaponCommandId;
-			  i < nMaxWeapons;
-			  ++i, ++nCommandId )
+		CWeapon* pWeapon = m_pPlayerAttachments->GetWeapon( );
+		if( pWeapon && pWeapon->Have( ))
 		{
-			// get the weapon data 
-			uint8 nWeaponId = g_pWeaponMgr->GetWeaponId(nCommandId);
-			CWeapon* pWeapon = m_pPlayerAttachments->GetWeapon(nWeaponId);
+			WEAPON const *pWeaponStruct = g_pWeaponMgr->GetWeapon( pWeapon->GetId( ));
+			AMMO const *pAmmo = pWeapon->GetAmmoData( );
 
-			//if the player has the weapon...
-			if (pWeapon && pWeapon->Have())
+			if( pAmmo && !pAmmo->bServerRestricted && pWeaponStruct && !pWeaponStruct->bServerRestricted &&
+				pWeaponStruct->szHHModel[0] )
 			{
+				sprintf( szSpawn, "WeaponItem Gravity 0;MoveToFloor 0;AmmoAmount %d;WeaponType %s;AmmoType %s;MPRespawn 0",
+					pWeapon->GetAmmoInClip( ), pWeaponStruct->szName, pAmmo->szName );
 
-				WEAPON const *pWeaponStruct = g_pWeaponMgr->GetWeapon(nWeaponId);
-				AMMO const *pAmmo     = g_pWeaponMgr->GetAmmo(pWeaponStruct->nDefaultAmmoId);		
+				LTVector vPos;
+				g_pLTServer->GetObjectPos( m_hObject, &vPos );
 
-				//if we have valid data for the weapon and ammo, create one...
-				if (pAmmo && !pAmmo->bServerRestricted && pWeaponStruct && !pWeaponStruct->bServerRestricted && 
-					pWeaponStruct->szHHModel[0])
+				BaseClass* pObj = SpawnObject( szSpawn, vPos, LTRotation( ));
+				if( pObj && pObj->m_hObject )
 				{
-					sprintf(szSpawn, "WeaponItem Gravity 0;AmmoAmount 0;WeaponType %s;AmmoType %s;MPRespawn 0, DMTouchPickup 0",
-						pWeaponStruct->szName, pAmmo->szName);
-
-					BaseClass* pObj = SpawnObject(szSpawn, LTVector(-10000,-10000,-10000), LTRotation());
-
-					//if we succeeded in creating a WeaponItem, hide it and add it to the body...
-					if ( pObj && pObj->m_hObject )
-					{
-
-						g_pCommonLT->SetObjectFlags( pObj->m_hObject, OFT_Flags, 0, FLAG_VISIBLE | FLAG_TOUCH_NOTIFY );
-
-						PickupItem *pItem = dynamic_cast<PickupItem *>(g_pLTServer->HandleToObject(pObj->m_hObject ));
-						int n = 0;
-						int sz = PUList.size();
-						if (sz > 1)
-							n = GetRandom(0,sz-1);
-						iter = PUList.begin();
-						for (int i = 0; i < n; i++)
-							iter++;
-
-						PUList.insert(iter, pItem);
-					
-						//pBody->AddPickupItem(pObj->m_hObject);
-					}
+					pBody->AddWeapon( pObj->m_hObject, ( char* )m_pPlayerAttachments->GetRightHand( ).GetName( ));
 				}
-
 			}
 		}
-
-  		//step through each potential player ammo...
-		for (i = 0; i < g_pWeaponMgr->GetNumAmmoIds(); ++i )
-		{
-			// get the ammo data 
-			AMMO const *pAmmo = g_pWeaponMgr->GetAmmo(i);
-			int nAmmoCount = m_pPlayerAttachments->GetAmmoCount(i);
-
-			if (pAmmo && !pAmmo->bServerRestricted && nAmmoCount > 0)
-			{
-
-				sprintf(szSpawn, "AmmoBox MPRespawn 0;AmmoType1 %s;AmmoCount1 %d", pAmmo->szName, nAmmoCount);
-				BaseClass* pObj = SpawnObject(szSpawn, LTVector(-10000,-10000,-10000), LTRotation());
-
-				//if we succeeded in creating a WeaponItem, hide it and add it to the body...
-				if ( pObj && pObj->m_hObject )
-				{
-
-					g_pCommonLT->SetObjectFlags( pObj->m_hObject, OFT_Flags, 0, FLAG_VISIBLE | FLAG_TOUCH_NOTIFY );
-
-					PickupItem *pItem = dynamic_cast<PickupItem *>(g_pLTServer->HandleToObject(pObj->m_hObject ));
-					int n = 0;
-					int sz = PUList.size();
-					if (sz > 1)
-						n = GetRandom(0,sz-1);
-					
-					iter = PUList.begin();
-					for (int i = 0; i < n; i++)
-						iter++;
-
-					PUList.insert(iter, pItem);
-
-				
-					//pBody->AddPickupItem(pObj->m_hObject);
-				}
-
-			}
-		}
-
-		iter = PUList.begin();
-		while (iter != PUList.end())
-		{
-			pBody->AddPickupItem((*iter)->m_hObject);
-			iter++;
-		}
-
 	}
 
-	RemoveWeapons();
+	if( bRemove )
+	{
+		RemoveWeapons( );
+	}
 }
 
 
