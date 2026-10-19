@@ -52,6 +52,7 @@ public:
 	void	FirstUpdate();
 	virtual void Update();
 	void	UpdatePlaying();
+	void	UpdateUnderMenus();	// RETAIL: 0x100a1010
 	void	PostUpdate();
 
 	void	FirstPlayingUpdate();

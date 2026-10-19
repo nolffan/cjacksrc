@@ -32,7 +32,6 @@
 // The same for the server's halves of CTeam (0x100f8a00, 0x100f8b60).
 #pragma comment(linker, "/include:?WriteData@CTeam@@QAEXPAVILTMessage_Write@@_N@Z")
 #pragma comment(linker, "/include:?Init@CTeam@@QAEXEPBDI@Z")
-#pragma comment(linker, "/include:?UpdateEffectsNoRender@CGameClientShell@@IAEXXZ")
 #pragma comment(linker, "/include:?GetPropertyNameFromPlayerPhysicsModel@@YAPADW4PlayerPhysicsModel@@@Z")
 #pragma comment(linker, "/include:?GetPlayerPhysicsModelFromPropertyName@@YA?AW4PlayerPhysicsModel@@PAD@Z")
 #include "WeaponStringDefs.h"
@@ -1661,6 +1660,12 @@ void CGameClientShell::Update()
 
 	if (GetInterfaceMgr( )->Update())
 	{
+		// RETAIL: 0x1004ad42, a multiplayer game goes on under the menus.
+		if (IsMultiplayerGame() && GetPlayerMgr()->IsPlayerInWorld())
+		{
+			GetPlayerMgr()->UpdateUnderMenus();
+			UpdateEffectsNoRender();
+		}
 		return;
 	}
 
@@ -4180,23 +4185,6 @@ void CGameClientShell::ResetDynamicWorldProperties(LTBOOL bUseWorldFog)
 
 // ----------------------------------------------------------------------- //
 //
-//	ROUTINE:	CGameClientShell::UpdateEffectsNoRender()
-//
-//	PURPOSE:	Update the effects as RenderCamera does, without rendering
-//
-// ----------------------------------------------------------------------- //
-
-// RETAIL: 0x10047da0
-void CGameClientShell::UpdateEffectsNoRender()
-{
-	GetPlayerMgr()->PreRender();
-	m_sfxMgr.UpdateSpecialFX();
-	m_ClientFXMgr.Pause(IsServerPaused());
-	m_ClientFXMgr.UpdateAllActiveFX( IsMultiplayerGame( ) || m_bMainWindowFocus );
-}
-
-// ----------------------------------------------------------------------- //
-//
 //	ROUTINE:	CGameClientShell::RenderCamera()
 //
 //	PURPOSE:	Sets up the client and renders the camera
@@ -4255,6 +4243,24 @@ void CGameClientShell::RenderCamera(bool bDrawInterface)
     g_pLTClient->End3D(END3D_CANDRAWCONSOLE);
 
 }
+
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	CGameClientShell::UpdateEffectsNoRender()
+//
+//	PURPOSE:	Update the effects as RenderCamera does, without rendering
+//
+// ----------------------------------------------------------------------- //
+
+// RETAIL: 0x10047da0
+void CGameClientShell::UpdateEffectsNoRender()
+{
+	GetPlayerMgr()->PreRender();
+	m_sfxMgr.UpdateSpecialFX();
+	m_ClientFXMgr.Pause(IsServerPaused());
+	m_ClientFXMgr.UpdateAllActiveFX( IsMultiplayerGame( ) || m_bMainWindowFocus );
+}
+
 
 
 

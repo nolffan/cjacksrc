@@ -797,7 +797,7 @@ bool CScreenJoin::ReadServerInfo( IGameSpyBrowser& gameSpyBrowser, void* hGameSe
 		cServer.m_nTimeLimit = ( uint16 )ClampToUint16( atoi( szValue ));
 
 	int nNumPlayers = gameSpyBrowser.GetNumPlayers( hGameServer );
-	cServer.m_Players.clear( );
+	cServer.m_Players.resize( 0 );	// RETAIL: 0x100cafc8
 	cServer.m_Players.reserve( nNumPlayers );
 	for( int nPlayer = 0; nPlayer < nNumPlayers; nPlayer++ )
 	{

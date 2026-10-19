@@ -152,3 +152,17 @@ Object.lto,0x10119b30,PowerArmor::HandleOn (ret): after the int3 padding that en
 Object.lto,0x100c2fc0,an empty function (ret 0xc) after the int3 padding that ends the empty function (ret 8) at 0x100c2fb0
 CShell.dll,0x10124db0,CString::MakeUpper (mov eax,[ecx]; call _strupr): after the padding that ends CString::CompareNoCase at 0x10124d90; nothing calls it
 Object.lto,0x10173970,CString::MakeUpper (mov eax,[ecx]; call _strupr): after the padding that ends CString::CompareNoCase at 0x10173950; nothing calls it
+CShell.dll,0x10042e80,an empty function (ret) after the int3 padding that ends the empty function at 0x10042e70; nothing calls it directly (a virtual)
+CShell.dll,0x10042e90,an empty function (ret) after the int3 padding that ends the empty function at 0x10042e80
+CShell.dll,0x100da050,CScreenPreload's 3-instruction getter (mov eax,[ecx+0x7ac]; test; sete al; ret) after the int3 padding that ends the empty CScreenPreload::Escape at 0x100da040
+CShell.dll,0x100da060,CScreenPreload's 2-instruction setter (mov byte [ecx+0x7a9],1; ret) after the int3 padding that ends the getter at 0x100da050
+CShell.dll,0x100aa570,an empty function (ret) after the int3 padding that ends the empty function at 0x100aa560
+CShell.dll,0x10002620,an empty function (ret) after the int3 padding that ends the empty function at 0x10002610
+CShell.dll,0x10098fa0,an empty function (ret 4) after the int3 padding that ends the empty function (ret 4) at 0x10098f90
+CShell.dll,0x1004ce10,a function returning 0 (xor eax,eax; ret) after the int3 padding that ends the one at 0x1004ce00
+CShell.dll,0x1004ce20,a function returning 0 (xor eax,eax; ret) after the int3 padding that ends the one at 0x1004ce10
+CShell.dll,0x100f5810,a forwarder (mov ecx,g_pFXButeMgr; jmp 0x1003c490) after the int3 padding that ends the empty function at 0x100f5800
+CShell.dll,0x100f5820,a forwarder (mov ecx,g_pFXButeMgr; jmp 0x1003c5e0) after the int3 padding that ends the one at 0x100f5810
+CShell.dll,0x100f5830,a forwarder (mov ecx,g_pFXButeMgr; jmp 0x1003c740) after the int3 padding that ends the one at 0x100f5820
+CShell.dll,0x100f5840,an empty function (ret 4) after the int3 padding that ends the forwarder at 0x100f5830
+CShell.dll,0x100c7ea0,a list-clearing helper of CScreenHostWeapons (if [ecx+0x79c]: RemoveAll(1)) after the int3 padding that ends CScreenHostWeapons::Escape at 0x100c7e90
