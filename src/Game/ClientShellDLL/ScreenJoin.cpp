@@ -261,7 +261,7 @@ void CScreenJoin::ClearServers()
 // RETAIL: 0x100cb6d0
 void CScreenJoin::Term()
 {
-	HaltRequests( );
+	// RETAIL: no HaltRequests here.
 	ClearServers( );
 	CBaseScreen::Term( );
 }

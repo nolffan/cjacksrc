@@ -2507,9 +2507,18 @@ void CGameClientShell::HandleMsgPauseGame( ILTMessage_Read* pMsg )
 //
 // ----------------------------------------------------------------------- //
 
+// RETAIL: 0x10046670
 void CGameClientShell::HandleMsgSwitchingWorldState( ILTMessage_Read* pMsg )
 {
 	m_eSwitchingWorldsState = ( SwitchingWorldsState )pMsg->Readuint8( );
+
+	// The level is in: start its asset list (OnExitWorld ends it).
+	if( m_eSwitchingWorldsState == eSwitchingWorldsStateFinished &&
+		GetConsoleBool( "MakeAssetList", false ))
+	{
+		WriteConsoleBool( "ShowFileAccess", true );
+		g_pLTClient->CPrint( "StartList %s", g_pMissionMgr->GetCurrentWorldName( ));
+	}
 }
 
 // ----------------------------------------------------------------------- //
@@ -4258,7 +4267,7 @@ void CGameClientShell::UpdateEffectsNoRender()
 	GetPlayerMgr()->PreRender();
 	m_sfxMgr.UpdateSpecialFX();
 	m_ClientFXMgr.Pause(IsServerPaused());
-	m_ClientFXMgr.UpdateAllActiveFX( IsMultiplayerGame( ) || m_bMainWindowFocus );
+	m_ClientFXMgr.UpdateAllActiveFX( IsMultiplayerGame( ) ? true : m_bMainWindowFocus );
 }
 
 

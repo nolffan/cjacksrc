@@ -61,16 +61,10 @@ LTBOOL CAimMagnetFX::Init(SFXCREATESTRUCT* psfxCreateStruct)
 // RETAIL: CShell 0x10001ec0
 LTBOOL CAimMagnetFX::CreateObject(ILTClient *pClientDE)
 {
-    if (!pClientDE) return LTFALSE;
+	LTBOOL bRet = CSpecialFX::CreateObject(pClientDE);
+	if (!bRet) return bRet;
 
-	m_pClientDE = pClientDE;
-
-	if (m_hServerObject)
-	{
-		m_pClientDE->GetObjectPos(m_hServerObject, &m_vLastServPos);
-	}
-
-	return LTTRUE;
+	return bRet;
 }
 
 // ----------------------------------------------------------------------- //

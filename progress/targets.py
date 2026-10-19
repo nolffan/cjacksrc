@@ -221,7 +221,62 @@ TARGETS = [
          # ends where msvcprt's newop_s.obj (operator new, 0x10126185)
          # starts, then newaop_s.obj, the import thunks and msvcrt.lib
          # (from 0x101261fe)
-         app=[(0x10001000, 0x10126185)]),
+         app=[(0x10001000, 0x10126185)],
+         # Functions of ours whose bytes recur at other shipped addresses
+         # (each named here is the shipped function at that address, read
+         # from the retail code):
+         own_symbols={
+             # four CSpecialFX::CreateObject bodies in their classes' vtables
+             # (CPickupItemFX's is 0x1013497c's third slot, its Init the
+             # ClientFX link at +0x40); our link folds three of them into one
+             "?CreateObject@CAimMagnetFX@@UAEIPAVILTClient@@@Z": 0x10001ec0,
+             "?CreateObject@ChassisFX@@UAEIPAVILTClient@@@Z": 0x10017f20,
+             "?CreateObject@ChassisPieceFX@@UAEIPAVILTClient@@@Z": 0x100181a0,
+             "?CreateObject@CPickupItemFX@@UAEIPAVILTClient@@@Z": 0x10095e60,
+             # SetNormalPhysicsModel, then a jmp to TermLevel: the shape of
+             # every such two-call thunk
+             "?OnExitWorld@CVehicleMgr@@QAEXXZ": 0x10107850,
+             # null test, SetNewLevel, SetLoadingLevel (50 bytes): by size
+             # ours took HandleExitLevel's head (0x10088450)
+             "?SetupSavedLevel@CMissionMgr@@AAE_NPBD@Z": 0x10088810,
+             # InterfaceMgr.obj, where by size each of these took the next
+             # one's address: OnCommandOff (the command switch after the
+             # chat and menu tests), NextWeapon (the class switch over
+             # NEXT_WEAPON to NEXT_WEAPON_6), HandleDisplayTimerMsg (the
+             # timer, paused flag and timer id)
+             "?OnCommandOff@CInterfaceMgr@@UAEIH@Z": 0x10063ee0,
+             "?NextWeapon@CInterfaceMgr@@AAEXH@Z": 0x10065260,
+             "?HandleDisplayTimerMsg@CInterfaceMgr@@QAE_NAAVILTMessage_Read@@@Z":
+                 0x100653d0,
+             # GameClientShell.obj: the effects update without a render,
+             # and the switching-worlds state with the asset list's start
+             "?UpdateEffectsNoRender@CGameClientShell@@IAEXXZ": 0x10047da0,
+             "?HandleMsgSwitchingWorldState@CGameClientShell@@AAEXPAVILTMessage_Read@@@Z":
+                 0x10046670,
+             # ClientMultiplayerMgr.obj, read from the callers:
+             # StartClientServer's tail jumps (type 0, 3, 4), UpdateJoinState's
+             # (the NAT states), the three callers of UpdateNetClientData
+             # (SetupClient, SetupServerHost, InitMultiPlayer), and the
+             # constructor and destructor (vtable 0x1012c0e8)
+             "??1ClientMultiplayerMgr@@QAE@XZ": 0x10020150,
+             "??0ClientMultiplayerMgr@@QAE@XZ": 0x100201f0,
+             "?StartClient@ClientMultiplayerMgr@@IAE_NXZ": 0x1001ed10,
+             "?StartServerAsSinglePlayer@ClientMultiplayerMgr@@IAE_NXZ":
+                 0x1001ee70,
+             "?StartServerAsHost@ClientMultiplayerMgr@@IAE_NXZ": 0x1001ef60,
+             "?UpdateNetClientData@ClientMultiplayerMgr@@QAE_NXZ": 0x1001f070,
+             "?UpdateNatNegotiation@ClientMultiplayerMgr@@IAEXXZ": 0x1001f190,
+             "?UpdateNatWait@ClientMultiplayerMgr@@IAEXXZ": 0x1001f260,
+             # the screens' constructors, by their vtables (0x1013664c,
+             # 0x10136dec)
+             "??0CScreenEndMission@@QAE@XZ": 0x100c0570,
+             "??0CScreenHostWeapons@@QAE@XZ": 0x100c7e30,
+             # Remove All enabled by the selected list (0x794, 0x79c)
+             "?UpdateButtons@CScreenHostWeapons@@IAEXXZ": 0x100c8310,
+             # ClearServers, then a jmp to CBaseScreen::Term (vtable
+             # 0x10136fc0's entry): the two-call thunk's shape again
+             "?Term@CScreenJoin@@UAEXXZ": 0x100cb6d0,
+         }),
     dict(label="Object.lto", what="the game: server objects", kind="image",
          shipped=REFERENCE + "/Object.lto", stem="Object",
          built="src/Game/built/Final/ObjectDLL/Object.lto",
@@ -229,7 +284,20 @@ TARGETS = [
          # CRegMgr::Init last) ends where msvcprt's runtime starts: here
          # newaop_s.obj first (operator new[], a 5-byte jmp at 0x10174d35),
          # then newop_s.obj (0x10174d3a) and msvcrt.lib from 0x10174dae
-         app=[(0x10001000, 0x10174d35)]),
+         app=[(0x10001000, 0x10174d35)],
+         # Functions of ours that the placement by object order puts at a
+         # neighbour of a similar size (each named here is the shipped
+         # function at that address, read from the retail code):
+         own_symbols={
+             # retail inlines the set iterator's ++ (136 bytes), ours calls
+             # _Inc (88): by size ours took UpdateSpecialFX's 0x10107930
+             "?SaveOverlays@CPlayerObj@@QAEXPAVILTMessage_Write@@@Z":
+                 0x10110900,
+             # the constructor (vtables, CButeMgr::Init, the hash map at
+             # 0x11c0); by size ours took 0x100bf8c0, DebugLineSystem's
+             # hash_map erase
+             "??0CSoundButeMgr@@QAE@XZ": 0x1014a880,
+         }),
     dict(label="ClientFx.fxd", what="the game: client effects", kind="image",
          shipped=REFERENCE + "/ClientFx.fxd", stem="ClientFx",
          built="src/Game/built/Final/ClientFxDLL/ClientFx.fxd",

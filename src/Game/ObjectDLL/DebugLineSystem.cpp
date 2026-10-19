@@ -123,11 +123,10 @@ namespace LineSystem
 			  pLineSystem(0) {}
 	};
 
-#if _MSC_VER >= 1300
-	typedef std::hash_map< std::string, SystemEntry, ObjectTemplateMgrHashCompare > SystemMap;
-#else
+	// RETAIL: Object 0x100bf430 (lower_bound) and 0x100bee30 (the hash) are
+	// the default hash_compare's: hash_value and the string's operator<,
+	// not ObjectTemplateMgrHashCompare's, under VC7 too.
 	typedef std::hash_map< std::string, SystemEntry > SystemMap;
-#endif // VC7
 
 	SystemMap g_systems;
 

@@ -444,25 +444,10 @@ void CScreenHostWeapons::SaveItemList()
 
 void CScreenHostWeapons::UpdateButtons()
 {
-	//if we're removing items, and our list is empty
-	if (m_pSelItems->IsEnabled() && !m_pSelItems->GetNumControls())
-	{
-		m_pSelItems->Enable(LTFALSE);
-		SetSelection(GetIndex(m_pAdd));
-	}
-	else
-		m_pRemove->Enable(m_pSelItems->GetNumControls());
-
-	if (m_pAvailItems->IsEnabled() && !m_pAvailItems->GetNumControls())
-	{
-		m_pAvailItems->Enable(LTFALSE);
-		SetSelection(GetIndex(m_pRemove));
-	}
-	else
-		m_pAdd->Enable( m_pAvailItems->GetNumControls());
-
+	// RETAIL: 0x100c8310 (Contract J.A.C.K.'s screen) only keeps Remove All
+	// to a list that has something in it.
 	m_pRemoveAll->Enable(m_pSelItems->GetNumControls() > 0);
-		
+
 }
 
 void CScreenHostWeapons::AddItemToList(int nId, bool bSelected, eItemTypes eType)

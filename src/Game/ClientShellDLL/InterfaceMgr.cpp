@@ -26,6 +26,7 @@
 #include "UberAssert.h"
 #include "ClientWeaponBase.h"
 #include "ClientWeaponMgr.h"
+#include "ChassisButeMgr.h"
 #include "ClientMultiplayerMgr.h"
 #include "MissionMgr.h"
 #include "ClientSaveLoadMgr.h"
@@ -204,6 +205,32 @@ namespace
 	bool g_bLockPopup = true;
 
 	CTimer g_SplashScreenTimer;
+}
+
+
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	GetDoomsDayPieceType
+//
+//	PURPOSE:	The Doomsday piece a chassis piece id (as the server sends
+//				it) is.  RETAIL: 0x10062ee0; a piece that is none of the
+//				three counts as the transmitter.
+//
+// ----------------------------------------------------------------------- //
+
+static DDPieceType GetDoomsDayPieceType( uint8 nPieceId )
+{
+	static uint8 s_nTransmitterId = ChassisButeMgr::Instance( ).GetPieceId( "Doomsday_transmitter" );
+	static uint8 s_nBatteriesId = ChassisButeMgr::Instance( ).GetPieceId( "Doomsday_batteries" );
+	static uint8 s_nCoreId = ChassisButeMgr::Instance( ).GetPieceId( "Doomsday_core" );
+
+	if( nPieceId == s_nTransmitterId )
+		return kDoomsDay_transmitter;
+
+	if( nPieceId == s_nBatteriesId )
+		return kDoomsDay_battery;
+
+	return ( nPieceId == s_nCoreId ) ? kDoomsDay_Core : kDoomsDay_transmitter;
 }
 
 
@@ -2306,7 +2333,8 @@ LTBOOL CInterfaceMgr::OnMessage(uint8 messageID, ILTMessage_Read *pMsg)
 					static eChatMsgType eChatType[] = { kMsgBlueTeam, kMsgRedTeam };
 
 					
-					DDPieceType Piece = (DDPieceType)pMsg->Readuint8();
+					// RETAIL: the server sends the chassis piece's id.
+					DDPieceType Piece = GetDoomsDayPieceType( pMsg->Readuint8() );
 					uint8		nTeam = pMsg->Readuint8();
 
 					if( Piece >= kDoomsDay_MAXTYPES )

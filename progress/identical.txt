@@ -1866,6 +1866,7 @@ CShell.dll	sub_100465b0
 CShell.dll	sub_100465f0
 CShell.dll	sub_10046610
 CShell.dll	sub_10046650
+CShell.dll	sub_10046670
 CShell.dll	sub_100468c0
 CShell.dll	sub_100469a0
 CShell.dll	sub_10046aa0
@@ -1882,6 +1883,7 @@ CShell.dll	sub_10047480
 CShell.dll	sub_10047660
 CShell.dll	sub_10047a00
 CShell.dll	sub_10047ab0
+CShell.dll	sub_10047da0
 CShell.dll	sub_10047df0
 CShell.dll	sub_10047e40
 CShell.dll	sub_10047ef0
@@ -3473,6 +3475,7 @@ CShell.dll	sub_10095b30
 CShell.dll	sub_10095bd0
 CShell.dll	sub_10095bf0
 CShell.dll	sub_10095cf0
+CShell.dll	sub_10095e60
 CShell.dll	sub_10095e90
 CShell.dll	sub_10095ee0
 CShell.dll	sub_10095f80
@@ -5502,6 +5505,7 @@ CShell.dll	sub_101068d0
 CShell.dll	sub_10106e30
 CShell.dll	sub_101070a0
 CShell.dll	sub_101070d0
+CShell.dll	sub_10107850
 CShell.dll	sub_10107860
 CShell.dll	sub_10107960
 CShell.dll	sub_10107b50
@@ -18889,6 +18893,7 @@ Object.lto	sub_100beca0
 Object.lto	sub_100becf0
 Object.lto	sub_100bed40
 Object.lto	sub_100bedf0
+Object.lto	sub_100bee30
 Object.lto	sub_100bee70
 Object.lto	sub_100beea0
 Object.lto	sub_100bef10
@@ -18905,6 +18910,7 @@ Object.lto	sub_100bf32d
 Object.lto	sub_100bf350
 Object.lto	sub_100bf370
 Object.lto	sub_100bf3c0
+Object.lto	sub_100bf430
 Object.lto	sub_100bf4f0
 Object.lto	sub_100bf520
 Object.lto	sub_100bf560
@@ -18913,8 +18919,10 @@ Object.lto	sub_100bf654
 Object.lto	sub_100bf670
 Object.lto	sub_100bf7d0
 Object.lto	sub_100bf7dc
+Object.lto	sub_100bf8c0
 Object.lto	sub_100bf960
 Object.lto	sub_100bf9d0
+Object.lto	sub_100bfa20
 Object.lto	sub_100bfd50
 Object.lto	sub_100bfe20
 Object.lto	sub_100bfe60
@@ -20537,6 +20545,7 @@ Object.lto	sub_101077a0
 Object.lto	sub_101077d0
 Object.lto	sub_10107810
 Object.lto	sub_10107880
+Object.lto	sub_10107930
 Object.lto	sub_10107980
 Object.lto	sub_10107a50
 Object.lto	sub_10107ab0
@@ -22874,6 +22883,7 @@ Object.lto	sub_10183fd0
 Object.lto	sub_10184020
 Object.lto	sub_10184290
 Object.lto	sub_10184300
+Object.lto	sub_101843b0
 Object.lto	sub_10184430
 Object.lto	sub_101849e0
 Object.lto	sub_10184a00

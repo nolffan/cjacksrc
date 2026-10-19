@@ -31,3 +31,4 @@ addr,reason
 0x100120a0,NOT GAME CODE: the compiler's vector destructor iterator (??_I; called from 0x100bb623); ours is the same bytes (AI.obj's COMDAT) but progress.py leaves ??_H/??_I out of the pairing as compiler code
 0x10120b20,NOT A FUNCTION: mid-instruction inside CProjectile::UpdateHeatSeeking (0x10120620; the movl at 0x10120b18 runs to 0x10120b23): a stray call target split its extent
 0x100e0609,NOT A FUNCTION: interior block of CGameServerShell::OnAddClient (0x100e04b0) after the banned-client return (jne at 0x100e055b)
+0x1002aa40,NOT A FUNCTION: mid-instruction inside CAIGoalInvestigate::HandleStateInvestigate (0x1002a9d0): the movl $0,0xe8(%esi) at 0x1002aa39 holds e8 00 00 00 00, read as a call to 0x1002aa40, which split its extent

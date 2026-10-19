@@ -167,3 +167,5 @@ CShell.dll,0x100f5820,a forwarder (mov ecx,g_pFXButeMgr; jmp 0x1003c5e0) after t
 CShell.dll,0x100f5830,a forwarder (mov ecx,g_pFXButeMgr; jmp 0x1003c740) after the int3 padding that ends the one at 0x100f5820
 CShell.dll,0x100f5840,an empty function (ret 4) after the int3 padding that ends the forwarder at 0x100f5830
 CShell.dll,0x100c7ea0,a list-clearing helper of CScreenHostWeapons (if [ecx+0x79c]: RemoveAll(1)) after the int3 padding that ends CScreenHostWeapons::Escape at 0x100c7e90
+CShell.dll,0x100201f0,ClientMultiplayerMgr's constructor (stores the vtable 0x1012c0e8 at 0x100201f6) right after its destructor 0x10020150 (which ends in a jmp at 0x100201eb); reached only by the jmp at 0x1004c313
+CShell.dll,0x100c05b0,CScreenEndMission's destructor (stores the vtable 0x1013664c, jmp to CBaseScreen's) right after its constructor 0x100c0570 (ret at 0x100c05ad)

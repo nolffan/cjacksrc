@@ -23,3 +23,5 @@ addr,reason
 0x1007fcc3,NOT A FUNCTION: inside an instruction of CLoadingScreen::Init (0x1007ed70): a stray reference to the middle of a mov split its extent
 0x1007e6b5,NOT A FUNCTION: inside an instruction of CLoadingScreen::UpdateMissionInfo (0x1007e400): a stray reference to the middle of a mov split its extent
 0x1004ce1f,NOT A FUNCTION: the last int3 of the padding before the function at 0x1004ce20 (a stray reference one byte early split it)
+0x1010863d,NOT A FUNCTION: interior block of the function at 0x10108590 (stack frame 0xac; ret $8 at 0x101085da and 0x1010863a) after its early returns: reached only by the je at 0x101085e3 and the jne at 0x101085ee; nothing calls it
+0x10088498,NOT A FUNCTION: interior block of CMissionMgr::HandleExitLevel (0x10088450; stack frame 0x210) after its multiplayer and state tests: the target of the jne at 0x10088460 and the jne at 0x10088473; nothing calls it

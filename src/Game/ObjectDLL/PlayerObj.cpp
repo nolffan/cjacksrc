@@ -6357,9 +6357,10 @@ void CPlayerObj::UpdateSpecialFX()
 
 
     // Update our "duck" usrflag.  This is used on the client to see if we
-	// are *really* ducked...
+	// are *really* ducked...  RETAIL: Object 0x10107930 sets it in single
+	// player only.
 
-	if ( m_Animator.GetLastMovement() == CAnimatorPlayer::eCrouching )
+	if ( !IsMultiplayerGame() && m_Animator.GetLastMovement() == CAnimatorPlayer::eCrouching )
 	{
 		dwUserFlags |= USRFLG_PLAYER_DUCK;
 	}
