@@ -2446,7 +2446,7 @@ void CGameServerShell::HandleDifficulty (HCLIENT hSender, ILTMessage_Read *pMsg)
 
 
 	m_eDifficulty = (GameDifficulty)pMsg->Readuint8();
-	g_pLTServer->CPrint("Difficulty:%d",(int)m_eDifficulty);
+	DebugCPrint(1,"Difficulty:%d",(int)m_eDifficulty);	// RETAIL: as Object 0x100db6d0
 }
 
 // ----------------------------------------------------------------------- //
@@ -4945,7 +4945,7 @@ void CGameServerShell::Load(ILTMessage_Read *pMsg, uint32 dwLoadFlags)
 
 	//load difficulty
 	m_eDifficulty = (GameDifficulty)pMsg->Readuint8();
-	g_pLTServer->CPrint("Difficulty:%d",(int)m_eDifficulty);
+	DebugCPrint(1,"Difficulty:%d",(int)m_eDifficulty);	// RETAIL: as Object 0x100db6d0
 
 	//load min music mood.
 	LOAD_DWORD_CAST(m_eMinMusicMood, CMusicMgr::Mood);

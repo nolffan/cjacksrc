@@ -6332,7 +6332,7 @@ bool CInterfaceMgr::IsInGame( )
 bool CInterfaceMgr::HandleDisplayTimerMsg( ILTMessage_Read& msg )
 {
     float fGameTimeEnd = msg.Readfloat();
-	bool bPaused = !!msg.Readuint8();
+	bool bPaused = msg.Readbool();	// RETAIL: a bool (CShell 0x100653e8)
 	uint8 nTeamId = msg.Readuint8( );
 
 	// Calculate time to the end.

@@ -19288,6 +19288,7 @@ Object.lto	sub_100c6a50
 Object.lto	sub_100c6ab0
 Object.lto	sub_100c6af0
 Object.lto	sub_100c6c30
+Object.lto	sub_100c6c50
 Object.lto	sub_100c6e50
 Object.lto	sub_100c6e90
 Object.lto	sub_100c6f00
@@ -19707,6 +19708,7 @@ Object.lto	sub_100d9e30
 Object.lto	sub_100d9e70
 Object.lto	sub_100d9ea0
 Object.lto	sub_100d9ee0
+Object.lto	sub_100d9f50
 Object.lto	sub_100d9fa0
 Object.lto	sub_100d9fe0
 Object.lto	sub_100da020
@@ -19769,6 +19771,7 @@ Object.lto	sub_100db260
 Object.lto	sub_100db430
 Object.lto	sub_100db480
 Object.lto	sub_100db500
+Object.lto	sub_100db620
 Object.lto	sub_100db7c0
 Object.lto	sub_100db7e0
 Object.lto	sub_100db800
