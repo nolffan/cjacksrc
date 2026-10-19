@@ -347,9 +347,8 @@ void PropType::Load(ILTMessage_Read *pMsg, uint32 dwLoadFlags)
 	if (!pMsg)
 		return;
 
-	if( g_pVersionMgr->GetCurrentSaveVersion( ) > CVersionMgr::kSaveVersion__1_2 )
-	{
-		char szPropType[256] = "";
-		LOAD_CHARSTRING( szPropType, ARRAY_LEN( szPropType ));
-	}
+	// RETAIL: no save version check, and the type is kept (0x1012a0a0)
+	char szPropType[256] = "";
+	LOAD_CHARSTRING( szPropType, ARRAY_LEN( szPropType ));
+	m_sPropType = szPropType;
 }

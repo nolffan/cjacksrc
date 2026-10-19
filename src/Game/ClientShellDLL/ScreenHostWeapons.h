@@ -50,7 +50,7 @@ protected:
 
 	CLTGUITextCtrl*			m_pAdd;
 	CLTGUITextCtrl*			m_pRemove;
-	CLTGUITextCtrl*			m_pAddAll;
+	// RETAIL: no Add All (m_pRemoveAll at 0x794, CShell 0x100c8331)
 	CLTGUITextCtrl*			m_pRemoveAll;
 	CLTGUIListCtrl*			m_pAvailItems;
 	CLTGUIListCtrl*			m_pSelItems;

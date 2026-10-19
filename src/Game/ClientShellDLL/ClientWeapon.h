@@ -402,9 +402,11 @@ protected:
 	WEAPON const *m_pWeapon;
 	AMMO const   *m_pAmmo;
 
+	// RETAIL: the flash's start time comes first (0x38; CShell Fire 0x10029884,
+	// UpdateMuzzleFlash 0x10025523), then its position (0x3c).
+	LTFLOAT       m_fFlashStartTime;       // When did flash start
 	LTVector      m_vFlashPos;
 	LTVector      m_vFlashOffset;
-	LTFLOAT       m_fFlashStartTime;       // When did flash start
 
 	LTFLOAT       m_fBobHeight;
 	LTFLOAT       m_fBobWidth;

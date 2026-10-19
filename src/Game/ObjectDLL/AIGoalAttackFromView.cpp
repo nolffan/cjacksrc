@@ -296,6 +296,7 @@ LTBOOL CAIGoalAttackFromView::HandleNameValuePair(const char *szName, const char
 			{
 				m_hStimulusSource = pPlayer->m_hObject;
 				m_pAI->Target( pPlayer->m_hObject );
+				m_bSeekPlayer = LTTRUE;		// RETAIL: 0x1001eced
 			}
 		}
 
@@ -344,6 +345,7 @@ LTBOOL CAIGoalAttackFromView::HandleGoalSenseTrigger(AISenseRecord* pSenseRecord
 			HandleGoalAttractors();
 			if(m_hNode)
 			{
+				m_bSeekPlayer = LTFALSE;	// RETAIL: 0x1001ed9d
 				return LTTRUE;
 			}
 		}

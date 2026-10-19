@@ -37,6 +37,7 @@ CAIGoalAttack::CAIGoalAttack()
 	m_eWeaponType = kAIWeap_Ranged;
 
 	m_bPanicCanActivate = LTFALSE;
+	m_bSeekPlayer = LTFALSE;
 	m_ePosture = kAP_Stand;
 	m_fChaseDelay = 1.0f;
 
@@ -65,6 +66,7 @@ void CAIGoalAttack::Save(ILTMessage_Write *pMsg)
 	SAVE_DWORD( m_ePosture );
 	SAVE_BOOL( m_bPanicCanActivate );
 	SAVE_BOOL( m_bCheckForWeaponChange );
+	SAVE_BOOL( m_bSeekPlayer );			// RETAIL: 0x1001d2cb
 
 	SAVE_BOOL( m_bNodeBased );
 	SAVE_BOOL( m_bForceSearch );
@@ -81,6 +83,7 @@ void CAIGoalAttack::Load(ILTMessage_Read *pMsg)
 	LOAD_DWORD_CAST( m_ePosture, EnumAnimProp );
 	LOAD_BOOL( m_bPanicCanActivate );
 	LOAD_BOOL( m_bCheckForWeaponChange );
+	LOAD_BOOL( m_bSeekPlayer );			// RETAIL: 0x1001d3c1
 
 	LOAD_BOOL( m_bNodeBased );
 	LOAD_BOOL( m_bForceSearch );
@@ -438,6 +441,7 @@ AINode* CAIGoalAttack::HandleGoalAttractors()
 			// has been sensed, exit the function.
 
 			if( ( pTemplate->flagSenseTriggers != kSense_None ) &&
+				!m_bSeekPlayer &&
 				( ( m_hStimulusSource == LTNULL ) ||
 				  ( !m_pAI->GetSenseRecorder()->HasAnyStimulation( kSense_All ) ) ) )
 			{
@@ -523,6 +527,7 @@ LTBOOL CAIGoalAttack::HandleGoalSenseTrigger(AISenseRecord* pSenseRecord)
 			&& ( ( pAIHuman->GetTarget()->IsVisibleCompletely() ) ||
 				 ( IsAI( pAIHuman->GetTarget()->GetVisionBlocker() ) && ( m_pAI->GetBrain()->GetAttackPoseCrouchChance() > 0.f ) ) ) )
 		{
+			m_bSeekPlayer = LTFALSE;
 			if(m_bNodeBased == LTTRUE)
 			{
 				if(m_hNode)

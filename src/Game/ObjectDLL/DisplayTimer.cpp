@@ -612,10 +612,8 @@ void DisplayTimer::Load(ILTMessage_Read *pMsg)
 
 	m_Timer.Load(pMsg);
 
-	if( g_pVersionMgr->GetCurrentSaveVersion( ) > CVersionMgr::kSaveVersion__1_2 )
-	{
-		LOAD_BYTE( m_nTeamId );
-	}
+	// RETAIL: no save version check in Contract J.A.C.K. (0x100c6e90)
+	LOAD_BYTE( m_nTeamId );
 
 	if (m_Timer.GetDuration() > 0.0f)
 	{

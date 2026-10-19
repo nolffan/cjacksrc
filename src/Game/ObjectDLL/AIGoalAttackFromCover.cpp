@@ -158,6 +158,7 @@ void CAIGoalAttackFromCover::SetStateAttack()
 
 		CAIHumanStateAttackFromCover* pAttackState = (CAIHumanStateAttackFromCover*)m_pAI->GetState();
 		pAttackState->SetCoverNode( m_hNode );
+		pAttackState->SetSeekPlayer( m_bSeekPlayer );	// RETAIL: 0x1001e2f6
 	}
 }
 
@@ -346,7 +347,7 @@ LTBOOL CAIGoalAttackFromCover::HandleNameValuePair(const char *szName, const cha
 				m_pAI->Target( pPlayer->m_hObject );
 			}
 
-			m_bNodeBased = LTTRUE;
+			m_bSeekPlayer = LTTRUE;		// RETAIL: 0x1001e0b5 (0xac)
 			m_bForceSearch = LTTRUE;
 
 			if( HandleGoalAttractors() )
@@ -425,6 +426,18 @@ AINode* CAIGoalAttackFromCover::FindNearestAttractorNode(EnumAINodeType eNodeTyp
 	if( ( g_pLTServer->GetTime() - m_pAI->GetLastPainTime() ) < 1.f )
 	{
 		fSearchFactor = 1.25f;
+	}
+
+	// RETAIL: Object 0x1001df80: an AI seeking the player takes cover from
+	// the player.
+	if( m_bSeekPlayer )
+	{
+		CPlayerObj *pPlayer = g_pCharacterMgr->FindPlayer();
+		if( pPlayer )
+		{
+			m_pAI->Target( pPlayer->m_hObject );
+			return g_pAINodeMgr->FindNearestNodeFromThreat(m_pAI, eNodeType, vPos, pPlayer->m_hObject, fSearchFactor);
+		}
 	}
 
 	return g_pAINodeMgr->FindNearestNodeFromThreat(m_pAI, eNodeType, vPos, m_hStimulusSource, fSearchFactor);

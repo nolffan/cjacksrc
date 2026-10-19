@@ -432,6 +432,7 @@ void CAIButeMgr::SetBrain(int iBrain)
 	m_aBrains[iBrain].fAttackPoseCrouchTime				= CButeTools::GetValidatedDouble (m_buteMgr, s_aTagName,"AttackPoseCrouchTime");
 	m_aBrains[iBrain].fAttackGrenadeThrowTime			= CButeTools::GetValidatedDouble (m_buteMgr, s_aTagName,"AttackGrenadeThrowTime");
 	m_aBrains[iBrain].fAttackGrenadeThrowChance 		= CButeTools::GetValidatedDouble (m_buteMgr, s_aTagName,"AttackGrenadeThrowChance");
+	m_aBrains[iBrain].fAttackGrenadeThrowOffset 		= CButeTools::GetValidatedDouble (m_buteMgr, s_aTagName,"AttackGrenadeThrowOffset");
 	m_aBrains[iBrain].fAttackCoverCheckTime 			= CButeTools::GetValidatedDouble (m_buteMgr, s_aTagName,"AttackCoverCheckTime");
 	m_aBrains[iBrain].fAttackCoverCheckChance			= CButeTools::GetValidatedDouble (m_buteMgr, s_aTagName,"AttackCoverCheckChance");
 	m_aBrains[iBrain].fAttackSoundTimeMin				= CButeTools::GetValidatedDouble (m_buteMgr, s_aTagName,"AttackSoundTimeMin");

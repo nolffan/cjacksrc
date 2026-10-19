@@ -1239,6 +1239,9 @@ void CTO2PlayerStats::Load(ILTMessage_Read *pMsg)
     m_CompletedObjectives.Load(pMsg);
     m_Parameters.Load(pMsg);
     m_Keys.Load(pMsg);
+	// RETAIL: CShell 0x100fd404: the keys held go back on the HUD.
+	for( IDList::IDArray::iterator iKey = m_Keys.m_IDArray.begin( ); iKey != m_Keys.m_IDArray.end( ); ++iKey )
+		g_pHUDCarrying->AddKey( *iKey );
     m_IntelList.Load(pMsg);
 
     m_nHealth           = pMsg->Readuint32();

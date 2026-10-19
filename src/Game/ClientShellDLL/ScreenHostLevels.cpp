@@ -43,7 +43,6 @@ CScreenHostLevels::CScreenHostLevels()
 	m_pRemove		= LTNULL;
 	m_pAddAll		= LTNULL;
 	m_pRemoveAll    = LTNULL;
-	m_pLoopToggle	= LTNULL;
 
 }
 
@@ -91,10 +90,6 @@ LTBOOL CScreenHostLevels::Build()
 	m_pSelMissions->Enable(LTFALSE);
 
 	m_nextPos.y += nListHeight;
-	uint16 nListWidth = nSelWidth-16;
-	m_pLoopToggle = AddToggle(IDS_LOOP_MISSIONS,IDS_HELP_LOOP_MISSIONS,nListWidth,&m_bLoopMissions);
-	m_pLoopToggle->SetOnString(LoadTempString(IDS_YES));
-	m_pLoopToggle->SetOffString(LoadTempString(IDS_NO));
 
 
  	// Make sure to call the base class
@@ -254,16 +249,6 @@ void    CScreenHostLevels::OnFocus(LTBOOL bFocus)
 		if (!m_pSelMissions->GetNumControls())
 		{
 			MakeDefaultMissionList();
-		}
-
-		if (g_pGameClientShell->GetGameType() != eGameTypeCooperative)
-		{
-			m_pLoopToggle->Enable(LTFALSE);
-			m_bLoopMissions = LTTRUE;
-		}
-		else
-		{
-			m_pLoopToggle->Enable(LTTRUE);
 		}
 
 		UpdateButtons();

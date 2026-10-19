@@ -1035,9 +1035,7 @@ void PickupItem::Load(ILTMessage_Read *pMsg, uint32 dwLoadFlags)
 	LOAD_CHARSTRING( szString, ARRAY_LEN( szString ));
 	m_sWorldAniName = szString;
 
-	if( g_pVersionMgr->GetCurrentSaveVersion( ) > CVersionMgr::kSaveVersion__1_2 )
-	{
-		LOAD_BYTE(m_nTeamId);
-	}
+	// RETAIL: no save version check in Contract J.A.C.K. (0x10104f70)
+	LOAD_BYTE(m_nTeamId);
 }
 

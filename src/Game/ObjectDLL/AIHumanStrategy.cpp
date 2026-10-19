@@ -129,6 +129,7 @@ CAIHumanStrategyFollowPath::CAIHumanStrategyFollowPath()
 	m_bModifiedMovement = LTFALSE;
 	m_cStuckOnDoorUpdates = 0;
 	m_bDoorShootThroughable = LTFALSE;
+	m_bDoorAnimationLocked = LTFALSE;
 	m_bDrawingPath = LTFALSE;
 
 	if( !g_ShowAIPath.IsInitted() )
@@ -543,6 +544,7 @@ LTBOOL CAIHumanStrategyFollowPath::UpdateAnimation()
 					{
 						case eDoorStateNone:
 						{
+							m_bDoorAnimationLocked = LTFALSE;	// RETAIL: 0x10056c55
 							if( m_pStrategyShoot &&
 								m_bDoorShootThroughable && 
 								(GetAI()->GetAwareness() == kAware_Alert) && 
@@ -556,6 +558,18 @@ LTBOOL CAIHumanStrategyFollowPath::UpdateAnimation()
 
 						case eDoorStateWaitingForAnimationToStart:
 						{
+							// RETAIL: Object 0x10056bcc: once the door animation
+							// has locked, leave it be; wait out a transition.
+							if( GetAnimationContext()->IsLocked() || m_bDoorAnimationLocked )
+							{
+								m_bDoorAnimationLocked = LTTRUE;
+								break;
+							}
+							if( GetAnimationContext()->IsTransitioning() )
+							{
+								break;
+							}
+
 							GetAnimationContext()->ClearProps();
 							GetAnimationContext()->SetProp(kAPG_Posture, kAP_Stand);
 							GetAnimationContext()->SetProp(kAPG_WeaponPosition, kAP_Lower);
@@ -1070,6 +1084,7 @@ LTBOOL CAIHumanStrategyFollowPath::UpdateOpenDoors(CAIPathWaypoint* pWaypoint)
 		m_pPath->IncrementWaypointIndex();
 		m_cStuckOnDoorUpdates = 0;
 		m_bDoorShootThroughable = LTFALSE;
+		m_bDoorAnimationLocked = LTFALSE;	// RETAIL: 0x100571c8
 		return LTTRUE;
 	}
 
@@ -1450,6 +1465,7 @@ void CAIHumanStrategyFollowPath::Reset()
 	m_eDoorState = eDoorStateNone;
 	m_cStuckOnDoorUpdates = 0;
 	m_bDoorShootThroughable = LTFALSE;
+	m_bDoorAnimationLocked = LTFALSE;	// RETAIL: 0x10052a2a
 	m_pAIHuman->GetAIMovement()->Clear();
 	m_eState = eStateUnset;
 	m_bDrawingPath = LTFALSE;

@@ -39,7 +39,6 @@ CScreenHostWeapons::CScreenHostWeapons()
     m_pSelItems   = LTNULL;
 	m_pAdd			= LTNULL;
 	m_pRemove		= LTNULL;
-	m_pAddAll		= LTNULL;
 	m_pRemoveAll    = LTNULL;
 }
 
@@ -65,7 +64,6 @@ LTBOOL CScreenHostWeapons::Build()
 	addPos.y -= (nFontSize + m_nItemSpacing);
 	AddTextItem(IDS_ALLOWED_WEAPONS,NULL,NULL,addPos,LTTRUE);
 	
-//	m_pAddAll = AddTextItem(IDS_HOST_ADD_ALL, CMD_ADD_ALL, 0 /*IDS_HELP_ADD_ALL_WPNS*/, commandPos);
 	m_pRemoveAll = AddTextItem(IDS_HOST_REMOVE_ALL, CMD_REMOVE_ALL, IDS_HELP_REM_ALL_WPNS, commandPos);
 
 	m_pRemove = AddTextItem(IDS_HOST_REMOVE_WEAPON, CMD_REMOVE_LEVEL, IDS_HELP_REM_WEAPONS, removePos);

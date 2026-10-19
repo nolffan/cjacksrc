@@ -60,6 +60,7 @@
 	#define	GTMGR_LIGHT2FILENAME		"Light2FileName"
 	#define	GTMGR_LIGHT2SKIN			"Light2Skin"
 	#define	GTMGR_LIGHT2SOCKET			"Light2Socket"
+	#define	GTMGR_AMMOTYPE				"AmmoType"
 
 
 //
@@ -268,7 +269,8 @@ GADGETTARGET::GADGETTARGET()
 	szLight1SocketName	( LTNULL ),
 	szLight2SocketName	( LTNULL ),
 	vLightScale			( 1.0f, 1.0f, 1.0f ),
-	nLightType			( 0 )
+	nLightType			( 0 ),
+	szAmmoType			( LTNULL )
 {
 
 }
@@ -290,6 +292,7 @@ GADGETTARGET::~GADGETTARGET()
 	debug_deletea( szLight2FileName );
 	debug_deletea( szLight1SocketName );
 	debug_deletea( szLight2SocketName );
+	debug_deletea( szAmmoType );
 	debug_deletea( szDebrisType );
 	debug_deletea( szDisablingSnd );
 	debug_deletea( szDisabledSnd );
@@ -352,6 +355,8 @@ LTBOOL	GADGETTARGET::Init( CButeMgr &ButeMgr, char *aTagName )
 
 	blrGTLight1SkinReader.Read( &ButeMgr, aTagName, GTMGR_LIGHT1SKIN, GTMGR_MAX_FILE_PATH );
 	blrGTLight2SkinReader.Read( &ButeMgr, aTagName, GTMGR_LIGHT2SKIN, GTMGR_MAX_FILE_PATH );
+
+	szAmmoType			= GetString( ButeMgr, aTagName, GTMGR_AMMOTYPE, GTMGR_MAX_FILE_PATH );
 
 	return LTTRUE;
 }

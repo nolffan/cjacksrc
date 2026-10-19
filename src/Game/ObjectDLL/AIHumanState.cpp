@@ -6200,6 +6200,7 @@ CAIHumanStateAttackFromCover::CAIHumanStateAttackFromCover()
 	m_bBoostedHitpoints = LTFALSE;
 
 	m_bCovered = LTFALSE;
+	m_bSeekPlayer = LTFALSE;
 
 	m_bPlayFirstSound = LTTRUE;
 }
@@ -6791,6 +6792,7 @@ void CAIHumanStateAttackFromCover::Load(ILTMessage_Read *pMsg)
 	LOAD_BOOL(m_bBoostedHitpoints);
 	LOAD_COBJECT(m_pCoverNode, AINodeCover);
 	LOAD_BOOL(m_bCovered);
+	LOAD_BOOL(m_bSeekPlayer);		// RETAIL: 0x10042203
 
 	// Instantiate the correct cover strategy
 
@@ -6832,6 +6834,7 @@ void CAIHumanStateAttackFromCover::Save(ILTMessage_Write *pMsg)
 	SAVE_BOOL(m_bBoostedHitpoints);
 	SAVE_COBJECT(m_pCoverNode);
 	SAVE_BOOL(m_bCovered);
+	SAVE_BOOL(m_bSeekPlayer);		// RETAIL: 0x10042346
 
 	// Write out the strategy type so we know which one to instantiate
 	// Don't allow saving cover strategy if we're in a transition save,
