@@ -1,0 +1,45 @@
+# playtest-level.txt -- one single-player level for build/campaign.sh (any
+# world on the command line): into control (past any cinematic or
+# dialogue), a minute of moving, looking and firing, a quicksave (F6), more
+# moving, a quickload (F9, confirmed), back into control. Shots at each
+# step, for `playtest.sh compare` against the control's run.
+window 240
+skipcine 180
+shot start
+hold w 3
+turn 400 0
+hold w 2
+click 1 0.5
+click 1 0.5
+shot fired
+turn -800 0
+hold w 3
+hold d 2
+click 1 1
+key r
+wait 2
+shot moved
+key c
+wait 1
+key c
+hold a 2
+turn 0 200
+turn 0 -200
+key F6
+wait 5
+shot saved
+hold s 3
+turn 600 0
+hold w 3
+shot moved-again
+key F9
+wait 3
+# "This will end your current game. Continue?": Yes
+key Return
+wait 30
+skipcine 120
+shot loaded
+hold w 2
+click 1 0.5
+wait 3
+shot after-load

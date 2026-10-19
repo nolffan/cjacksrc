@@ -34,7 +34,7 @@ DOCKER_RUN = docker run --rm --init --name $(CONTAINER) \
 TOOLCHAIN_FILES = toolchains/msvc-7.10-3077/bin/cl.exe toolchains/dxsdk-8.1/include/d3d8.h
 
 .PHONY: all game debug modern modern-debug image retail check-rez check-tools check-toolchain \
-	test mptest reference progress progress-update shell clean distclean help
+	test mptest campaign control reference progress progress-update shell clean distclean help
 
 all: game
 
@@ -47,6 +47,9 @@ help:
 	@echo "make test       run out/cjack-legacy-release/ under Xvfb and Wine to its main menu"
 	@echo "                (build/playtest.sh; TEST_WORLD=<world>, TEST_SCRIPT=<script>,"
 	@echo "                TEST_GAME=out/cjack-modern-release; results in out/play/test*/)"
+	@echo "make campaign   every single-player world in turn, played a minute, saved and loaded"
+	@echo "                (build/campaign.sh; CAMPAIGN_WORLDS=, CAMPAIGN_CONTROL=cjack-control)"
+	@echo "make control    out/cjack-control/: retail's game with our engine, the control"
 	@echo "make mptest     the dedicated server hosts a deathmatch game and a client joins it,"
 	@echo "                under Xvfb and Wine (build/mptest.sh; out/play/*-mp/)"
 	@echo "make progress   score the build against the retail binaries; fails if a"
@@ -112,7 +115,19 @@ test: image
 
 mptest: image
 	@[ -f $(TEST_GAME)/ContractJackServer.exe ] || { echo "error: no $(TEST_GAME)/ -- build it first" >&2; exit 1; }
-	$(DOCKER_RUN) bash build/mptest.sh $(TEST_GAME)
+	$(DOCKER_RUN) env MPTEST_TYPE=$(or $(MPTEST_TYPE),dm) bash build/mptest.sh $(TEST_GAME)
+
+# The single-player campaign level by level (build/campaign.sh): every world,
+# or CAMPAIGN_WORLDS="M01S01 M04S02 ..."; CAMPAIGN_CONTROL=cjack-control
+# compares each world's shots with the control's run of it.
+campaign: image
+	@[ -f $(TEST_GAME)/Lithtech.exe ] || { echo "error: no $(TEST_GAME)/ -- build it first" >&2; exit 1; }
+	$(DOCKER_RUN) env CAMPAIGN_CONTROL=$(CAMPAIGN_CONTROL) bash build/campaign.sh $(TEST_GAME) $(CAMPAIGN_WORLDS)
+
+# The control for the runtime tests (build/control.sh): retail's game with
+# our engine, in out/cjack-control/ (TEST_GAME=out/cjack-control).
+control:
+	@bash build/control.sh
 
 progress: retail
 	$(DOCKER_RUN) env COMPLETE=$(COMPLETE) COVERED=$(COVERED) bash build/progress.sh check
