@@ -316,6 +316,10 @@ LTBOOL IsAccuracyType(DamageType eType)
 //
 // ----------------------------------------------------------------------- //
 
+// RETAIL: the client's alone.  Object.lto's DamageTypes.obj keeps its
+// uncalled functions (no /Gy) and has no copy of this one
+
+#ifndef _SERVERBUILD
 LTFLOAT SlowMovementDuration(DamageType eType)
 {
 	for (int i=0; i < kNumDamageTypes; i++)
@@ -328,6 +332,7 @@ LTFLOAT SlowMovementDuration(DamageType eType)
 
 	return 0.0f;
 }
+#endif
 
 // ----------------------------------------------------------------------- //
 //

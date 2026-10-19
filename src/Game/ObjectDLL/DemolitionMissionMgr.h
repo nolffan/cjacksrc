@@ -35,10 +35,6 @@ class CDemolitionMissionMgr : public CServerMissionMgr
 		virtual bool	FinishExitLevel( );
 		virtual void	LevelStarted( );
 		virtual bool	HandleMultiplayerOptions( HCLIENT hSender, ILTMessage_Read& msg );
-
-	private:
-
-		void			ApplyOptions( );
 };
 
 #endif // __DEMOLITIONMISSIONMGR_H__

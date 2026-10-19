@@ -637,7 +637,7 @@ class CAIHumanStrategyGrenade : public CAIHumanStrategy
 		// Throw
 
 		virtual void Throw(LTFLOAT fTime = 0.5f) { }
-		virtual LTBOOL ShouldThrow() { return LTFALSE; }
+		virtual LTBOOL ShouldThrow(LTFLOAT fFactor) { return LTFALSE; }
 		virtual LTBOOL IsThrowing() { return LTFALSE; }
 
 		// Handlers
@@ -683,7 +683,7 @@ class CAIHumanStrategyGrenadeThrow : public CAIHumanStrategyGrenade
 		// Throw
 
 		void Throw(LTFLOAT fTime = 0.5f);
-		LTBOOL ShouldThrow();
+		LTBOOL ShouldThrow(LTFLOAT fFactor);	// RETAIL: Object 0x10053890
 		LTBOOL IsThrowing();
 
 		// Simple accessors

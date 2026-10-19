@@ -1031,7 +1031,7 @@ bool CServerMissionMgr::EndGame( )
 bool CServerMissionMgr::StartGame(ILTMessage_Read& msg )
 {
 	// Setup the campaign from the campaign file.
-	SetupCampaign( m_sCampaignFile );
+	SetupCampaign( );
 
 	return true;
 }
@@ -1046,7 +1046,7 @@ bool CServerMissionMgr::StartGame(ILTMessage_Read& msg )
 //
 // --------------------------------------------------------------------------- //
 
-bool CServerMissionMgr::SetupCampaign( char const* pszCampaignName )
+bool CServerMissionMgr::SetupCampaign( )
 {
 	// Clear all missions from our campaign.
 	m_Campaign.clear( );

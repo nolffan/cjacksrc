@@ -63,6 +63,24 @@ CMDMGR_BEGIN_REGISTER_CLASS( Ice )
 CMDMGR_END_REGISTER_CLASS( Ice, VolumeBrush )
 
 
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	CorrosiveFluid::ReadProp
+//
+//	PURPOSE:	RETAIL: Object 0x1015df00.  The damage type is the class's own,
+//				whatever the (hidden) DamageType property holds
+//
+// ----------------------------------------------------------------------- //
+
+void CorrosiveFluid::ReadProp(ObjectCreateStruct *pStruct)
+{
+	if (!pStruct) return;
+
+	VolumeBrush::ReadProp(pStruct);
+
+	m_eDamageType = StringToDamageType("Burn");
+}
+
 BEGIN_CLASS(CorrosiveFluid)
 	ADD_REALPROP_FLAG(Viscosity, 0.035f, 0)
 	ADD_REALPROP_FLAG(Damage, 5.0f, 0)
@@ -78,6 +96,24 @@ END_CLASS_DEFAULT_FLAGS(CorrosiveFluid, VolumeBrush, NULL, NULL, CF_WORLDMODEL)
 CMDMGR_BEGIN_REGISTER_CLASS( CorrosiveFluid )
 CMDMGR_END_REGISTER_CLASS( CorrosiveFluid, VolumeBrush )
 
+
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	FreezingWater::ReadProp
+//
+//	PURPOSE:	RETAIL: Object 0x1015df40.  The damage type is the class's own,
+//				whatever the (hidden) DamageType property holds
+//
+// ----------------------------------------------------------------------- //
+
+void FreezingWater::ReadProp(ObjectCreateStruct *pStruct)
+{
+	if (!pStruct) return;
+
+	VolumeBrush::ReadProp(pStruct);
+
+	m_eDamageType = StringToDamageType("FREEZE");
+}
 
 BEGIN_CLASS(FreezingWater)
 	ADD_REALPROP_FLAG(Viscosity, 0.035f, 0)
@@ -97,6 +133,24 @@ CMDMGR_END_REGISTER_CLASS( FreezingWater, VolumeBrush )
 
 
 
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	PoisonGas::ReadProp
+//
+//	PURPOSE:	RETAIL: Object 0x1015df80.  The damage type is the class's own,
+//				whatever the (hidden) DamageType property holds
+//
+// ----------------------------------------------------------------------- //
+
+void PoisonGas::ReadProp(ObjectCreateStruct *pStruct)
+{
+	if (!pStruct) return;
+
+	VolumeBrush::ReadProp(pStruct);
+
+	m_eDamageType = StringToDamageType("POISON");
+}
+
 BEGIN_CLASS(PoisonGas)
 	ADD_VECTORPROP_VAL_FLAG(Current, 0.0f, 0.0f, 0.0f, PF_HIDDEN)
 	ADD_REALPROP_FLAG(Damage, 5.0f, 0)
@@ -112,6 +166,24 @@ CMDMGR_BEGIN_REGISTER_CLASS( PoisonGas )
 CMDMGR_END_REGISTER_CLASS( PoisonGas, VolumeBrush )
 
 
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	Electricity::ReadProp
+//
+//	PURPOSE:	RETAIL: Object 0x1015dfc0.  The damage type is the class's own,
+//				whatever the (hidden) DamageType property holds
+//
+// ----------------------------------------------------------------------- //
+
+void Electricity::ReadProp(ObjectCreateStruct *pStruct)
+{
+	if (!pStruct) return;
+
+	VolumeBrush::ReadProp(pStruct);
+
+	m_eDamageType = StringToDamageType("ELECTROCUTE");
+}
+
 BEGIN_CLASS(Electricity)
 	ADD_VECTORPROP_VAL_FLAG(Current, 0.0f, 0.0f, 0.0f, PF_HIDDEN)
 	ADD_REALPROP_FLAG(Damage, 20.0f, 0)
@@ -126,6 +198,24 @@ END_CLASS_DEFAULT_FLAGS(Electricity, VolumeBrush, NULL, NULL, CF_WORLDMODEL)
 CMDMGR_BEGIN_REGISTER_CLASS( Electricity )
 CMDMGR_END_REGISTER_CLASS( Electricity, VolumeBrush )
 
+
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	EndlessFall::ReadProp
+//
+//	PURPOSE:	RETAIL: Object 0x1015e000.  The damage type is the class's own,
+//				whatever the (hidden) DamageType property holds
+//
+// ----------------------------------------------------------------------- //
+
+void EndlessFall::ReadProp(ObjectCreateStruct *pStruct)
+{
+	if (!pStruct) return;
+
+	VolumeBrush::ReadProp(pStruct);
+
+	m_eDamageType = StringToDamageType("ENDLESS FALL");
+}
 
 BEGIN_CLASS(EndlessFall)
 	ADD_REALPROP_FLAG(Damage, 100000000.0f, PF_HIDDEN)
@@ -156,6 +246,24 @@ CMDMGR_END_REGISTER_CLASS( Wind, VolumeBrush )
 
 
 
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	ColdAir::ReadProp
+//
+//	PURPOSE:	RETAIL: Object 0x1015e050.  The damage type is the class's own,
+//				whatever the (hidden) DamageType property holds
+//
+// ----------------------------------------------------------------------- //
+
+void ColdAir::ReadProp(ObjectCreateStruct *pStruct)
+{
+	if (!pStruct) return;
+
+	VolumeBrush::ReadProp(pStruct);
+
+	m_eDamageType = StringToDamageType("FREEZE");
+}
+
 BEGIN_CLASS(ColdAir)
 	ADD_REALPROP_FLAG(Damage, 5.0f, PF_HIDDEN)
 	ADD_STRINGPROP_FLAG(DamageType, "FREEZE", PF_STATICLIST | PF_HIDDEN)
@@ -168,6 +276,24 @@ END_CLASS_DEFAULT_FLAGS(ColdAir, VolumeBrush, NULL, NULL, CF_WORLDMODEL)
 CMDMGR_BEGIN_REGISTER_CLASS( ColdAir )
 CMDMGR_END_REGISTER_CLASS( ColdAir, VolumeBrush )
 
+
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	Burn::ReadProp
+//
+//	PURPOSE:	RETAIL: Object 0x1015e090.  The damage type is the class's own,
+//				whatever the (hidden) DamageType property holds
+//
+// ----------------------------------------------------------------------- //
+
+void Burn::ReadProp(ObjectCreateStruct *pStruct)
+{
+	if (!pStruct) return;
+
+	VolumeBrush::ReadProp(pStruct);
+
+	m_eDamageType = StringToDamageType("BURN");
+}
 
 BEGIN_CLASS( Burn )
 	ADD_VECTORPROP_VAL_FLAG(Current, 0.0f, 0.0f, 0.0f, PF_HIDDEN)

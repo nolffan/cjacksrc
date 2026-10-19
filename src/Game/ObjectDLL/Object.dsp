@@ -1304,6 +1304,8 @@ SOURCE=..\Shared\SurfaceFunctions.cpp
 # Begin Source File
 
 SOURCE=..\Shared\SurfaceMgr.cpp
+# ADD CPP /Ox /GF
+# SUBTRACT CPP /O2
 # End Source File
 # Begin Source File
 
