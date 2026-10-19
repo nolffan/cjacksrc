@@ -68,7 +68,13 @@ namespace
 		}
 	};
 
-
+	// RETAIL: CShell 0x100db900: a save's name cannot hold '|'
+	unsigned char SaveNameFilter(unsigned char c)
+	{
+		if (c != '|')
+			return c;
+		return 0;
+	}
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -363,6 +369,7 @@ void CScreenSave::NameSaveGame(uint32 slot, int index)
 	mb.pFn = EditCallBack;
 	mb.pString = m_szSaveName;
 	mb.nMaxChars = 40;
+	mb.pEditFilter = SaveNameFilter;
 	g_pInterfaceMgr->ShowMessageBox(IDS_ENTER_NAME,&mb);
 
 }

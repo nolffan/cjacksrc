@@ -291,10 +291,8 @@ void CHitBox::UpdateBoundingBox()
 //
 // ----------------------------------------------------------------------- //
 
+// RETAIL: 0x1004f960. Contract J.A.C.K. has no searching: the function is
+// empty.
 void CHitBox::SetCanBeSearched( bool bCanBeSearched )
 {
-	if( m_hObject == INVALID_HOBJECT )
-		return;
-
-	g_pCommonLT->SetObjectFlags( m_hObject, OFT_User, (bCanBeSearched ? USRFLG_CAN_SEARCH : 0), USRFLG_CAN_SEARCH );
 }

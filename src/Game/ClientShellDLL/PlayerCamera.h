@@ -73,6 +73,7 @@ class CPlayerCamera
 
         LTBOOL IsChaseView()     const { return (m_eCameraMode == CHASE); }
         LTBOOL IsFirstPerson()   const { return (m_eCameraMode == FIRSTPERSON); }
+        LTBOOL IsGoingFirstPerson() const { return (m_eCameraMode == GOINGFIRSTPERSON); }
         const LTRotation &GetRotation() const { return m_rRotation; }
         const LTVector &GetPos()        const { return m_vPos; }
 

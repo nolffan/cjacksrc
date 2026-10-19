@@ -5616,6 +5616,22 @@ void CAIHumanStateAttack::Update()
 		pBlockingAI = (CAI*)g_pLTServer->HandleToObject( pTarget->GetVisionBlocker() );
 	}
 
+	// RETAIL: Object 0x100491f2.  A target out of sight draws a grenade
+	// sooner (twice the factor) than one in view.
+
+	if ( !pTarget->IsVisibleCompletely() )
+	{
+		if ( m_pStrategyGrenade && m_aniPosture.GetProp() == kAP_Stand && m_pStrategyGrenade->ShouldThrow(2.0f) )
+		{
+			m_pStrategyGrenade->Throw();
+
+			m_fChaseTimer = GetAI()->GetBrain()->GetAttackChaseTime() +
+							GetRandom(GetAI()->GetBrain()->GetAttackChaseTimeRandomMin(),
+									  GetAI()->GetBrain()->GetAttackChaseTimeRandomMax());
+			return;
+		}
+	}
+
 	// Shoot if target is visible, or only blocked by a crouching ally and I'm not crouching.
 
 	if ( pTarget->IsVisibleCompletely() || 
@@ -8616,9 +8632,12 @@ void CAIHumanStateCharge::Update()
 {
 	super::Update();
 
+	// RETAIL: Object 0x1004a200.  The charge gives up only while the AI's
+	// movement is not locked.
+
 	// Make sure we have a target
 
-	if ( !GetAI()->HasTarget() )
+	if ( !GetAI()->HasTarget() && !GetAI()->GetAIMovement()->IsMovementLocked() )
 	{
 		m_eStateStatus = kSStat_StateComplete;
 		return;
@@ -8626,7 +8645,7 @@ void CAIHumanStateCharge::Update()
 
 	// Make sure we have a weapon
 
-	if ( !GetAI()->GetCurrentWeapon() )
+	if ( !GetAI()->GetCurrentWeapon() && !GetAI()->GetAIMovement()->IsMovementLocked() )
 	{
 		m_eStateStatus = kSStat_StateComplete;
 		return;
@@ -8639,11 +8658,11 @@ void CAIHumanStateCharge::Update()
 			GetAI()->PlayCombatSound(kAIS_Charge);
 		}
 
-		// Head and Torso tracking.
-	
-		// RETAIL: Object 0x1004a200 remembers where the charge started.
+		// Remember where the charge started.
 
 		m_vStartPos = GetAI()->GetPosition();
+
+		// Head and Torso tracking.
 
 		GetAI()->SetNodeTrackingTarget( kTrack_AimAt, GetAI()->GetTarget()->GetObject(), "Head" );
 	}
@@ -8651,6 +8670,20 @@ void CAIHumanStateCharge::Update()
 	// Head and Torso tracking.
 	
 	GetAI()->EnableNodeTracking( kTrack_AimAt, LTNULL );
+
+	// A limited charge goes no further than twice the AI's width from
+	// where it started.
+
+	if( m_bLimitDistance )
+	{
+		LTFLOAT fLimit = GetAI()->GetDims().x * 2.f;
+		if( ( m_vStartPos.DistSqr( GetAI()->GetPosition() ) > fLimit * fLimit ) &&
+			( !GetAI()->GetAIMovement()->IsMovementLocked() ) )
+		{
+			m_eStateStatus = kSStat_StateComplete;
+			return;
+		}
+	}
 
 	// Go into attack mode if we're too close or if we can't find a path to our target
 
@@ -8662,7 +8695,8 @@ void CAIHumanStateCharge::Update()
 	{
 		vTargetPos = pTarget->GetCharacter()->GetLastVolumePos();
 	}
-	else {
+	else if( !GetAI()->GetAIMovement()->IsMovementLocked() )
+	{
 		// COULD NOT SET PATH TO TARGET
 		AITRACE( AIShowStates, ( GetAI()->m_hObject, "Cannot find path to target!" ) );
 		GetAI()->EnableNodeTracking( kTrack_AimAt, hTarget );
@@ -8672,47 +8706,48 @@ void CAIHumanStateCharge::Update()
 
 	LTFLOAT fTargetDistanceSqr = VEC_DISTSQR(vTargetPos, GetAI()->GetPosition());
 
-	if( ( fTargetDistanceSqr < m_fStopDistanceSqr ) &&
-		( !GetAI()->GetAIMovement()->IsMovementLocked() ) )
+	if( fTargetDistanceSqr < m_fStopDistanceSqr )
 	{
 		GetAI()->EnableNodeTracking( kTrack_AimAt, hTarget );
 
 		// CLOSE NOW
-		m_eStateStatus = kSStat_StateComplete;
-		return;
+		if( !GetAI()->GetAIMovement()->IsMovementLocked() )
+		{
+			m_eStateStatus = kSStat_StateComplete;
+			return;
+		}
 	}
 	else
 	{
-		if( !GetAI()->GetAIMovement()->IsMovementLocked() )
+		if( m_pStrategyFollowPath->IsUnset() || m_pStrategyFollowPath->IsDone() )
 		{
-			if( m_pStrategyFollowPath->IsUnset() || m_pStrategyFollowPath->IsDone() )
+			if ( !m_pStrategyFollowPath->Set(vTargetPos, LTFALSE) &&
+				 !GetAI()->GetAIMovement()->IsMovementLocked() )
 			{
-				if ( !m_pStrategyFollowPath->Set(vTargetPos, LTFALSE) )
+				// COULD NOT SET PATH TO TARGET
+				AITRACE( AIShowStates, ( GetAI()->m_hObject, "Cannot find path to target!" ) );
+				GetAI()->EnableNodeTracking( kTrack_AimAt, hTarget );
+				m_eStateStatus = kSStat_StateComplete;
+				return;
+			}
+		}
+		else if( m_pStrategyFollowPath->IsSet() )
+		{
+			// Check if we are within some radius of the dest.
+
+			if( m_pStrategyFollowPath->GetDest().DistSqr( GetAI()->GetPosition() ) < ( 5.f * 5.f ) )
+			{
+				LTBOOL bDivergePaths = GetAI()->GetBrain()->GetAIDataExist( kAIData_DivergePaths ) && 
+					( GetAI()->GetBrain()->GetAIData( kAIData_DivergePaths ) > 0.f );
+
+				if ( !m_pStrategyFollowPath->Set(vTargetPos, bDivergePaths) &&
+					 !GetAI()->GetAIMovement()->IsMovementLocked() )
 				{
 					// COULD NOT SET PATH TO TARGET
 					AITRACE( AIShowStates, ( GetAI()->m_hObject, "Cannot find path to target!" ) );
 					GetAI()->EnableNodeTracking( kTrack_AimAt, hTarget );
 					m_eStateStatus = kSStat_StateComplete;
 					return;
-				}
-			}
-			else if( m_pStrategyFollowPath->IsSet() )
-			{
-				// Check if we are within some radius of the dest.
-
-				if( m_pStrategyFollowPath->GetDest().DistSqr( GetAI()->GetPosition() ) < ( 5.f * 5.f ) )
-				{
-					LTBOOL bDivergePaths = GetAI()->GetBrain()->GetAIDataExist( kAIData_DivergePaths ) && 
-						( GetAI()->GetBrain()->GetAIData( kAIData_DivergePaths ) > 0.f );
-
-					if ( !m_pStrategyFollowPath->Set(vTargetPos, bDivergePaths) )
-					{
-						// COULD NOT SET PATH TO TARGET
-						AITRACE( AIShowStates, ( GetAI()->m_hObject, "Cannot find path to target!" ) );
-						GetAI()->EnableNodeTracking( kTrack_AimAt, hTarget );
-						m_eStateStatus = kSStat_StateComplete;
-						return;
-					}
 				}
 			}
 		}

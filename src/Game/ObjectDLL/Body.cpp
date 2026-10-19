@@ -815,6 +815,7 @@ void Body::Init(const BODYINITSTRUCT& bi)
 	// Get the body lifetime
 	m_fLifetime		= bi.fBodyLifetime;
 	m_bPermanentBody = bi.bPermanentBody;
+	m_bMoveToFloor	= bi.bMoveToFloor;
 
 	if (!g_vtBodyExplosionVelMultiplier.IsInitted())
 	{
@@ -1018,37 +1019,27 @@ void Body::Init(const BODYINITSTRUCT& bi)
 	bool bRemoveWeapons		= IsMultiplayerGame() ? !IsPlayer( m_hCharacter ) : true;
 	bool bCanSearch			= IsMultiplayerGame() ? !IsPlayer( m_hCharacter ) : true;
 
-	if (!m_pAttachments && bi.eBodyState != eBodyStateLaser)
-	{
-		bi.pCharacter->TransferWeapons(this, bRemoveWeapons);
-	}
-
-	
-	if (m_cWeapons)
-	{
-		bool bAdded = false;
-		for ( uint32 iWeapon = 0 ; iWeapon < m_cWeapons ; iWeapon++ )
-		{
-			bAdded |= m_pSearch->AddPickupItem(m_ahWeapons[iWeapon],true);
-		}
-		
-		if (bAdded && bCanSearch)
-		{
-			m_pSearch->Enable(true);
-		}
-	}
-
+	// RETAIL: Object 0x10096ff7.  The weapons do not go into the body's
+	// search items.
 
 	if (!m_pAttachments)
 	{
-		m_pAttachments = bi.pCharacter->TransferAttachments( bRemoveWeapons );
-
-		if (m_pAttachments)
+		if (bi.eBodyState != eBodyStateLaser)
 		{
-			AddAggregate(m_pAttachments);
-			m_pAttachments->ReInit(m_hObject);
+			bi.pCharacter->TransferWeapons(this, bRemoveWeapons);
+		}
 
-			m_pAttachments->HideAttachments( false );
+		if (!m_pAttachments)
+		{
+			m_pAttachments = bi.pCharacter->TransferAttachments( bRemoveWeapons );
+
+			if (m_pAttachments)
+			{
+				AddAggregate(m_pAttachments);
+				m_pAttachments->ReInit(m_hObject);
+
+				m_pAttachments->HideAttachments( false );
+			}
 		}
 	}
 
@@ -1062,6 +1053,8 @@ void Body::Init(const BODYINITSTRUCT& bi)
 	// Set our state
 	SetState(bi.eBodyState);
 
+	// RETAIL: Object 0x10097079: no body can be carried.
+
 	if( IsPlayer( m_hCharacter) )
 	{
 		// Players can't be carried.
@@ -1070,7 +1063,7 @@ void Body::Init(const BODYINITSTRUCT& bi)
 	}
 	else
 	{
-		m_BCS.bCanBeCarried = m_bCanBeCarried = m_bCanCarry = !!(g_pModelButeMgr->CanModelBeCarried(m_eModelId));
+		m_BCS.bCanBeCarried = m_bCanBeCarried = m_bCanCarry = false;
 	}
 
 	m_BCS.eDeathDamageType = bi.pCharacter->GetDeathDamageType();	

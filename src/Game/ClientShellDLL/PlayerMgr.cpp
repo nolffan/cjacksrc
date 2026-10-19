@@ -4313,6 +4313,13 @@ LTBOOL CPlayerMgr::IsFirstPerson()
 	return m_pPlayerCamera->IsFirstPerson();
 }
 
+// RETAIL: 0x10098f00. CClientWeapon::Select shows the weapon while the
+// camera is still going to first person.
+LTBOOL CPlayerMgr::IsGoingFirstPerson()
+{
+	return m_pPlayerCamera->IsGoingFirstPerson();
+}
+
 
 // --------------------------------------------------------------------------- //
 //

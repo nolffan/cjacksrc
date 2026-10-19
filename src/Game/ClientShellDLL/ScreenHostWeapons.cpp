@@ -42,10 +42,31 @@ CScreenHostWeapons::CScreenHostWeapons()
 	m_pRemoveAll    = LTNULL;
 }
 
+
 CScreenHostWeapons::~CScreenHostWeapons()
 {
 	Term();
 }
+
+
+// RETAIL: 0x100c7e90. The lists are never entered, so there is no list to
+// leave: Escape goes straight to the base screen.
+void CScreenHostWeapons::Escape()
+{
+	CBaseScreen::Escape();
+}
+
+
+void CScreenHostWeapons::MakeDefaultItemList()
+{
+	// Sanity checks...
+
+	if (!m_pSelItems) return;
+
+	m_pSelItems->RemoveAll();
+
+}
+
 
 // Build the screen
 LTBOOL CScreenHostWeapons::Build()
@@ -60,13 +81,13 @@ LTBOOL CScreenHostWeapons::Build()
 
 	CreateTitle(IDS_TITLE_HOST_WEAPONS);
 
-	m_pAdd = AddTextItem(IDS_HOST_ADD_WEAPON, CMD_ADD_LEVEL, IDS_HELP_ADD_WEAPONS, addPos);
+	m_pAdd = AddTextItem(IDS_HOST_ADD_WEAPON, CMD_ADD_LEVEL, IDS_HELP_ADD_WEAPONS, addPos, LTTRUE);
 	addPos.y -= (nFontSize + m_nItemSpacing);
 	AddTextItem(IDS_ALLOWED_WEAPONS,NULL,NULL,addPos,LTTRUE);
 	
 	m_pRemoveAll = AddTextItem(IDS_HOST_REMOVE_ALL, CMD_REMOVE_ALL, IDS_HELP_REM_ALL_WPNS, commandPos);
 
-	m_pRemove = AddTextItem(IDS_HOST_REMOVE_WEAPON, CMD_REMOVE_LEVEL, IDS_HELP_REM_WEAPONS, removePos);
+	m_pRemove = AddTextItem(IDS_HOST_REMOVE_WEAPON, CMD_REMOVE_LEVEL, IDS_HELP_REM_WEAPONS, removePos, LTTRUE);
 	removePos.y -= (nFontSize + m_nItemSpacing);
 	AddTextItem(IDS_DISABLED_WEAPONS,NULL,NULL,removePos,LTTRUE);
 
@@ -78,7 +99,7 @@ LTBOOL CScreenHostWeapons::Build()
 	m_pAvailItems = AddList(LTIntPt(rcAvailRect.left,rcAvailRect.top),nListHeight,LTTRUE,nListWidth);
 	m_pAvailItems->SetIndent(LTIntPt(5,5));
 	m_pAvailItems->SetFrameWidth(2);
-	m_pAvailItems->Enable(LTFALSE);
+	m_pAvailItems->SetScrollWrap(LTFALSE);
 
 	LTRect rcSelRect = g_pLayoutMgr->GetScreenCustomRect((eScreenID)m_nScreenID,"SelectRect");
 	nListHeight = (rcSelRect.bottom - rcSelRect.top);
@@ -87,7 +108,7 @@ LTBOOL CScreenHostWeapons::Build()
 	m_pSelItems = AddList(LTIntPt(rcSelRect.left,rcSelRect.top),nListHeight,LTTRUE,nListWidth);
 	m_pSelItems->SetIndent(LTIntPt(5,5));
 	m_pSelItems->SetFrameWidth(2);
-	m_pSelItems->Enable(LTFALSE);
+	m_pSelItems->SetScrollWrap(LTFALSE);
 
  	// Make sure to call the base class
 	if (!CBaseScreen::Build()) return LTFALSE;
@@ -100,26 +121,97 @@ LTBOOL CScreenHostWeapons::Build()
 
 }
 
-void CScreenHostWeapons::Escape()
+
+// RETAIL: 0x100c81a0. Weapons and ammo are listed by their long names.
+void CScreenHostWeapons::AddItemToList(int nId, bool bSelected, eItemTypes eType)
 {
-	if (m_pAvailItems->IsEnabled())
+	// Sanity checks...
+
+	CLTGUIListCtrl* pList = m_pAvailItems;
+	uint32 nCmd = CMD_ADD_LEVEL;
+	uint32 nHelp = IDS_HELP_ADD_WEAPON;
+
+	if (bSelected)
 	{
-		m_pAvailItems->Enable(LTFALSE);
-		m_pAdd->Enable(LTTRUE);
-		SetSelection(GetIndex(m_pAdd));
+		pList = m_pSelItems;
+		nCmd = CMD_REMOVE_LEVEL;
+		nHelp = IDS_HELP_REM_WEAPON;
 	}
-	else if (m_pSelItems->IsEnabled())
+
+	if (!pList) return;
+
+
+	switch (eType)
 	{
-		m_pSelItems->Enable(LTFALSE);
-		m_pRemove->Enable(LTTRUE);
-		SetSelection(GetIndex(m_pRemove));
+	case kWeaponType:
+		{
+			// Add the weapon to the list...
+			WEAPON const *pWeapon = g_pWeaponMgr->GetWeapon( nId );
+			if (pWeapon)
+			{
+				
+				CLTGUITextCtrl *pCtrl = NULL;
+				pCtrl = CreateTextItem(pWeapon->szLongName,nCmd,nHelp);
+				pCtrl->SetFont(LTNULL,nListFontSize);
+				pCtrl->SetParam1(nId);
+				pCtrl->SetParam2(eType);
+				pList->AddControl(pCtrl);
+			}
+			else
+			{
+				ASSERT(!"Invalid Weapon id");
+			}
+		} break;
+	case kAmmoType:
+		{
+			// Add the ammo to the list...
+			AMMO const *pAmmo = g_pWeaponMgr->GetAmmo( nId );
+			if (pAmmo)
+			{
+				
+				CLTGUITextCtrl *pCtrl = NULL;
+				pCtrl = CreateTextItem(pAmmo->szLongName,nCmd,nHelp);
+				pCtrl->SetFont(LTNULL,nListFontSize);
+				pCtrl->SetParam1(nId);
+				pCtrl->SetParam2(eType);
+				pList->AddControl(pCtrl);
+			}
+			else
+			{
+				ASSERT(!"Invalid Ammo id");
+			}
+		} break;
+	case kGearType:
+		{
+			// Add the Gear to the list...
+			GEAR const *pGear = g_pWeaponMgr->GetGear( nId );
+			if (pGear)
+			{
+				
+				CLTGUITextCtrl *pCtrl = NULL;
+				pCtrl = CreateTextItem(LoadTempString(pGear->nNameId),nCmd,nHelp);
+				pCtrl->SetFont(LTNULL,nListFontSize);
+				pCtrl->SetParam1(nId);
+				pCtrl->SetParam2(eType);
+				pList->AddControl(pCtrl);
+			}
+			else
+			{
+				ASSERT(!"Invalid Gear id");
+			}
+		} break;
 	}
-	else
-	{
-		CBaseScreen::Escape();
-	}
+
 }
 
+
+void CScreenHostWeapons::UpdateButtons()
+{
+	// RETAIL: 0x100c8310 (Contract J.A.C.K.'s screen) only keeps Remove All
+	// to a list that has something in it.
+	m_pRemoveAll->Enable(m_pSelItems->GetNumControls() > 0);
+
+}
 
 
 uint32 CScreenHostWeapons::OnCommand(uint32 dwCommand, uint32 dwParam1, uint32 dwParam2)
@@ -128,44 +220,34 @@ uint32 CScreenHostWeapons::OnCommand(uint32 dwCommand, uint32 dwParam1, uint32 d
 	{
 	case CMD_BACK:
 		{
-			m_pAvailItems->Enable(LTFALSE);
-			m_pSelItems->Enable(LTFALSE);
 			m_pScreenMgr->EscapeCurrentScreen();
 			break;
 		}
 
+	// RETAIL: 0x100c8350. Contract J.A.C.K. never moves the focus into the
+	// lists: Add and Remove move the current list item at once, and the
+	// list keeps a selection.
 	case CMD_ADD_LEVEL:
 		{
-			if (!m_pAvailItems->IsEnabled() && m_pAvailItems->GetNumControls())
+			CLTGUITextCtrl *pCtrl = (CLTGUITextCtrl *)m_pAvailItems->GetSelectedControl();
+			if (pCtrl)
 			{
-				m_pSelItems->Enable(LTFALSE);
-				m_pAvailItems->Enable(LTTRUE);
-				m_pAdd->Enable(LTFALSE);
-				SetSelection(GetIndex(m_pAvailItems));
-				m_pAvailItems->SetSelection(0);
-			}
-			else
-			{
-				char sWeapon[256] = "";
-
-				if (m_pAvailItems->GetSelectedIndex() >= 0 )
+				AddItemToList(pCtrl->GetParam1(),true,(eItemTypes)pCtrl->GetParam2());
+				int nIndex = m_pAvailItems->GetSelectedIndex();
+				if (nIndex >= 0)
 				{
-					CLTGUITextCtrl *pCtrl = (CLTGUITextCtrl *)m_pAvailItems->GetSelectedControl();
-					if (pCtrl)
+					m_pAvailItems->ClearSelection();
+					m_pAvailItems->RemoveControl(nIndex);
+					int nNum = m_pAvailItems->GetNumControls();
+					if (nNum > 0)
 					{
-						AddItemToList(pCtrl->GetParam1(),true,(eItemTypes)pCtrl->GetParam2());
-						int nIndex = m_pAvailItems->GetSelectedIndex();
-						if (nIndex >= 0)
-						{
-							m_pAvailItems->RemoveControl(nIndex);
-						}
-						
-
+						if (nIndex >= nNum)
+							nIndex = nNum - 1;
+						m_pAvailItems->SetSelection(nIndex);
 					}
 				}
-
-				UpdateButtons();
 			}
+			UpdateButtons();
 		} break;
 	case CMD_ADD_ALL:
 		{
@@ -186,30 +268,25 @@ uint32 CScreenHostWeapons::OnCommand(uint32 dwCommand, uint32 dwParam1, uint32 d
 		} break;
 	case CMD_REMOVE_LEVEL:
 		{
-			if (!m_pSelItems->IsEnabled() && m_pSelItems->GetNumControls())
+			CLTGUITextCtrl *pCtrl = (CLTGUITextCtrl *)m_pSelItems->GetSelectedControl();
+			if (pCtrl)
 			{
-				m_pAvailItems->Enable(LTFALSE);
-				m_pSelItems->Enable(LTTRUE);
-				m_pRemove->Enable(LTFALSE);
-				SetSelection(GetIndex(m_pSelItems));
-				m_pSelItems->SetSelection(0);
-			}
-			else
-			{
-				CLTGUITextCtrl *pCtrl = (CLTGUITextCtrl *)m_pSelItems->GetSelectedControl();
-				if (pCtrl)
+				AddItemToList(pCtrl->GetParam1(),false,(eItemTypes)pCtrl->GetParam2());
+				int nIndex = m_pSelItems->GetSelectedIndex();
+				if (nIndex >= 0)
 				{
-					AddItemToList(pCtrl->GetParam1(),false,(eItemTypes)pCtrl->GetParam2());
-					int nIndex = m_pSelItems->GetSelectedIndex();
-					if (nIndex >= 0)
+					m_pSelItems->ClearSelection();
+					m_pSelItems->RemoveControl(nIndex);
+					int nNum = m_pSelItems->GetNumControls();
+					if (nNum > 0)
 					{
-						m_pSelItems->RemoveControl(nIndex);
+						if (nIndex >= nNum)
+							nIndex = nNum - 1;
+						m_pSelItems->SetSelection(nIndex);
 					}
-
 				}
-				UpdateButtons();
 			}
-
+			UpdateButtons();
 		} break;
 	case CMD_REMOVE_ALL:
 		{
@@ -234,97 +311,6 @@ uint32 CScreenHostWeapons::OnCommand(uint32 dwCommand, uint32 dwParam1, uint32 d
 	return 1;
 };
 
-
-// Change in focus
-void    CScreenHostWeapons::OnFocus(LTBOOL bFocus)
-{
-	if (bFocus)
-	{
-		m_pAvailItems->Enable(LTFALSE);
-		m_pAdd->Enable(LTTRUE);
-		m_pSelItems->Enable(LTFALSE);
-		m_pRemove->Enable(LTTRUE);
-
-		FillAvailList();
-
-		LoadItemList();
-
-		if (!m_pSelItems->GetNumControls())
-		{
-			MakeDefaultItemList();
-		}
-
-		UpdateButtons();
-        UpdateData(LTFALSE);
-
-	}
-	else
-	{
-		UpdateData();
-
-		SaveItemList();
-
-		m_pAvailItems->RemoveAll();
-		m_pSelItems->RemoveAll();
-	}
-	CBaseScreen::OnFocus(bFocus);
-
-}
-
-LTBOOL CScreenHostWeapons::FillAvailList()
-{
-	// Sanity checks...
-
-    if (!m_pAvailItems) return(LTFALSE);
-
-	CUserProfile *pProfile = g_pProfileMgr->GetCurrentProfile();
-
-	// get first and last weapon indices
-	uint8 nFirstWeaponCommandId = g_pWeaponMgr->GetFirstWeaponCommandId();
-	uint8 nLastWeaponCommandId = g_pWeaponMgr->GetLastWeaponCommandId();
-	for (uint8 nWpnCommandId = nFirstWeaponCommandId; nWpnCommandId <= nLastWeaponCommandId; nWpnCommandId++)
-	{
-		uint8 nWpn = g_pWeaponMgr->GetWeaponId( nWpnCommandId);
-		WEAPON const *pWeapon = g_pWeaponMgr->GetWeapon( nWpn );
-		if (pWeapon && pWeapon->bCanServerRestrict)
-		{
-			std::string sItem = pWeapon->szName;
-			StringSet::iterator iter = pProfile->m_ServerGameOptions.m_setRestrictedWeapons.find(sItem);
-
-			if (iter == pProfile->m_ServerGameOptions.m_setRestrictedWeapons.end())
-				AddItemToList(pWeapon->nId,false,kWeaponType);
-		}
-	}
-
-	for (uint8 nId = 0; nId <= g_pWeaponMgr->GetNumAmmoIds(); nId++)
-	{
-		AMMO const *pAmmo = g_pWeaponMgr->GetAmmo( nId );
-		if (pAmmo && pAmmo->bCanServerRestrict)
-		{
-			std::string sItem = pAmmo->szName;
-			StringSet::iterator iter = pProfile->m_ServerGameOptions.m_setRestrictedAmmo.find(sItem);
-
-			if (iter == pProfile->m_ServerGameOptions.m_setRestrictedAmmo.end())
-				AddItemToList(pAmmo->nId,false,kAmmoType);
-		}
-	}
-
-	for (uint8 nId = 0; nId <= g_pWeaponMgr->GetNumGearIds(); nId++)
-	{
-		GEAR const *pGear = g_pWeaponMgr->GetGear( nId );
-		if (pGear && pGear->bCanServerRestrict)
-		{
-			std::string sItem = pGear->szName;
-			StringSet::iterator iter = pProfile->m_ServerGameOptions.m_setRestrictedGear.find(sItem);
-
-			if (iter == pProfile->m_ServerGameOptions.m_setRestrictedGear.end())
-				AddItemToList(pGear->nId,false,kGearType);
-		}
-	}
-
-
-    return (LTTRUE);
-}
 
 void CScreenHostWeapons::LoadItemList()
 {
@@ -371,15 +357,63 @@ void CScreenHostWeapons::LoadItemList()
 	}
 }
 
-void CScreenHostWeapons::MakeDefaultItemList()
+
+LTBOOL CScreenHostWeapons::FillAvailList()
 {
 	// Sanity checks...
 
-	if (!m_pSelItems) return;
+    if (!m_pAvailItems) return(LTFALSE);
 
-	m_pSelItems->RemoveAll();
+	CUserProfile *pProfile = g_pProfileMgr->GetCurrentProfile();
 
+	// get first and last weapon indices
+	uint8 nFirstWeaponCommandId = g_pWeaponMgr->GetFirstWeaponCommandId();
+	uint8 nLastWeaponCommandId = g_pWeaponMgr->GetLastWeaponCommandId();
+	for (uint8 nWpnCommandId = nFirstWeaponCommandId; nWpnCommandId <= nLastWeaponCommandId; nWpnCommandId++)
+	{
+		uint8 nWpn = g_pWeaponMgr->GetWeaponId( nWpnCommandId);
+		WEAPON const *pWeapon = g_pWeaponMgr->GetWeapon( nWpn );
+		// RETAIL: 0x100c88b0. A weapon that is only ammo is listed as ammo.
+		if (pWeapon && pWeapon->bCanServerRestrict && !pWeapon->bIsAmmo)
+		{
+			std::string sItem = pWeapon->szName;
+			StringSet::iterator iter = pProfile->m_ServerGameOptions.m_setRestrictedWeapons.find(sItem);
+
+			if (iter == pProfile->m_ServerGameOptions.m_setRestrictedWeapons.end())
+				AddItemToList(pWeapon->nId,false,kWeaponType);
+		}
+	}
+
+	for (uint8 nId = 0; nId <= g_pWeaponMgr->GetNumAmmoIds(); nId++)
+	{
+		AMMO const *pAmmo = g_pWeaponMgr->GetAmmo( nId );
+		if (pAmmo && pAmmo->bCanServerRestrict)
+		{
+			std::string sItem = pAmmo->szName;
+			StringSet::iterator iter = pProfile->m_ServerGameOptions.m_setRestrictedAmmo.find(sItem);
+
+			if (iter == pProfile->m_ServerGameOptions.m_setRestrictedAmmo.end())
+				AddItemToList(pAmmo->nId,false,kAmmoType);
+		}
+	}
+
+	for (uint8 nId = 0; nId <= g_pWeaponMgr->GetNumGearIds(); nId++)
+	{
+		GEAR const *pGear = g_pWeaponMgr->GetGear( nId );
+		if (pGear && pGear->bCanServerRestrict)
+		{
+			std::string sItem = pGear->szName;
+			StringSet::iterator iter = pProfile->m_ServerGameOptions.m_setRestrictedGear.find(sItem);
+
+			if (iter == pProfile->m_ServerGameOptions.m_setRestrictedGear.end())
+				AddItemToList(pGear->nId,false,kGearType);
+		}
+	}
+
+
+    return (LTTRUE);
 }
+
 
 void CScreenHostWeapons::SaveItemList()
 {
@@ -435,97 +469,37 @@ void CScreenHostWeapons::SaveItemList()
 	}
 
 	pProfile->Save();
-}			
-		
-
-
-
-void CScreenHostWeapons::UpdateButtons()
-{
-	// RETAIL: 0x100c8310 (Contract J.A.C.K.'s screen) only keeps Remove All
-	// to a list that has something in it.
-	m_pRemoveAll->Enable(m_pSelItems->GetNumControls() > 0);
-
 }
 
-void CScreenHostWeapons::AddItemToList(int nId, bool bSelected, eItemTypes eType)
+
+// Change in focus
+void    CScreenHostWeapons::OnFocus(LTBOOL bFocus)
 {
-	// Sanity checks...
-
-	CLTGUIListCtrl* pList = m_pAvailItems;
-	uint32 nCmd = CMD_ADD_LEVEL;
-	uint32 nHelp = IDS_HELP_ADD_WEAPON;
-
-	if (bSelected)
+	// RETAIL: 0x100c8e40. The lists stay as they are.
+	if (bFocus)
 	{
-		pList = m_pSelItems;
-		nCmd = CMD_REMOVE_LEVEL;
-		nHelp = IDS_HELP_REM_WEAPON;
+		FillAvailList();
+
+		LoadItemList();
+
+		if (!m_pSelItems->GetNumControls())
+		{
+			MakeDefaultItemList();
+		}
+
+		UpdateButtons();
+        UpdateData(LTFALSE);
+
 	}
-
-	if (!pList) return;
-
-
-	switch (eType)
+	else
 	{
-	case kWeaponType:
-		{
-			// Add the weapon to the list...
-			WEAPON const *pWeapon = g_pWeaponMgr->GetWeapon( nId );
-			if (pWeapon)
-			{
-				
-				CLTGUITextCtrl *pCtrl = NULL;
-				pCtrl = CreateTextItem(pWeapon->szShortName,nCmd,nHelp);
-				pCtrl->SetFont(LTNULL,nListFontSize);
-				pCtrl->SetParam1(nId);
-				pCtrl->SetParam2(eType);
-				pList->AddControl(pCtrl);
-			}
-			else
-			{
-				ASSERT(!"Invalid Weapon id");
-			}
-		} break;
-	case kAmmoType:
-		{
-			// Add the ammo to the list...
-			AMMO const *pAmmo = g_pWeaponMgr->GetAmmo( nId );
-			if (pAmmo)
-			{
-				
-				CLTGUITextCtrl *pCtrl = NULL;
-				pCtrl = CreateTextItem(pAmmo->szShortName,nCmd,nHelp);
-				pCtrl->SetFont(LTNULL,nListFontSize);
-				pCtrl->SetParam1(nId);
-				pCtrl->SetParam2(eType);
-				pList->AddControl(pCtrl);
-			}
-			else
-			{
-				ASSERT(!"Invalid Ammo id");
-			}
-		} break;
-	case kGearType:
-		{
-			// Add the Gear to the list...
-			GEAR const *pGear = g_pWeaponMgr->GetGear( nId );
-			if (pGear)
-			{
-				
-				CLTGUITextCtrl *pCtrl = NULL;
-				pCtrl = CreateTextItem(LoadTempString(pGear->nNameId),nCmd,nHelp);
-				pCtrl->SetFont(LTNULL,nListFontSize);
-				pCtrl->SetParam1(nId);
-				pCtrl->SetParam2(eType);
-				pList->AddControl(pCtrl);
-			}
-			else
-			{
-				ASSERT(!"Invalid Gear id");
-			}
-		} break;
+		UpdateData();
+
+		SaveItemList();
+
+		m_pAvailItems->RemoveAll();
+		m_pSelItems->RemoveAll();
 	}
+	CBaseScreen::OnFocus(bFocus);
 
 }
-

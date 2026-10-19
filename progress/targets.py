@@ -230,6 +230,10 @@ TARGETS = [
          # starts, then newaop_s.obj, the import thunks and msvcrt.lib
          # (from 0x101261fe)
          app=[(0x10001000, 0x10126185)],
+         # .text$x from the first `mov eax, <FuncInfo>; jmp
+         # ___CxxFrameHandler` (136 of them), then .text$yc and .text$yd
+         # to the end of .text
+         compiler_output=[(0x101267d0, 0x1012922b)],
          # Functions of ours whose bytes recur at other shipped addresses
          # (each named here is the shipped function at that address, read
          # from the retail code):
@@ -284,6 +288,16 @@ TARGETS = [
              # ClearServers, then a jmp to CBaseScreen::Term (vtable
              # 0x10136fc0's entry): the two-call thunk's shape again
              "?Term@CScreenJoin@@UAEXXZ": 0x100cb6d0,
+             # ScreenHostLevels.obj: FillAvailList (the game type's worlds,
+             # one text item each into 0x79c) and MakeDefaultMissionList
+             # (the prefix tests, then AddMissionToList 0x100c52c0); by
+             # size each took the other's address
+             "?FillAvailList@CScreenHostLevels@@IAEIXZ": 0x100c4f30,
+             "?MakeDefaultMissionList@CScreenHostLevels@@IAEXXZ": 0x100c5730,
+             # CursorMgr.obj: `mov ecx, &g_vtCursorHack ; jmp SetFloat`, the
+             # call in CInterfaceMgr::OnEvent's LTEVENT_RENDERALMOSTINITTED
+             # (0x1006a19a); an initializer thunk of the same shape took it
+             "?ScheduleReinit@CCursorMgr@@QAEXM@Z": 0x10031890,
          }),
     dict(label="Object.lto", what="the game: server objects", kind="image",
          shipped=REFERENCE + "/Object.lto", stem="Object",

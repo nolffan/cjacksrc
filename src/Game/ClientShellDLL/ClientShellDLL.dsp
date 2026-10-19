@@ -228,6 +228,8 @@ SOURCE=.\DamageFXMgr.cpp
 # Begin Source File
 
 SOURCE=..\Shared\DamageTypes.cpp
+# ADD CPP /Ox /GF
+# SUBTRACT CPP /O2
 # End Source File
 # Begin Source File
 
