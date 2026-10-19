@@ -678,8 +678,14 @@ namespace
 
 	// RETAIL: Object 0x101211c0 (its std::sort's median of three):
 	// characters before AimMagnets, then the nearest first.
+	// The predicate is 12 bytes, all zero, in retail (pushed by value at
+	// 0x10120a50); what they held is not used by the comparison.
 	struct HeatSeekingTargetLesser
 	{
+		HeatSeekingTargetLesser() : m_vUnused(0.0f, 0.0f, 0.0f) {}
+
+		LTVector m_vUnused;
+
 		bool operator()( HeatSeekingTarget const& a, HeatSeekingTarget const& b ) const
 		{
 			if( a.bCharacter != b.bCharacter )

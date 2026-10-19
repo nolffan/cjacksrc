@@ -480,6 +480,27 @@ dedicated server (package 7).
   CDestructible::DoDamage (0x100c1a00) and a few small ones the pairing
   moved (0x100dbbb0, 0x100f2390, 0x101609e0, 0x100356e0, 0x100352e0,
   0x1008f900, 0x1009eea0, 0x10110900).
+- **Kept functions, and the next 13**: retail keeps functions nothing
+  calls from some objects (no `/Gy`): MFCStub (CString::MakeUpper/Lower/
+  Reverse, CRect::TopLeft/BottomRight in both DLLs), and Object.lto's
+  WinUtil, TeamMgr, GunMount, WeaponMgr (the FX forwarders) and
+  AIVolumeMgr (the GetVolume thunks): those build with `/Ox /GF`. All of
+  Object.lto at `/Ox /GF` adds 78 unplaced functions, so retail's other
+  objects did have `/Gy`. Merged rows are split in extent-splits.csv; the
+  compiler's vector iterators are excluded (progress.py never pairs ours).
+  GameSpy now gets the server's own UDP socket (ILTServer::GetUDPSocket,
+  0x100dfa33): it answered on port+1 before. Object.lto: 13 unwritten,
+  each a function ours has that the pairing does not place:
+  0x10120b20 (the heat-seeking update since the sort predicate changed),
+  UpdateSwitchingWorlds 0x100decc0, TransferWeapons 0x10109890,
+  CDestructible::DoDamage 0x100c1a00, CSoundButeMgr's constructor
+  0x1014a880 (CHierarchicalButeMgr and its index hash_map inlined),
+  SaveOverlays 0x10110900, SetPitch 0x1009eea0 (also sends CFX_PITCH),
+  HandleStateInvestigate 0x1002a9d0, ObjectTemplateMgr's hash compare
+  0x10101790, CAIGoalSniper's OnLinkBroken 0x100352e0, DamageStruct::Clear
+  0x10012170, 0x10082ed0, 0x101526d0. CShell's four VehicleMgr rows
+  (0x101055f0 the lure's key handler, 0x10105630, 0x10107850, ...) are
+  game's now and not yet done.
 - **Where it stopped** (the coordinator's pause, after that commit).
   Next: 0x10121800/0x10121550/0x10122330 are std::sort's for the
   heat-seeking targets (ours instantiates its own); CJ's AI node

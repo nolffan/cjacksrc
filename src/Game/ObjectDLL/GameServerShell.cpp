@@ -357,14 +357,19 @@ LTRESULT CGameServerShell::OnServerInitialized()
 		return LT_ERROR;
 	}
 
+	// RETAIL: Object 0x100dfa33: GameSpy shares the game's own socket.
+	uint32 hSocket = 0;
+	if( g_pLTServer->GetUDPSocket( &hSocket ) != LT_OK )
+	{
+		pHostOptions->m_nServerStatus = 2;
+		return LT_ERROR;
+	}
+
 	IGameSpyServer::StartupInfo startupInfo;
 	startupInfo.m_nGameType = eGameSpyGameType_Retail;
 	startupInfo.m_sIP = szIP;
 	startupInfo.m_nPort = nPort;
-	// The game's own socket, which retail gets from the engine (its
-	// ILTServer, vtable offset 0x118): GameSpy binds its own until the
-	// engine's interface has it.
-	startupInfo.m_hSocket = 0;
+	startupInfo.m_hSocket = hSocket;
 	startupInfo.m_bPublic = !m_ServerGameOptions.m_bLANOnly;
 	startupInfo.m_sUnused = g_pVersionMgr->GetNetRegion( );
 	startupInfo.m_sVersion = g_pVersionMgr->GetVersion( );
