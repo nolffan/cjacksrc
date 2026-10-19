@@ -173,6 +173,7 @@ enum LoadGameType
 	kLoadGameTypeSlot,
 	kLoadGameTypeQuick,
 	kLoadGameTypeReload,
+	kLoadGameTypeCheckpoint,	// RETAIL: Contract J.A.C.K.'s (CShell 0x10021100 sends 3)
 	kLoadGameTypeContinue,
 };
 

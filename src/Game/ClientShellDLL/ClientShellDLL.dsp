@@ -47,6 +47,10 @@ LINK32=link.exe
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
+SOURCE=.\AimMagnetFX.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\ActivateObjectFX.cpp
 # End Source File
 # Begin Source File
@@ -64,6 +68,10 @@ SOURCE=..\Shared\AssertMgr.cpp
 # Begin Source File
 
 SOURCE=..\Shared\AttachButeMgr.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\AutoTargetMgr.cpp
 # End Source File
 # Begin Source File
 
@@ -817,6 +825,10 @@ SOURCE=.\ScreenHostDDOptions.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\ScreenHostDemolitionOptions.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\ScreenHostDMOptions.cpp
 # End Source File
 # Begin Source File
@@ -842,10 +854,6 @@ SOURCE=.\ScreenHostWeapons.cpp
 # Begin Source File
 
 SOURCE=.\ScreenJoin.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\ScreenJoinLAN.cpp
 # End Source File
 # Begin Source File
 
@@ -886,10 +894,6 @@ SOURCE=.\ScreenPerformance.cpp
 # Begin Source File
 
 SOURCE=.\ScreenPlayer.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\ScreenPlayerSkills.cpp
 # End Source File
 # Begin Source File
 
@@ -1170,6 +1174,10 @@ SOURCE=..\Shared\WinUtil.cpp
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
+SOURCE=.\AimMagnetFX.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\ActivateObjectFX.h
 # End Source File
 # Begin Source File
@@ -1179,6 +1187,10 @@ SOURCE=..\Shared\ActivateTypeMgr.h
 # Begin Source File
 
 SOURCE=..\Shared\ActivationData.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\AutoTargetMgr.h
 # End Source File
 # Begin Source File
 
@@ -1934,6 +1946,10 @@ SOURCE=.\ScreenHostDDOptions.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\ScreenHostDemolitionOptions.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\ScreenHostDMOptions.h
 # End Source File
 # Begin Source File
@@ -1959,10 +1975,6 @@ SOURCE=.\ScreenHostWeapons.h
 # Begin Source File
 
 SOURCE=.\ScreenJoin.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\ScreenJoinLAN.h
 # End Source File
 # Begin Source File
 
@@ -2003,10 +2015,6 @@ SOURCE=.\ScreenPerformance.h
 # Begin Source File
 
 SOURCE=.\ScreenPlayer.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\ScreenPlayerSkills.h
 # End Source File
 # Begin Source File
 

@@ -11,6 +11,7 @@
 
 #include "stdafx.h"
 #include "PlayerMgr.h"
+#include "AutoTargetMgr.h"
 #include "ChassisPieceFX.h"
 #include "ChassisButeMgr.h"
 #include "AttachButeMgr.h"
@@ -230,6 +231,7 @@ CPlayerMgr::CPlayerMgr()
 
 	m_bCameraAttachedToHead	= false;
 	m_bLerpAttachedCamera	= false;
+	m_bManualAim			= false;
 
 	m_nPlayerInfoChangeFlags	= 0;
 	m_fPlayerInfoLastSendTime	= 0.0f;
@@ -1085,6 +1087,9 @@ void CPlayerMgr::UpdatePlaying()
 	// Update player leaning...
 
 	m_pLeanMgr->Update();
+
+	// RETAIL: Contract J.A.C.K.'s auto targeting (CShell 0x100a0fdf)
+	CAutoTargetMgr::Instance().Update();
 
 	//updates dependant on camera position and rotation should be handled after this point
 
@@ -3040,6 +3045,14 @@ LTBOOL CPlayerMgr::OnCommandOn(int command)
 		case COMMAND_ID_CENTERVIEW :
 		{
 			m_fPitch = 0.0f;
+		}
+		break;
+
+		// RETAIL: Contract J.A.C.K.'s manual aim toggles the auto targeting
+		// (CShell 0x100a0d6f)
+		case COMMAND_ID_MANUALAIM :
+		{
+			m_bManualAim = !m_bManualAim;
 		}
 		break;
 

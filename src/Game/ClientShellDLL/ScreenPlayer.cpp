@@ -90,7 +90,7 @@ LTBOOL CScreenPlayer::Build()
 
 	m_pModel = AddTextItem(IDS_PLAYER_MODEL, LTNULL, IDS_HELP_PLAYER_MODEL);
 
-	m_pSkills = AddTextItem(IDS_PLAYER_SKILLS, CMD_SKILLS, IDS_HELP_PLAYER_SKILLS);
+	// RETAIL: no player skills in Contract J.A.C.K. (CShell 0x100d5fd0)
 
 	m_pBandwidthCycle = AddCycle(IDS_BANDWIDTH_CYCLE,IDS_HELP_BANDWIDTH_CYCLE,kColumn0,&m_nBandwidth);
 	m_pBandwidthCycle->AddString(LoadTempString(IDS_56K));
@@ -167,10 +167,6 @@ uint32 CScreenPlayer::OnCommand(uint32 dwCommand, uint32 dwParam1, uint32 dwPara
 			mb.nMaxChars = kMaxBandwidthStrLen;
 			mb.eInput = CLTGUIEditCtrl::kInputNumberOnly;
 			g_pInterfaceMgr->ShowMessageBox(IDS_BANDWIDTH_EDIT,&mb);
-		} break;
-	case CMD_SKILLS:
-		{
-			m_pScreenMgr->SetCurrentScreen(SCREEN_ID_PLAYER_SKILLS);
 		} break;
 
 
@@ -253,7 +249,6 @@ void CScreenPlayer::OnFocus(LTBOOL bFocus)
 		UpdateBandwidth();
 
 		
-		m_pSkills->Enable(!bInMPGame && (g_pGameClientShell->GetGameType() == eGameTypeCooperative));
         UpdateData(LTFALSE);
 	}
 	else

@@ -47,6 +47,11 @@ enum eScreenCmds
 
 //  single
 	CMD_NEW_GAME,
+	// RETAIL: three more single-player commands before CMD_LOAD_GAME
+	// (retail's are 27, ScreenSingle::OnCommand, CShell 0x100dc930)
+	CMD_CJ_24,
+	CMD_CJ_25,
+	CMD_CJ_26,
 	CMD_LOAD_GAME,
 	CMD_SAVE_GAME,
 	CMD_CUSTOM_LEVEL,
@@ -64,10 +69,7 @@ enum eScreenCmds
 	CMD_PLAYER,
 	CMD_HOST,
 	CMD_JOIN,
-	CMD_JOIN_LAN,
-
-//	multi-player
-	CMD_SKILLS,
+	// RETAIL: no LAN join and no player skills (retail's CMD_EDIT_PASS is 40)
 
 //	multi-host
 	CMD_EDIT_PASS,
@@ -75,6 +77,7 @@ enum eScreenCmds
 	CMD_EDIT_PORT,
 	CMD_TOGGLE_PASS,
 	CMD_TOGGLE_SCMDPASS,
+	CMD_TOGGLE_LAN,	// RETAIL: the host screen's LAN toggle (45, CShell 0x100c32e2)
 	CMD_SET_OPTIONS,
 	CMD_CHOOSE_CAMPAIGN,
 	CMD_SET_LEVELS,

@@ -41,7 +41,6 @@ protected:
 	LTBOOL		m_bFriendlyFire;
 
 	int			m_nFragScore;
-	int			m_nTagScore;
 
 	int			m_nDeviceCompletedScore;
 	int			m_nLightPiecePlacedScore;
@@ -49,11 +48,13 @@ protected:
 	int			m_nPieceRemovedScore;
 
 	int			m_nRevivingScore;
+	LTBOOL		m_bWeaponsStay;	// RETAIL: Contract J.A.C.K.'s
 
 
 	CLTGUISlider*	m_pMaxPlayers;
 	CLTGUITextCtrl*	m_pTeam1; 
 	CLTGUITextCtrl*	m_pTeam2; 
+	// RETAIL: still there, unused (the screen is 0x7d4 bytes)
 	CLTGUITextCtrl*	m_pTeam1Name; 
 	CLTGUITextCtrl*	m_pTeam2Name; 
 };

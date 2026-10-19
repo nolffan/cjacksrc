@@ -41,6 +41,8 @@ class CClientSaveLoadMgr : public CSaveLoadMgr
 		bool	QuickLoad();
 
 		bool	ReloadLevel();
+		// RETAIL: CShell 0x10021100
+		bool	LoadCheckpoint();
 		bool	ContinueGame();
 
 		bool	SaveGameSlot( uint32 nSlot, char const* pszSaveName );

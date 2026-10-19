@@ -5972,10 +5972,8 @@ void CInterfaceMgr::ConnectionFailed(uint32 nConnectionError)
 	{
 		if (IsMultiplayerGame())
 		{
-			if (g_bLAN)
-				LoadFailed(SCREEN_ID_JOIN_LAN);
-			else
-				LoadFailed(SCREEN_ID_JOIN);
+			// RETAIL: one join screen, for the internet and the LAN
+			LoadFailed(SCREEN_ID_JOIN);
 
 		}
 		else

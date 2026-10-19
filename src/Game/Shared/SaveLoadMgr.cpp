@@ -453,6 +453,20 @@ bool CSaveLoadMgr::ReloadSaveExists( )
 
 // ----------------------------------------------------------------------- //
 //
+//  ROUTINE:	CSaveLoadMgr::CheckpointSaveExists
+//
+//  PURPOSE:	Does the checkpoint save file and .ini entry exist...
+//
+// ----------------------------------------------------------------------- //
+
+// RETAIL: CShell 0x100b5330: Contract J.A.C.K.'s checkpoint save
+bool CSaveLoadMgr::CheckpointSaveExists( )
+{
+	return SaveExists( CHECKPOINT_INIKEY, GetCheckpointSaveFile( ));
+}
+
+// ----------------------------------------------------------------------- //
+//
 //  ROUTINE:	CSaveLoadMgr::SlotSaveExists
 //
 //  PURPOSE:	Does this slot save file and .ini entry exist...

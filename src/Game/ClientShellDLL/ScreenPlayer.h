@@ -50,7 +50,6 @@ protected:
 
 	CLTGUIColumnCtrl*	m_pName;
 	CLTGUITextCtrl*		m_pModel;
-	CLTGUITextCtrl*		m_pSkills;
 	CLTGUIButton*		m_pLeft;
 	CLTGUIButton*		m_pRight;
 

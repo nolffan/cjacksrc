@@ -29,10 +29,20 @@ namespace
 
 uint8 g_nCurTeam = 0;
 
+extern bool g_bLAN;
+
+// RETAIL: Contract J.A.C.K.'s string table names the team items "Blue team
+// options" and "Red team options" (CRes.dll 577, 578).
+#define IDS_CJ_TEAM_1_OPTIONS	577
+#define IDS_CJ_TEAM_2_OPTIONS	578
+// "Toggle whether or not weapons stay after picking them up."
+#define IDS_CJ_WEAPONSSTAY_HELP	1434
+
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
+// RETAIL: CShell 0x100c3820
 CScreenHostDDOptions::CScreenHostDDOptions()
 {
 	m_nMaxPlayers = 8;
@@ -40,8 +50,7 @@ CScreenHostDDOptions::CScreenHostDDOptions()
 	m_nTimeLimit = 10;
 	m_nRounds = 1;
 	m_bFriendlyFire = LTFALSE;
-	m_nFragScore = 2;
-	m_nTagScore = 1;
+	m_nFragScore = 1;
 	m_nDeviceCompletedScore = 10;
 	m_nLightPiecePlacedScore = 3;
 	m_nHeavyPiecePlacedScore = 5;
@@ -49,14 +58,41 @@ CScreenHostDDOptions::CScreenHostDDOptions()
 	m_nRevivingScore = 1;
 	
 	m_pMaxPlayers = NULL;
+	m_bWeaponsStay = LTFALSE;
 
 }
 
 
+// RETAIL: CShell 0x100c38a0
 CScreenHostDDOptions::~CScreenHostDDOptions()
 {
 }
 
+// RETAIL: CShell 0x100c38b0
+uint32 CScreenHostDDOptions::OnCommand(uint32 dwCommand, uint32 dwParam1, uint32 dwParam2)
+{
+	switch(dwCommand)
+	{
+	case CMD_TEAM1:
+		{
+			g_nCurTeam = 0;
+			g_pInterfaceMgr->SwitchToScreen(SCREEN_ID_TEAM);
+		} break;
+
+	case CMD_TEAM2:
+		{
+			g_nCurTeam = 1;
+			g_pInterfaceMgr->SwitchToScreen(SCREEN_ID_TEAM);
+		} break;
+
+	default:
+		return CBaseScreen::OnCommand(dwCommand,dwParam1,dwParam2);
+	}
+	return 1;
+};
+
+// RETAIL: CShell 0x100c38f0: the team items without their names, no tag
+// score, and weapons stay
 // Build the screen
 LTBOOL CScreenHostDDOptions::Build()
 {
@@ -65,20 +101,8 @@ LTBOOL CScreenHostDDOptions::Build()
 
 	CreateTitle(IDS_TITLE_HOST_OPTIONS);
 
-	m_pTeam1 = AddTextItem(IDS_TEAM_1, CMD_TEAM1, IDS_HELP_TEAM_1);
-	m_pTeam2 = AddTextItem(IDS_TEAM_2, CMD_TEAM2, IDS_HELP_TEAM_2);
-
-	LTIntPt tmp = m_nextPos;
-
-	LTIntPt pos = m_pTeam1->GetBasePos();
-	pos.x += kColumn;
-	m_pTeam1Name = AddTextItem("<team one>",0,0,pos,LTTRUE);
-
-	pos = m_pTeam2->GetBasePos();
-	pos.x += kColumn;
-	m_pTeam2Name = AddTextItem("<team two>",0,0,pos,LTTRUE);
-
-	m_nextPos = tmp;
+	m_pTeam1 = AddTextItem(IDS_CJ_TEAM_1_OPTIONS, CMD_TEAM1, IDS_HELP_TEAM_1);
+	m_pTeam2 = AddTextItem(IDS_CJ_TEAM_2_OPTIONS, CMD_TEAM2, IDS_HELP_TEAM_2);
 	
 	m_pMaxPlayers = AddSlider(IDS_MAX_PLAYERS, IDS_MAX_PLAYERS_HELP, kColumn, kSlider, -1, &m_nMaxPlayers);
 	m_pMaxPlayers->SetSliderRange(2, 16);
@@ -115,11 +139,6 @@ LTBOOL CScreenHostDDOptions::Build()
 	pSlider->SetSliderIncrement(1);
 	pSlider->SetNumericDisplay(LTTRUE);
 
-	pSlider = AddSlider(IDS_TAG_SCORE, IDS_TAG_SCORE_HELP, kColumn, kSlider, -1, &m_nTagScore);
-	pSlider->SetSliderRange(0,3);
-	pSlider->SetSliderIncrement(1);
-	pSlider->SetNumericDisplay(LTTRUE);
-
 	pSlider = AddSlider(IDS_REVIVE_SCORE, IDS_REVIVE_SCORE_HELP, kColumn, kSlider, -1, &m_nRevivingScore);
 	pSlider->SetSliderRange(0,3);
 	pSlider->SetSliderIncrement(1);
@@ -145,10 +164,15 @@ LTBOOL CScreenHostDDOptions::Build()
 	pSlider->SetSliderIncrement(1);
 	pSlider->SetNumericDisplay(LTTRUE);
 
+	pToggle = AddToggle(IDS_WEAPONSSTAY,IDS_CJ_WEAPONSSTAY_HELP,kColumn,&m_bWeaponsStay);
+	pToggle->SetOnString(szYes);
+	pToggle->SetOffString(szNo);
+
  	// Make sure to call the base class
 	return CBaseScreen::Build();
 }
 
+// RETAIL: CShell 0x100c3df0
 // Change in focus
 void    CScreenHostDDOptions::OnFocus(LTBOOL bFocus)
 {
@@ -156,7 +180,29 @@ void    CScreenHostDDOptions::OnFocus(LTBOOL bFocus)
 		
 	if (bFocus)
 	{
-		m_nMaxPlayers = (int)pProfile->m_ServerGameOptions.GetDoomsday().m_nMaxPlayers;
+		m_pMaxPlayers->Enable(!g_pPlayerMgr->IsPlayerInWorld());
+
+		// RETAIL: an internet game takes no more players than the server's
+		// bandwidth allows.
+		if (g_bLAN)
+		{
+			m_pMaxPlayers->SetSliderRange(2, 16);
+		}
+		else
+		{
+			int nMaxPlayers = pProfile->m_ServerGameOptions.GetMaxPlayersForBandwidth();
+			if (nMaxPlayers > 2)
+			{
+				m_pMaxPlayers->SetSliderRange(2, nMaxPlayers);
+			}
+			else
+			{
+				m_pMaxPlayers->SetSliderRange(1, 2);
+				m_pMaxPlayers->Enable(LTFALSE);
+			}
+			m_nMaxPlayers = LTMIN((int)pProfile->m_ServerGameOptions.GetDoomsday().m_nMaxPlayers, nMaxPlayers);
+		}
+
 		m_nRunSpeed = (int)pProfile->m_ServerGameOptions.GetDoomsday().m_nRunSpeed;
 		m_nTimeLimit = (int)pProfile->m_ServerGameOptions.GetDoomsday().m_nTimeLimit;
 		m_nRounds = (int)pProfile->m_ServerGameOptions.GetDoomsday().m_nRounds;
@@ -168,11 +214,7 @@ void    CScreenHostDDOptions::OnFocus(LTBOOL bFocus)
 		m_nHeavyPiecePlacedScore = (int)pProfile->m_ServerGameOptions.GetDoomsday().m_nHeavyPiecePlacedScore;
 		m_nLightPiecePlacedScore = (int)pProfile->m_ServerGameOptions.GetDoomsday().m_nLightPiecePlacedScore;
 		m_nPieceRemovedScore = (int)pProfile->m_ServerGameOptions.GetDoomsday().m_nPieceRemovedScore;
-
-		m_pTeam1Name->SetString(pProfile->m_ServerGameOptions.GetDoomsday().m_sTeamName[0].c_str());
-		m_pTeam2Name->SetString(pProfile->m_ServerGameOptions.GetDoomsday().m_sTeamName[1].c_str());
-
-		m_pMaxPlayers->Enable(!g_pPlayerMgr->IsPlayerInWorld());
+		m_bWeaponsStay = pProfile->m_ServerGameOptions.GetDoomsday().m_bWeaponsStay;
 
         UpdateData(LTFALSE);
 
@@ -193,6 +235,7 @@ void    CScreenHostDDOptions::OnFocus(LTBOOL bFocus)
 		pProfile->m_ServerGameOptions.GetDoomsday().m_nHeavyPiecePlacedScore = (uint8)m_nHeavyPiecePlacedScore;
 		pProfile->m_ServerGameOptions.GetDoomsday().m_nLightPiecePlacedScore = (uint8)m_nLightPiecePlacedScore;
 		pProfile->m_ServerGameOptions.GetDoomsday().m_nPieceRemovedScore = (uint8)m_nPieceRemovedScore;
+		pProfile->m_ServerGameOptions.GetDoomsday().m_bWeaponsStay = !!m_bWeaponsStay;
 
 		pProfile->Save();
 
@@ -208,26 +251,3 @@ void    CScreenHostDDOptions::OnFocus(LTBOOL bFocus)
 	}
 	CBaseScreen::OnFocus(bFocus);
 }
-
-uint32 CScreenHostDDOptions::OnCommand(uint32 dwCommand, uint32 dwParam1, uint32 dwParam2)
-{
-	switch(dwCommand)
-	{
-	case CMD_TEAM1:
-		{
-			g_nCurTeam = 0;
-			g_pInterfaceMgr->SwitchToScreen(SCREEN_ID_TEAM);
-		} break;
-
-	case CMD_TEAM2:
-		{
-			g_nCurTeam = 1;
-			g_pInterfaceMgr->SwitchToScreen(SCREEN_ID_TEAM);
-		} break;
-
-	default:
-		return CBaseScreen::OnCommand(dwCommand,dwParam1,dwParam2);
-	}
-	return 1;
-};
-
