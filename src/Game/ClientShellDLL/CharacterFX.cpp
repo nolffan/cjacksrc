@@ -2329,11 +2329,8 @@ LTBOOL CCharacterFX::OnServerMessage(ILTMessage_Read *pMsg)
 		}
 		break;
 		
-		case CFX_PITCH:
-		{
-			HandlePitchMsg( pMsg );
-		}
-		break;
+		// RETAIL: 0x100161f0 has no CFX_PITCH case: the pitch comes only in
+		// the object's unguaranteed data (UpdatePitch).
 
 		case CFX_HITBOX_MSG:
 		{
@@ -3008,22 +3005,8 @@ void CCharacterFX::KillWeaponLoopSound()
 	}
 }
 
-// ----------------------------------------------------------------------- //
-//
-//  ROUTINE:	CCharacterFX::HandlePitchMsg
-//
-//  PURPOSE:	Update the tracking nodes for pitching
-//
-// ----------------------------------------------------------------------- //
-
-void CCharacterFX::HandlePitchMsg( ILTMessage_Read *pMsg )
-{
-	// Unpack the pitch.  It comes from the server in a byte.
-	HandlePitch( pMsg->Readuint8( ));
-}
-
-// RETAIL: 0x10012680. The pitch, a byte, from the server's message or the
-// object's unguaranteed data (UpdatePitch).
+// RETAIL: 0x10012680. The pitch, a byte, from the object's unguaranteed
+// data (UpdatePitch).
 void CCharacterFX::HandlePitch( uint8 ucPitch )
 {
 	// remap it to a float

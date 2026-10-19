@@ -111,6 +111,7 @@ public:
     LTBOOL      UsingCamera()		const       { return m_bCamera; }
 
     LTBOOL      IsFirstPerson();
+    LTBOOL      IsGoingFirstPerson();
     LTBOOL      IsPlayerInWorld();
 
 	bool		IsSearching();
