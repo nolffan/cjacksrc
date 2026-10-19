@@ -62,6 +62,8 @@ class CServerSaveLoadMgr : public CSaveLoadMgr, public IPlayerTrackerReceiver
 
 		// Handle automatic saving.
 		bool			AutoSave( int nMission, int nLevel );
+		bool			CheckpointSave( int nMission, int nLevel );	// RETAIL: Object 0x10140e60
+		bool			CheckpointLoad( );	// RETAIL: Object 0x101401b0
 
 		// Load the last saved game.
 		bool			ContinueGame();

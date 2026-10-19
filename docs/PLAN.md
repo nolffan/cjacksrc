@@ -410,6 +410,27 @@ dedicated server (package 7).
   calls), PlayerLureFX.h, PlayerVehicleFX, CharacterFX. Joins (ours, mixed
   both ways) and M01S01 save/load pass. Recorded: CShell.dll 5,442,
   Object.lto 8,440 identical (100 unwritten, 678 unplaced).
+- **Demolition, checkpoints (next round)**: CDemolitionMissionMgr (Object
+  0x100c09a0..0x100c0d50: two teams from the host's Demolition options,
+  an even number of rounds, no score or time limit, MPMissions.txt); the
+  game type everywhere it was missing (NetDefs' string, GameBase and
+  GameBaseLite's Demolition property, the Is*GameType tables as retail's
+  0x100b0ac0..0x100b0b80, the multiplayer weapon file on both sides, team
+  start points, the scmd options); WorldProperties' AttackingTeam,
+  AddTeamScore and CheckpointSave messages (0x1016d9c9..); CTeam's
+  attacking flag (sent with the full team update) and
+  CTeamMgr::SetAttackingTeam. Checkpoints on the server:
+  CServerSaveLoadMgr::CheckpointSave (0x10140e60, eSaveDataCheckpoint 6,
+  Save\...\Checkpoint) and the load case (0x101401b0); the client
+  prints "Saving checkpoint..." (CShell 0x100212b4). Not seen in a run
+  yet: only a world's CHECKPOINTSAVE message saves one, and the M01S01
+  script reaches none. The Doomsday client crash does not happen on this
+  master (DD_AntarcticAggression joins and plays, twice; it was there
+  before the vehicle/CHARCREATESTRUCT work was merged). mptest dm three
+  ways, dd, de (ours, and retail client/our server) and M01S01 pass. The
+  server prints "Could not find requested variable
+  'Demolition_GameState'" (a world's command variable; not checked
+  against retail's).
 - **Where it stopped** (the coordinator's pause, after that commit).
   Next: 0x10121800/0x10121550/0x10122330 are std::sort's for the
   heat-seeking targets (ours instantiates its own); CJ's AI node

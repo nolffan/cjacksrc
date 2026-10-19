@@ -142,6 +142,7 @@ enum SaveDataState
 	eSaveDataSaveGameSlot,
 	eSaveDataQuickSave,
 	eSaveDataAutoSave,
+	eSaveDataCheckpoint,	// RETAIL: Contract J.A.C.K.'s (Object 0x10140f08)
 };
 
 // Doomsday pieces...

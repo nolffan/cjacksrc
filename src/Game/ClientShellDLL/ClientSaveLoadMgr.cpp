@@ -23,6 +23,9 @@
 #include "CMoveMgr.h"
 #include "ClientResShared.h"
 
+// RETAIL: Contract J.A.C.K.'s string table (CRes.dll 1446)
+#define IDS_CJ_SAVINGCHECKPOINT	1446	// "Saving checkpoint..."
+
 // 
 // Globals...
 //
@@ -422,6 +425,9 @@ bool CClientSaveLoadMgr::HandleSaveData( ILTMessage_Read& msg )
 	// Don't show autosaves.
 	if( g_pClientMultiplayerMgr->IsConnectedToRemoteServer( ) && eSaveDataState != eSaveDataAutoSave )
 		g_pGameClientShell->CSPrint( LoadTempString( IDS_SAVINGGAME ));
+	// RETAIL: CShell 0x100212b4: "Saving checkpoint..."
+	else if( eSaveDataState == eSaveDataCheckpoint )
+		g_pGameClientShell->CSPrint( LoadTempString( IDS_CJ_SAVINGCHECKPOINT ));
 	
 	// Give the server our save data.
 

@@ -174,6 +174,7 @@ bool IsDeathmatchGameType()
 
 		case eGameTypeDeathmatch:
 		case eGameTypeTeamDeathmatch:
+		case eGameTypeDemolition:	// RETAIL: Object 0x100b0ac0
 			return true;
 		break;
 
@@ -203,6 +204,7 @@ bool IsTeamGameType()
 
 		case eGameTypeDoomsDay:
 		case eGameTypeTeamDeathmatch:
+		case eGameTypeDemolition:	// RETAIL: Object 0x100b0b00
 			return true;
 		break;
 
@@ -233,6 +235,7 @@ bool IsDifficultyGameType()
 		case eGameTypeDeathmatch:
 		case eGameTypeDoomsDay:
 		case eGameTypeTeamDeathmatch:
+		case eGameTypeDemolition:
 			return false;
 		break;
 

@@ -53,6 +53,7 @@
 #include "DeathMatchMissionMgr.h"
 #include "TeamDeathMatchMissionMgr.h"
 #include "DoomsDayMissionMgr.h"
+#include "DemolitionMissionMgr.h"
 #include "ServerSaveLoadMgr.h"
 #include "CharacterMgr.h"
 #include "ServerAssetMgr.h"
@@ -315,6 +316,7 @@ LTRESULT CGameServerShell::OnServerInitialized()
 		case eGameTypeDeathmatch:
 		case eGameTypeTeamDeathmatch:
 		case eGameTypeDoomsDay:
+		case eGameTypeDemolition:
 		{
 			g_pWeaponMgr->LoadOverrideButes( WEAPON_DEFAULT_MULTI_FILE );
 			ApplyWeaponRestrictions( );
@@ -3191,6 +3193,7 @@ GameStartPoint* CGameServerShell::FindStartPoint(CPlayerObj* pPlayer)
 
 			case eGameTypeTeamDeathmatch:
 			case eGameTypeDoomsDay:
+			case eGameTypeDemolition:
 			{
 				// Try and get an available team start point...
 				
@@ -4221,6 +4224,9 @@ bool CGameServerShell::InitGameType()
 			break;
 		case eGameTypeDoomsDay:
 			m_pServerMissionMgr = debug_new( CDoomsDayMissionMgr );
+			break;
+		case eGameTypeDemolition:
+			m_pServerMissionMgr = debug_new( CDemolitionMissionMgr );
 			break;
 		default:
 			ASSERT( !"CGameServerShell::InitGameType: Invalid game type." );
