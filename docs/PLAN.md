@@ -538,6 +538,22 @@ dedicated server (package 7).
     and GunMount.
   - From the coordinator: GAME_NAME's string sits in another object's
     data in all four images (not looked at).
+- **Object.lto's unplaced and nears** (661 unplaced -> 0).
+  - 649 were the compiler's: `_$E` initializers and `__ehhandler$`
+    funclets, whose shipped twins sit above the runtime (.text$x from
+    0x101752d0, .text$yc/.text$yd to the end of .text). targets.py names
+    that span `compiler_output` (a tools hook): ours pair there by shape,
+    or as near, and nowhere else. Placed by size before, 25 of them sat
+    at game functions' addresses; those showed up as unwritten and are
+    written, split or excluded now.
+  - Decided: four unwritten rows stay until the class layouts land (the
+    layout agent's): the AI factories at 0x10032c10, 0x1004afe0 and
+    0x1004e460 are size-matched to ours (retail CAIGoalAttack and so
+    CAIGoalAttackRangedDynamic are 4 bytes larger, 0xdc/0xfc;
+    CAIHumanStateAttackFromCover 0x8c), and Body::OnDeactivate
+    (0x10092e20) tests a bool at 0xc24 the constructor sets last.
+  - Also the layout agent's: GADGETTARGET has `AmmoType` (char*, 0xb8)
+    that Bombable::SetupDefusedState (0x1009cbb0) spawns the pickup from.
 - **Tools** (not committed, one-offs under out/): rtti.py (vtables by
   RTTI), vtcmp.py (a class's vtable, retail beside ours), ctorcmp.py
   (constructor store offsets aligned), place.py (the scoreboard's

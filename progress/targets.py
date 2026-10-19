@@ -30,6 +30,14 @@ TARGETS, one dict per shipped binary, in the README's order:
              funclets of .text$x: status `crt`, listed, not counted. A
              range after the first is code of the image's own that the
              linker placed above the runtime
+  compiler_output [(lo, hi)]: the compiler's own sections above the
+             runtime -- .text$x (exception funclets), .text$yc and
+             .text$yd (global initializers and terminators). Our functions
+             of those kinds (by their compiler-given names) pair only
+             there, and nothing else of ours does: a short one is not
+             unplaced while the range holds a shipped one of its shape, a
+             longer one that differs pairs there as `near`. Unpaired rows
+             there stay `crt`
   middleware [(lo, hi)]: third-party code linked inside `app`: status
              `middleware`, listed, not counted
   encrypted  [(lo, hi)]: code the retail image keeps encrypted (SecuROM):
@@ -291,6 +299,11 @@ TARGETS = [
          # newaop_s.obj first (operator new[], a 5-byte jmp at 0x10174d35),
          # then newop_s.obj (0x10174d3a) and msvcrt.lib from 0x10174dae
          app=[(0x10001000, 0x10174d35)],
+         # .text$x from the first `mov eax, <FuncInfo>; jmp
+         # ___CxxFrameHandler` (205 of them), .text$yc from 0x10175fa0
+         # (its first initializer, identical to ours), .text$yd to
+         # the end of .text
+         compiler_output=[(0x101752d0, 0x101a6a67)],
          # Functions of ours that the placement by object order puts at a
          # neighbour of a similar size (each named here is the shipped
          # function at that address, read from the retail code):
@@ -303,6 +316,24 @@ TARGETS = [
              # 0x11c0); by size ours took 0x100bf8c0, DebugLineSystem's
              # hash_map erase
              "??0CSoundButeMgr@@QAE@XZ": 0x1014a880,
+             # by size these two swapped: 0x100cc7f0 compares the distance
+             # with m_fDamageRadius (0x30) and falls off from
+             # m_fMinDamageRadius (0x34); 0x100cc970 uses the progressive
+             # damage fields (0x64-0x74)
+             "?AreaDamageObject@Explosion@@AAEXPAVLTObject@@@Z": 0x100cc7f0,
+             "?ProgDamageObject@Explosion@@AAEXPAVLTObject@@@Z": 0x100cc970,
+             # by size these two swapped: 0x10166640 pops six arguments
+             # (ret 0x18), 0x10166f20 reads the ammo box's count and its
+             # (id, amount) pairs
+             "?AddWeapon@CWeapons@@IAEIPAVILTBaseClass@@PAVLTObject@@EEH_N@Z":
+                 0x10166640,
+             "?AddAmmoBox@CWeapons@@IAEIPAVILTBaseClass@@PAVLTObject@@"
+             "PAVILTMessage_Read@@@Z": 0x10166f20,
+             # by size these two swapped: AimMagnet::EngineMessageFn's
+             # MID_PRECREATE calls 0x10059710 with the create struct, its
+             # MID_ALLOBJECTSCREATED calls 0x10059980
+             "?ReadProp@AimMagnet@@AAEIPAUObjectCreateStruct@@@Z": 0x10059710,
+             "?ResolveTarget@AimMagnet@@AAEXXZ": 0x10059980,
          }),
     dict(label="ClientFx.fxd", what="the game: client effects", kind="image",
          shipped=REFERENCE + "/ClientFx.fxd", stem="ClientFx",

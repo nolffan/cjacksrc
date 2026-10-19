@@ -431,7 +431,9 @@ void Explosion::AreaDamageObject(HOBJECT hObj)
 
 	if (fDist > m_fMinDamageRadius)
 	{
-		fMultiplier = 1.0f - Clamp((fDist - m_fMinDamageRadius) / (m_fDamageRadius - m_fMinDamageRadius), 0.0f, 1.0f);
+		// RETAIL: Object 0x100cc91e calls LTCLAMP<float,float,float>
+		// (0x1005c520), not Globals.h's Clamp
+		fMultiplier = 1.0f - LTCLAMP((fDist - m_fMinDamageRadius) / (m_fDamageRadius - m_fMinDamageRadius), 0.0f, 1.0f);
 	}
 
 	damage.eType	= m_eDamageType;

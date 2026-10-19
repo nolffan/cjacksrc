@@ -75,143 +75,6 @@ LTRESULT CAimMagnetPlugin::PreHook_EditStringList(
 
 // ----------------------------------------------------------------------- //
 //
-//	ROUTINE:	AimMagnet::AimMagnet
-//
-//	PURPOSE:	RETAIL: Object 0x10059ef0
-//
-// ----------------------------------------------------------------------- //
-
-AimMagnet::AimMagnet() : GameBase( OT_NORMAL )
-{
-	MakeTransitionable();
-
-	m_hTarget.SetReceiver( *this );
-	m_nTeamId = INVALID_TEAM;
-
-	m_lstAimMagnets.push_back( this );
-}
-
-// ----------------------------------------------------------------------- //
-//
-//	ROUTINE:	AimMagnet::~AimMagnet
-//
-//	PURPOSE:	RETAIL: Object 0x10059a70
-//
-// ----------------------------------------------------------------------- //
-
-AimMagnet::~AimMagnet()
-{
-	AimMagnetList::iterator iter = std::find( m_lstAimMagnets.begin( ), m_lstAimMagnets.end( ), this );
-	if( iter != m_lstAimMagnets.end( ))
-	{
-		m_lstAimMagnets.erase( iter );
-	}
-}
-
-// ----------------------------------------------------------------------- //
-//
-//	ROUTINE:	AimMagnet::EngineMessageFn
-//
-//	PURPOSE:	RETAIL: Object 0x10059d70
-//
-// ----------------------------------------------------------------------- //
-
-uint32 AimMagnet::EngineMessageFn( uint32 messageID, void *pData, LTFLOAT fData )
-{
-	switch( messageID )
-	{
-		case MID_UPDATE:
-		{
-			Update( );
-		}
-		break;
-
-		case MID_PRECREATE:
-		{
-			if( fData == PRECREATE_WORLDFILE )
-			{
-				ReadProp( (ObjectCreateStruct*)pData );
-			}
-			else if( fData == PRECREATE_STRINGPROP )
-			{
-				ReadProp( (ObjectCreateStruct*)pData );
-				((ObjectCreateStruct*)pData)->m_Flags |= FLAG_VISIBLE;
-			}
-		}
-		break;
-
-		case MID_INITIALUPDATE:
-		{
-			if( fData != INITIALUPDATE_SAVEGAME )
-			{
-				InitialUpdate( );
-			}
-		}
-		break;
-
-		case MID_ALLOBJECTSCREATED:
-		{
-			ResolveTarget( );
-		}
-		break;
-
-		case MID_SAVEOBJECT:
-		{
-			Save( (ILTMessage_Write*)pData, (uint32)fData );
-		}
-		break;
-
-		case MID_LOADOBJECT:
-		{
-			Load( (ILTMessage_Read*)pData, (uint32)fData );
-		}
-		break;
-
-		default : break;
-	}
-
-	return GameBase::EngineMessageFn( messageID, pData, fData );
-}
-
-// ----------------------------------------------------------------------- //
-//
-//	ROUTINE:	AimMagnet::ReadProp
-//
-//	PURPOSE:	RETAIL: Object 0x10059710
-//
-// ----------------------------------------------------------------------- //
-
-LTBOOL AimMagnet::ReadProp( ObjectCreateStruct *pStruct )
-{
-	if( !pStruct ) return LTFALSE;
-
-	GenericProp genProp;
-
-	if( g_pLTServer->GetPropGeneric( "Target", &genProp ) == LT_OK )
-	{
-		if( genProp.m_String[0] )
-		{
-			m_sTargetName = genProp.m_String;
-		}
-	}
-
-	if( IsTeamGameType( ))
-	{
-		if( g_pLTServer->GetPropGeneric( "Team", &genProp ) == LT_OK )
-		{
-			m_nTeamId = TeamStringToTeamId( genProp.m_String );
-		}
-	}
-	else
-	{
-		m_nTeamId = INVALID_TEAM;
-	}
-
-	return LTTRUE;
-}
-
-// ----------------------------------------------------------------------- //
-//
 //	ROUTINE:	AimMagnet::InitialUpdate
 //
 //	PURPOSE:	RETAIL: Object 0x10059600
@@ -279,6 +142,59 @@ void AimMagnet::OnLinkBroken( LTObjRefNotifier *pRef, HOBJECT hObj )
 	g_pCommonLT->SetObjectFlags( m_hObject, OFT_Flags, 0, FLAG_VISIBLE );
 
 	GameBase::OnLinkBroken( pRef, hObj );
+}
+
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	AimMagnet::Save
+//
+//	PURPOSE:	RETAIL: Object 0x100596d0
+//
+// ----------------------------------------------------------------------- //
+
+void AimMagnet::Save( ILTMessage_Write *pMsg, uint32 dwSaveFlags )
+{
+	if( !pMsg ) return;
+
+	SAVE_BYTE( m_nTeamId );
+	pMsg->WriteString( m_sTargetName.c_str( ));
+}
+
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	AimMagnet::ReadProp
+//
+//	PURPOSE:	RETAIL: Object 0x10059710
+//
+// ----------------------------------------------------------------------- //
+
+LTBOOL AimMagnet::ReadProp( ObjectCreateStruct *pStruct )
+{
+	if( !pStruct ) return LTFALSE;
+
+	GenericProp genProp;
+
+	if( g_pLTServer->GetPropGeneric( "Target", &genProp ) == LT_OK )
+	{
+		if( genProp.m_String[0] )
+		{
+			m_sTargetName = genProp.m_String;
+		}
+	}
+
+	if( IsTeamGameType( ))
+	{
+		if( g_pLTServer->GetPropGeneric( "Team", &genProp ) == LT_OK )
+		{
+			m_nTeamId = TeamStringToTeamId( genProp.m_String );
+		}
+	}
+	else
+	{
+		m_nTeamId = INVALID_TEAM;
+	}
+
+	return LTTRUE;
 }
 
 // ----------------------------------------------------------------------- //
@@ -352,6 +268,23 @@ void AimMagnet::ResolveTarget( )
 
 // ----------------------------------------------------------------------- //
 //
+//	ROUTINE:	AimMagnet::~AimMagnet
+//
+//	PURPOSE:	RETAIL: Object 0x10059a70
+//
+// ----------------------------------------------------------------------- //
+
+AimMagnet::~AimMagnet()
+{
+	AimMagnetList::iterator iter = std::find( m_lstAimMagnets.begin( ), m_lstAimMagnets.end( ), this );
+	if( iter != m_lstAimMagnets.end( ))
+	{
+		m_lstAimMagnets.erase( iter );
+	}
+}
+
+// ----------------------------------------------------------------------- //
+//
 //	ROUTINE:	AimMagnet::OnTrigger
 //
 //	PURPOSE:	RETAIL: Object 0x10059ae0
@@ -411,22 +344,6 @@ bool AimMagnet::OnTrigger( HOBJECT hSender, const CParsedMsg &cMsg )
 
 // ----------------------------------------------------------------------- //
 //
-//	ROUTINE:	AimMagnet::Save
-//
-//	PURPOSE:	RETAIL: Object 0x100596d0
-//
-// ----------------------------------------------------------------------- //
-
-void AimMagnet::Save( ILTMessage_Write *pMsg, uint32 dwSaveFlags )
-{
-	if( !pMsg ) return;
-
-	SAVE_BYTE( m_nTeamId );
-	pMsg->WriteString( m_sTargetName.c_str( ));
-}
-
-// ----------------------------------------------------------------------- //
-//
 //	ROUTINE:	AimMagnet::Load
 //
 //	PURPOSE:	RETAIL: Object 0x10059d10
@@ -444,4 +361,87 @@ void AimMagnet::Load( ILTMessage_Read *pMsg, uint32 dwLoadFlags )
 	m_sTargetName = szTarget;
 
 	ResolveTarget( );
+}
+
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	AimMagnet::EngineMessageFn
+//
+//	PURPOSE:	RETAIL: Object 0x10059d70
+//
+// ----------------------------------------------------------------------- //
+
+uint32 AimMagnet::EngineMessageFn( uint32 messageID, void *pData, LTFLOAT fData )
+{
+	switch( messageID )
+	{
+		case MID_UPDATE:
+		{
+			Update( );
+		}
+		break;
+
+		case MID_PRECREATE:
+		{
+			if( fData == PRECREATE_WORLDFILE )
+			{
+				ReadProp( (ObjectCreateStruct*)pData );
+			}
+			else if( fData == PRECREATE_STRINGPROP )
+			{
+				ReadProp( (ObjectCreateStruct*)pData );
+				((ObjectCreateStruct*)pData)->m_Flags |= FLAG_VISIBLE;
+			}
+		}
+		break;
+
+		case MID_INITIALUPDATE:
+		{
+			if( fData != INITIALUPDATE_SAVEGAME )
+			{
+				InitialUpdate( );
+			}
+		}
+		break;
+
+		case MID_ALLOBJECTSCREATED:
+		{
+			ResolveTarget( );
+		}
+		break;
+
+		case MID_SAVEOBJECT:
+		{
+			Save( (ILTMessage_Write*)pData, (uint32)fData );
+		}
+		break;
+
+		case MID_LOADOBJECT:
+		{
+			Load( (ILTMessage_Read*)pData, (uint32)fData );
+		}
+		break;
+
+		default : break;
+	}
+
+	return GameBase::EngineMessageFn( messageID, pData, fData );
+}
+
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	AimMagnet::AimMagnet
+//
+//	PURPOSE:	RETAIL: Object 0x10059ef0
+//
+// ----------------------------------------------------------------------- //
+
+AimMagnet::AimMagnet() : GameBase( OT_NORMAL )
+{
+	MakeTransitionable();
+
+	m_hTarget.SetReceiver( *this );
+	m_nTeamId = INVALID_TEAM;
+
+	m_lstAimMagnets.push_back( this );
 }

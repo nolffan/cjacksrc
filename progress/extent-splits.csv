@@ -169,3 +169,20 @@ CShell.dll,0x100f5840,an empty function (ret 4) after the int3 padding that ends
 CShell.dll,0x100c7ea0,a list-clearing helper of CScreenHostWeapons (if [ecx+0x79c]: RemoveAll(1)) after the int3 padding that ends CScreenHostWeapons::Escape at 0x100c7e90
 CShell.dll,0x100201f0,ClientMultiplayerMgr's constructor (stores the vtable 0x1012c0e8 at 0x100201f6) right after its destructor 0x10020150 (which ends in a jmp at 0x100201eb); reached only by the jmp at 0x1004c313
 CShell.dll,0x100c05b0,CScreenEndMission's destructor (stores the vtable 0x1013664c, jmp to CBaseScreen's) right after its constructor 0x100c0570 (ret at 0x100c05ad)
+Object.lto,0x1006e100,CAISenseRecorderAbstract getter (mov eax,[ecx+0x14]; ret): the forwarders at 0x10007c60 and 0x10066250 tail-jump here; only jumped to, so the enumerator missed it
+Object.lto,0x1006e140,CAISenseRecorderAbstract::IncrementIntersectSegmentCount (inc dword [ecx+0x24]; ret): the forwarders at 0x10007d00 and 0x100662c0 (CAI::IncrementIntersectSegmentCount) tail-jump here; only jumped to, so the enumerator missed it
+Object.lto,0x1015ccb0,CVersionMgr::Unknown (ret 8): after the padding that ends CVersionMgr::GetSaveVersion (mov eax,0xc1; ret) at 0x1015cca0; nothing calls it
+Object.lto,0x1015ea90,WaveFn_Linear (fld dword [esp+4]; ret): only its address is taken (GetWaveFn returns it), so the enumerator missed it; after the padding that ends ParseWaveType at 0x1015e920
+Object.lto,0x101609e0,CWeaponMgr::GetScaleFX (mov ecx,g_pFXButeMgr; jmp 0x100ce350): after the padding that ends the function at 0x10160960; nothing in Object.lto calls it (WeaponMgr.obj keeps uncalled functions)
+Object.lto,0x10150a50,CSurfaceMgr::GetPShowerFX (mov ecx,g_pFXButeMgr; jmp 0x100ce4a0): after the padding that ends CSurfaceMgr::GetScaleFX at 0x10150a40; uncalled, kept as SurfaceMgr.obj keeps its uncalled functions
+Object.lto,0x10150a60,CSurfaceMgr::GetPolyDebrisFX (mov ecx,g_pFXButeMgr; jmp 0x100ce600): after the padding that ends CSurfaceMgr::GetPShowerFX at 0x10150a50; uncalled
+Object.lto,0x1007d960,a 5-byte jmp thunk (jmp 0x10071510): after the padding that ends the jmp thunk at 0x1007d950, as its neighbours from 0x1007d970
+Object.lto,0x100bcb10,a float getter (fld dword [ecx+0x24]; ret): after the padding that ends the getter at 0x100bcb00 (fld [ecx+0x20])
+Object.lto,0x100bcb20,a float getter (fld dword [ecx+0x28]; ret): after the padding that ends the getter at 0x100bcb10
+Object.lto,0x100bcb30,a float getter (fld dword [ecx+0x2c]; ret): after the padding that ends the getter at 0x100bcb20
+Object.lto,0x1005c250,a destructor body (mov dword [ecx],vtable 0x101b0134; ret): after the padding that ends the constructor body at 0x1005c240 (the same vtable)
+Object.lto,0x100501f0,a destructor (mov dword [ecx],vtable 0x101af7bc; jmp 0x1003d530): after the padding that ends the function at 0x100501d0
+Object.lto,0x1004f3d0,a stub (xor eax,eax; ret): after the padding that ends the jmp thunk at 0x1004f3c0
+Object.lto,0x100a7ec0,a constant getter (mov eax,2; ret): after the padding that ends the function at 0x100a7eb0 (fld; ret 4)
+Object.lto,0x10150a40,CSurfaceMgr::GetScaleFX (mov ecx,g_pFXButeMgr; jmp 0x100ce350): after the padding that ends the function at 0x101509a0; uncalled, kept as SurfaceMgr.obj keeps its uncalled functions
+Object.lto,0x10059ef0,AimMagnet::AimMagnet (push 0; call GameBase::GameBase): after the jump tables and padding that end AimMagnet::EngineMessageFn at 0x10059d70

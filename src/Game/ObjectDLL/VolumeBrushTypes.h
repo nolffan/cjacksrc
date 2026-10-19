@@ -52,6 +52,10 @@ class CorrosiveFluid : public VolumeBrush
 			m_eSurfaceOverrideType = ST_LIQUID;
 			m_dwFlags |= FLAG_RAYHIT;
 		}
+
+	protected:
+
+		virtual void ReadProp(ObjectCreateStruct *pStruct);
 };
 
 class FreezingWater : public VolumeBrush
@@ -64,6 +68,10 @@ class FreezingWater : public VolumeBrush
 			m_eSurfaceOverrideType = ST_LIQUID;
 			m_dwFlags |= FLAG_RAYHIT;
 		}
+
+	protected:
+
+		virtual void ReadProp(ObjectCreateStruct *pStruct);
 };
 
 class PoisonGas : public VolumeBrush
@@ -74,6 +82,10 @@ class PoisonGas : public VolumeBrush
 		{
 			m_eContainerCode = CC_POISON_GAS;
 		}
+
+	protected:
+
+		virtual void ReadProp(ObjectCreateStruct *pStruct);
 };
 
 class Electricity : public VolumeBrush
@@ -84,6 +96,10 @@ class Electricity : public VolumeBrush
 		{
 			m_eContainerCode = CC_ELECTRICITY;
 		}
+
+	protected:
+
+		virtual void ReadProp(ObjectCreateStruct *pStruct);
 };
 
 class EndlessFall : public VolumeBrush
@@ -94,6 +110,10 @@ class EndlessFall : public VolumeBrush
 		{
 			m_eContainerCode = CC_ENDLESS_FALL;
 		}
+
+	protected:
+
+		virtual void ReadProp(ObjectCreateStruct *pStruct);
 };
 
 class Wind : public VolumeBrush
@@ -114,6 +134,10 @@ class ColdAir : public VolumeBrush
 		{
 			m_eContainerCode = CC_COLDAIR;
 		}
+
+	protected:
+
+		virtual void ReadProp(ObjectCreateStruct *pStruct);
 };
 
 class Burn : public VolumeBrush
@@ -124,6 +148,10 @@ class Burn : public VolumeBrush
 		{
 			m_eContainerCode = CC_BURN;
 		}
+
+	protected:
+
+		virtual void ReadProp(ObjectCreateStruct *pStruct);
 };
 
 class Filter : public VolumeBrush
