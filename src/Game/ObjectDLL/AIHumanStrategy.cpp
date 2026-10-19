@@ -3663,11 +3663,15 @@ void CAIHumanStrategyGrenadeThrow::Throw(LTFLOAT fTime /*= 0.5f*/)
 {
 	m_eState = eStateThrowing;
 	m_fHangtime = fTime;
+
+	// RETAIL: Object 0x10053870 calls out the throw
+
+	GetAI()->PlaySound( kAIS_Grenade, LTTRUE );
 }
 
-LTBOOL CAIHumanStrategyGrenadeThrow::ShouldThrow()
+LTBOOL CAIHumanStrategyGrenadeThrow::ShouldThrow(LTFLOAT fFactor)
 {
-	if ( eGrenadeStatusDontThrow == GetAI()->GetBrain()->GetGrenadeStatus() )
+	if ( eGrenadeStatusDontThrow == GetAI()->GetBrain()->GetGrenadeStatus(fFactor) )
 	{
 		return LTFALSE;
 	}

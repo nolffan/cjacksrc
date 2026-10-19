@@ -29,20 +29,6 @@
 
 CBankedList<CWeapon> s_bankCWeapon;
 
-
-
-// RETAIL: Contract J.A.C.K.'s MID_PICKEDUP carries three flags: picked up,
-// show it, leave the item (PickupItem::ObjectMessageFn, Object 0x10104590).
-static void SendPickedUpMsg(HOBJECT hSource, HOBJECT hDest)
-{
-	CAutoMessage cMsg;
-	cMsg.Writeuint32(MID_PICKEDUP);
-	cMsg.Writebool(true);
-	cMsg.Writebool(true);
-	cMsg.Writebool(false);
-	g_pLTServer->SendToObject(cMsg.Read(), hSource, hDest, MESSAGE_GUARANTEED);
-}
-
 // ----------------------------------------------------------------------- //
 //
 //	ROUTINE:	CWeapons::CWeapons()
@@ -381,7 +367,15 @@ LTBOOL CWeapons::AddWeapon(LPBASECLASS pObject, HOBJECT hSender, uint8 nWeaponId
 		// Tell weapon powerup it was picked up...
 		if (pObject)
 		{
-			SendPickedUpMsg(pObject->m_hObject, hSender);
+			// RETAIL: Contract J.A.C.K.'s MID_PICKEDUP carries three flags: picked
+			// up, show it, leave the item (PickupItem::ObjectMessageFn, Object
+			// 0x10104590), written here in place (Object 0x10166640)
+			CAutoMessage cMsg;
+			cMsg.Writeuint32(MID_PICKEDUP);
+			cMsg.Writebool(true);
+			cMsg.Writebool(true);
+			cMsg.Writebool(false);
+			g_pLTServer->SendToObject(cMsg.Read(), pObject->m_hObject, hSender, MESSAGE_GUARANTEED);
 		}
 
 		// Send the appropriate message to the client...
@@ -502,7 +496,18 @@ LTBOOL CWeapons::AddAmmoBox(LPBASECLASS pObject, HOBJECT hSender, ILTMessage_Rea
 	else
 	{
         // Tell ammo powerup it was picked up...
-		SendPickedUpMsg(pObject->m_hObject, hSender);
+
+		{
+			// RETAIL: Contract J.A.C.K.'s MID_PICKEDUP carries three flags: picked
+			// up, show it, leave the item (PickupItem::ObjectMessageFn, Object
+			// 0x10104590), written here in place (Object 0x10166f20)
+			CAutoMessage cMsg;
+			cMsg.Writeuint32(MID_PICKEDUP);
+			cMsg.Writebool(true);
+			cMsg.Writebool(true);
+			cMsg.Writebool(false);
+			g_pLTServer->SendToObject(cMsg.Read(), pObject->m_hObject, hSender, MESSAGE_GUARANTEED);
+		}
 	}
 
 
@@ -878,26 +883,21 @@ LTBOOL CWeapons::ChangeWeapon(uint8 nNewWeapon)
 	m_nCurWeapon = nNewWeapon;
 
 
-	// Change our weapon model to the newly selected weapon
+	// Change our weapon model to the newly selected weapon.  RETAIL:
+	// Object 0x10165e40 does it for any owner, without the character
+	// lookup
 
-	if (IsCharacter(m_hCharacter))
+	WEAPON const *pWeaponData = g_pWeaponMgr->GetWeapon(m_nCurWeapon);
+    if (!pWeaponData) return LTFALSE;
+
+ 	// Associated our hand held weapon with our weapon...
+
+	if (m_hWeaponModel)
 	{
-        CCharacter* pChar = (CCharacter*)g_pLTServer->HandleToObject(m_hCharacter);
-		if (pChar)
+        CHHWeaponModel* pModel = (CHHWeaponModel*)g_pLTServer->HandleToObject(m_hWeaponModel);
+		if (pModel)
 		{
-			WEAPON const *pWeaponData = g_pWeaponMgr->GetWeapon(m_nCurWeapon);
-            if (!pWeaponData) return LTFALSE;
-
- 			// Associated our hand held weapon with our weapon...
-
-			if (m_hWeaponModel)
-			{
-                CHHWeaponModel* pModel = (CHHWeaponModel*)g_pLTServer->HandleToObject(m_hWeaponModel);
-				if (pModel)
-				{
-					pModel->Setup(m_pWeapons[m_nCurWeapon], pWeaponData);
-				}
-			}
+			pModel->Setup(m_pWeapons[m_nCurWeapon], pWeaponData);
 		}
 	}
 

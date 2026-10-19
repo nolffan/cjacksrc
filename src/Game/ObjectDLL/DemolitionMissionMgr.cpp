@@ -79,13 +79,13 @@ void CDemolitionMissionMgr::Update()
 
 // ----------------------------------------------------------------------- //
 //
-//	ROUTINE:	CDemolitionMissionMgr::ApplyOptions
+//	ROUTINE:	CDemolitionMissionMgr::StartGame
 //
-//	PURPOSE:	The host's Demolition options as the mission settings
+//	PURPOSE:	RETAIL: Object 0x100c0af0
 //
 // ----------------------------------------------------------------------- //
 
-void CDemolitionMissionMgr::ApplyOptions( )
+bool CDemolitionMissionMgr::StartGame(ILTMessage_Read& msg )
 {
 	ServerGameOptions& sgo = g_pGameServerShell->GetServerGameOptions( );
 	ServerMissionSettings sms = GetServerSettings();
@@ -96,32 +96,18 @@ void CDemolitionMissionMgr::ApplyOptions( )
 	sms.m_nRunSpeed = sgo.GetDemolition().m_nRunSpeed;
 	sms.m_nScoreLimit = 0;
 	sms.m_nTimeLimit = 0;
-	sms.m_nRounds = sgo.GetDemolition().m_nRounds;
-	sms.m_nFragScore = sgo.GetDemolition().m_nFragScore;
-
-	SetServerSettings(sms);
-}
-
-// ----------------------------------------------------------------------- //
-//
-//	ROUTINE:	CDemolitionMissionMgr::StartGame
-//
-//	PURPOSE:	RETAIL: Object 0x100c0af0
-//
-// ----------------------------------------------------------------------- //
-
-bool CDemolitionMissionMgr::StartGame(ILTMessage_Read& msg )
-{
-	ApplyOptions( );
 
 	// Each team attacks as often as it defends: an even number of rounds,
 	// two at least.
 
-	ServerMissionSettings sms = GetServerSettings();
+	sms.m_nRounds = sgo.GetDemolition().m_nRounds;
 	if( sms.m_nRounds & 1 )
 		sms.m_nRounds++;
 	if( sms.m_nRounds <= 2 )
 		sms.m_nRounds = 2;
+
+	sms.m_nFragScore = sgo.GetDemolition().m_nFragScore;
+
 	SetServerSettings(sms);
 
 	if( !g_pMissionButeMgr->Init( MISSION_DM_FILE ))
@@ -229,7 +215,18 @@ bool CDemolitionMissionMgr::HandleMultiplayerOptions( HCLIENT hSender, ILTMessag
 	ServerGameOptions& sgo = g_pGameServerShell->GetServerGameOptions( );
 	sgo.GetDemolition().Read(&msg);
 
-	ApplyOptions( );
+	ServerMissionSettings sms = GetServerSettings();
+
+	sms.m_bUseSkills = false;
+	sms.m_bFriendlyFire = sgo.GetDemolition().m_bFriendlyFire;
+	sms.m_bWeaponsStay = sgo.GetDemolition().m_bWeaponsStay;
+	sms.m_nRunSpeed = sgo.GetDemolition().m_nRunSpeed;
+	sms.m_nScoreLimit = 0;
+	sms.m_nTimeLimit = 0;
+	sms.m_nRounds = sgo.GetDemolition().m_nRounds;
+	sms.m_nFragScore = sgo.GetDemolition().m_nFragScore;
+
+	SetServerSettings(sms);
 
 	return true;
 }

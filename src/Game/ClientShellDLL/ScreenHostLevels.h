@@ -47,8 +47,8 @@ protected:
 	CLTGUIListCtrl*			m_pAvailMissions;
 	CLTGUIListCtrl*			m_pSelMissions;
 
-	CLTGUIToggle*			m_pLoopToggle;
-
+	// RETAIL: no loop toggle (m_sCampaignFile at 0x7a4, CShell 0x100c4bf8;
+	// the loop flag is only saved and loaded with the list).
 
 	std::string		m_sCampaignFile;
 	LTBOOL			m_bLoopMissions;

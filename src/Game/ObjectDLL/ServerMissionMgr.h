@@ -124,7 +124,7 @@ class CServerMissionMgr : public IPlayerTrackerReceiver
 
 		// Sets up the campaign to run.  The campaign is the list of missions in
 		// the order they should be played.
-		bool			SetupCampaign( char const* pszCampaignName );
+		bool			SetupCampaign( );	// RETAIL: Object 0x1013f970 takes no name
 
 		// Called by exitlevelXXX routines to go to a new level.
 		bool			ExitLevel( char const* pszNewLevel, bool bTransitionToLevel );

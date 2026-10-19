@@ -294,6 +294,9 @@ LTBOOL IsAccuracyType(DamageType eType)
 //
 // ----------------------------------------------------------------------- //
 
+// RETAIL: in both DLLs (Object 0x100bbdd0 reads the float at DTINFO+0x24
+// once DTINFO has no bScoreTag).
+
 LTFLOAT SlowMovementDuration(DamageType eType)
 {
 	for (int i=0; i < kNumDamageTypes; i++)

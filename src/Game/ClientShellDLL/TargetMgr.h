@@ -51,7 +51,7 @@ public:
 	DamageType	 RequiredGadgetDamageType();
 
 	//make sure specified object is considered a valid target regardless of it's current flags
-	virtual void LockTarget(HOBJECT hTarget) { m_hLockedTarget = hTarget; }
+	virtual void LockTarget(HOBJECT hTarget) { m_hLockedTarget = hTarget; m_bTargetJustLocked = true; }	// RETAIL: CShell 0x100f8830
 	virtual HOBJECT GetLockedTarget()	const	{return m_hLockedTarget;}
 
 protected:
@@ -77,6 +77,10 @@ protected:
 	bool		m_bMoveTarget;
 	bool		m_bCanActivate;
 	bool		m_bFirstUpdate;
+
+	// RETAIL: 0x458: a target just locked keeps its gadget string for one
+	// update (CShell 0x100f7d37, 0x100f7f63).
+	bool		m_bTargetJustLocked;
 
 	//intersect info
 	CActivationData m_ActivationData;

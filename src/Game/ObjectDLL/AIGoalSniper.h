@@ -30,6 +30,10 @@ class CAIGoalSniper : public CAIGoalAbstractUseObject
 		virtual void	Save(ILTMessage_Write *pMsg);
         virtual void	Load(ILTMessage_Read *pMsg);
 
+		// Initialization.
+
+		virtual void	InitGoal(CAI* pAI);
+
 		// Activation.
 
 		virtual void ActivateGoal();

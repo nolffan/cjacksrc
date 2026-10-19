@@ -84,7 +84,7 @@ class CAIBrain : public CAIClassAbstract
 
 		// Grenade
 
-		GrenadeStatus GetGrenadeStatus();
+		GrenadeStatus GetGrenadeStatus(LTFLOAT fFactor);	// RETAIL: Object 0x100137c0 takes a factor
 
 		// Simple accessors
 
