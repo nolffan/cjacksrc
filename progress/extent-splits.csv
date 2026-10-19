@@ -115,3 +115,5 @@ server.dll,0x1005dc50,function after the int3 padding that ends the one at 0x100
 server.dll,0x1000a210,function after the int3 padding that ends the jump thunk at 0x1000a200 (`push ecx; call [IAT]; ret`)
 server.dll,0x1000c7d0,function after the int3 padding that ends the getter at 0x1000c7c0 (`mov eax,[0x1007b908]; ret`)
 server.dll,0x1000d460,function after the int3 padding that ends the getter at 0x1000d450 (`xor eax,eax; ret`)
+Lithtech.exe,0x00419680,con_CycleCommandsBack (push -1; mov ecx console; call CConsole::CycleCommands; ret): console.obj after con_SetErrorLog 0x419670; enumerated inside its row
+Lithtech.exe,0x00419690,con_CycleCommandsForward (push 1; the same): enumerated inside con_SetErrorLog 0x419670
