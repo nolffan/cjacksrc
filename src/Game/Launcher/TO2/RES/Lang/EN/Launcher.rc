@@ -426,7 +426,13 @@ BEGIN
     IDS_HELP_RESTOREDEFAULTS
                             "This restores all configuration settings to the original defaults. This includes resetting the key configuration, detail level and sound options. This is useful if you've changed settings, and you just want things back the way they were. "
     IDS_HELP_ALWAYSSPECIFY  "Advanced users only."
+#ifdef CJACK_MODERN
+// MODERN.md APPS-4: the game is not looked for on a disc (and is not
+// "Contract J.A.C.K. 2", RETAIL_BUGS.md)
+    IDS_CANTFINDREZFILE     "ERROR - Unable to find the Game.rez file.  Please make sure that Contract J.A.C.K. is installed properly: Game.rez belongs in the folder this launcher is in."
+#else
     IDS_CANTFINDREZFILE     "ERROR - Unable to find the Game.rez file.  Please make sure that Contract J.A.C.K. 2 is installed properly and that your Contract J.A.C.K. disc 1 CD is in the drive."
+#endif
     IDS_CANTLAUNCHCLIENTEXE "ERROR - Could not launch LITHTECH.EXE.  Please make sure that Contract J.A.C.K. is installed properly."
     IDS_DETAIL_HEADER       "In order to get the most out of your Contract J.A.C.K. gameplay experience, please select the initial performance setting that best matches your system configuration."
     IDS_DETAIL_LOW          "High performance on most systems, but with significant loss of detail.\n  System Specs:  PIII 733MHz, 128MB RAM , GeForce 1 (or equivalent)."
