@@ -1191,6 +1191,25 @@ MPTEST_WINEDBG=1 for a crash backtrace). Run on master ae759b5 + `apps2`.
 Stopped here: the harness is committed; next, a backtrace of the Doomsday
 crash and a vehicle save to start from.
 
+**Re-run on master 527e543 and f48248e** (branch `apps3`):
+
+| What | Ours | Control | Finding, owner |
+|---|---|---|---|
+| Single player, all 15 worlds | all load, play, save and load, no crash | same (M04S03 once NO HUD, the harness) | screenshots still diverge after the first turn (mouse look) |
+| Multiplayer dm, tdm, dd | join and play (Doomsday no longer crashes, here or for the game agent) | same | none |
+| Multiplayer Demolition (DE_Bollywood) | joins and plays (f48248e) | same | **cshell/game**: no round timer at the top of the screen (the control shows 03:04) |
+| Team setup screen (tdm, de) | never shown here: the client is put straight into the world | same | none here; the team pick is not scripted (see the report) |
+| Checkpoint save (build/playtest-checkpoint.txt, M01S01's corridor) | no Checkpoint.sav, no "Checkpoint" row on the load screen (527e543) | "Saving checkpoint...", Checkpoint.sav, CheckpointSave in Save1001.ini, a "Checkpoint" row on the load screen | **game/cshell** (the server half is in f48248e: re-run) |
+| Menus (build/playtest-menus-cj.txt, world "-") | single player, difficulty, profile and its dialogs, quit: as the control | -- | none |
+| Multiplayer screen after the CD key dialog's OK | Return goes on into Player setup | stays on Multiplayer | **cshell**: the dialog's Return also reaches the screen |
+| Player setup | no 3D player model; a click cycled Bandwidth to T1 (1500) | the model shown beside the items | **cshell** |
+| Join screen | crash: NULL read at CScreenJoin::Update (CShell.dll +0xbf300 in our map) | the server browser | **cshell** |
+| Vehicles | Teleport x y z is a console program (CShell registers it) but neither the legacy nor the modern engine opens a console here (nolf2src's modern console, M-E5, is not in cjacksrc); the PlayerVehicles are SnowmobileStart_01 (528, 429, -414) in M03S01, SnowmobileDummy_01 (9255, -298, -1912) in M03S02, Vespa01 (-1907, 701, -13017), Vespa02 (4312, 994, -5040) and PlayerVehicle03 (-3340, 839, 5600) in M07S02 | -- | **engine**: a developer console (M-E5) would let the harness teleport to them |
+
+mptest's MPTEST_WINEDBG now writes a minidump through AeDebug and reads
+its backtrace (crash.txt); it has not met a crash since (Doomsday no
+longer crashes).
+
 ### 11. release
 
 - `build/package.sh` makes `<dir>-private.tar.gz` and `-public.tar.gz` for

@@ -105,8 +105,9 @@ fi
 export MPTEST_CDKEY="${MPTEST_CDKEY:-BUN6-RYX3-DUZ9-MED2-7352}"
 export WINRUN="Z:$(echo "$RUN" | tr / '\\')"
 export WINEPREFIX="$RUN/wine" WINEDEBUG="${MPTEST_WINEDEBUG:--all,+seh,+msgbox}" WINEDLLOVERRIDES="winedbg.exe=d"
-# MPTEST_WINEDBG=1: let Wine's debugger print a crash's backtrace into the
-# wine-*.log (it is off otherwise: it would wait on a dialog)
+# MPTEST_WINEDBG=1: a crash's minidump (winedbg, through AeDebug) goes to
+# crash.mdmp and its backtrace to crash.txt; Wine's crash debugger is off
+# otherwise (it would wait on a dialog)
 export MPTEST_WINEDBG="${MPTEST_WINEDBG:-}"
 [ -n "$MPTEST_WINEDBG" ] && export WINEDLLOVERRIDES=""
 xvfb-run -a -s '-screen 0 640x480x24' bash -c '
@@ -114,7 +115,14 @@ xvfb-run -a -s '-screen 0 640x480x24' bash -c '
     K="HKLM\\Software\\Monolith Productions\\Contract Jack\\1.0"
     wine reg add "$K" /v InstallDir /t REG_SZ /d "$WINRUN" /f >/dev/null 2>&1
     wine reg add "$K" /v NetRegionCode /t REG_SZ /d EN /f >/dev/null 2>&1
-    [ -n "$MPTEST_WINEDBG" ] && wine reg add "HKCU\\Software\\Wine\\WineDbg" /v ShowCrashDialog /t REG_DWORD /d 0 /f >/dev/null 2>&1
+    if [ -n "$MPTEST_WINEDBG" ]; then
+        # A crash starts winedbg (Wine, as Windows, through AeDebug), which
+        # writes a minidump, crash.mdmp; its backtrace goes to crash.txt
+        A="HKLM\\Software\\Microsoft\\Windows NT\\CurrentVersion\\AeDebug"
+        wine reg add "$A" /v Debugger /t REG_SZ /d "C:\\windows\\system32\\winedbg.exe --minidump $WINRUN\\crash.mdmp %ld %ld" /f >/dev/null 2>&1
+        wine reg add "$A" /v Auto /t REG_SZ /d 1 /f >/dev/null 2>&1
+        wine reg add "HKCU\\Software\\Wine\\WineDbg" /v ShowCrashDialog /t REG_DWORD /d 0 /f >/dev/null 2>&1
+    fi
     wine reg add "$K" /v CDKey /t REG_SZ /d "$MPTEST_CDKEY" /f >/dev/null 2>&1
     wine reg add "$K" /v UpdateNum /t REG_DWORD /d 1 /f >/dev/null 2>&1
     wine reg add "$K" /v UpdateCommandLine0 /t REG_SZ /d "-rez Update_v1x1.rez" /f >/dev/null 2>&1
@@ -138,6 +146,9 @@ xvfb-run -a -s '-screen 0 640x480x24' bash -c '
     fi
     { kill -0 $S 2>/dev/null && echo "SERVER ALIVE" || echo "SERVER EXITED"
       kill -0 $C 2>/dev/null && echo "CLIENT ALIVE" || echo "CLIENT EXITED"; } > result.txt
+    if [ -n "$MPTEST_WINEDBG" ] && [ -f crash.mdmp ]; then
+        printf "bt\nbt all\ninfo share\nquit\n" | wine winedbg crash.mdmp > crash.txt 2>&1
+    fi
     wineserver -k 2>/dev/null
 '
 cat result.txt

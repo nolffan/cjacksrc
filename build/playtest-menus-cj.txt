@@ -1,0 +1,91 @@
+# playtest-menus-cj.txt -- Contract J.A.C.K.'s menus, for build/playtest.sh
+# with world "-" and its control (build/control.sh): every main menu screen
+# and the multiplayer ones (player setup, CD key, join, host and the host's
+# options), a shot of each, then compared with the control's run
+# (playtest.sh compare). Page coordinates are the menus' 640x480 page.
+window 120
+wait 25
+shot main
+mclick 120 190
+wait 3
+shot single
+mclick 115 196
+wait 2
+shot difficulty
+key Escape
+wait 1
+key Escape
+wait 2
+mclick 120 247
+wait 4
+shot multi
+# the CD key it asks for at first (a key of the right form, as mptest's)
+type BUN6-RYX3-DUZ9-MED2-7352
+key Return
+wait 2
+shot multi-keyed
+mclick 120 176
+wait 4
+shot player-setup
+key Escape
+wait 2
+mclick 100 203
+wait 3
+shot cdkey
+key Escape
+wait 2
+mclick 90 230
+wait 8
+shot join
+key Escape
+wait 3
+mclick 90 258
+wait 4
+shot host
+mclick 120 176
+wait 3
+shot host-1
+key Escape
+wait 2
+mclick 120 203
+wait 3
+shot host-2
+key Escape
+wait 2
+mclick 120 230
+wait 3
+shot host-3
+key Escape
+wait 2
+mclick 120 258
+wait 3
+shot host-4
+key Escape
+wait 2
+key Escape
+wait 2
+key Escape
+wait 2
+mclick 100 303
+wait 3
+shot profile
+mclick 110 224
+wait 2
+shot profile-create
+key Escape
+wait 2
+mclick 100 252
+wait 2
+shot profile-load
+key Escape
+wait 2
+mclick 100 280
+wait 2
+shot profile-delete
+key Escape
+wait 2
+key Escape
+wait 2
+mclick 50 448
+wait 2
+shot quit
