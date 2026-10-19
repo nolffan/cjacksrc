@@ -291,6 +291,7 @@ protected:
 	void          CreateHeatFX();
 	void          RemoveHeatFX();
 	void          UpdateHeat();
+	void			AddHeat();		// RETAIL: 0x100241d0
 	void          StartMuzzleFlash();
 	void          UpdateMuzzleFlash( WeaponState eState, LTVector const &vOffset );
 

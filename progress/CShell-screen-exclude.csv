@@ -19,3 +19,6 @@ addr,reason
 0x1008d9d1,NOT A FUNCTION: interior block of CMusic::InitLevel (0x1008d9b0): the branch after its early return split its extent
 0x10002560,NOT GAME CODE: the compiler's `vector constructor iterator' (ptr; size; count; ctor; ret 10h) emitted into an object of the game; ours comes from the runtime library
 0x1000c030,NOT GAME CODE: the compiler's `vector destructor iterator' (ptr; size; count; dtor) emitted into an object of the game; ours comes from the runtime library
+0x10110ca0,NOT A FUNCTION: inside an instruction of CWeaponFX::CreateObject (0x10110390): a stray reference to the middle of its call split its extent
+0x1007fcc3,NOT A FUNCTION: inside an instruction of CLoadingScreen::Init (0x1007ed70): a stray reference to the middle of a mov split its extent
+0x1007e6b5,NOT A FUNCTION: inside an instruction of CLoadingScreen::UpdateMissionInfo (0x1007e400): a stray reference to the middle of a mov split its extent

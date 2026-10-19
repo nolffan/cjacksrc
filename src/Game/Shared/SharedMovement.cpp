@@ -13,12 +13,12 @@
 #include "stdafx.h"
 #include "SharedMovement.h"
 
-#if !defined(_CLIENTBUILD) || defined(__PSX2)
+// RETAIL: CShell.dll has these too (0x100ecc10, 0x100ecc30).
 
 char* aPPMStrings[] =
 {
 	"Normal",
-	"Snowmobile",
+	"Vehicle",		// RETAIL: CShell .data 0x1014f8c0, Object 0x10230878
 	"Lure"
 	// RETAIL: Contract J.A.C.K. has no light cycle.
 };
@@ -49,4 +49,3 @@ PlayerPhysicsModel GetPlayerPhysicsModelFromPropertyName(char* pName)
 	return PPM_NORMAL;
 }
 
-#endif // ! _CLIENTBUILD || __PSX2

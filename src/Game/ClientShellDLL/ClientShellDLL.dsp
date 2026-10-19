@@ -957,6 +957,10 @@ SOURCE=..\Shared\SharedMission.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\Shared\SharedMovement.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\Shared\SharedScoring.cpp
 # End Source File
 # Begin Source File

@@ -126,3 +126,8 @@ CShell.dll,0x1003bd20,an empty client-build Cache(CFXButeMgr*) of FXButeMgr.cpp 
 CShell.dll,0x1003bd30,an empty client-build Cache(CFXButeMgr*) of FXButeMgr.cpp (ret 4) after the int3 padding that ends the one before; nothing calls it directly
 CShell.dll,0x10124dc0,CString::MakeLower (mfcs_string.obj) after the int3 padding that ends CString::MakeUpper (0x10124db0)
 CShell.dll,0x10124dd0,CString::MakeReverse (mfcs_string.obj) after the int3 padding that ends CString::MakeLower (0x10124dc0)
+CShell.dll,0x10111050,CWeaponMgr::GetPExplFX (a jmp into CFXButeMgr) after the int3 padding that ends the one before; nothing in CShell calls it
+CShell.dll,0x10111060,CWeaponMgr::GetDLightFX (a jmp into CFXButeMgr) after the int3 padding that ends the one before; nothing in CShell calls it
+CShell.dll,0x10111070,CWeaponMgr::GetImpactFX (a jmp into CFXButeMgr) after the int3 padding that ends the one before; nothing in CShell calls it
+CShell.dll,0x10111080,CWeaponMgr::GetProjectileFX (a jmp into CFXButeMgr) after the int3 padding that ends the one before; nothing in CShell calls it
+CShell.dll,0x10111090,CWeaponMgr::GetFireFX (a jmp into CFXButeMgr) after the int3 padding that ends the one before; nothing in CShell calls it

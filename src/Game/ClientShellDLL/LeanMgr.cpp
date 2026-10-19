@@ -37,6 +37,21 @@
 	extern CMoveMgr* g_pMoveMgr;
 
 
+// RETAIL: 0x10079110. The lean's camera stops at what the ray hits, but
+// not at bodies.
+static bool LeanFilterFn( HOBJECT hObj, void *pUserData )
+{
+	uint32 dwFlags = 0;
+	g_pCommonLT->GetObjectFlags( hObj, OFT_Flags, dwFlags );
+	if( !( dwFlags & FLAG_RAYHIT ))
+		return false;
+
+	if( g_pGameClientShell->GetSFXMgr( )->GetBodyFX( hObj ))
+		return false;
+
+	return ( g_pGameClientShell->GetSFXMgr( )->GetBodyFromHitBox( hObj ) == LTNULL );
+}
+
 // ----------------------------------------------------------------------- //
 //
 //  ROUTINE:	CLeanMgr::CLeanMgr
@@ -563,6 +578,7 @@ void CLeanMgr::CalculateNewPosRot( LTVector &vOutPos, LTRotation &rOutRot, float
 	iQuery.m_Flags = INTERSECT_OBJECTS | IGNORE_NONSOLID | INTERSECT_HPOLY;
 	iQuery.m_From = m_vRotationPt + m_vRotationPtOffset;
 	iQuery.m_To = vOutPos;
+	iQuery.m_FilterFn = LeanFilterFn;	// RETAIL: 0x1007927d
 
 	if( g_pLTClient->IntersectSegment( &iQuery, &iInfo ))
 	{
