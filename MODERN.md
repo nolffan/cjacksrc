@@ -53,6 +53,46 @@ modes at any size; our Bink player on FFmpeg in place of RAD's
 * **APPS-3: the dedicated server's console.** SCMD replies are written as
   text, not as a format (`RETAIL_BUGS.md`;
   src/Game/ServerApp/ScmdConsoleDriver_ServerApp.cpp).
+* **APPS-4: the launcher needs no disc.** ContractJack.exe looked for the
+  game disc at every start and every Play: the `CdRom Drive` registry
+  value (nothing writes it), then `OpenFile` of `\ContractJack.exe` on
+  every optical drive, an empty one too. It never refused to play without
+  it (CD_ExistGame always succeeds, so the "insert Disc 1" prompt cannot
+  come; the disc check was SecuROM's, in the retail Lithtech.exe, which
+  this engine does not have); the drive was only a fallback place for
+  GAME.REZ. In the modern build no drive is probed and the archives come
+  from the game directory only; the message for a missing Game.rez no
+  longer mentions a disc (or "Contract J.A.C.K. 2", `RETAIL_BUGS.md`)
+  (nolf2src's M-L4, nolfsrc's M-P1-15; src/Game/Launcher/Launcher.cpp
+  CD_GetDriveLetterWithGame, TO2/RES/Lang/EN/Launcher.rc). Tested under
+  Wine in a fresh prefix with drives C: and Z: only: Play, the detail
+  dialog, the game to its main menu.
+* **APPS-5: the launcher plays the game it is in.** Without the registry
+  values the retail installer (run from the disc) leaves under
+  `HKEY_LOCAL_MACHINE\SOFTWARE\Monolith Productions\Contract Jack\1.0`
+  -- an unpacked or copied game, a fresh Wine prefix -- the retail
+  launcher found no rez files, offered only "Install", and that started
+  the disc's `SETUP.EXE` ("Unable to launch the setup program. Please make
+  sure that your Contract J.A.C.K. CD is in the drive"). In the modern
+  build the folder ContractJack.exe is in is the game whenever
+  Lithtech.exe is beside it, whatever `InstallDir` says (InstallDir only
+  where it is not); the key is made when it is missing, so the launcher's
+  settings are kept, and when it cannot be (no right to write the
+  machine's key) the launcher plays with its defaults. With no
+  `UpdateNum` the command line gets the 1.1 update's `-rez
+  Update_v1x1.rez` (if the file is there), as its installer's
+  `UpdateCommandLine0`; `-rez custom` moves after the updates, so the
+  update's game DLLs (emptied in this build's archives) never override
+  ours. Uninstall (the installer's setup.exe) is disabled; "Install",
+  left only to a launcher away from its game, says the game is not
+  installed properly instead of looking for the disc (nolf2src's M-L6;
+  src/Game/Launcher/Launcher.cpp InitInstance, OpenRegistryKey,
+  LauncherDlg.cpp OnInitDialog, OnPlay, LaunchGame). The key stays under
+  HKEY_LOCAL_MACHINE, where the game's CVersionMgr keeps the profile name
+  and the CD key too; nolf2src's move of both to HKEY_CURRENT_USER (its
+  M-L7, M-G71) needs src/Game/Shared/VersionMgr.cpp as well. Tested as
+  APPS-4: the launcher offered Play with no registry values, and its
+  command line ended `-rez Update_v1x1.rez -rez custom`.
 * **EN-1: the world shaders' section order.** The sections compare by
   world only among equal base sections, so the sort gets a strict weak
   ordering (`RETAIL_BUGS.md`; src/Engine/runtime/render_a/src/sys/d3d/
