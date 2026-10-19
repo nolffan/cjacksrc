@@ -1,0 +1,50 @@
+# playtest-checkpoint.txt -- M01S01 past its first CHECKPOINTSAVE (the
+# corridor the level script reaches; the control shows "Saving
+# checkpoint..." there), then the load screen, which lists the checkpoint
+# save (CheckpointSave in Save/.../Save1001.ini).
+window 240
+skipcine 180
+shot start
+hold w 3
+turn 400 0
+hold w 2
+click 1 0.5
+click 1 0.5
+shot fired
+turn -800 0
+hold w 3
+hold d 2
+click 1 1
+key r
+wait 2
+shot moved
+key c
+wait 1
+key c
+hold a 2
+turn 0 200
+turn 0 -200
+key F6
+wait 5
+shot saved
+hold s 3
+turn 600 0
+hold w 3
+shot moved-again
+key F9
+wait 3
+key Return
+wait 30
+skipcine 120
+shot loaded
+hold w 2
+click 1 0.5
+wait 3
+shot after-load
+wait 10
+shot checkpoint
+key Escape
+wait 3
+mclick 362 74
+wait 3
+shot load-screen

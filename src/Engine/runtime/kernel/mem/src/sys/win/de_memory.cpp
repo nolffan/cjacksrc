@@ -223,3 +223,10 @@ void operator delete(void *ptr)
 {
 	dfree(ptr);
 }
+
+// RETAIL: the array form too, its own copy of dfree's body after operator
+// delete (Lithtech.exe 0x423450, server.dll 0x1000c960)
+void operator delete[](void *ptr)
+{
+	dfree(ptr);
+}

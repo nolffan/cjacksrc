@@ -8378,6 +8378,7 @@ Lithtech.exe	sub_4233e0
 Lithtech.exe	sub_423420
 Lithtech.exe	sub_423450
 Lithtech.exe	sub_423480
+Lithtech.exe	sub_4234c0
 Lithtech.exe	sub_4234f0
 Lithtech.exe	sub_423530
 Lithtech.exe	sub_423550
@@ -23326,6 +23327,7 @@ server.dll	sub_1000c8f0
 server.dll	sub_1000c930
 server.dll	sub_1000c960
 server.dll	sub_1000c990
+server.dll	sub_1000c9d0
 server.dll	sub_1000ca00
 server.dll	sub_1000ca40
 server.dll	sub_1000ca90
