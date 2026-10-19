@@ -19,6 +19,8 @@
 #include "MsgIDs.h"
 #include "SoundTypes.h"
 #include "ClientResShared.h"
+#include "CMoveMgr.h"
+#include "VehicleMgr.h"
 
 
 CCheatMgr*      g_pCheatMgr     = LTNULL;
@@ -57,7 +59,6 @@ CCheatMgr::CheatInfo CCheatMgr::s_CheatInfo[] = {
     { "OCgRHS\\[PUU",	LTFALSE },  // nextmission		- exit the current mission
     { "CMLR",			LTFALSE },  // boot				- boot a player
     { "CSVJA",			LTFALSE },	// build			- build info
-    { "RC@P@P\\Y\\_YXHP",	LTFALSE },	// secretsquirrel	- build guid
 	{ "FWJI@A^H",		LTFALSE },	// gimmegun <gun>	- give specific weapon
 	{ "DUHWNUVL",		LTFALSE },	// gimmemod <mod>	- give specific mod
 	{ "FWJI@WHN",		LTFALSE },	// gimmegear <gear> - give specific gear
@@ -86,7 +87,6 @@ CCheatMgr::CheatInfo CCheatMgr::s_CheatInfo[] = {
     { "LPMAePVQZY^SS",		LTFALSE },  // mpnextmission	- exit the current mission
     { "LPAKJP",				LTFALSE },  // mpboot			- boot a player
     { "LPAQTHO",			LTFALSE },	// mpbuild			- build info
-    { "LPPAN^N^ZgZ]gfV^",	LTFALSE },	// mpsecretsquirrel	- build guid
 	{ "LPDUHWNO\\V",		LTFALSE },	// mpgimmegun <gun> - give specific weapon
 	{ "LPDUHWNUVL",			LTFALSE },	// mpgimmemod <mod> - give specific mod
 	{ "LPDUHWNOLWY",		LTFALSE },	// mpgimmegear <gear> - give specific gear
@@ -112,6 +112,7 @@ CCheatMgr::CheatInfo CCheatMgr::s_CheatInfo[] = {
     { "LPSPTA@M[Y",			LTFALSE },  // mptriggers		- Toggle trigger boxes on/off
 	{ "LP@MHO]I",			LTFALSE },  // mpcamera			- Toggle 1st person camera adjust on/off
     { "LP@MH\\H[",			LTFALSE },  // mpcampos			- toggle camera pos/rot
+    { "LPPMSOQMQ_HRH",		LTFALSE },  // mpsavevehicle	- write the tweaked vehicle handling back
 };
 
 
@@ -246,10 +247,6 @@ bool CCheatMgr::Process( CheatCode nCheatCode, CParsedMsg &cMsg )
 			Version();
 		break;
 
-		case CHEAT_BUILDGUID:	// display build guid
-			BuildGuid();
-		break;
-
 		case CHEAT_INVISIBLE:	// time to mess with the AI
 			SetInvisible(!s_CheatInfo[nCheatCode].bActive);
 		break;
@@ -376,6 +373,10 @@ bool CCheatMgr::Process( CheatCode nCheatCode, CParsedMsg &cMsg )
 
 		case CHEAT_POS1STCAM:	  // toggle 1st person camera adjust on/off
 			Pos1stCam(!s_CheatInfo[nCheatCode].bActive);
+		break;
+
+		case CHEAT_SAVEVEHICLE:	  // write the vehicle's handling back to VehicleButes.txt
+			SaveVehicle();
 		break;
 
 #endif  // _FINAL
@@ -1141,31 +1142,19 @@ void CCheatMgr::Version()
 
 // ----------------------------------------------------------------------- //
 //
-//	ROUTINE:	CCheatMgr::BuildGuid()
+//	ROUTINE:	CCheatMgr::SaveVehicle()
 //
-//	PURPOSE:	Display build guid.  This is a way to identify a build sent
-//				to specific parties.
+//	PURPOSE:	RETAIL: CShell 0x10018790.  Write the vehicle's tweaked
+//				handling back to its record.
 //
 // ----------------------------------------------------------------------- //
 
-void CCheatMgr::BuildGuid()
+void CCheatMgr::SaveVehicle()
 {
-	LTGUID buildGuid;
-	LTGUID const* pGuidEncoded = g_pVersionMgr->GetBuildGuid( );
-
-	buildGuid.guid.a = pGuidEncoded->guid.a - GAMEGUID.guid.a;
-	buildGuid.guid.b = pGuidEncoded->guid.b - GAMEGUID.guid.b;
-	buildGuid.guid.c = pGuidEncoded->guid.c - GAMEGUID.guid.c;
-	for( int i = 0; i < 8; i++ )
-		buildGuid.guid.d[i] = pGuidEncoded->guid.d[i] - GAMEGUID.guid.d[i];
-
-	char szGuid[256] = "";
-	sprintf( szGuid, "{ 0x%X, 0x%X, 0x%X, { 0x%X, 0x%X, 0x%X, 0x%X, 0x%X, 0x%X, 0x%X, 0x%X }}",
-		buildGuid.guid.a, buildGuid.guid.b, buildGuid.guid.c, buildGuid.guid.d[0], 
-		buildGuid.guid.d[1], buildGuid.guid.d[2], buildGuid.guid.d[3], buildGuid.guid.d[4], 
-		buildGuid.guid.d[5], buildGuid.guid.d[6], buildGuid.guid.d[7] );
-
-	g_pChatMsgs->AddMessage( szGuid, kMsgCheatConfirm );
+	if( g_pMoveMgr && g_pMoveMgr->GetVehicleMgr() )
+	{
+		g_pMoveMgr->GetVehicleMgr()->SaveVehicleButes();
+	}
 }
 
 

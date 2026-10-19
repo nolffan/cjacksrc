@@ -15,6 +15,18 @@
 #include "ObjectMsgs.h"
 #include "ParsedMsg.h"
 #include "CommandMgr.h"
+#include "CVarTrack.h"
+
+// RETAIL: Object 0x100cb840.  EventCounterDebug 1 prints the messages an
+// event counter gets, 2 also its counting.
+
+static CVarTrack g_vtEventCounterDebug;
+static char s_szEventCounterName[256];
+
+static const char* EventCounterName(HOBJECT hObj)
+{
+	return (g_pLTServer->GetObjectName(hObj, s_szEventCounterName, sizeof(s_szEventCounterName)) == LT_OK) ? s_szEventCounterName : LTNULL;
+}
 
 LINKFROM_MODULE( EventCounter );
 
@@ -149,6 +161,11 @@ uint32 EventCounter::EngineMessageFn(uint32 messageID, void *pData, LTFLOAT fDat
 	{
 		case MID_PRECREATE:
 		{
+			if (!g_vtEventCounterDebug.IsInitted())
+			{
+				g_vtEventCounterDebug.Init(g_pLTServer, "EventCounterDebug", LTNULL, 0.0f);
+			}
+
 			if (fData == PRECREATE_WORLDFILE || fData == PRECREATE_STRINGPROP)
 			{
 				ReadProp((ObjectCreateStruct*)pData);
@@ -198,6 +215,13 @@ bool EventCounter::OnTrigger(HOBJECT hSender, const CParsedMsg &cMsg)
 	static CParsedMsg::CToken s_cTok_Lock("LOCK");
 	static CParsedMsg::CToken s_cTok_Unlock("UNLOCK");
 
+	bool bDebug = false;
+	if (g_vtEventCounterDebug.GetFloat() >= 1.0f)
+	{
+		g_pLTServer->CPrint("EventCounter::OnTrigger(): (%s)", EventCounterName(m_hObject));
+		bDebug = true;
+	}
+
 	if ((cMsg.GetArg(0) == s_cTok_Inc) ||
 		(cMsg.GetArg(0) == s_cTok_Increment))
 	{
@@ -208,6 +232,11 @@ bool EventCounter::OnTrigger(HOBJECT hSender, const CParsedMsg &cMsg)
 		}
 
 		nCount = (nCount < 1 ? 1 : nCount);
+
+		if (bDebug)
+		{
+			g_pLTServer->CPrint("  INCREMENT: %d", nCount);
+		}
 
 		for (int i=0; i < nCount; i++)
 		{
@@ -225,6 +254,11 @@ bool EventCounter::OnTrigger(HOBJECT hSender, const CParsedMsg &cMsg)
 
 		nCount = (nCount < 1 ? 1 : nCount);
 
+		if (bDebug)
+		{
+			g_pLTServer->CPrint("  DECREMENT: %d", nCount);
+		}
+
 		for (int i=0; i < nCount; i++)
 		{
 			Decrement();
@@ -232,10 +266,20 @@ bool EventCounter::OnTrigger(HOBJECT hSender, const CParsedMsg &cMsg)
 	}
 	else if (cMsg.GetArg(0) == s_cTok_Lock)
 	{
+		if (bDebug)
+		{
+			g_pLTServer->CPrint("  LOCKED!");
+		}
+
         m_bLocked = LTTRUE;
 	}
 	else if (cMsg.GetArg(0) == s_cTok_Unlock)
 	{
+		if (bDebug)
+		{
+			g_pLTServer->CPrint("  UNLOCKED!");
+		}
+
         m_bLocked = LTFALSE;
 	}
 	else
@@ -254,9 +298,23 @@ bool EventCounter::OnTrigger(HOBJECT hSender, const CParsedMsg &cMsg)
 
 void EventCounter::Increment()
 {
+	// RETAIL: Object 0x100caff0
+
+	bool bDebug = false;
+	if (g_vtEventCounterDebug.GetFloat() >= 2.0f)
+	{
+		g_pLTServer->CPrint("EventCounter::Increment(): (%s) %s", EventCounterName(m_hObject), m_bLocked ? "LOCKED" : "UNLOCKED");
+		bDebug = true;
+	}
+
 	if (m_bLocked) return;
 
 	m_nCurVal++;
+
+	if (bDebug)
+	{
+		g_pLTServer->CPrint("  m_nCurVal = %d", m_nCurVal);
+	}
 
 	// See if we should process any commands...
 
@@ -270,6 +328,11 @@ void EventCounter::Increment()
 				if (pCmd && g_pCmdMgr->IsValidCmd(pCmd))
 				{
 					g_pCmdMgr->Process(pCmd, m_hObject, m_hObject);
+
+					if (bDebug)
+					{
+						g_pLTServer->CPrint("  Processed: %s", pCmd);
+					}
 				}
 			}
 		}
@@ -286,9 +349,23 @@ void EventCounter::Increment()
 
 void EventCounter::Decrement()
 {
+	// RETAIL: Object 0x100cb120
+
+	bool bDebug = false;
+	if (g_vtEventCounterDebug.GetFloat() >= 2.0f)
+	{
+		g_pLTServer->CPrint("EventCounter::Decrement(): (%s) %s", EventCounterName(m_hObject), m_bLocked ? "LOCKED" : "UNLOCKED");
+		bDebug = true;
+	}
+
 	if (m_bLocked || m_nCurVal <= 0) return;
 
 	m_nCurVal--;
+
+	if (bDebug)
+	{
+		g_pLTServer->CPrint("  m_nCurVal = %d", m_nCurVal);
+	}
 
 	// See if we should process any commands...
 
@@ -302,6 +379,11 @@ void EventCounter::Decrement()
 				if (pCmd && g_pCmdMgr->IsValidCmd(pCmd))
 				{
 					g_pCmdMgr->Process(pCmd, m_hObject, m_hObject);
+
+					if (bDebug)
+					{
+						g_pLTServer->CPrint("  Processed: %s", pCmd);
+					}
 				}
 			}
 		}

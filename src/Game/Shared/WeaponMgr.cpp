@@ -3049,11 +3049,19 @@ LTBOOL CWeaponMgr::ReadWeaponProp(char* pPropName, uint8 & nWeaponId, uint8 & nA
 //
 // ----------------------------------------------------------------------- //
 
-void CWeaponMgr::ReadWeapon(char* szString, uint8 & nWeaponId, uint8 & nAmmoId)
+void CWeaponMgr::ReadWeapon(char const* szString, uint8 & nWeaponId, uint8 & nAmmoId)
 {
+	// RETAIL: Object 0x10160ff0 works on a copy of the string.
+
+	if (!szString || !szString[0]) return;
+
+	char szCopy[256];
+	strncpy(szCopy, szString, sizeof(szCopy) - 1);
+	szCopy[sizeof(szCopy) - 1] = '\0';
+
 	// Get the weapon name...
 
-	WEAPON const *pWeapon = GetWeapon(strtok(szString,","));
+	WEAPON const *pWeapon = GetWeapon(strtok(szCopy,","));
 	if (pWeapon)
 	{
 		nWeaponId = pWeapon->nId;

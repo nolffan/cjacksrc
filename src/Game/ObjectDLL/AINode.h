@@ -16,6 +16,7 @@ enum EnumAIStateType;
 
 class AIVolume;
 class CAIHuman;
+class CAI;
 
 LINKTO_MODULE( AINode );
 
@@ -132,7 +133,9 @@ class AINode : public GameBase
 
 		// Status
 
-		virtual EnumNodeStatus	GetStatus(const LTVector& vPos, HOBJECT hThreat) const { return kStatus_Ok; }
+		// RETAIL: Contract J.A.C.K. passes the AI too: a moving AI is judged
+		// from where it is going (Object 0x1005f45c).
+		virtual EnumNodeStatus	GetStatus(CAI* pAI, const LTVector& vPos, HOBJECT hThreat) const { return kStatus_Ok; }
 
 		// Alignment
 
@@ -358,7 +361,7 @@ class AINodeCover : public AINodeChangeWeapons
 
 		// Status
 
-		virtual EnumNodeStatus	GetStatus(const LTVector& vPos, HOBJECT hThreat) const;
+		virtual EnumNodeStatus	GetStatus(CAI* pAI, const LTVector& vPos, HOBJECT hThreat) const;
 
 		// Object
 
@@ -471,7 +474,7 @@ class AINodeSearch : public AINode
 
 		// Status
 
-		virtual EnumNodeStatus	GetStatus(const LTVector& vPos, HOBJECT hThreat) const;
+		virtual EnumNodeStatus	GetStatus(CAI* pAI, const LTVector& vPos, HOBJECT hThreat) const;
 
 		// Methods
 
@@ -579,7 +582,7 @@ class AINodeVantage : public AINodeChangeWeapons
 
 		// Status
 
-		virtual EnumNodeStatus	GetStatus(const LTVector& vPos, HOBJECT hThreat) const;
+		virtual EnumNodeStatus	GetStatus(CAI* pAI, const LTVector& vPos, HOBJECT hThreat) const;
 
 		// Methods
 
@@ -693,7 +696,7 @@ class AINodeUseObject : public AINode
 
 		// Status
 
-		virtual EnumNodeStatus	GetStatus(const LTVector& vPos, HOBJECT hThreat) const;
+		virtual EnumNodeStatus	GetStatus(CAI* pAI, const LTVector& vPos, HOBJECT hThreat) const;
 
 		// Methods.
 
@@ -735,6 +738,35 @@ public:
 
 //---------------------------------------------------------------------------
 
+// RETAIL: Contract J.A.C.K.'s sniper perch (Object.lto 0x10067140..
+// 0x100673f0): a smart object node that is only good while the threat is
+// outside its threat radius and inside its field of view.
+class AINodeSniper : public AINodeUseObject
+{
+	typedef AINodeUseObject super;
+
+	public :
+
+		AINodeSniper();
+		virtual ~AINodeSniper();
+
+		virtual void ReadProp(ObjectCreateStruct *pocs);
+
+		virtual void Load(ILTMessage_Read *pMsg);
+		virtual void Save(ILTMessage_Write *pMsg);
+
+		virtual void Init();
+
+		virtual EnumNodeStatus	GetStatus(CAI* pAI, const LTVector& vPos, HOBJECT hThreat) const;
+
+	protected :
+
+		LTFLOAT		m_fFovDp;
+		LTFLOAT		m_fThreatRadiusSqr;
+};
+
+//---------------------------------------------------------------------------
+
 class AINodeBackup : public AINode
 {
 	typedef AINode super;
@@ -766,7 +798,7 @@ class AINodeBackup : public AINode
 
 		// Status
 
-		virtual EnumNodeStatus	GetStatus(const LTVector& vPos, HOBJECT hThreat) const;
+		virtual EnumNodeStatus	GetStatus(CAI* pAI, const LTVector& vPos, HOBJECT hThreat) const;
 
 		// Methods.
 
@@ -1001,7 +1033,7 @@ class AINodeObstruct : public AINode
 		virtual void Save(ILTMessage_Write *pMsg);
 
 		// Status
-		virtual EnumNodeStatus	GetStatus(const LTVector& vPos, HOBJECT hThreat) const;
+		virtual EnumNodeStatus	GetStatus(CAI* pAI, const LTVector& vPos, HOBJECT hThreat) const;
 		EnumAnimProp		GetMovement() const { return m_eMovement; }
 
 		// Methods

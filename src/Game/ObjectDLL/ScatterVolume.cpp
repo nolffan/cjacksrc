@@ -93,7 +93,10 @@ uint32 ScatterVolume::EngineMessageFn( uint32 messageID, void* pData, LTFLOAT fD
 		break;
 
 	case MID_INITIALUPDATE:
-		InitialUpdate();
+		// RETAIL: Object 0x10135c70.  A saved game's volume sends its
+		// message once it's loaded.
+		if( fData == INITIALUPDATE_WORLDFILE )
+			UpdateSFX( false );
 		break;
 	}
 
@@ -133,12 +136,82 @@ bool ScatterVolume::ReadProp( ObjectCreateStruct* pOCS )
 }
 
 
-void ScatterVolume::InitialUpdate( void )
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	ScatterVolume::UpdateSFX
+//
+//	PURPOSE:	RETAIL: Object 0x10135a10.  Set our special fx message, and
+//				send it to the clients already in the world.
+//
+// ----------------------------------------------------------------------- //
+
+void ScatterVolume::UpdateSFX( bool bSendToClients )
 {
-	CAutoMessage cMsg;
-	cMsg.Writeuint8( SFX_SCATTER_ID );
-	WriteScatterInfo( cMsg );
-	g_pLTServer->SetObjectSFXMessage( m_hObject, cMsg.Read() );
+	{
+		CAutoMessage cMsg;
+		cMsg.Writeuint8( SFX_SCATTER_ID );
+		WriteScatterInfo( cMsg );
+		g_pLTServer->SetObjectSFXMessage( m_hObject, cMsg.Read() );
+	}
+
+	if( bSendToClients )
+	{
+		CAutoMessage cMsg;
+		cMsg.Writeuint8( MID_SFX_MESSAGE );
+		cMsg.Writeuint8( SFX_SCATTER_ID );
+		cMsg.WriteObject( m_hObject );
+		WriteScatterInfo( cMsg );
+		g_pLTServer->SendToClient( cMsg.Read(), LTNULL, MESSAGE_GUARANTEED );
+	}
+}
+
+
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	ScatterVolume::Save / Load
+//
+// ----------------------------------------------------------------------- //
+
+void ScatterVolume::Save( ILTMessage_Write *pMsg )
+{
+	if( !pMsg )
+		return;
+
+	VolumeEffect::Save( pMsg );
+
+	SAVE_VECTOR( m_vDims );
+	SAVE_DWORD( m_nBlindDataIndex );
+	SAVE_FLOAT( m_fHeight );
+	SAVE_FLOAT( m_fWidth );
+	SAVE_FLOAT( m_fMaxScale );
+	SAVE_FLOAT( m_fTilt );
+	SAVE_FLOAT( m_fWaveRate );
+	SAVE_FLOAT( m_fWaveDist );
+	SAVE_FLOAT( m_fMaxDrawDist );
+	SAVE_HSTRING( m_hstrTextureName );
+	SAVE_bool( m_bUseSaturate );
+}
+
+void ScatterVolume::Load( ILTMessage_Read *pMsg )
+{
+	if( !pMsg )
+		return;
+
+	VolumeEffect::Load( pMsg );
+
+	LOAD_VECTOR( m_vDims );
+	LOAD_DWORD( m_nBlindDataIndex );
+	LOAD_FLOAT( m_fHeight );
+	LOAD_FLOAT( m_fWidth );
+	LOAD_FLOAT( m_fMaxScale );
+	LOAD_FLOAT( m_fTilt );
+	LOAD_FLOAT( m_fWaveRate );
+	LOAD_FLOAT( m_fWaveDist );
+	LOAD_FLOAT( m_fMaxDrawDist );
+	LOAD_HSTRING( m_hstrTextureName );
+	LOAD_bool( m_bUseSaturate );
+
+	UpdateSFX( true );
 }
 
 

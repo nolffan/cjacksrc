@@ -41,7 +41,7 @@ class WeaponItem : public PickupItem
 
 		virtual void	ObjectTouch (HOBJECT hObject, bool bForcePickup=false);
 		
-		virtual void	PickedUp( ILTMessage_Read *pMsg );
+		virtual void	PickedUp( bool bWasPickedUp, bool bDisplayMsg, bool bLeaveItem );
 		virtual void	Respawn( );
 
 	private :

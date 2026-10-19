@@ -34,6 +34,10 @@ class CAIGoalAttackFromCover : public CAIGoalAttack
 
 		virtual void ActivateGoal();
 
+		// Command Handling.
+
+		virtual LTBOOL	HandleNameValuePair(const char *szName, const char *szValue);
+
 		// Updating.
 
 		void UpdateGoal();

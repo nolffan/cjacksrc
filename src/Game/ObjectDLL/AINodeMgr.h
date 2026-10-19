@@ -53,6 +53,9 @@ class CAINodeMgr
 		AINode* FindNearestNode(CAI* pAI, EnumAINodeType eNodeType, const LTVector& vPos, LTBOOL bRequiresPath, LTBOOL bRequiresCommand);
 		AINode* FindNearestNodeInRadius(CAI* pAI, EnumAINodeType eNodeType, const LTVector& vPos, LTFLOAT fRadiusSqr, LTBOOL bMustBeUnowned);
         AINode* FindNearestNodeFromThreat(CAI* pAI, EnumAINodeType eNodeType, const LTVector& vPos, HOBJECT hThreat, LTFLOAT fSearchFactor);
+		// RETAIL: Object 0x10064790: only nodes owned by hOwner (or unowned
+		// nodes, for LTNULL).
+        AINode* FindNearestNodeFromThreat(CAI* pAI, EnumAINodeType eNodeType, const LTVector& vPos, HOBJECT hThreat, LTFLOAT fSearchFactor, HOBJECT hOwner);
 		AINode* FindRandomNodeFromThreat(CAI* pAI, EnumAINodeType eNodeType, const LTVector& vPos, HOBJECT hThreat);
 		AINode* FindNearestObjectNode(CAI* pAI, EnumAINodeType eNodeType, const LTVector& vPos, const char* szClass);
 		AINode*	FindNearestNodeInSameDirectionAsThreat(CAI* pAI, EnumAINodeType eNodeType,const LTVector& vPos,HOBJECT hThreat);

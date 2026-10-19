@@ -18,6 +18,8 @@
 #include "AIHuman.h"
 #include "AITarget.h"
 #include "AIMovement.h"
+#include "CharacterMgr.h"
+#include "PlayerObj.h"
 
 DEFINE_AI_FACTORY_CLASS_SPECIFIC(Goal, CAIGoalAttackFromCover, kGoal_AttackFromCover);
 
@@ -224,7 +226,7 @@ void CAIGoalAttackFromCover::HandleStateUseObject()
 
 	// Abandon the state if target is blocking the path to the node.
 
-	EnumNodeStatus eCoverStatus = pCoverNode->GetStatus( m_pAI->GetPosition(), m_pAI->GetTarget()->GetObject() );
+	EnumNodeStatus eCoverStatus = pCoverNode->GetStatus( m_pAI, m_pAI->GetPosition(), m_pAI->GetTarget()->GetObject() );
 	if( ( kStatus_ThreatBlockingPath == eCoverStatus ) &&
 		( !m_pAI->GetAIMovement()->IsMovementLocked() ) )
 	{
@@ -317,6 +319,50 @@ void CAIGoalAttackFromCover::HandleStateAttackFromCover()
 //
 //	PURPOSE:	Find new cover or charge.
 //
+// ----------------------------------------------------------------------- //
+
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	CAIGoalAttackFromCover::HandleNameValuePair
+//
+//	PURPOSE:	RETAIL: Object 0x1001e000.  SEEKPLAYER sends the AI to
+//				cover against the player.
+//
+// ----------------------------------------------------------------------- //
+
+LTBOOL CAIGoalAttackFromCover::HandleNameValuePair(const char *szName, const char *szValue)
+{
+	ASSERT(szName && szValue);
+
+	if ( !_stricmp(szName, "SEEKPLAYER") )
+	{
+		if( IsTrueChar( szValue[0] ) )
+		{
+			AITRACE( AIShowGoals, ( m_pAI->m_hObject, "CAIGoalAttackFromCover: SEEKPLAYER=1" ) );
+
+			CPlayerObj *pPlayer = g_pCharacterMgr->FindPlayer();
+			if ( pPlayer )
+			{
+				m_pAI->Target( pPlayer->m_hObject );
+			}
+
+			m_bNodeBased = LTTRUE;
+			m_bForceSearch = LTTRUE;
+
+			if( HandleGoalAttractors() )
+			{
+				SetStateAttack();
+			}
+
+			m_bForceSearch = LTFALSE;
+		}
+
+		return LTTRUE;
+	}
+
+	return super::HandleNameValuePair(szName, szValue);
+}
+
 // ----------------------------------------------------------------------- //
 
 void CAIGoalAttackFromCover::CoverOrCharge()

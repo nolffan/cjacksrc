@@ -39,6 +39,7 @@ class Explosion : public GameBase
         virtual void Start(HOBJECT hFiredFrom=LTNULL);
 
         LTFLOAT			m_fDamageRadius;
+		LTFLOAT			m_fMinDamageRadius;	// RETAIL: Object 0x100cbf70, full damage inside this radius
         LTFLOAT         m_fMaxDamage;
 		DamageType		m_eDamageType;
 		LTObjRef		m_hFiredFrom;
@@ -62,6 +63,7 @@ class Explosion : public GameBase
 		void AreaDamageObject(HOBJECT hObj);
 		void ProgDamageObjectsInSphere();
 		void ProgDamageObject(HOBJECT hObj);
+		bool IsBlocked(HOBJECT hObj);
 
         void Save(ILTMessage_Write *pMsg, uint32 dwSaveFlags);
         void Load(ILTMessage_Read *pMsg, uint32 dwLoadFlags);

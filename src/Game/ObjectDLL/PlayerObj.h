@@ -254,6 +254,9 @@ class CPlayerObj : public CCharacter
 		// damage filtering
 		virtual bool FilterDamage( DamageStruct *pDamageStruct );
 
+		// RETAIL: resend the containers the player is in (Object 0x1015d960).
+		void ResendContainers() { m_PStateChangeFlags |= PSTATE_CONTAINERTYPE; }
+
 		// Get the complete list of all PlayerObj's.
 		typedef std::vector< CPlayerObj* > PlayerObjList;
 		static PlayerObjList const& GetPlayerObjList( ) { return m_lstPlayerObjs; }

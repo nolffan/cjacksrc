@@ -5680,6 +5680,11 @@ LTBOOL CPlayerObj::MultiplayerInit(ILTMessage_Read *pMsg)
 
 		CTeamMgr::Instance().UpdateClient();
 
+		// RETAIL: Object 0x10110710 remembers the client's team.
+		ClientData* pClientData = g_pGameServerShell->GetClientData( GetClient( ));
+		if( pClientData )
+			pClientData->m_nTeamId = nTeam;
+
 		// Don't reset the model yet, since that will happen agian when we respawn.
 		if( !SetupTeamModel( false ))
 		{
@@ -9010,8 +9015,9 @@ void CPlayerObj::CreateRespawnBody( )
 	// Tell body it's now a body of someone that has respawned.
 	pBody->SetPermanentBody( false );
 	pBody->SetCanRevive( false );
-	pBody->ResetLifetime( GetConsoleFloat("BodyLifetime",30.0f) );
-	TransferWeapons( pBody, false );
+	// RETAIL: Object 0x101080f0: the body goes away at once, and keeps
+	// no weapons.
+	pBody->ResetLifetime( 0.1f );
 
 // Don't allow killing of revivable body.
 /*
@@ -9319,6 +9325,11 @@ void CPlayerObj::SwitchToTeam(uint8 nTeam )
 {
 	if( !IsTeamGameType( )) return;
 	if (nTeam == GetTeamID() || nTeam > CTeamMgr::Instance().GetNumTeams() ) return;
+
+	// RETAIL: Object 0x1010e975 remembers the client's team.
+	ClientData* pClientData = g_pGameServerShell->GetClientData( GetClient( ));
+	if( pClientData )
+		pClientData->m_nTeamId = nTeam;
 
 	CTeamMgr::Instance().AddPlayer( g_pLTServer->GetClientID(GetClient( )), nTeam );
 	CTeamMgr::Instance().UpdateClient();

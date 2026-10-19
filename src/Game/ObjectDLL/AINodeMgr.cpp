@@ -544,6 +544,12 @@ AINode* CAINodeMgr::FindNearestNodeInRadius(CAI* pAI, EnumAINodeType eNodeType, 
 
 AINode* CAINodeMgr::FindNearestNodeFromThreat(CAI* pAI, EnumAINodeType eNodeType, const LTVector& vPos, HOBJECT hThreat, LTFLOAT fSearchFactor)
 {
+	// RETAIL: Object 0x10065610
+	return FindNearestNodeFromThreat( pAI, eNodeType, vPos, hThreat, fSearchFactor, LTNULL );
+}
+
+AINode* CAINodeMgr::FindNearestNodeFromThreat(CAI* pAI, EnumAINodeType eNodeType, const LTVector& vPos, HOBJECT hThreat, LTFLOAT fSearchFactor, HOBJECT hOwner)
+{
     LTFLOAT fMinDistance = (float)INT_MAX;
     AINode*	pClosestNode = LTNULL;
 
@@ -584,6 +590,13 @@ AINode* CAINodeMgr::FindNearestNodeFromThreat(CAI* pAI, EnumAINodeType eNodeType
 			continue;
 		}
 
+		// Skip nodes owned by someone else.
+
+		if( pNode->GetNodeOwner() != hOwner )
+		{
+			continue;
+		}
+
 		if( !pNode->NodeTypeIsActive( eNodeType ) )
 		{
 			continue;
@@ -607,7 +620,7 @@ AINode* CAINodeMgr::FindNearestNodeFromThreat(CAI* pAI, EnumAINodeType eNodeType
 
 			if ( ( fDistanceSqr < fMinDistance ) && ( fDistanceSqr < fNodeRadiusSqr ) )
 			{
-				if ( kStatus_Ok == pNode->GetStatus(vPos, hThreat) )
+				if ( kStatus_Ok == pNode->GetStatus(pAI, vPos, hThreat) )
 				{
 					fMinDistance = fDistanceSqr;
 					pClosestNode = pNode;
@@ -693,7 +706,7 @@ AINode* CAINodeMgr::FindRandomNodeFromThreat(CAI* pAI, EnumAINodeType eNodeType,
 
 		if ( !pNode->IsLockedDisabledOrTimedOut() )
 		{
-			if ( kStatus_Ok == pNode->GetStatus(vPos, hThreat) )
+			if ( kStatus_Ok == pNode->GetStatus(pAI, vPos, hThreat) )
 			{
 				s_lstTempNodes.push_back( pNode );
 			}
@@ -791,7 +804,7 @@ AINode* CAINodeMgr::FindNearestNodeInSameDirectionAsThreat(CAI* pAI, EnumAINodeT
 		if ( (fDistanceSqr > fMinDistance) || (fDistanceSqr > pNode->GetRadiusSqr()) )
 			continue;
 
-		if ( kStatus_Ok == pNode->GetStatus(vPos, hThreat) )
+		if ( kStatus_Ok == pNode->GetStatus(pAI, vPos, hThreat) )
 		{
 			fMinDistance = fDistanceSqr;
 			pClosestNode = pNode;

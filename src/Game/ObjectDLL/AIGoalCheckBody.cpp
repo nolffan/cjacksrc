@@ -35,6 +35,7 @@ DEFINE_AI_FACTORY_CLASS_SPECIFIC(Goal, CAIGoalCheckBody, kGoal_CheckBody);
 CAIGoalCheckBody::CAIGoalCheckBody()
 {
 	m_hBody.SetReceiver( *this );
+	m_fIgnoreBodiesTime = 0.f;
 }
 
 CAIGoalCheckBody::~CAIGoalCheckBody()
@@ -56,6 +57,7 @@ void CAIGoalCheckBody::Save(ILTMessage_Write *pMsg)
 
 	SAVE_VECTOR(m_vStimulusPos);
 	SAVE_HOBJECT(m_hBody);
+	SAVE_FLOAT(m_fIgnoreBodiesTime);
 
 	SeenBodyList::iterator it;
 	SAVE_DWORD(m_lstSeenBodies.size());
@@ -71,6 +73,7 @@ void CAIGoalCheckBody::Load(ILTMessage_Read *pMsg)
 
 	LOAD_VECTOR(m_vStimulusPos);
 	LOAD_HOBJECT(m_hBody);
+	LOAD_FLOAT(m_fIgnoreBodiesTime);
 
 	uint32 cBodies;
 	SeenBodyList::iterator it;
@@ -529,7 +532,8 @@ void CAIGoalCheckBody::RecalcImportance()
 	if( ( m_lstSeenBodies.size() > 0 ) && 
 		( !m_pGoalMgr->HasLockedGoal() ) && 
 		( !m_pGoalMgr->IsCurGoal( this ) ) &&
-		( !m_pAI->GetSenseRecorder()->HasAnyStimulation( kSense_All ) ) )
+		( !m_pAI->GetSenseRecorder()->HasAnyStimulation( kSense_All ) ) &&
+		( g_pLTServer->GetTime() > m_fIgnoreBodiesTime ) )	// RETAIL: Object 0x10024940
 	{
 		SetCurToBaseImportance();
 	}
@@ -560,6 +564,14 @@ LTBOOL CAIGoalCheckBody::HandleDamage(const DamageStruct& damage)
 
 LTBOOL CAIGoalCheckBody::HandleGoalSenseTrigger(AISenseRecord* pSenseRecord)
 {
+	// RETAIL: Object 0x10024da0.  An AI that sees an enemy forgets about
+	// bodies for a while.
+
+	if( pSenseRecord->eSenseType == kSense_SeeEnemy )
+	{
+		m_fIgnoreBodiesTime = g_pLTServer->GetTime() + 30.f;
+	}
+
 	if( super::HandleGoalSenseTrigger(pSenseRecord) )
 	{
 		// Do not investigate without a weapon.
@@ -584,7 +596,7 @@ LTBOOL CAIGoalCheckBody::HandleGoalSenseTrigger(AISenseRecord* pSenseRecord)
 			AddBodyToSeenList( m_hStimulusSource );
 			m_vStimulusPos = pSenseRecord->vLastStimulusPos;
 
-			return LTTRUE;
+			return ( g_pLTServer->GetTime() > m_fIgnoreBodiesTime );
 		}
 
 		// Handle any other sense.

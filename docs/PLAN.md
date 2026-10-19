@@ -431,6 +431,55 @@ dedicated server (package 7).
   server prints "Could not find requested variable
   'Demolition_GameState'" (a world's command variable; not checked
   against retail's).
+- **Unwritten Object.lto functions (this round)**: written from retail:
+  Explosion's console variables (ExKillZone, ExRadiusMulti, ExSPKillZone,
+  ExSPRadiusMulti, ExIgnoreWalls, ExShowRadius; a single player's own
+  blasts are bigger), its kill zone and IsBlocked (only players are
+  shielded by walls); KeyFramer's LoadKeys/CreateObjectList (the object
+  list is rebuilt when turned on without one); EventCounterDebug; the
+  scatter and snow volumes' save/load and SFX resend, SnowVolume ON/OFF
+  with StartOn (client: SNOWFX_MSG_ON; ours stops the snow at once where
+  retail lets the falling snow finish); AINodeSniper (a UseObject node
+  with Fov and ThreatRadius; the sniper searches kNode_Sniper nodes,
+  owned by its guard node first, through
+  CAINodeMgr::FindNearestNodeFromThreat's new owner argument); the
+  sniper's StateComplete case; CAIGoalAttackFromCover SEEKPLAYER;
+  CAIGoalAttackMelee only with a straight path; CAIGoalCheckBody ignores
+  bodies for 30 s after seeing an enemy; the charge state's start
+  position; Door reopens for an AI within 64 while closing;
+  CDestructibleModel's world model surface from the override only;
+  MID_PICKEDUP carries three flags (picked up, show, leave the item;
+  PickupItem::PickedUp takes them); AmmoBox saves its model and skin;
+  DisplayTimer's Type (None, Team0, Team1, BombTarget1-3: the client
+  already reads it as the timer id; it was sending the team id); the
+  cheat list loses CHEAT_BUILDGUID and gains mpsavevehicle (the server
+  and CShell enumerations now agree with retail's: gimmegun is 16); the
+  heat-seeking sort prefers characters; CWeaponMgr::ReadWeapon copies its
+  string; DoVectorFilterFn caches its classes; CPlayerObj's team in
+  ClientData; the respawn body goes at once; VolumeBrush show/hide
+  resends the players' containers; SetPitch also sets the object's
+  unguaranteed data (our client still reads CFX_PITCH, which is sent too:
+  **cshell**, read GetObjectUnguaranteedData like retail's CCharacterFX);
+  StartSwitchingWorlds pauses only once; CLiteObjectMgr (de)activation
+  ignores unregistered objects. progress/Object-screen-exclude.csv
+  lists the enumerator's interior splits (jump-table cases, blocks after
+  an early return, stray targets). Object.lto: 83 -> 26 unwritten.
+  Also: InitGameType takes the host's options (OnServerInitialized
+  reads them), CPlayerAttachments::HideAttachments, CLiteObjectMgr::
+  HasObject, the sniper goal's UpdateGoal. Still
+  unwritten: the heat-seeking sort's instantiations (0x10121550..
+  0x10122330; the predicate did not pair them), CSoundFilterMgr's
+  constructor (0x1014a880: retail's filter list is a map and a vector,
+  not a CTList), the hash compare of ObjectTemplateMgr's hash_map
+  (0x10101790, inlined in ours), MFCStub CString's MakeUpper/MakeLower/
+  MakeReverse (0x10173970, nothing calls them), CWinUtil::GetMoviesPath
+  (0x10168110, nothing calls it in Object.lto), the vector constructor
+  iterators (0x100071a0, 0x100120a0), CAnimationContext::IsPropSet
+  (0x10082f10), CAIGoalInvestigate::HandleStateInvestigate's CJ changes
+  (0x1002a9d0), CPlayerObj::TransferWeapons (0x10109890),
+  CDestructible::DoDamage (0x100c1a00) and a few small ones the pairing
+  moved (0x100dbbb0, 0x100f2390, 0x101609e0, 0x100356e0, 0x100352e0,
+  0x1008f900, 0x1009eea0, 0x10110900).
 - **Where it stopped** (the coordinator's pause, after that commit).
   Next: 0x10121800/0x10121550/0x10122330 are std::sort's for the
   heat-seeking targets (ours instantiates its own); CJ's AI node

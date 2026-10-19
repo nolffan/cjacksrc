@@ -215,6 +215,18 @@ bool AmmoBox::ReadProp(ObjectCreateStruct *pStruct)
 
 	m_sClientFX = m_sPowerupFX;
 
+	// RETAIL: Object 0x10080b10 remembers the box's model and skin.
+
+	if (g_pLTServer->GetPropGeneric("Filename", &genProp) == LT_OK && genProp.m_String[0])
+	{
+		m_sFilename = genProp.m_String;
+	}
+
+	if (g_pLTServer->GetPropGeneric("Skin", &genProp) == LT_OK && genProp.m_String[0])
+	{
+		m_sSkin = genProp.m_String;
+	}
+
 	return true;
 }
 
@@ -287,6 +299,11 @@ void AmmoBox::Save(ILTMessage_Write *pMsg, uint32 dwSaveFlags)
 		pMsg->Writeint32(m_nOriginalAmmoCount[i]);
 
 	}
+
+	// RETAIL: Object 0x100809a0 saves the box's model and skin too.
+
+	pMsg->WriteString(m_sFilename.c_str());
+	pMsg->WriteString(m_sSkin.c_str());
 }
 
 
@@ -309,6 +326,14 @@ void AmmoBox::Load(ILTMessage_Read *pMsg, uint32 dwLoadFlags)
         m_nOriginalAmmoId[i] = pMsg->Readuint8();
         m_nOriginalAmmoCount[i] = (int)pMsg->Readint32();
 	}
+
+	// RETAIL: Object 0x100809a0: the box's model and skin.
+
+	char szString[520];
+	pMsg->ReadString(szString, ARRAY_LEN(szString));
+	m_sFilename = szString;
+	pMsg->ReadString(szString, ARRAY_LEN(szString));
+	m_sSkin = szString;
 }
 
 
@@ -377,7 +402,7 @@ void AmmoBox::Leftovers(ILTMessage_Read *pMsg)
 	
 	if( !IsCoopMultiplayerGameType() )
 	{
-		PickedUp( LTNULL );
+		PickedUp( true, true, false );
 	}
 }
 
@@ -390,7 +415,7 @@ void AmmoBox::Leftovers(ILTMessage_Read *pMsg)
 //
 // ----------------------------------------------------------------------- //
 
-void AmmoBox::PickedUp(ILTMessage_Read *pMsg)
+void AmmoBox::PickedUp(bool bWasPickedUp, bool bDisplayMsg, bool bLeaveItem)
 {
 
 	for (int i=0; i < AB_MAX_TYPES; i++)
@@ -400,7 +425,7 @@ void AmmoBox::PickedUp(ILTMessage_Read *pMsg)
 	}
 
 
-	PickupItem::PickedUp(pMsg);
+	PickupItem::PickedUp(bWasPickedUp, bDisplayMsg, bLeaveItem);
 	
 	if( m_bRespawn )
 	{
@@ -443,8 +468,9 @@ void AmmoBox::Respawn( )
 
 	ObjectCreateStruct ocs;
 
-	LTStrCpy( ocs.m_Filename, s_szDefaultModel, ARRAY_LEN( s_szDefaultModel ));
-	LTStrCpy( ocs.m_SkinName, s_szDefaultSkin, ARRAY_LEN( s_szDefaultSkin ));	
+	// RETAIL: the box's own model and skin, if it has them.
+	LTStrCpy( ocs.m_Filename, m_sFilename.empty() ? s_szDefaultModel : m_sFilename.c_str(), ARRAY_LEN( ocs.m_Filename ));
+	LTStrCpy( ocs.m_SkinName, m_sSkin.empty() ? s_szDefaultSkin : m_sSkin.c_str(), ARRAY_LEN( ocs.m_SkinName ));	
 	LTStrCpy( ocs.m_RenderStyleName, s_szDefaultRS, ARRAY_LEN( s_szDefaultRS ));
 
 	g_pCommonLT->SetObjectFilenames( m_hObject, &ocs );

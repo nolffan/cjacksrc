@@ -547,6 +547,11 @@ class CPlayerAttachments : public CHumanAttachments
 		}
 		
 		void SetWeaponAttachmentHiddenState( CAttachment& AttachmentWeapon );
+
+	public :
+
+		// RETAIL: Object 0x1008f900: the weapon follows its own hidden state.
+		virtual void HideAttachments(LTBOOL bHide);
 };
 
 // Attachments plugin definition

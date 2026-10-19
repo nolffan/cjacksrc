@@ -1459,6 +1459,25 @@ bool CPlayerAttachments::AcquireAmmo( uint8 nId )
 
 // ----------------------------------------------------------------------- //
 //
+//	ROUTINE:	CPlayerAttachments::HideAttachments
+//
+//	PURPOSE:	RETAIL: Object 0x1008f900
+//
+// ----------------------------------------------------------------------- //
+
+void CPlayerAttachments::HideAttachments(LTBOOL bHide)
+{
+	CAttachments::HideAttachments( bHide );
+
+	CAttachmentWeapon* pAttachmentWeapon = GetDefaultAttachmentWeapon();
+	if( pAttachmentWeapon )
+	{
+		SetWeaponAttachmentHiddenState( *pAttachmentWeapon );
+	}
+}
+
+// ----------------------------------------------------------------------- //
+//
 //	ROUTINE:	CPlayerAttachments::SetWeaponAttachmentHiddenState
 //
 //	PURPOSE:	If the weapon is visible make sure it's not supposed to be hidden...
@@ -1467,11 +1486,13 @@ bool CPlayerAttachments::AcquireAmmo( uint8 nId )
 
 void CPlayerAttachments::SetWeaponAttachmentHiddenState( CAttachment& AttachmentWeapon )
 {
+	// RETAIL: Object 0x1008f870 hides the weapon while it is hidden and
+	// shows it (and keeps it updating on the clients) otherwise.
+
 	CWeapon *pWeapon = GetWeapon();
-	if( !pWeapon || !pWeapon->IsHidden() )
-	{
-		SetAttachmentHiddenState( AttachmentWeapon );
-	}	
+	bool bHide = m_bHidden || ( pWeapon && pWeapon->IsHidden() );
+
+	g_pCommonLT->SetObjectFlags( AttachmentWeapon.GetModel( ), OFT_Flags, bHide ? FLAG_FORCECLIENTUPDATE : ( FLAG_VISIBLE | FLAG_FORCECLIENTUPDATE ), FLAG_FORCECLIENTUPDATE | FLAG_VISIBLE );
 }
 
 // ----------------------------------------------------------------------- //

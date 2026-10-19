@@ -39,9 +39,14 @@ protected:
 
 	uint32 EngineMessageFn( uint32 messageID, void* pData, LTFLOAT fData );
 
+	// RETAIL: Contract J.A.C.K. saves the scatter volume (Object 0x10135930,
+	// 0x10135b70).
+	virtual void Save( ILTMessage_Write *pMsg );
+	virtual void Load( ILTMessage_Read *pMsg );
+
 private:
 	void WriteScatterInfo( ILTMessage_Write& cMsg );
-	void InitialUpdate();
+	void UpdateSFX( bool bSendToClients );
 	bool ReadProp( ObjectCreateStruct* pOCS );
 };
 

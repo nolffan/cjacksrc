@@ -183,6 +183,8 @@ class KeyFramer : public GameBase
         void Load(ILTMessage_Read *pMsg, uint32 dwLoadFlags);
 
         LTBOOL CreateKeyList();
+		bool LoadKeys();			// RETAIL: Object 0x100eab20
+		bool CreateObjectList();	// RETAIL: Object 0x100eadb0
 		void  CalculateVelocityInfo();
 
 

@@ -751,6 +751,19 @@ class CAI : public CCharacter, public IAISensing
 		bool		m_bStuckWithTrackDart;
 		bool		m_bCanWake;
 
+		// RETAIL: Contract J.A.C.K.'s (Object 0x1000e43a): an AI driving a
+		// vehicle (DRIVE: no turning, not kept to the floor) and one whose
+		// body pops when it dies (DEATHPOP).
+		bool		m_bDriving;
+		bool		m_bDeathPop;
+
+	public:
+		bool		IsDriving() const { return m_bDriving; }
+		void		SetDriving( bool bDriving ) { m_bDriving = bDriving; }
+		bool		IsDeathPop() const { return m_bDeathPop; }
+
+	protected:
+
 		// List of all AI objects.
 		static AIList	m_lstAIs;
 

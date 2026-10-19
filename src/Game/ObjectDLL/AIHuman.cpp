@@ -1284,9 +1284,13 @@ void CAIHuman::HandleDamage(const DamageStruct& damage)
 			m_fLastPainVolume = 0.1f;
 		}
 
-		// Move to wherever our torso is
+		// RETAIL: Object 0x1003a4b6: Contract J.A.C.K. moves the body to
+		// wherever its torso is on the next update, unless DEATHPOP 0.
 
-		SyncPosition();
+		if( m_bDeathPop )
+		{
+			m_bSyncPosition = LTTRUE;
+		}
 	}
 }
 

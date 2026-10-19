@@ -20,6 +20,7 @@
 #include "ObjectMsgs.h"
 #include "ParsedMsg.h"
 #include "SurfaceMgr.h"
+#include "PlayerObj.h"
 #include "MsgIds.h"
 #include "SurfaceFunctions.h"
 
@@ -599,6 +600,8 @@ void VolumeBrush::Show()
 	g_pCommonLT->SetObjectFlags(m_hObject, OFT_Flags, m_dwSaveFlags, FLAGMASK_ALL);
 
     m_bHidden = false;
+
+	UpdatePlayerContainers();
 }
 
 // --------------------------------------------------------------------------- //
@@ -621,6 +624,27 @@ void VolumeBrush::Hide()
 	g_pCommonLT->SetObjectFlags(m_hObject, OFT_Flags, 0, FLAGMASK_ALL);
 
     m_bHidden = true;
+
+	UpdatePlayerContainers();
+}
+
+// --------------------------------------------------------------------------- //
+//
+//	ROUTINE:	VolumeBrush::UpdatePlayerContainers()
+//
+//	PURPOSE:	RETAIL: Object 0x1015d960.  A volume shown or hidden changes
+//				the containers the players are in; tell their clients.
+//
+// --------------------------------------------------------------------------- //
+
+void VolumeBrush::UpdatePlayerContainers()
+{
+	CPlayerObj::PlayerObjList::const_iterator iter = CPlayerObj::GetPlayerObjList( ).begin( );
+	for( ; iter != CPlayerObj::GetPlayerObjList( ).end( ); iter++ )
+	{
+		if( *iter )
+			(*iter)->ResendContainers( );
+	}
 }
 
 // ----------------------------------------------------------------------- //

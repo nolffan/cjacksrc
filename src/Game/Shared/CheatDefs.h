@@ -32,7 +32,8 @@ enum CheatCode
 	CHEAT_NEXTMISSION,
 	CHEAT_BOOT,
 	CHEAT_VERSION,
-	CHEAT_BUILDGUID,
+	// RETAIL: Contract J.A.C.K. has no CHEAT_BUILDGUID (Object.lto
+	// 0x100de9e0 has CHEAT_GIMMEGUN at 16, CShell no "secretsquirrel").
 	CHEAT_GIMMEGUN,
 	CHEAT_GIMMEMOD,
 	CHEAT_GIMMEGEAR,
@@ -56,6 +57,7 @@ enum CheatCode
 	CHEAT_TRIGGERBOX,
 	CHEAT_POS1STCAM,
 	CHEAT_CAM_POSROT,
+	CHEAT_SAVEVEHICLE,		// RETAIL: Contract J.A.C.K.'s "mpsavevehicle" (CShell 0x10018790)
 	CHEAT_MAX
 };
 

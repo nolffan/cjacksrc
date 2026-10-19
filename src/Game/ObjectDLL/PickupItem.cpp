@@ -356,7 +356,10 @@ uint32 PickupItem::ObjectMessageFn(HOBJECT hSender, ILTMessage_Read *pMsg)
 	{
 		case MID_PICKEDUP:
 		{
-			PickedUp(pMsg);
+			bool bWasPickedUp	= pMsg->Readbool();
+			bool bDisplayMsg	= pMsg->Readbool();
+			bool bLeaveItem		= pMsg->Readbool();
+			PickedUp(bWasPickedUp, bDisplayMsg, bLeaveItem);
 		}
 		break;
 
@@ -751,8 +754,14 @@ LTBOOL PickupItem::Update()
 //
 // ----------------------------------------------------------------------- //
 
-void PickupItem::PickedUp(ILTMessage_Read *)
+void PickupItem::PickedUp(bool bWasPickedUp, bool bDisplayMsg, bool bLeaveItem)
 {
+	// RETAIL: Object 0x10104d00: in multiplayer only an item really picked
+	// up counts.
+
+	if (IsMultiplayerGame() && !bWasPickedUp)
+		return;
+
 	// Let the world know what happened...
 
 	PlayPickedupSound();
@@ -774,6 +783,11 @@ void PickupItem::PickedUp(ILTMessage_Read *)
 			g_pCmdMgr->Process( pCmd, m_hObject, m_hObject );
 		}
 	}
+
+	// The item stays (and stays visible) for the next one.
+
+	if (bLeaveItem)
+		return;
 
 	if (!m_bRespawn)
 	{
