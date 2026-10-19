@@ -930,6 +930,7 @@ class CAIHumanStateUseObject : public CAIHumanState
 		CMusicMgr::Mood GetMusicMood() { return CMusicMgr::eMoodRoutine; }
 
 		virtual LTBOOL SetNode(AINodeUseObject* pUseNode);
+		void Drive( float fHeight );	// RETAIL: Object 0x1003ea90
 		void StateHandlesNodeLocking(LTBOOL bStateHandlesNodeLocking) { m_bStateHandlesNodeLocking = bStateHandlesNodeLocking; }
 		void SetAwareness(EnumAnimProp eAwareness) { m_eAwareness = eAwareness; }
 		void SetActivity(EnumAnimProp eActivity) { m_eActivity = eActivity; }

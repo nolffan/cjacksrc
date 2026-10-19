@@ -224,7 +224,7 @@ void CAIGoalAttackFromCover::HandleStateUseObject()
 
 	// Abandon the state if target is blocking the path to the node.
 
-	EnumNodeStatus eCoverStatus = pCoverNode->GetStatus( m_pAI->GetPosition(), m_pAI->GetTarget()->GetObject() );
+	EnumNodeStatus eCoverStatus = pCoverNode->GetStatus( m_pAI, m_pAI->GetPosition(), m_pAI->GetTarget()->GetObject() );
 	if( ( kStatus_ThreatBlockingPath == eCoverStatus ) &&
 		( !m_pAI->GetAIMovement()->IsMovementLocked() ) )
 	{

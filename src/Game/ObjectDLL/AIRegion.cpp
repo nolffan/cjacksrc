@@ -334,7 +334,7 @@ AINodeSearch* AIRegion::FindNearestSearchNode(const LTVector& vPos, LTFLOAT fCur
 
 		if ( fDistanceSqr < fMinDistanceSqr )
 		{
-			if ( kStatus_Ok == pNode->GetStatus(vPos, LTNULL) )
+			if ( kStatus_Ok == pNode->GetStatus(LTNULL, vPos, LTNULL) )
 			{
 				fMinDistanceSqr = fDistanceSqr;
 				pClosestNode = pNode;

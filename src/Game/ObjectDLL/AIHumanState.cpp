@@ -2623,6 +2623,31 @@ void CAIHumanStateUseObject::HandleVolumeEnter(AIVolume* pVolume)
 }
 
 // ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	CAIHumanStateUseObject::Drive
+//
+//	PURPOSE:	RETAIL: Object 0x1003ea90: DRIVE: face the way the vehicle
+//				node faces, sit up in it, and stay put.
+//
+// ----------------------------------------------------------------------- //
+
+void CAIHumanStateUseObject::Drive( float fHeight )
+{
+	if( m_pUseNode )
+	{
+		GetAI()->FaceDir( m_pUseNode->GetForward( ));
+	}
+	GetAI()->FaceTargetRotImmediately( );
+
+	LTVector vPos = GetAI()->GetPosition( );
+	vPos.y += fHeight;
+	g_pLTServer->SetObjectPos( GetAI()->m_hObject, &vPos );
+
+	GetAI()->SetDriving( true );
+	GetAI()->SetMoveToFloor( false );
+}
+
+// ----------------------------------------------------------------------- //
 
 void CAIHumanStateUseObject::HandleNameValuePair(char *szName, char *szValue)
 {
@@ -6374,7 +6399,7 @@ void CAIHumanStateAttackFromCover::UpdateGotoCover()
 
 	if( m_pCoverNode )
 	{
-		EnumNodeStatus eCoverStatus = m_pCoverNode->GetStatus(GetAI()->GetPosition(), GetAI()->GetTarget()->GetObject());
+		EnumNodeStatus eCoverStatus = m_pCoverNode->GetStatus(GetAI(), GetAI()->GetPosition(), GetAI()->GetTarget()->GetObject());
 		if( ( kStatus_ThreatBlockingPath == eCoverStatus ) &&
 			( !GetAI()->GetAIMovement()->IsMovementLocked() ) )
 		{
@@ -6500,7 +6525,7 @@ void CAIHumanStateAttackFromCover::UpdateUseCover()
 			return;
 		}
 
-		EnumNodeStatus eCoverStatus = m_pCoverNode->GetStatus(GetAI()->GetPosition(), GetAI()->GetTarget()->GetObject());
+		EnumNodeStatus eCoverStatus = m_pCoverNode->GetStatus(GetAI(), GetAI()->GetPosition(), GetAI()->GetTarget()->GetObject());
 
 		if( ( kStatus_ThreatInsideRadius == eCoverStatus ) && 
 			( !bAnimLocked ) &&
@@ -7013,7 +7038,7 @@ void CAIHumanStateAttackFromVantage::UpdateMoving()
 
 	if( m_pVantageNode )
 	{
-		EnumNodeStatus eVantageStatus = m_pVantageNode->GetStatus(GetAI()->GetPosition(), GetAI()->GetTarget()->GetObject());
+		EnumNodeStatus eVantageStatus = m_pVantageNode->GetStatus(GetAI(), GetAI()->GetPosition(), GetAI()->GetTarget()->GetObject());
 		if( ( kStatus_ThreatBlockingPath == eVantageStatus ) &&
 			( !GetAI()->GetAIMovement()->IsMovementLocked() ) )
 		{
@@ -7073,7 +7098,7 @@ void CAIHumanStateAttackFromVantage::UpdateAttacking()
 		return;
 	}
 
-	EnumNodeStatus eVantageStatus = m_pVantageNode->GetStatus(GetAI()->GetPosition(), GetAI()->GetTarget()->GetObject());
+	EnumNodeStatus eVantageStatus = m_pVantageNode->GetStatus(GetAI(), GetAI()->GetPosition(), GetAI()->GetTarget()->GetObject());
 
 	if( ( kStatus_ThreatInsideRadius == eVantageStatus ) && 
 		( !bAnimLocked ) &&

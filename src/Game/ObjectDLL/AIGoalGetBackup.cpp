@@ -185,7 +185,7 @@ void CAIGoalGetBackup::HandleStateGetBackup()
 
 				AINodeBackup* pNodeBackup = (AINodeBackup*)g_pLTServer->HandleToObject( m_hNodeBackup );
 				if( ( !pNodeBackup ) || 
-					( pNodeBackup->GetStatus( m_pAI->GetPosition(), m_pAI->GetTarget()->GetObject() ) != kStatus_Ok ) )
+					( pNodeBackup->GetStatus( m_pAI, m_pAI->GetPosition(), m_pAI->GetTarget()->GetObject() ) != kStatus_Ok ) )
 				{
 					m_fCurImportance = 0.f;
 				}
@@ -316,7 +316,7 @@ AINode* CAIGoalGetBackup::HandleGoalAttractors()
 
 				AINodeBackup* pNodeBackup = (AINodeBackup*)pNode;
 				if( ( pNodeBackup->GetStimulusRadiusSqr() > pNodeBackup->GetPos().DistSqr( m_pAI->GetPosition() ) ) ||
-					( pNodeBackup->GetStatus( m_pAI->GetPosition(), m_hStimulusSource ) != kStatus_Ok ) )
+					( pNodeBackup->GetStatus( m_pAI, m_pAI->GetPosition(), m_hStimulusSource ) != kStatus_Ok ) )
 				{
 					m_fCurImportance = 0.f;
 					m_hNodeBackup = LTNULL;

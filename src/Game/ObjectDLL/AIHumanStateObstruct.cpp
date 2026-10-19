@@ -271,7 +271,7 @@ bool CAIHumanStateObstruct::IsNodeStillValid()
 		return false;
 
 	LTVector vUnused;
-	EnumNodeStatus stat = pAINodeObstruct->GetStatus( vUnused, m_hObjectToObstruct );
+	EnumNodeStatus stat = pAINodeObstruct->GetStatus( GetAI(), vUnused, m_hObjectToObstruct );
 
 	if ( stat == kStatus_ThreatOutsideFOV )
 		return false;

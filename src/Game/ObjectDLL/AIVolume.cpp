@@ -1480,7 +1480,7 @@ int AIVolumePlayerInfo::Init()
 	return 0;
 }
 
-AINode* AIVolumePlayerInfo::FindViewNode(CAI* pAI, EnumAINodeType eNodeType, const LTVector& vPos, LTBOOL bMustBeUnowned) const
+AINode* AIVolumePlayerInfo::FindViewNode(CAI* pAI, EnumAINodeType eNodeType, const LTVector& vPos, LTBOOL bMustBeUnowned, HOBJECT hTarget) const
 {
 	// Get AIs Path Knowledge.
 
@@ -1512,6 +1512,13 @@ AINode* AIVolumePlayerInfo::FindViewNode(CAI* pAI, EnumAINodeType eNodeType, con
 			// Skip nodes that are not in volumes.
 
 			if( !pNode->GetNodeContainingVolume() )
+			{
+				continue;
+			}
+
+			// RETAIL: Object 0x10079eeb: skip nodes the target makes unsafe.
+
+			if( hTarget && ( pNode->GetStatus( pAI, vPos, hTarget ) != kStatus_Ok ))
 			{
 				continue;
 			}
@@ -1550,7 +1557,7 @@ AINode* AIVolumePlayerInfo::FindViewNode(CAI* pAI, EnumAINodeType eNodeType, con
 	return LTNULL;
 }
 
-AINode* AIVolumePlayerInfo::FindOwnedViewNode(CAI* pAI, EnumAINodeType eNodeType, HOBJECT hOwner) const
+AINode* AIVolumePlayerInfo::FindOwnedViewNode(CAI* pAI, EnumAINodeType eNodeType, HOBJECT hOwner, HOBJECT hTarget) const
 {
 	// Get AIs Path Knowledge.
 
@@ -1582,6 +1589,13 @@ AINode* AIVolumePlayerInfo::FindOwnedViewNode(CAI* pAI, EnumAINodeType eNodeType
 			// Skip nodes that are not in volumes.
 
 			if( !pNode->GetNodeContainingVolume() )
+			{
+				continue;
+			}
+
+			// RETAIL: Object 0x1007a03b: skip nodes the target makes unsafe.
+
+			if( hTarget && ( pNode->GetStatus( pAI, pAI->GetPosition(), hTarget ) != kStatus_Ok ))
 			{
 				continue;
 			}

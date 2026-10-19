@@ -17,6 +17,7 @@
 #include "ParsedMsg.h"
 #include "AnimationMgr.h"
 #include "AIState.h"
+#include "AIMovement.h"
 #include "Weapon.h"
 #include "Attachments.h"
 #include "RelationButeMgr.h"
@@ -708,7 +709,7 @@ void AINodeCover::Verify()
 	}
 }
 
-EnumNodeStatus AINodeCover::GetStatus(const LTVector& vPos, HOBJECT hThreat) const
+EnumNodeStatus AINodeCover::GetStatus(CAI* pAI, const LTVector& vPos, HOBJECT hThreat) const
 {
 	LTVector vThreatPos;
     g_pLTServer->GetObjectPos(hThreat, &vThreatPos);
@@ -719,7 +720,7 @@ EnumNodeStatus AINodeCover::GetStatus(const LTVector& vPos, HOBJECT hThreat) con
 	if ( VEC_DISTSQR(vPos, vThreatPos) < g_pAIButeMgr->GetSenses()->fThreatTooCloseDistanceSqr )
 	{
 		LTVector vToThreat = vThreatPos - vPos;
-		LTVector vToNode = m_vPos - vPos;
+		LTVector vToNode = ( pAI && pAI->GetAIMovement()->IsSet() ) ? pAI->GetAIMovement()->GetDest() - vPos : m_vPos - vPos;
 	
 		if( vToThreat.Dot( vToNode ) > 0.f )
 		{
@@ -867,7 +868,7 @@ void AINodeVantage::Load(ILTMessage_Read *pMsg)
 	LOAD_HSTRING(m_hstrObject);
 }
 
-EnumNodeStatus AINodeVantage::GetStatus(const LTVector& vPos, HOBJECT hThreat) const
+EnumNodeStatus AINodeVantage::GetStatus(CAI* pAI, const LTVector& vPos, HOBJECT hThreat) const
 {
 	LTVector vThreatPos;
     g_pLTServer->GetObjectPos(hThreat, &vThreatPos);
@@ -878,7 +879,7 @@ EnumNodeStatus AINodeVantage::GetStatus(const LTVector& vPos, HOBJECT hThreat) c
 	if ( VEC_DISTSQR(vPos, vThreatPos) < g_pAIButeMgr->GetSenses()->fThreatTooCloseDistanceSqr )
 	{
 		LTVector vToThreat = vThreatPos - vPos;
-		LTVector vToNode = m_vPos - vPos;
+		LTVector vToNode = ( pAI && pAI->GetAIMovement()->IsSet() ) ? pAI->GetAIMovement()->GetDest() - vPos : m_vPos - vPos;
 	
 		if( vToThreat.Dot( vToNode ) > 0.f )
 		{
@@ -1008,7 +1009,7 @@ void AINodeSearch::Search()
 	m_bSearched = LTTRUE;
 }
 
-EnumNodeStatus AINodeSearch::GetStatus(const LTVector& vPos, HOBJECT hThreat) const
+EnumNodeStatus AINodeSearch::GetStatus(CAI* pAI, const LTVector& vPos, HOBJECT hThreat) const
 {
 	if ( m_bSearched )
 	{
@@ -1434,7 +1435,7 @@ void AINodeUseObject::PostActivate()
 	ResetActivationTime();
 }
 
-EnumNodeStatus AINodeUseObject::GetStatus(const LTVector& vPos, HOBJECT hThreat) const
+EnumNodeStatus AINodeUseObject::GetStatus(CAI* pAI, const LTVector& vPos, HOBJECT hThreat) const
 {
 	LTVector vThreatPos;
     g_pLTServer->GetObjectPos(hThreat, &vThreatPos);
@@ -1445,7 +1446,7 @@ EnumNodeStatus AINodeUseObject::GetStatus(const LTVector& vPos, HOBJECT hThreat)
 	if ( VEC_DISTSQR(vPos, vThreatPos) < g_pAIButeMgr->GetSenses()->fThreatTooCloseDistanceSqr )
 	{
 		LTVector vToThreat = vThreatPos - vPos;
-		LTVector vToNode = m_vPos - vPos;
+		LTVector vToNode = ( pAI && pAI->GetAIMovement()->IsSet() ) ? pAI->GetAIMovement()->GetDest() - vPos : m_vPos - vPos;
 	
 		if( vToThreat.Dot( vToNode ) > c_fFOV60 )
 		{
@@ -1716,7 +1717,7 @@ void AINodeBackup::ReadProp(ObjectCreateStruct* pocs)
 	}
 }
 
-EnumNodeStatus AINodeBackup::GetStatus(const LTVector& vPos, HOBJECT hThreat) const
+EnumNodeStatus AINodeBackup::GetStatus(CAI* pAI, const LTVector& vPos, HOBJECT hThreat) const
 {
 	LTVector vThreatPos;
     g_pLTServer->GetObjectPos(hThreat, &vThreatPos);
@@ -1727,7 +1728,7 @@ EnumNodeStatus AINodeBackup::GetStatus(const LTVector& vPos, HOBJECT hThreat) co
 	if ( VEC_DISTSQR(vPos, vThreatPos) < g_pAIButeMgr->GetSenses()->fThreatTooCloseDistanceSqr )
 	{
 		LTVector vToThreat = vThreatPos - vPos;
-		LTVector vToNode = m_vPos - vPos;
+		LTVector vToNode = ( pAI && pAI->GetAIMovement()->IsSet() ) ? pAI->GetAIMovement()->GetDest() - vPos : m_vPos - vPos;
 	
 		if( vToThreat.Dot( vToNode ) > c_fFOV60 )
 		{
@@ -2123,7 +2124,7 @@ void AINodeObstruct::Save(ILTMessage_Write *pMsg)
 //	PURPOSE:	
 //              
 //----------------------------------------------------------------------------
-EnumNodeStatus AINodeObstruct::GetStatus(const LTVector& vPos, HOBJECT hThreat) const
+EnumNodeStatus AINodeObstruct::GetStatus(CAI* pAI, const LTVector& vPos, HOBJECT hThreat) const
 {
 	LTVector vOrigin;
     g_pLTServer->GetObjectPos(hThreat, &vOrigin);

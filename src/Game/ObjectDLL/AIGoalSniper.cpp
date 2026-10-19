@@ -243,10 +243,10 @@ AINode* CAIGoalSniper::HandleTargetPos()
 
 		if( pGuardNode )
 		{
-			pSniperNode = pPlayerInfoVolume->FindOwnedViewNode( m_pAI, pTemplate->aAttractors[iAttractor], pGuardNode->m_hObject );
+			pSniperNode = pPlayerInfoVolume->FindOwnedViewNode( m_pAI, pTemplate->aAttractors[iAttractor], pGuardNode->m_hObject, m_hSeekTarget );
 		}
 		else {
-			pSniperNode = pPlayerInfoVolume->FindViewNode( m_pAI, pTemplate->aAttractors[iAttractor], m_pAI->GetPosition(), LTTRUE );
+			pSniperNode = pPlayerInfoVolume->FindViewNode( m_pAI, pTemplate->aAttractors[iAttractor], m_pAI->GetPosition(), LTTRUE, m_hSeekTarget );
 		}
 
 		if( pSniperNode )

@@ -607,7 +607,7 @@ AINode* CAINodeMgr::FindNearestNodeFromThreat(CAI* pAI, EnumAINodeType eNodeType
 
 			if ( ( fDistanceSqr < fMinDistance ) && ( fDistanceSqr < fNodeRadiusSqr ) )
 			{
-				if ( kStatus_Ok == pNode->GetStatus(vPos, hThreat) )
+				if ( kStatus_Ok == pNode->GetStatus(pAI, vPos, hThreat) )
 				{
 					fMinDistance = fDistanceSqr;
 					pClosestNode = pNode;
@@ -693,7 +693,7 @@ AINode* CAINodeMgr::FindRandomNodeFromThreat(CAI* pAI, EnumAINodeType eNodeType,
 
 		if ( !pNode->IsLockedDisabledOrTimedOut() )
 		{
-			if ( kStatus_Ok == pNode->GetStatus(vPos, hThreat) )
+			if ( kStatus_Ok == pNode->GetStatus(pAI, vPos, hThreat) )
 			{
 				s_lstTempNodes.push_back( pNode );
 			}
@@ -791,7 +791,7 @@ AINode* CAINodeMgr::FindNearestNodeInSameDirectionAsThreat(CAI* pAI, EnumAINodeT
 		if ( (fDistanceSqr > fMinDistance) || (fDistanceSqr > pNode->GetRadiusSqr()) )
 			continue;
 
-		if ( kStatus_Ok == pNode->GetStatus(vPos, hThreat) )
+		if ( kStatus_Ok == pNode->GetStatus(pAI, vPos, hThreat) )
 		{
 			fMinDistance = fDistanceSqr;
 			pClosestNode = pNode;
