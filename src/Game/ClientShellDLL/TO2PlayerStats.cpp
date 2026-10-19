@@ -1023,70 +1023,10 @@ void CTO2PlayerStats::UpdateMissionStats(ILTMessage_Read *pMsg)
 }
 
 
+// RETAIL: 0x100fb780. Contract J.A.C.K. gains no skill points: the
+// function is empty.
 void CTO2PlayerStats::GainSkills(uint8 nRewardId, uint8 nBonusId, uint16 nAmount)
 {
-	if (IsMultiplayerGame()) return;
-
-
-	//deal with bonus points here
-	if (nBonusId && nAmount)
-	{
-		m_nTotalSkillPoints += nAmount;
-		m_nAvailSkillPoints += nAmount;
-
-		// Inform the user that they gained a reward...
-
-		g_pRewardMsgs->AddMessage(FormatTempString(IDS_REWARD_MSG_2,nAmount));
-		g_pRewardMsgs->AddMessage(FormatTempString(IDS_TOTAL_REWARD_PTS, m_nAvailSkillPoints));
-
-		g_pClientSoundMgr->PlayInterfaceSound("Interface\\Snd\\reward.wav");
-		return;
-	}
-
-	int nCurrentMission = g_pMissionMgr->GetCurrentMission();
-
-	if (nCurrentMission < 0 || nCurrentMission >= g_pMissionButeMgr->GetNumMissions()) 
-	{
-		if (!nAmount)
-			g_pLTClient->CPrint("CTO2PlayerStats::GainSkills Invalid current mission number (%d)", nCurrentMission);
-		else
-		{
-			m_nTotalSkillPoints += nAmount;
-			m_nAvailSkillPoints += nAmount;
-			g_pClientSoundMgr->PlayInterfaceSound("Interface\\Snd\\reward.wav");
-		}
-		return;
-	}
-
-	MISSION *pMission = g_pMissionButeMgr->GetMission(nCurrentMission);
-	if (!pMission)
-	{
-		g_pLTClient->CPrint("CTO2PlayerStats::GainSkills Invalid mission (%d)", nCurrentMission);
-		return;
-	}
-
-	if (nRewardId >= pMission->nNumRewards)
-	{
-		if (!nAmount)
-			g_pLTClient->CPrint("CTO2PlayerStats::GainSkills Invalid reward id (%d)", nRewardId);
-		else
-		{
-			m_nTotalSkillPoints += nAmount;
-			m_nAvailSkillPoints += nAmount;
-			g_pClientSoundMgr->PlayInterfaceSound("Interface\\Snd\\reward.wav");
-		}
-		return;
-	}
-
-	uint32 nPoints = pMission->aRewards[nRewardId].nVal;
-	m_nTotalSkillPoints += nPoints;
-	m_nAvailSkillPoints += nPoints;
-
-	// Inform the user that they gained a reward...
-
-	g_pRewardMsgs->AddMessage(FormatTempString(pMission->aRewards[nRewardId].nDescriptionId,nPoints));
-	g_pRewardMsgs->AddMessage(FormatTempString(IDS_TOTAL_REWARD_PTS, m_nAvailSkillPoints));
-	g_pClientSoundMgr->PlayInterfaceSound("Interface\\Snd\\reward.wav");
 }
 
 

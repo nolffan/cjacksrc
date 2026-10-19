@@ -2026,7 +2026,8 @@ void CClientWeapon::Select()
 		SetDisable( false );
 
 		// [KLS 3/22/02] Only show the weapon in first-person
-		SetVisible((g_pPlayerMgr->IsFirstPerson() ? true : false));
+		// RETAIL: 0x10028550. Or on the way there.
+		SetVisible((g_pPlayerMgr->IsFirstPerson() || g_pPlayerMgr->IsGoingFirstPerson()) ? true : false);
 	}
 
 	SetState( W_SELECT );
