@@ -88,6 +88,7 @@ ADD_AISOUND_TYPE(Lunge)						// kAIS_Lunge
 ADD_AISOUND_TYPE(OhNo)						// kAIS_OhNo
 ADD_AISOUND_TYPE(OrderBackup)				// kAIS_OrderBackup
 ADD_AISOUND_TYPE(OrderCrouch)				// kAIS_OrderCrouch
+ADD_AISOUND_TYPE(OrderedCover)				// kAIS_OrderedCover (RETAIL: Object.lto's table)
 ADD_AISOUND_TYPE(Pain)						// kAIS_Pain
 ADD_AISOUND_TYPE(Panic)						// kAIS_Panic
 ADD_AISOUND_TYPE(PointOfInterest)			// kAIS_PointOfInterest
