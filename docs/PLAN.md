@@ -1210,6 +1210,20 @@ mptest's MPTEST_WINEDBG now writes a minidump through AeDebug and reads
 its backtrace (crash.txt); it has not met a crash since (Doomsday no
 longer crashes).
 
+**Re-run on master 43d3544** (apps3, merged as 3eec59b):
+
+| What | Ours | Control | Finding, owner |
+|---|---|---|---|
+| Single player, all 15 worlds | all load, play, save and load, no crash | same | screenshots still diverge after the first turn |
+| Mouse look | still: a 400 px turn turns less than retail's; a 200 px pitch does not look down | turns further, looks down | **cshell** |
+| Multiplayer dm, tdm, dd, de | all four join and play; no crash (Doomsday included) | same | none |
+| Demolition HUD | no round timer | the timer at the top (02:32) | **cshell/game** |
+| Team setup (tdm, de) | not shown: the client goes straight into the world, ours and the control alike | same | none here; no team pick scripted, as nothing asks for one in these runs |
+| Checkpoint save (build/playtest-checkpoint.txt) | written: Checkpoint.sav, CheckpointSave in Save1001.ini, "Checkpoint" on the load screen | same | fixed (game, f48248e) |
+| Join screen (build/playtest-menus-cj.txt) | crash: NULL read at CScreenJoin::Update+0 (CShell.dll loaded at 0x018B0000; 0x100bf1a0 in our map) | the server browser | **cshell** |
+| Multiplayer after the CD key dialog; Player setup | Return goes on into Player setup; no player model | stays on Multiplayer; the model shown | **cshell** |
+| Vehicles | unreachable: no console to Teleport to them (see above) | -- | **engine** (a developer console) |
+
 ### 11. release
 
 - `build/package.sh` makes `<dir>-private.tar.gz` and `-public.tar.gz` for
