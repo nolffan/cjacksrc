@@ -33,6 +33,7 @@
 #include "ClientResShared.h"
 #include "PlayerViewAttachmentMgr.h"
 #include "GadgetTargetFX.h"
+#include "TargetMgr.h"
 
 //
 // Externs
@@ -5621,6 +5622,9 @@ void CClientWeapon::SpecialShowPieces( bool bShow /*= true*/, bool bForce /*= fa
 //
 // ----------------------------------------------------------------------- //
 
+// RETAIL: 0x10025760. The time bomb goes only on what the target manager
+// has in its sights, if the server marks it bombable, and in a team game
+// only on our team's target.
 bool CClientWeapon::SpecialOverrideFire()
 {
 	if( !m_hObject )
@@ -5628,75 +5632,32 @@ bool CClientWeapon::SpecialOverrideFire()
 		return false;
 	}
 
-	// Currently  only the TimeBomb has specifc area it can be placed...
-	if( DT_GADGET_TIME_BOMB == m_pAmmo->eInstDamageType )
+	if( DT_GADGET_TIME_BOMB != m_pAmmo->eInstDamageType )
 	{
-		IntersectInfo	iInfo;
-		IntersectQuery	qInfo;
-		qInfo.m_Flags = INTERSECT_OBJECTS | IGNORE_NONSOLID | INTERSECT_HPOLY;
-
-		LTVector vFirePos, vU, vR, vF;
-
-		if( !GetFireVectors( &vU, &vR, &vF, &vFirePos ) )
-		{
-			return false;
-		}
-
-		HOBJECT hFilterList[] =
-		{
-			g_pLTClient->GetClientObject(),
-			g_pPlayerMgr->GetMoveMgr()->GetObject(),
-			LTNULL
-		};
-
-		qInfo.m_FilterFn  = ObjListFilterFn;
-		qInfo.m_pUserData = hFilterList;
-
-		qInfo.m_From = vFirePos;
-		qInfo.m_To = qInfo.m_From + (vF * (LTFLOAT)m_pWeapon->nRange);
-
-		if( g_pLTClient->IntersectSegment( &qInfo, &iInfo ) )
-		{
-			if( iInfo.m_hObject )
-			{
-				uint32 dwUsrFlgs;
-				g_pCommonLT->GetObjectFlags( iInfo.m_hObject, OFT_User, dwUsrFlgs );
-
-				// Check to see if the object we hit can have a bomb placed on it...
-				if( dwUsrFlgs & USRFLG_GADGET_BOMBABLE )
-				{
-					// We can only place the bomb here if it belongs to our team...
-
-					if( IsTeamGameType() )
-					{
-						// Check the team identifier on the gadget to see if it matches our team...
-
-						CGadgetTargetFX *pGadget = dynamic_cast<CGadgetTargetFX*>(g_pGameClientShell->GetSFXMgr()->FindSpecialFX( SFX_GADGETTARGET_ID, iInfo.m_hObject ));
-						if( !pGadget )
-							return false;
-
-						CLIENT_INFO *pLocalCI = g_pInterfaceMgr->GetClientInfoMgr()->GetLocalClient();
-						if( !pLocalCI )
-							return false;
-
-						if( pGadget->GetTeamID() != INVALID_TEAM )
-						{
-							if( pLocalCI->nTeamID == pGadget->GetTeamID() )
-								return true;
-						}
-					}
-					else
-					{
-						return true;
-					}
-				}
-			}
-		}
-	
-		return false;
+		return true;
 	}
 
-	return true;
+	HOBJECT hTarget = g_pPlayerMgr->GetTargetMgr()->GetTargetObject();
+	if( !hTarget )
+		return false;
+
+	uint32 dwUsrFlgs = 0;
+	g_pCommonLT->GetObjectFlags( hTarget, OFT_User, dwUsrFlgs );
+	if( !( dwUsrFlgs & USRFLG_GADGET_BOMBABLE ))
+		return false;
+
+	if( !IsTeamGameType() )
+		return true;
+
+	CGadgetTargetFX *pGadget = dynamic_cast<CGadgetTargetFX*>(g_pGameClientShell->GetSFXMgr()->FindSpecialFX( SFX_GADGETTARGET_ID, hTarget ));
+	if( !pGadget )
+		return false;
+
+	CLIENT_INFO *pLocalCI = g_pInterfaceMgr->GetClientInfoMgr()->GetLocalClient();
+	if( !pLocalCI )
+		return false;
+
+	return ( pGadget->GetTeamID() != INVALID_TEAM && pLocalCI->nTeamID == pGadget->GetTeamID() );
 }
 
 

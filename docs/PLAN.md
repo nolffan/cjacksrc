@@ -1319,6 +1319,18 @@ Round 1 (branch `cshell`), the items 8b leaves open:
   retail's. So the fix is our Object.lto's per-frame cost on the server
   side, not CShell's input code.
 
+- Round 4 (21 -> 9): CMissionMgr's world names as std::string, fresh
+  StartGameRequests, DeleteGameSpyBrowsers for the host, the multiplayer
+  update under the menus (CPlayerMgr::UpdateUnderMenus,
+  CGameClientShell::UpdateEffectsNoRender), the time bomb's
+  SpecialOverrideFire on the target manager's object (0x10025760), and
+  the merged runs of stubs split. Where it stops: 9 unwritten -- four are
+  VehicleMgr's (the game package's), CreateObject's ICF-folded copy
+  (0x10095e60), and size-pairing leftovers (ClientMultiplayerMgr's
+  destructor 0x10020150 against ours of 160 bytes, OnCommandOff
+  0x10063ee0, SetupSavedLevel 0x10088810). Next: those, then the
+  unplaced functions.
+
 ### 8d. playtest coverage (branch `apps2`)
 
 Harness: `make control` (out/cjack-control: retail's game with our
