@@ -40,11 +40,28 @@ CAIGoalSniper::CAIGoalSniper()
 	m_bTurnOffLights = LTFALSE;
 	m_bTurnOnLights = LTFALSE;
 
-	m_fNextViewNodeUpdate = 0.f;
-	m_pLastTargetInfoVol = LTNULL;
+	// RETAIL: Object 0x10034d40 clears the seek target here; the receiver
+	// is set in InitGoal
 
+	m_hSeekTarget = LTNULL;
 	m_bSeekPlayer = LTFALSE;
 	m_bNoRadius = LTFALSE;
+
+	m_fNextViewNodeUpdate = 0.f;
+	m_pLastTargetInfoVol = LTNULL;
+}
+
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	CAIGoalSniper::InitGoal
+//
+//	PURPOSE:	RETAIL: Object 0x10034cd0
+//
+// ----------------------------------------------------------------------- //
+
+void CAIGoalSniper::InitGoal(CAI* pAI)
+{
+	super::InitGoal(pAI);
 
 	m_hSeekTarget.SetReceiver( *this );
 }

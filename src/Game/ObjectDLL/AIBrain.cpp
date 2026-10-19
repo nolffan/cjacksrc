@@ -327,13 +327,16 @@ LTBOOL CAIBrain::CharacterIsAimingAtMe(CCharacter* pCharacter)
 	return LTFALSE;
 }
 
-GrenadeStatus CAIBrain::GetGrenadeStatus()
+GrenadeStatus CAIBrain::GetGrenadeStatus(LTFLOAT fFactor)
 {
+	// RETAIL: Object 0x100137c0.  The factor shortens the time between
+	// checks and raises the chance of a throw
+
 	if ( g_pLTServer->GetTime() >= m_fGrenadeStatusCheckTime )
 	{
-		m_fGrenadeStatusCheckTime = g_pLTServer->GetTime() + LOWER_BY_DIFFICULTY(m_pBrain->fAttackGrenadeThrowTime);
+		m_fGrenadeStatusCheckTime = g_pLTServer->GetTime() + LOWER_BY_DIFFICULTY(m_pBrain->fAttackGrenadeThrowTime) / fFactor;
 
-		if ( GetRandom(0.0f, 1.0f) <= RAISE_BY_DIFFICULTY(m_pBrain->fAttackGrenadeThrowChance) )
+		if ( GetRandom(0.0f, 1.0f) <= RAISE_BY_DIFFICULTY(m_pBrain->fAttackGrenadeThrowChance) * fFactor )
 		{
 			LTFLOAT fRangeMinSqr = m_pBrain->fAttackThrownRangeMin*m_pBrain->fAttackThrownRangeMin;
 			LTFLOAT fRangeMaxSqr = m_pBrain->fAttackThrownRangeMax*m_pBrain->fAttackThrownRangeMax;

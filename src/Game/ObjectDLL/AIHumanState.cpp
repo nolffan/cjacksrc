@@ -5622,7 +5622,7 @@ void CAIHumanStateAttack::Update()
 		( pBlockingAI && ( !( m_dwAttackFlags & kAttk_Crouching ) ) && pBlockingAI->GetAnimationContext() &&
 		pBlockingAI->GetAnimationContext()->IsPropSet(kAPG_Posture, kAP_Crouch) ) )
 	{
-		if ( m_pStrategyGrenade && m_aniPosture.GetProp() == kAP_Stand && m_pStrategyGrenade->ShouldThrow() )
+		if ( m_pStrategyGrenade && m_aniPosture.GetProp() == kAP_Stand && m_pStrategyGrenade->ShouldThrow(1.0f) )	// RETAIL: Object 0x1004938d
 		{
 			m_pStrategyGrenade->Throw();
 		}
@@ -6678,12 +6678,12 @@ void CAIHumanStateAttackFromCover::HandleDamage(const DamageStruct& damage)
 {
 	super::HandleDamage(damage);
 
-	if ( kSStat_UseCover == m_eStateStatus && m_pStrategyCover && m_pStrategyCover->IsCovered() )
+	// RETAIL: Object 0x10041f20.  Any damage ends it, unless the AI's
+	// movement is locked
+
+	if ( !GetAI()->GetAIMovement()->IsMovementLocked() )
 	{
-		if ( m_pCoverNode )
-		{
-			m_eStateStatus = kSStat_FailedComplete;
-		}
+		m_eStateStatus = kSStat_FailedComplete;
 	}
 }
 

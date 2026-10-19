@@ -32,3 +32,11 @@ addr,reason
 0x10120b20,NOT A FUNCTION: mid-instruction inside CProjectile::UpdateHeatSeeking (0x10120620; the movl at 0x10120b18 runs to 0x10120b23): a stray call target split its extent
 0x100e0609,NOT A FUNCTION: interior block of CGameServerShell::OnAddClient (0x100e04b0) after the banned-client return (jne at 0x100e055b)
 0x1002aa40,NOT A FUNCTION: mid-instruction inside CAIGoalInvestigate::HandleStateInvestigate (0x1002a9d0): the movl $0,0xe8(%esi) at 0x1002aa39 holds e8 00 00 00 00, read as a call to 0x1002aa40, which split its extent
+0x101a3248,NOT A FUNCTION: mid-instruction inside the class-definer link initializer at 0x101a3240 (mov eax,[head]; mov [definer+4],eax; mov [head],definer; ret: 21 bytes, as its 206 siblings), which split its extent
+0x10029a53,NOT A FUNCTION: mid-instruction inside CAIGoalInvestigate::SearchOrAware (0x10029a40): the movl $0,0xe8(%esi) at 0x10029a4c holds e8 00 00 00 00, read as a call to 0x10029a53, which split its extent
+0x100a042f,NOT A FUNCTION: interior of CCharacter::SetDims (0x100a0420): the push %esi after its argument test, not a start (0x100a0420 runs on into it)
+0x100d7469,NOT A FUNCTION: interior block of GADGETTARGET::Init (0x100d7450) after the null-argument return (jne at 0x100d745d)
+0x1010680d,NOT A FUNCTION: interior block of ValidateTransmissionMsg (0x10106800) after the null-argument return (jne at 0x10106807)
+0x10111cb8,NOT A FUNCTION: interior block of CPlayerObj::HandleTransmissionMessage (0x10111ca0) after the multiplayer return (je at 0x10111cad)
+0x100599ed,NOT A FUNCTION: interior block of AimMagnet::ResolveTarget (0x10059980) after its early return at 0x100599ec
+0x10057de3,NOT A FUNCTION: interior block of the function at 0x10057dd0 (two arguments, ret 8) after its null-argument return (jne at 0x10057dda)
