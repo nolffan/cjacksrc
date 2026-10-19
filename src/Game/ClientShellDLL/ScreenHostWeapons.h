@@ -50,7 +50,6 @@ protected:
 
 	CLTGUITextCtrl*			m_pAdd;
 	CLTGUITextCtrl*			m_pRemove;
-	CLTGUITextCtrl*			m_pAddAll;
 	CLTGUITextCtrl*			m_pRemoveAll;
 	CLTGUIListCtrl*			m_pAvailItems;
 	CLTGUIListCtrl*			m_pSelItems;
