@@ -80,6 +80,36 @@ CLauncherApp::CLauncherApp()
 
 CLauncherApp theApp;
 
+#ifdef CJACK_MODERN
+// MODERN.md APPS-5: the game directory the launcher was started from, with
+// its "\" -- the directory ContractJack.exe is in, when the engine,
+// Lithtech.exe, is there too -- or "" when it is not (a launcher copied
+// away from its game, where the installer's InstallDir still decides).
+static CString ModernLauncherGameDir()
+{
+	char sModule[MAX_PATH];
+	DWORD nLen = GetModuleFileName(NULL, sModule, sizeof(sModule));
+	if(nLen == 0 || nLen >= sizeof(sModule))
+	{
+		return CString();
+	}
+
+	char* pName = strrchr(sModule, '\\');
+	if(!pName)
+	{
+		return CString();
+	}
+	pName[1] = '\0';
+
+	CString csDir(sModule);
+	if(GetFileAttributes(csDir + "Lithtech.exe") == INVALID_FILE_ATTRIBUTES)
+	{
+		return CString();
+	}
+	return csDir;
+}
+#endif
+
 /////////////////////////////////////////////////////////////////////////////
 // CLauncherApp initialization
 
@@ -141,8 +171,19 @@ BOOL CLauncherApp::InitInstance()
 	// Load the registry settings
 	m_bInstalled = FALSE;
 	m_RegMgr.Init();
+#ifdef CJACK_MODERN
+	// MODERN.md APPS-5: the game plays without the registry values the
+	// retail installer (from the disc) leaves. RETAIL: with no key, the
+	// launcher skipped all of this -- no rez files found, no command line
+	// read -- and offered only "Install", the disc's setup program. Here
+	// the key is made when it is missing, and if even that fails (no
+	// right to write HKEY_LOCAL_MACHINE), the rest runs with the defaults.
+	OpenRegistryKey();
+	{
+#else
 	if(OpenRegistryKey())
 	{
+#endif
 		char p[MAX_PATH];
 		DWORD dwSize = sizeof(char) * MAX_PATH;
 		memset(p,0,dwSize);
@@ -152,6 +193,20 @@ BOOL CLauncherApp::InitInstance()
 			m_bInstalled = TRUE;
 			m_csInstallDir = p;
 		}
+
+#ifdef CJACK_MODERN
+		// MODERN.md APPS-5: the launcher plays the game it sits in, whatever
+		// InstallDir names (nothing; another copy of the game); InstallDir
+		// counts only for a launcher with no Lithtech.exe beside it.
+		{
+			CString csGameDir = ModernLauncherGameDir();
+			if(!csGameDir.IsEmpty())
+			{
+				m_bInstalled = TRUE;
+				m_csInstallDir = csGameDir;
+			}
+		}
+#endif
 
 		memset(p,0,dwSize);
 		if(m_RegMgr.GetField("ProfileName",p,dwSize) && p[0])
@@ -503,6 +558,16 @@ char CLauncherApp::CD_GetDriveLetter()
 
 char CLauncherApp::CD_GetDriveLetterWithGame(BOOL & bDisc2)
 {
+#ifdef CJACK_MODERN
+	// MODERN.md APPS-4: no disc. The game reads every archive from its own
+	// directory; a disc in a drive was only a fallback place for GAME.REZ
+	// (FindRezFiles), and looking for one -- the "CdRom Drive" value, then
+	// OpenFile on every optical drive, an empty one too -- at each start
+	// and each Play can stall the launcher on today's machines. No drive
+	// holds the game, so CD_ExistGame (Play) never asks for a disc either.
+	bDisc2 = FALSE;
+	return(0);
+#else
 	// Check if we've already found the cd-rom drive...
 	if(m_chDrive != 0)
 	{
@@ -554,6 +619,7 @@ char CLauncherApp::CD_GetDriveLetterWithGame(BOOL & bDisc2)
 
 	// If we get here, we didn't find one...
 	return(0);
+#endif
 }
 
 
@@ -713,6 +779,18 @@ CString CLauncherApp::GetAdvancedOptionsCommandLineString()
 
 BOOL CLauncherApp::OpenRegistryKey()
 {
+#ifdef CJACK_MODERN
+	// MODERN.md APPS-5: the key the installer would have made, made here
+	// when there is none, so the launcher's settings are kept. It stays
+	// under HKEY_LOCAL_MACHINE, where the game (CVersionMgr) keeps its
+	// values too.
+	if(m_RegMgr.OpenKey(HKEY_LOCAL_MACHINE,"SOFTWARE","Monolith Productions",(char*)GAME_NAME,(char *)(LPCTSTR)m_csAppVersion))
+	{
+		return TRUE;
+	}
+	return(m_RegMgr.CreateKey(HKEY_LOCAL_MACHINE,"SOFTWARE","Monolith Productions",(char*)GAME_NAME,(char *)(LPCTSTR)m_csAppVersion));
+#else
 	return(m_RegMgr.OpenKey(HKEY_LOCAL_MACHINE,"SOFTWARE","Monolith Productions",(char*)GAME_NAME,(char *)(LPCTSTR)m_csAppVersion));
+#endif
 }
 
