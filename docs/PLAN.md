@@ -1133,12 +1133,24 @@ Round 1 (branch `cshell`), the items 8b leaves open:
   SFX_AIMMAGNET_ID bank and message); the skeletons' Node%dAutoTarget
   (CModelButeMgr's node 0xb9, at most eight a skeleton) and
   COMMAND_ID_MANUALAIM toggling it off. A weapon's UseAutoTarget decides:
-  0 never, 1 on easy, 2 always. Left: the locked-on crosshair
-  (CHUDCrosshair::Render 0x1005571d draws at GetCrosshairPos; ours is
-  NOLF2's), the vehicle weapon's aim (0x10004682), CPlayerMgr's
+  0 never, 1 on easy, 2 always. CHUDCrosshair::Render is retail's
+  (0x10055620): once locked on, the crosshair is drawn at GetCrosshairPos
+  with a dot left at the centre (behaviour; the block order still
+  differs). Left: the vehicle weapon's aim (0x10004682), CPlayerMgr's
   m_bManualAim at its retail offset (0x1cd; ours is the last member), and
   **for the game package** the server's AimMagnet objects (Object.lto
   has AimMagnet and CAimMagnetPlugin) that create the magnets.
+- Mouse look (8d's finding) is not a game code fault. Instrumented runs
+  (CPlayerMgr::CalculateCameraRotation logging the axis offsets) show
+  ours pitches and turns as retail: in M01S01 the player starts seated on
+  a PlayerLure (PPM_LURE, camera limited to 40 up and 55 down), in ours
+  and in the control alike (their shots after `turn 0 200` and `turn 0
+  400` are the same), and in M03S02 the turned and look-down shots match
+  the control's. What differs between runs is the harness: Wine's
+  pointer re-centring sometimes reports a step back (negative x offsets
+  between xdotool's 40-pixel steps), so a 400-pixel turn lands short in
+  some runs of either game. Smaller, slower steps (`turn 400 0 40`)
+  should make the scripted runs comparable.
 - Where it stops: CScreenJoin is NOLF2's (WON); retail's
   (0x100c8f40..0x100d09c0, about 30 KB with its sort instantiations) is a
   GameSpy browser with a port column, a game type filter and nine sort

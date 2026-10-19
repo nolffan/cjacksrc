@@ -11,6 +11,7 @@
 #include "stdafx.h"
 #include "TO2HUDMgr.h"
 #include "HUDCrosshair.h"
+#include "AutoTargetMgr.h"
 #include "PlayerStats.h"
 #include "SurfaceFunctions.h"
 #include "CharacterFX.h"
@@ -113,51 +114,78 @@ void CHUDCrosshair::Term()
 	}
 }
 
+// RETAIL: CShell 0x10055620: Contract J.A.C.K.'s crosshair follows the
+// auto targeting once it has locked on, with a dot left at the centre.
 void CHUDCrosshair::Render()
 {
 	
 	SetRenderState();
-	if (g_pInterfaceMgr->IsOverlayActive(OVM_SCOPE))
+	if (g_pInterfaceMgr->IsOverlayActive(OVM_SCOPE) && !g_pPlayerMgr->UsingCamera())
 	{
-		if (!g_pPlayerMgr->UsingCamera())
-			RenderScope();
-		return;
-	}
-
-	// See if we can show a crosshair or not...
-	if (g_pMoveMgr->GetVehicleMgr()->IsVehiclePhysics() &&
-		!g_pMoveMgr->GetVehicleMgr()->CanShowCrosshair())
-	{
-		return;
-	}
-
-	if (!m_bEnabled)
-		return;
-
-
-
-	if (g_pPlayerMgr->IsPlayerDead())
-	{
-		g_pDrawPrim->SetTexture(LTNULL);
-		g_pDrawPrim->SetRGBA(&m_Poly[2],argbWhite);
-
-		float x = 319.0f * g_pInterfaceResMgr->GetXRatio();
-		float y = 239.0f * g_pInterfaceResMgr->GetYRatio();
-		float w = 2.0f * g_pInterfaceResMgr->GetXRatio();
-
-		g_pDrawPrim->SetXYWH(&m_Poly[2],x,y,w,w);
-		g_pDrawPrim->DrawPrim(&m_Poly[2],1);
-
+		RenderScope();
 	}
 	else
 	{
-		g_pDrawPrim->SetTexture(m_hAccurate);
-		g_pDrawPrim->DrawPrim(&m_Poly[0],1);
-
-		if (GetConsoleInt("CrosshairDynamic",1))
+		// See if we can show a crosshair or not...
+		if (g_pMoveMgr->GetVehicleMgr()->IsVehiclePhysics() &&
+			!g_pMoveMgr->GetVehicleMgr()->CanShowCrosshair())
 		{
-			g_pDrawPrim->SetTexture(m_hInaccurate);
-			g_pDrawPrim->DrawPrim(&m_Poly[1],1);
+			return;
+		}
+
+		if (!m_bEnabled)
+			return;
+
+		if (g_pPlayerMgr->GetPlayerState() == PS_DEAD || g_pPlayerMgr->GetPlayerState() == PS_DYING)
+		{
+			g_pDrawPrim->SetTexture(LTNULL);
+			g_pDrawPrim->SetRGBA(&m_Poly[2],argbWhite);
+
+			float x = 319.0f * g_pInterfaceResMgr->GetXRatio();
+			float y = 239.0f * g_pInterfaceResMgr->GetYRatio();
+			float w = 2.0f * g_pInterfaceResMgr->GetXRatio();
+
+			g_pDrawPrim->SetXYWH(&m_Poly[2],x,y,w,w);
+			g_pDrawPrim->DrawPrim(&m_Poly[2],1);
+		}
+		else
+		{
+			LTVector vPos;
+			if (CAutoTargetMgr::Instance().IsLockedOn())
+			{
+				// A dot where the view points...
+				g_pDrawPrim->SetTexture(LTNULL);
+				g_pDrawPrim->SetRGBA(&m_Poly[2],argbWhite);
+
+				float w = 2.0f * g_pInterfaceResMgr->GetXRatio();
+				float x = (float)g_pInterfaceResMgr->GetScreenWidth() * 0.5f;
+				float y = (float)g_pInterfaceResMgr->GetScreenHeight() * 0.5f;
+
+				g_pDrawPrim->SetXYWH(&m_Poly[2],x,y,w,w);
+				g_pDrawPrim->DrawPrim(&m_Poly[2],1);
+
+				// ...and the crosshair on the target
+				vPos = CAutoTargetMgr::Instance().GetCrosshairPos();
+			}
+			else
+			{
+				vPos.x = (float)g_pInterfaceResMgr->GetScreenWidth() * 0.5f;
+				vPos.y = (float)g_pInterfaceResMgr->GetScreenHeight() * 0.5f;
+			}
+
+			float fHalf = m_fAccurateSz * 0.5f;
+			g_pDrawPrim->SetXYWH(&m_Poly[0],vPos.x - fHalf,vPos.y - fHalf,m_fAccurateSz,m_fAccurateSz);
+			fHalf = m_fInaccurateSz * 0.5f;
+			g_pDrawPrim->SetXYWH(&m_Poly[1],vPos.x - fHalf,vPos.y - fHalf,m_fInaccurateSz,m_fInaccurateSz);
+
+			g_pDrawPrim->SetTexture(m_hAccurate);
+			g_pDrawPrim->DrawPrim(&m_Poly[0],1);
+
+			if (GetConsoleInt("CrosshairDynamic",1))
+			{
+				g_pDrawPrim->SetTexture(m_hInaccurate);
+				g_pDrawPrim->DrawPrim(&m_Poly[1],1);
+			}
 		}
 	}
 
