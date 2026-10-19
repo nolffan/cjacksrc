@@ -1018,6 +1018,7 @@ bool ScmdServer_Impl::HandleListGameOptions( HCLIENT hClient, ILTMessage_Read& m
 			cMsg.Writeuint8( sms.m_nScoreLimit );
 			cMsg.Writeuint8( sms.m_nTimeLimit );
 			cMsg.Writeuint8( sms.m_nRounds );
+			cMsg.Writebool( sms.m_bWeaponsStay );
 		}
 		break;
 
@@ -1028,6 +1029,7 @@ bool ScmdServer_Impl::HandleListGameOptions( HCLIENT hClient, ILTMessage_Read& m
 			cMsg.Writeuint8( sms.m_nTimeLimit );
 			cMsg.Writeuint8( sms.m_nRounds );
 			cMsg.Writebool( sms.m_bFriendlyFire) ;
+			cMsg.Writebool( sms.m_bWeaponsStay );
 		}
 		break;
 
@@ -1037,6 +1039,17 @@ bool ScmdServer_Impl::HandleListGameOptions( HCLIENT hClient, ILTMessage_Read& m
 			cMsg.Writeuint8( sms.m_nTimeLimit );
 			cMsg.Writeuint8( sms.m_nRounds );
 			cMsg.Writebool( sms.m_bFriendlyFire );
+			cMsg.Writebool( sms.m_bWeaponsStay );
+		}
+		break;
+
+		// Contract J.A.C.K.'s, as ScmdConsole reads them.
+		case eGameTypeDemolition:
+		{
+			cMsg.Writeuint8( sms.m_nRunSpeed );
+			cMsg.Writeuint8( sms.m_nRounds );
+			cMsg.Writebool( sms.m_bFriendlyFire );
+			cMsg.Writebool( sms.m_bWeaponsStay );
 		}
 		break;
 
@@ -1207,6 +1220,37 @@ bool ScmdServer_Impl::HandleSetGameOption( HCLIENT hClient, ILTMessage_Read& msg
 				break;
 				// Friendly fire.
 				case 3:
+				{
+					SetGameOption( sms.m_bFriendlyFire, ( bool )( !!atoi( szVal )), false, true );
+				}
+				break;
+				default:
+				{
+					bOk = false;
+				}
+				break;
+			}
+		}
+		break;
+
+		case eGameTypeDemolition:
+		{
+			switch( nGameOption )
+			{
+				// Runspeed.
+				case 0:
+				{
+					SetGameOption( sms.m_nRunSpeed, atoi( szVal ), 100, 150 );
+				}
+				break;
+				// Rounds.
+				case 1:
+				{
+					SetGameOption( sms.m_nRounds, atoi( szVal ), 2, 254 );
+				}
+				break;
+				// Friendly fire.
+				case 2:
 				{
 					SetGameOption( sms.m_bFriendlyFire, ( bool )( !!atoi( szVal )), false, true );
 				}

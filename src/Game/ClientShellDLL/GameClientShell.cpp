@@ -5079,6 +5079,7 @@ void CGameClientShell::SetGameType(GameType eGameType)
 		case eGameTypeDeathmatch:
 		case eGameTypeTeamDeathmatch:
 		case eGameTypeDoomsDay:
+		case eGameTypeDemolition:
 		{
 			g_pWeaponMgr->LoadOverrideButes( WEAPON_DEFAULT_MULTI_FILE );
 		}

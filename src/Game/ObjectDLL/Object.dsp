@@ -731,6 +731,10 @@ SOURCE=.\DecisionObject.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\DemolitionMissionMgr.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\Destructible.cpp
 # End Source File
 # Begin Source File
@@ -2198,6 +2202,10 @@ SOURCE=.\DecisionObject.h
 # Begin Source File
 
 SOURCE=.\DEditColors.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\DemolitionMissionMgr.h
 # End Source File
 # Begin Source File
 

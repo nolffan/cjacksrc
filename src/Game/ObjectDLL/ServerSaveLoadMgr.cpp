@@ -460,6 +460,60 @@ bool CServerSaveLoadMgr::AutoSave( int nMission, int nLevel )
 
 // ----------------------------------------------------------------------- //
 //
+//  ROUTINE:	CServerSaveLoadMgr::CheckpointLoad
+//
+//  PURPOSE:	RETAIL: Object 0x101401b0: load the level's last checkpoint.
+//
+// ----------------------------------------------------------------------- //
+
+bool CServerSaveLoadMgr::CheckpointLoad( )
+{
+	if( !CheckpointSaveExists( ))
+		return false;
+
+	return LoadSaveFile( CHECKPOINT_INIKEY, GetCheckpointSaveDir( ), GetCheckpointSaveFile( ));
+}
+
+// ----------------------------------------------------------------------- //
+//
+//  ROUTINE:	CServerSaveLoadMgr::CheckpointSave
+//
+//  PURPOSE:	RETAIL: Object 0x10140e60: Contract J.A.C.K.'s checkpoint
+//				save, asked for by the level (WorldProperties' CHECKPOINTSAVE).
+//
+// ----------------------------------------------------------------------- //
+
+bool CServerSaveLoadMgr::CheckpointSave( int nMission, int nLevel )
+{
+	if( !CanSaveGame())
+		return false;
+
+	// Make sure all the folders are setup.
+	if( !BuildProfileSaveDir( ))
+		return false;
+
+	if( !CWinUtil::DirExist( GetCheckpointSaveDir( ) ))
+	{
+		if( !CWinUtil::CreateDir( GetCheckpointSaveDir( ) ))
+			return false;
+	}
+
+	m_sSaveGameDir = GetCheckpointSaveDir( );
+	m_sSaveGameFile = GetCheckpointSaveFile( );
+	m_sSaveGameKey = CHECKPOINT_INIKEY;
+	m_sSaveGameTitle.Format( "%i,%i", nMission, nLevel );
+
+	g_pGameServerShell->SetLGFlags( LOAD_RESTORE_GAME );
+
+	// Ask the client for the save data and wait for ack.
+	if( !AskClientsForSaveData( eSaveDataCheckpoint ))
+		return false;
+
+	return true;
+}
+
+// ----------------------------------------------------------------------- //
+//
 //  ROUTINE:	CServerSaveLoadMgr::ContinueGame
 //
 //  PURPOSE:	Load the last saved game.
@@ -871,6 +925,11 @@ bool CServerSaveLoadMgr::HandleLoadGame( HCLIENT hSender, ILTMessage_Read& msg )
 			bSuccess = ReloadLevel( );
 		}
 		break;
+		case kLoadGameTypeCheckpoint:
+		{
+			bSuccess = CheckpointLoad( );
+		}
+		break;
 		case kLoadGameTypeContinue:
 		{
 			bSuccess = ContinueGame( );
@@ -1028,6 +1087,7 @@ bool CServerSaveLoadMgr::FinishSaveData( )
 		case eSaveDataSaveGameSlot:
 		case eSaveDataQuickSave:
 		case eSaveDataAutoSave:
+		case eSaveDataCheckpoint:
 			bRet = FinishSaveGame( );
 			break;
 		default:
