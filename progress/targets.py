@@ -276,6 +276,12 @@ TARGETS = [
              # ClearServers, then a jmp to CBaseScreen::Term (vtable
              # 0x10136fc0's entry): the two-call thunk's shape again
              "?Term@CScreenJoin@@UAEXXZ": 0x100cb6d0,
+             # ScreenHostLevels.obj: FillAvailList (the game type's worlds,
+             # one text item each into 0x79c) and MakeDefaultMissionList
+             # (the prefix tests, then AddMissionToList 0x100c52c0); by
+             # size each took the other's address
+             "?FillAvailList@CScreenHostLevels@@IAEIXZ": 0x100c4f30,
+             "?MakeDefaultMissionList@CScreenHostLevels@@IAEXXZ": 0x100c5730,
          }),
     dict(label="Object.lto", what="the game: server objects", kind="image",
          shipped=REFERENCE + "/Object.lto", stem="Object",

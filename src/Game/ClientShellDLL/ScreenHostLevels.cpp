@@ -43,7 +43,6 @@ CScreenHostLevels::CScreenHostLevels()
 	m_pRemove		= LTNULL;
 	m_pAddAll		= LTNULL;
 	m_pRemoveAll    = LTNULL;
-	m_pLoopToggle	= LTNULL;
 
 }
 
@@ -64,12 +63,12 @@ LTBOOL CScreenHostLevels::Build()
 
 	CreateTitle(IDS_TITLE_HOST_MISSIONS);
 
-	m_pAdd = AddTextItem(IDS_HOST_ADD_MISSION, CMD_ADD_LEVEL, IDS_HELP_ADD_MISSION, addPos);
+	m_pAdd = AddTextItem(IDS_HOST_ADD_MISSION, CMD_ADD_LEVEL, IDS_HELP_ADD_MISSION, addPos, LTTRUE);
 	
 	m_pAddAll = AddTextItem(IDS_HOST_ADD_ALL, CMD_ADD_ALL, IDS_HELP_ADD_ALL, commandPos);
 	m_pRemoveAll = AddTextItem(IDS_HOST_REMOVE_ALL, CMD_REMOVE_ALL, IDS_HELP_REM_ALL);
 
-	m_pRemove = AddTextItem(IDS_HOST_REMOVE_MISSION, CMD_REMOVE_LEVEL, IDS_HELP_REM_MISSION, removePos);
+	m_pRemove = AddTextItem(IDS_HOST_REMOVE_MISSION, CMD_REMOVE_LEVEL, IDS_HELP_REM_MISSION, removePos, LTTRUE);
 
 	
 	LTRect rcAvailRect = g_pLayoutMgr->GetScreenCustomRect((eScreenID)m_nScreenID,"AvailRect");
@@ -79,7 +78,7 @@ LTBOOL CScreenHostLevels::Build()
 	m_pAvailMissions = AddList(LTIntPt(rcAvailRect.left,rcAvailRect.top),nListHeight,LTTRUE,nAvailWidth);
 	m_pAvailMissions->SetIndent(LTIntPt(5,5));
 	m_pAvailMissions->SetFrameWidth(2);
-	m_pAvailMissions->Enable(LTFALSE);
+	m_pAvailMissions->SetScrollWrap(LTFALSE);
 
 	LTRect rcSelRect = g_pLayoutMgr->GetScreenCustomRect((eScreenID)m_nScreenID,"SelectRect");
 	nListHeight = (rcSelRect.bottom - rcSelRect.top);
@@ -88,13 +87,11 @@ LTBOOL CScreenHostLevels::Build()
 	m_pSelMissions = AddList(LTIntPt(rcSelRect.left,rcSelRect.top),nListHeight,LTTRUE,nSelWidth);
 	m_pSelMissions->SetIndent(LTIntPt(5,5));
 	m_pSelMissions->SetFrameWidth(2);
-	m_pSelMissions->Enable(LTFALSE);
+	m_pSelMissions->SetScrollWrap(LTFALSE);
 
+	// RETAIL: 0x100c4c80. The lists stop scrolling at their ends instead of
+	// wrapping, and Contract J.A.C.K. has no loop-missions toggle.
 	m_nextPos.y += nListHeight;
-	uint16 nListWidth = nSelWidth-16;
-	m_pLoopToggle = AddToggle(IDS_LOOP_MISSIONS,IDS_HELP_LOOP_MISSIONS,nListWidth,&m_bLoopMissions);
-	m_pLoopToggle->SetOnString(LoadTempString(IDS_YES));
-	m_pLoopToggle->SetOffString(LoadTempString(IDS_NO));
 
 
  	// Make sure to call the base class
@@ -108,24 +105,11 @@ LTBOOL CScreenHostLevels::Build()
 
 }
 
+// RETAIL: 0x100c4c70. The lists are never entered, so there is no list to
+// leave: Escape goes straight to the base screen.
 void CScreenHostLevels::Escape()
 {
-	if (m_pAvailMissions->IsEnabled())
-	{
-		m_pAvailMissions->Enable(LTFALSE);
-		m_pAdd->Enable(LTTRUE);
-		SetSelection(GetIndex(m_pAdd));
-	}
-	else if (m_pSelMissions->IsEnabled())
-	{
-		m_pSelMissions->Enable(LTFALSE);
-		m_pRemove->Enable(LTTRUE);
-		SetSelection(GetIndex(m_pRemove));
-	}
-	else
-	{
-		CBaseScreen::Escape();
-	}
+	CBaseScreen::Escape();
 }
 
 
@@ -136,39 +120,27 @@ uint32 CScreenHostLevels::OnCommand(uint32 dwCommand, uint32 dwParam1, uint32 dw
 	{
 	case CMD_BACK:
 		{
-			m_pAvailMissions->Enable(LTFALSE);
-			m_pSelMissions->Enable(LTFALSE);
 			m_pScreenMgr->EscapeCurrentScreen();
 			break;
 		}
 
+	// RETAIL: 0x100c5410. Contract J.A.C.K. never moves the focus into the
+	// lists: Add and Remove act on the current list item at once.
 	case CMD_ADD_LEVEL:
 		{
-			if (!m_pAvailMissions->IsEnabled() && m_pAvailMissions->GetNumControls())
-			{
-				m_pSelMissions->Enable(LTFALSE);
-				m_pRemove->Enable(LTTRUE);
-				m_pAvailMissions->Enable(LTTRUE);
-				m_pAdd->Enable(LTFALSE);
-				SetSelection(GetIndex(m_pAvailMissions));
-				m_pAvailMissions->SetSelection(0);
-			}
-			else
-			{
-				char sMission[256] = "";
+			char sMission[256] = "";
 
-				if (m_pAvailMissions->GetSelectedIndex() >= 0 && (m_pSelMissions->GetNumControls() < MAX_GAME_LEVELS))
+			if (m_pAvailMissions->GetSelectedIndex() >= 0 && (m_pSelMissions->GetNumControls() < MAX_GAME_LEVELS))
+			{
+				CLTGUITextCtrl *pCtrl = (CLTGUITextCtrl *)m_pAvailMissions->GetSelectedControl();
+				if (pCtrl)
 				{
-					CLTGUITextCtrl *pCtrl = (CLTGUITextCtrl *)m_pAvailMissions->GetSelectedControl();
-					if (pCtrl)
-					{
-						AddMissionToList(pCtrl->GetParam1());
-						m_pSelMissions->ClearSelection();
-					}
+					AddMissionToList(pCtrl->GetParam1());
+					m_pSelMissions->ClearSelection();
 				}
-
-				UpdateButtons();
 			}
+
+			UpdateButtons();
 		} break;
 	case CMD_ADD_ALL:
 		{
@@ -189,25 +161,20 @@ uint32 CScreenHostLevels::OnCommand(uint32 dwCommand, uint32 dwParam1, uint32 dw
 		} break;
 	case CMD_REMOVE_LEVEL:
 		{
-			if (!m_pSelMissions->IsEnabled() && m_pSelMissions->GetNumControls())
+			int nIndex = m_pSelMissions->GetSelectedIndex();
+			if (nIndex >= 0)
 			{
-				m_pAvailMissions->Enable(LTFALSE);
-				m_pAdd->Enable(LTTRUE);
-				m_pSelMissions->Enable(LTTRUE);
-				m_pRemove->Enable(LTFALSE);
-				SetSelection(GetIndex(m_pSelMissions));
-				m_pSelMissions->SetSelection(0);
-			}
-			else
-			{
-				int nIndex = m_pSelMissions->GetSelectedIndex();
-				if (nIndex >= 0)
+				m_pSelMissions->ClearSelection();
+				m_pSelMissions->RemoveControl(nIndex);
+				int nNum = m_pSelMissions->GetNumControls();
+				if (nNum > 0)
 				{
-					m_pSelMissions->RemoveControl(nIndex);
+					if (nIndex >= nNum)
+						nIndex = nNum - 1;
+					m_pSelMissions->SetSelection(nIndex);
 				}
-				UpdateButtons();
 			}
-
+			UpdateButtons();
 		} break;
 	case CMD_REMOVE_ALL:
 		{
@@ -228,13 +195,9 @@ uint32 CScreenHostLevels::OnCommand(uint32 dwCommand, uint32 dwParam1, uint32 dw
 // Change in focus
 void    CScreenHostLevels::OnFocus(LTBOOL bFocus)
 {
+	// RETAIL: 0x100c5860. The lists stay disabled, and missions always loop.
 	if (bFocus)
 	{
-		m_pAvailMissions->Enable(LTFALSE);
-		m_pAdd->Enable(LTTRUE);
-		m_pSelMissions->Enable(LTFALSE);
-		m_pRemove->Enable(LTTRUE);
-
 		CUserProfile* pUserProfile = g_pProfileMgr->GetCurrentProfile( );
 		m_sCampaignFile = GetCampaignFile( pUserProfile->m_ServerGameOptions );
 		
@@ -256,15 +219,7 @@ void    CScreenHostLevels::OnFocus(LTBOOL bFocus)
 			MakeDefaultMissionList();
 		}
 
-		if (g_pGameClientShell->GetGameType() != eGameTypeCooperative)
-		{
-			m_pLoopToggle->Enable(LTFALSE);
-			m_bLoopMissions = LTTRUE;
-		}
-		else
-		{
-			m_pLoopToggle->Enable(LTTRUE);
-		}
+		m_bLoopMissions = LTTRUE;
 
 		UpdateButtons();
         UpdateData(LTFALSE);
@@ -297,6 +252,29 @@ LTBOOL CScreenHostLevels::FillAvailList()
 		MISSION* pMission = g_pMissionButeMgr->GetMission(nMission);
 		if (pMission)
 		{
+			// RETAIL: 0x100c4f30, only the worlds of the game type: all of
+			// them for (team) deathmatch, DD_ for Doomsday, DE_ for
+			// Demolition.
+			char szWorldTitle[MAX_PATH] = "";
+			_splitpath( pMission->aLevels[0].szLevel, NULL, NULL, szWorldTitle, NULL );
+
+			switch (g_pGameClientShell->GetGameType())
+			{
+			case eGameTypeDeathmatch:
+			case eGameTypeTeamDeathmatch:
+				break;
+			case eGameTypeDoomsDay:
+				if (strnicmp(szWorldTitle,"DD_",3) != 0)
+					continue;
+				break;
+			case eGameTypeDemolition:
+				if (strnicmp(szWorldTitle,"DE_",3) != 0)
+					continue;
+				break;
+			default:
+				continue;
+			}
+
 			CLTGUITextCtrl *pCtrl = NULL;
 			if (pMission->nNameId > 0)
 				pCtrl = CreateTextItem(LoadTempString(pMission->nNameId),CMD_ADD_LEVEL,pMission->nDescId);
@@ -304,8 +282,6 @@ LTBOOL CScreenHostLevels::FillAvailList()
 				pCtrl = CreateTextItem((char *)pMission->sName.c_str(),CMD_ADD_LEVEL,pMission->nDescId);
 			else
 			{
-				char szWorldTitle[MAX_PATH] = "";
-				_splitpath( pMission->aLevels[0].szLevel, NULL, NULL, szWorldTitle, NULL );
 				pCtrl = CreateTextItem(szWorldTitle,CMD_ADD_LEVEL,0);
 			}
 			pCtrl->SetFont(LTNULL,nListFontSize);
@@ -362,17 +338,25 @@ void CScreenHostLevels::MakeDefaultMissionList()
 			char szWorldTitle[MAX_PATH] = "";
 			_splitpath( pMission->aLevels[0].szLevel, NULL, NULL, szWorldTitle, NULL );
 
+			// RETAIL: 0x100c5730: deathmatch takes DM_ and DE_ worlds,
+			// Demolition DE_, Doomsday DD_.
 			switch (g_pGameClientShell->GetGameType())
 			{
 			case eGameTypeDeathmatch:
 			case eGameTypeTeamDeathmatch:
-				if (strnicmp(szWorldTitle,"DM_",3) == 0)
+				if (strnicmp(szWorldTitle,"DM_",3) == 0 || strnicmp(szWorldTitle,"DE_",3) == 0)
 				{
 					AddMissionToList(nMission);
 				}
 				break;
 			case eGameTypeDoomsDay:
 				if (strnicmp(szWorldTitle,"DD_",3) == 0)
+				{
+					AddMissionToList(nMission);
+				}
+				break;
+			case eGameTypeDemolition:
+				if (strnicmp(szWorldTitle,"DE_",3) == 0)
 				{
 					AddMissionToList(nMission);
 				}
@@ -421,14 +405,10 @@ void CScreenHostLevels::SaveMissionList()
 
 
 
+// RETAIL: 0x100c5220. The selected list is never entered, so there is no
+// focus to hand back to Remove.
 void CScreenHostLevels::UpdateButtons()
 {
-	if (m_pSelMissions->IsEnabled() && !m_pSelMissions->GetNumControls())
-	{
-		m_pSelMissions->Enable(LTFALSE);
-		m_pRemove->Enable(LTTRUE);
-		SetSelection(GetIndex(m_pRemove));
-	}
 	m_pAddAll->Enable( m_pSelMissions->GetNumControls() < MAX_GAME_LEVELS && m_pAvailMissions->GetNumControls() > 0);
 	m_pRemoveAll->Enable(m_pSelMissions->GetNumControls() > 0);
 		

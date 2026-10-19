@@ -47,7 +47,6 @@ protected:
 	CLTGUIListCtrl*			m_pAvailMissions;
 	CLTGUIListCtrl*			m_pSelMissions;
 
-	CLTGUIToggle*			m_pLoopToggle;
 
 
 	std::string		m_sCampaignFile;
