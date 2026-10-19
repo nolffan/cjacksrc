@@ -21,7 +21,8 @@ static const char* g_kaGameTypeString[] =
 	"Cooperative",
 	"Deathmatch",
 	"TeamDeathmatch",
-	"DoomsDay"
+	"DoomsDay",
+	"Demolition"	// RETAIL: Object 0x10224b0c
 };
 
 const uint16 g_BandwidthClient[eBandwidth_Custom] =

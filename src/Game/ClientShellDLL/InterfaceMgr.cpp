@@ -6302,7 +6302,12 @@ bool CInterfaceMgr::HandleDisplayTimerMsg( ILTMessage_Read& msg )
 void CInterfaceMgr::LoadFailed(eScreenID eScreenToShow /*= SCREEN_ID_NONE*/, uint32 nLoadFailedMsgId /* = -1 */ )  
 {	
 	m_bLoadFailed = LTTRUE;
-	m_nLoadFailedMsgId = nLoadFailedMsgId;
+
+	// RETAIL: 0x10063960. A server that turned us away is full.
+	if( nLoadFailedMsgId == (uint32)-1 && g_pClientMultiplayerMgr->GetLastConnectionResult( ) == LT_REJECTED )
+		m_nLoadFailedMsgId = IDS_SERVERFULL;
+	else
+		m_nLoadFailedMsgId = nLoadFailedMsgId;
 
 	if (eScreenToShow == SCREEN_ID_NONE)
 	{

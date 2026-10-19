@@ -1115,8 +1115,7 @@ Round 1 (branch `cshell`), the items 8b leaves open:
   Escape of its own, and the default campaign listing DE_ worlds for
   deathmatch and Demolition.
 - ClientMultiplayerMgr has no WON server directory member (m_sModName at
-  0x166c as retail's). GetServerDir() returns NULL for NOLF2's join
-  screen until CScreenJoin is rewritten (below).
+  0x166c as retail's); GetServerDir() returns NULL.
 - The checkpoint save: CSaveLoadMgr::CheckpointSaveExists and
   GetCheckpointSaveFile ("CheckpointSave", "Checkpoint.sav"),
   kLoadGameTypeCheckpoint (3, so kLoadGameTypeContinue is 4),
@@ -1151,11 +1150,39 @@ Round 1 (branch `cshell`), the items 8b leaves open:
   between xdotool's 40-pixel steps), so a 400-pixel turn lands short in
   some runs of either game. Smaller, slower steps (`turn 400 0 40`)
   should make the scripted runs comparable.
-- Where it stops: CScreenJoin is NOLF2's (WON); retail's
-  (0x100c8f40..0x100d09c0, about 30 KB with its sort instantiations) is a
-  GameSpy browser with a port column, a game type filter and nine sort
-  columns, and holds most of CShell's largest unwritten rows
-  (0x100cedd0, 0x100d06b0, 0x100ce580, 0x100ce850). It is next.
+- CScreenJoin is retail's GameSpy browser (0x100c8f40..0x100d06b0), in
+  behaviour: its states (Startup, UpdateDir, QueryDetails, Waiting), the
+  search order (LAN on the retail and the demo browser, then the
+  Internet on both while it answers), the LAN port column (the profile's
+  client port), filters (version, players, ping, game type), six sort
+  columns (name, type, ping, players, lock, version), the details window
+  (mission, options parsed from the "options" key, players) and the
+  password prompt. Retail keeps the servers in a hash_map and makes
+  their rows on the browser's thread; ours keeps a std::map and hands
+  the servers to the screen's update through a locked queue, so neither
+  thread waits on the other's lock. The sort instantiations stay
+  unwritten.
+- ClientMultiplayerMgr joins as retail: SetupClient with the server's
+  public and private addresses (0x1001f2c0), StartClient's GameSpy NAT
+  negotiation on the engine's socket (0x1001ed10), the join states run
+  from Update (0x1001f670: the NAT wait, the two seconds' grace, then
+  JoinServer trying our address, the private one, the public one). Ours
+  connects at once when there is no NAT negotiation (retail waits for
+  the next update). CTO2GameClientShell::ProcessPacket hands packets to
+  the browser (0x100fa150); CInterfaceMgr::LoadFailed shows "server
+  full" for LT_REJECTED (0x10063960). Shared/NetDefs.cpp gained
+  "Demolition" (as the game branch's).
+- Tested by hand (a scratch copy of mptest.sh clicking through the
+  menus on a private docker network): the server is listed, its details
+  show, and Join game enters it -- **once the server shares its socket
+  with GameSpy**: Object.lto's GameSpy startup (0x100dfa33) takes
+  g_pLTServer->GetUDPSocket (ILTServer vtable 0x118) into
+  StartupInfo::m_hSocket and fails without it; ours passes 0, so
+  GameSpy answers on port+1 and the join goes there. That is the game
+  package's (ObjectDLL/GameServerShell.cpp). Other agents' test servers
+  on the default docker bridge show in the LAN list.
+- Where it stops: CShell has 62 unwritten functions; next are the rest
+  of them, then CJ code among the unplaced.
 
 ### 8d. playtest coverage (branch `apps2`)
 
