@@ -19,8 +19,8 @@ char* aPPMStrings[] =
 {
 	"Normal",
 	"Snowmobile",
-	"Lure",
-	"LightCycle"
+	"Lure"
+	// RETAIL: Contract J.A.C.K. has no light cycle.
 };
 
 char* GetPropertyNameFromPlayerPhysicsModel(PlayerPhysicsModel ePPModel)

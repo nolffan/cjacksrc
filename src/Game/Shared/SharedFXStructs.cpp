@@ -61,8 +61,8 @@ void CHARCREATESTRUCT::Write(ILTMessage_Write *pMsg)
 	// type of thing player is carrying
 	pMsg->Writeuint8( nCarrying);
 	pMsg->Writeuint8( pChassisPiece ? pChassisPiece->m_nId : CHASSISBMGR_INVALID_ID );
-	pMsg->Writeuint8( nExtra60 );
-	pMsg->Writeuint8( nExtra64 );
+	pMsg->Writeuint8( nPhysicsModel );
+	pMsg->Writeuint8( nVehicleId );
 
 }
 
@@ -122,8 +122,8 @@ void CHARCREATESTRUCT::Read(ILTMessage_Read *pMsg)
 	else
 		pChassisPiece = LTNULL;
 
-	nExtra60		= pMsg->Readuint8();
-	nExtra64		= pMsg->Readuint8();
+	nPhysicsModel		= pMsg->Readuint8();
+	nVehicleId		= pMsg->Readuint8();
 
 
 }

@@ -60,6 +60,7 @@ class CWeapons
 		int  GetWeaponAmmoCount(int nWeaponId);
 
 		int  GetCurWeaponId() const { return m_nCurWeapon; }
+		HOBJECT GetWeaponModel() const { return m_hWeaponModel; }	// RETAIL: Object 0x100e4d93
 
 		CWeapon* GetCurWeapon();
         CWeapon* GetWeapon(uint8 nWeaponId);

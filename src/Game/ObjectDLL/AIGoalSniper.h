@@ -55,7 +55,7 @@ class CAIGoalSniper : public CAIGoalAbstractUseObject
 
 		// Target Handling.
 
-		void HandleTargetPos();
+		AINode* HandleTargetPos();
 
 		// Node Handling.
 
@@ -65,6 +65,13 @@ class CAIGoalSniper : public CAIGoalAbstractUseObject
 
 		AIVolume*	m_pLastTargetInfoVol;
 		LTFLOAT		m_fNextViewNodeUpdate;
+
+		// RETAIL: Contract J.A.C.K.'s (Object 0x10035100): a sniper can
+		// look for the player before seeing him, and pick view nodes
+		// without regard to their radius.
+		LTObjRef	m_hSeekTarget;
+		LTBOOL		m_bSeekPlayer;
+		LTBOOL		m_bNoRadius;
 };
 
 

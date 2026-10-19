@@ -28,10 +28,10 @@
 #include "FXButeMgr.h"
 #include "SurfaceFunctions.h"
 #include "PlayerViewAttachmentMgr.h"
+#include "VehicleButeMgr.h"
+#include "HUDMgr.h"
 
 #define ROUNDFLOAT(f) ((int)((f) + ((f) > 0 ? 0.5 : -0.5)))
-
-#define SNOWMOBILE_SLIDE_TO_STOP_TIME	5.0f
 
 #define VEHICLE_GEAR_0					0
 #define VEHICLE_GEAR_1					1
@@ -47,22 +47,30 @@ extern VarTrack g_vtMaxVehicleHeadCant;
 #define		SNOW_TRACK_ANIMATION	2.0f
 #define		SNOW_TRACK_VERBOSE		3.0f
 
-VarTrack	g_vtSnowmobileInfoTrack;
-VarTrack	g_vtSnowmobileVel;
-VarTrack	g_vtLightCycleVel;
-VarTrack	g_vtLightCycleGridSize;
-
-VarTrack	g_vtSnowmobileAccel;
-VarTrack	g_vtSnowmobileAccelTime;
-VarTrack	g_vtSnowmobileMaxDecel;
-VarTrack	g_vtSnowmobileDecel;
-VarTrack	g_vtSnowmobileDecelTime;
-VarTrack	g_vtSnowmobileMaxBrake;
-VarTrack	g_vtSnowmobileBrakeTime;
-
-VarTrack	g_vtSnowmobileOffsetX;
-VarTrack	g_vtSnowmobileOffsetY;
-VarTrack	g_vtSnowmobileOffsetZ;
+// cjacksrc: RETAIL: CShell 0x10185478..0x101857b4: Contract J.A.C.K.'s
+// vehicles' tuning, set from VehicleButes.txt when one is ridden
+// (SetVehiclePhysicsModel) and written back by SaveVehicleButes.
+VarTrack	g_vtVehicleInfoTrack;
+VarTrack	g_vtVehicleVel;
+VarTrack	g_vtVehicleAccel;
+VarTrack	g_vtVehicleAccelTime;
+VarTrack	g_vtVehicleMaxDecel;
+VarTrack	g_vtVehicleDecelTime;
+VarTrack	g_vtVehicleMaxBrake;
+VarTrack	g_vtVehicleBrakeTime;
+VarTrack	g_vtVehicleStoppedPercent;
+VarTrack	g_vtVehicleMaxSpeedPercent;
+VarTrack	g_vtVehicleAccelGearChange;
+VarTrack	g_vtVehicleMinTurnAccel;
+VarTrack	g_vtVehicleTurnRate;
+VarTrack	g_vtVehicleTurnRateScale;
+VarTrack	g_vtVehicleInitialTurnRate;
+VarTrack	g_vtVehicleSurfaceSpeedUpPitch;
+VarTrack	g_vtVehicleSurfaceSlowDownPitch;
+VarTrack	g_vtVehicleStartMotionPitch;
+VarTrack	g_vtVehicleStopMotionPitch;
+VarTrack	g_vtVehicleBrakePitch;
+VarTrack	g_vtVehicleDecelPitch;
 
 VarTrack	g_vtBicycleInterBumpTimeRange;
 VarTrack	g_vtBicycleIntraBumpTimeRange;
@@ -71,14 +79,6 @@ VarTrack	g_vtBicycleBobRate;
 VarTrack	g_vtBicycleBobSwayAmplitude;
 VarTrack	g_vtBicycleBobRollAmplitude;
 VarTrack	g_vtBicycleModelOffset;
-
-
-VarTrack	g_vtSnowmobileStoppedPercent;
-VarTrack	g_vtSnowmobileStoppedTurnPercent;
-VarTrack	g_vtSnowmobileMaxSpeedPercent;
-VarTrack	g_vtSnowmobileAccelGearChange;
-
-VarTrack	g_vtSnowmobileMinTurnAccel;
 
 VarTrack	g_vtVehicleImpactDamage;
 VarTrack	g_vtVehicleImpactDamageMin;
@@ -102,10 +102,6 @@ VarTrack	g_vtVehicleImpactAIDoNormalCollision;
 VarTrack	g_vtVehicleFallDamageMinHeight;
 VarTrack	g_vtVehicleFallDamageMaxHeight;
 
-VarTrack	g_vtVehicleTurnRateScale;
-VarTrack	g_vtVehicleTurnRate;
-VarTrack	g_vtVehicleInitialTurnRate;
-
 VarTrack	g_vtVehicleMouseMinYawBuffer;
 VarTrack	g_vtVehicleMouseMaxYawBuffer;
 
@@ -114,6 +110,8 @@ VarTrack	g_vtVehicleMaxHeadOffsetY;
 VarTrack	g_vtVehicleMaxHeadOffsetZ;
 
 VarTrack	g_vtVehicleMaxHeadYaw;
+
+VarTrack	g_vtVehicleSlideToStopTime;	// cjacksrc: NOLF2's SNOWMOBILE_SLIDE_TO_STOP_TIME
 
 VarTrack	g_vtVehicleCollisionInfo;
 
@@ -220,24 +218,27 @@ CVehicleMgr::~CVehicleMgr()
 
 LTBOOL CVehicleMgr::Init()
 {
-    g_vtSnowmobileInfoTrack.Init(g_pLTClient, "SnowmobileInfo", NULL, 0.0f);
-    g_vtSnowmobileVel.Init(g_pLTClient, "SnowmobileVel", NULL, 600.0f);
-	g_vtLightCycleVel.Init(g_pLTClient, "LightCycleVel", NULL, 800.0f);
-	g_vtLightCycleGridSize.Init(g_pLTClient, "LightCycleGridSize", NULL, 1.0f);
-
-	g_vtSnowmobileAccel.Init(g_pLTClient, "SnowmobileAccel", NULL, 3000.0f);
-	g_vtSnowmobileAccelTime.Init(g_pLTClient, "SnowmobileAccelTime", NULL, 3.0f);
-	g_vtSnowmobileMaxDecel.Init(g_pLTClient, "SnowmobileDecelMax", LTNULL, 22.5f);
-	g_vtSnowmobileDecel.Init(g_pLTClient, "SnowmobileDecel", LTNULL, 37.5f);
-    g_vtSnowmobileDecelTime.Init(g_pLTClient, "SnowmobileDecelTime", LTNULL, 0.5f);
-	g_vtSnowmobileMaxBrake.Init(g_pLTClient, "SnowmobileBrakeMax", LTNULL, 112.5f);
-    g_vtSnowmobileBrakeTime.Init(g_pLTClient, "SnowmobileBrakeTime", LTNULL, 1.0f);
-
-    g_vtSnowmobileMinTurnAccel.Init(g_pLTClient, "SnowmobileMinTurnAccel", LTNULL, 0.0f);
-
-	g_vtSnowmobileOffsetX.Init(g_pLTClient, "SnowmobileOffsetX", LTNULL, 0.0f);
-    g_vtSnowmobileOffsetY.Init(g_pLTClient, "SnowmobileOffsetY", LTNULL, -0.8f);
-    g_vtSnowmobileOffsetZ.Init(g_pLTClient, "SnowmobileOffsetZ", LTNULL, 0.6f);
+	g_vtVehicleInfoTrack.Init(g_pLTClient, "VehicleInfo", NULL, 0.0f);
+	g_vtVehicleVel.Init(g_pLTClient, "VehicleVel", NULL, 0.0f);
+	g_vtVehicleAccel.Init(g_pLTClient, "VehicleAccel", NULL, 0.0f);
+	g_vtVehicleAccelTime.Init(g_pLTClient, "VehicleAccelTime", NULL, 0.0f);
+	g_vtVehicleMaxDecel.Init(g_pLTClient, "VehicleDecelMax", NULL, 0.0f);
+	g_vtVehicleDecelTime.Init(g_pLTClient, "VehicleDecelTime", NULL, 0.0f);
+	g_vtVehicleMaxBrake.Init(g_pLTClient, "VehicleBrakeMax", NULL, 0.0f);
+	g_vtVehicleBrakeTime.Init(g_pLTClient, "VehicleBrakeTime", NULL, 0.0f);
+	g_vtVehicleMinTurnAccel.Init(g_pLTClient, "VehicleMinTurnAccel", NULL, 0.0f);
+	g_vtVehicleStoppedPercent.Init(g_pLTClient, "VehicleStoppedPercent", NULL, 0.0f);
+	g_vtVehicleMaxSpeedPercent.Init(g_pLTClient, "VehicleMaxSpeedPercent", NULL, 0.0f);
+	g_vtVehicleAccelGearChange.Init(g_pLTClient, "VehicleAccelGearChange", NULL, 1.0f);
+	g_vtVehicleTurnRate.Init(g_pLTClient, "VehicleTurnRate", NULL, 0.0f);
+	g_vtVehicleTurnRateScale.Init(g_pLTClient, "VehicleTurnRateScale", NULL, 0.0f);
+	g_vtVehicleInitialTurnRate.Init(g_pLTClient, "VehicleInitialTurnRate", NULL, 0.0f);
+	g_vtVehicleSurfaceSpeedUpPitch.Init(g_pLTClient, "VehicleSurfaceSpeedUpPitch", NULL, 0.0f);
+	g_vtVehicleSurfaceSlowDownPitch.Init(g_pLTClient, "VehicleSurfaceSlowDownPitch", NULL, 0.0f);
+	g_vtVehicleStartMotionPitch.Init(g_pLTClient, "VehicleStartMotionPitch", NULL, 0.0f);
+	g_vtVehicleStopMotionPitch.Init(g_pLTClient, "VehicleStopMotionPitch", NULL, 0.0f);
+	g_vtVehicleBrakePitch.Init(g_pLTClient, "VehicleBrakePitch", NULL, 0.0f);
+	g_vtVehicleDecelPitch.Init(g_pLTClient, "VehicleDecelPitch", NULL, 0.0f);
 
 	g_vtBicycleInterBumpTimeRange.Init(g_pLTClient, "BicycleInterBumpTimeRange", "0.75 1.25", 0.0f );
 	g_vtBicycleIntraBumpTimeRange.Init(g_pLTClient, "BicycleIntraBumpTimeRange", "0.05 0.15", 0.0f );
@@ -246,14 +247,6 @@ LTBOOL CVehicleMgr::Init()
 	g_vtBicycleBobSwayAmplitude.Init(g_pLTClient, "BicycleBobSwayAmplitude", NULL, 2.0f );
 	g_vtBicycleBobRollAmplitude.Init(g_pLTClient, "BicycleBobRollAmplitude", NULL, -0.25f );
 	g_vtBicycleModelOffset.Init(g_pLTClient, "BicycleModelOffset", "0.0 -20.0 5.0", 0.0f );
-
-
-    g_vtSnowmobileStoppedPercent.Init(g_pLTClient, "SnowmobileStoppedPercent", LTNULL, 0.05f);
-    g_vtSnowmobileStoppedTurnPercent.Init(g_pLTClient, "SnowmobileStoppedTurnPercent", LTNULL, 0.2f);
-    g_vtSnowmobileMaxSpeedPercent.Init(g_pLTClient, "SnowmobileMaxSpeedPercent", LTNULL, 0.95f);
-
-    g_vtSnowmobileAccelGearChange.Init(g_pLTClient, "SnowmobileAccelGearChange", LTNULL, 1.0f);
-
 
 	g_vtVehicleImpactDamage.Init(g_pLTClient, "VehicleImpactDamage", LTNULL, 0.0f);
 	g_vtVehicleImpactDamageMin.Init(g_pLTClient, "VehicleImpactDamageMin", LTNULL, 5.0f);
@@ -279,11 +272,6 @@ LTBOOL CVehicleMgr::Init()
 	g_vtVehicleFallDamageMinHeight.Init(g_pLTClient, "VehicleFallDamageMinHeight", LTNULL, 400.0f);
  	g_vtVehicleFallDamageMaxHeight.Init(g_pLTClient, "VehicleFallDamageMaxHeight", LTNULL, 800.0f);
 
-    g_vtVehicleTurnRateScale.Init(g_pLTClient, "VehicleTurnRateScale", NULL, 1.0f);
-
-	g_vtVehicleTurnRate.Init(g_pLTClient, "VehicleTurnRate", NULL, 3.5f);
- 	g_vtVehicleInitialTurnRate.Init(g_pLTClient, "VehicleInitialTurnRate", NULL, 1.0f);
-
 	g_vtVehicleMouseMinYawBuffer.Init(g_pLTClient, "VehicleMouseMinYawBuffer", NULL, 2.0f);
 	g_vtVehicleMouseMaxYawBuffer.Init(g_pLTClient, "VehicleMouseMaxYawBuffer", NULL, 35.0f);
 
@@ -291,6 +279,8 @@ LTBOOL CVehicleMgr::Init()
 	g_vtVehicleMaxHeadOffsetY.Init(g_pLTClient, "VehicleHeadMaxOffsetY", NULL, 0.0f);
 	g_vtVehicleMaxHeadOffsetZ.Init(g_pLTClient, "VehicleHeadMaxOffsetZ", NULL, 0.0f);
 	g_vtVehicleMaxHeadYaw.Init(g_pLTClient, "VehicleHeadMaxYaw", NULL, -1.0f);
+
+	g_vtVehicleSlideToStopTime.Init(g_pLTClient, "VehicleSlideToStopTime", NULL, 5.0f);
 
     g_vtVehicleCollisionInfo.Init(g_pLTClient, "VehicleCollisionInfo", LTNULL, 0.0f);
 
@@ -307,7 +297,7 @@ LTBOOL CVehicleMgr::Init()
 	g_vtVehicleCamContourExtraDimsZ.Init( g_pLTClient, "VehicleCamCountourExtraDimsZ", LTNULL, 64.0f );
 	g_vtVehicleContourMaxRotation.Init( g_pLTClient, "VehicleContourMaxRotation", LTNULL, 65.0f );
 	g_vtVehicleCamContourMaxRotation.Init( g_pLTClient, "VehicleCamContourMaxRotation", LTNULL, 3.5f );
-	g_vtVehicleContourRate.Init( g_pLTClient, "VehicleContourRate", LTNULL, 0.4f );
+	g_vtVehicleContourRate.Init( g_pLTClient, "VehicleContourRate", LTNULL, 0.5f );
 	g_vtVehicleContour.Init( g_pLTClient, "VehicleContour", LTNULL, 1.0f );
 
 	m_VehicleModelOffsetMgr.Init();
@@ -332,7 +322,7 @@ void CVehicleMgr::InitWorldData()
 {
 	m_dwControlFlags		= 0;
 	m_dwLastControlFlags	= 0;
-	m_bControlFlagsChanged	= false;
+	m_bWasBraking	= false;
 
 	m_fVehicleBaseMoveAccel = 0.0f;
 
@@ -472,10 +462,6 @@ void CVehicleMgr::UpdateControlFlags()
 			UpdateLureControlFlags();
 		break;
 
-		case PPM_LIGHTCYCLE :
-			UpdateLightCycleControlFlags();
-		break;
-
 		case PPM_NORMAL:
 		default :
 		break;
@@ -604,18 +590,28 @@ void CVehicleMgr::UpdateLureControlFlags()
 	// See if we need to reset the lure info.
 	if( m_bResetLure )
 	{
-		// Reset the lure.
-		pPlayerLureFX->Reset( );
+		// RETAIL: 0x10107860: put back the offset a saved game had.
+		if( m_bHasLureTransform )
+			pPlayerLureFX->SetOffsetTransform( m_LureOffsetTransform );
+		else
+			// Reset the lure.
+			pPlayerLureFX->Reset( );
 
 		// Reset the lure shake timer.
 		m_LureTimeToNextBump.Stop( );
 
 		// Make sure the weapon is set correctly.  Need to keep calling this since
 		// we poll for the playerlurefx object.
-		EnableWeapon( pPlayerLureFX->GetAllowWeapon( ));
+		EnableWeapon( pPlayerLureFX->GetAllowWeapon( ), true );
 
 		// Don't need to reset anymore.
 		m_bResetLure = false;
+	}
+	else
+	{
+		// RETAIL: 0x10107909: keep the weapon allowed or not, without
+		// holstering it.
+		EnableWeapon( pPlayerLureFX->GetAllowWeapon( ), false );
 	}
 }
 
@@ -647,7 +643,7 @@ void CVehicleMgr::UpdateMotion()
 			// Speeding up...
 
 			CameraDelta delta;
-			delta.Pitch.fVar	= DEG2RAD(-0.5f);
+			delta.Pitch.fVar	= DEG2RAD(g_vtVehicleSurfaceSpeedUpPitch.GetFloat());	// RETAIL: 0x1010c65f
 			delta.Pitch.fTime1	= 0.25f;
 			delta.Pitch.fTime2	= 0.5;
 			delta.Pitch.eWave1	= Wave_SlowOff;
@@ -659,7 +655,7 @@ void CVehicleMgr::UpdateMotion()
 			// Slowing down...
 
 			CameraDelta delta;
-			delta.Pitch.fVar	= DEG2RAD(0.75f);
+			delta.Pitch.fVar	= DEG2RAD(g_vtVehicleSurfaceSlowDownPitch.GetFloat());	// RETAIL: 0x1010c68e
 			delta.Pitch.fTime1	= 0.25f;
 			delta.Pitch.fTime2	= 0.5;
 			delta.Pitch.eWave1	= Wave_SlowOff;
@@ -676,10 +672,6 @@ void CVehicleMgr::UpdateMotion()
 
 		case PPM_LURE :
 			UpdateLureMotion( );
-			break;
-
-		case PPM_LIGHTCYCLE:
-			UpdateLightCycleMotion();
 			break;
 
 		case PPM_NORMAL:
@@ -818,7 +810,7 @@ void CVehicleMgr::UpdateVehicleMotion()
 
 		// The server won't notify us, so change models...
 
-		SetPhysicsModel(PPM_NORMAL);
+		SetPhysicsModel(PPM_NORMAL, 0xFF);
 		return;
 	}
 
@@ -839,38 +831,79 @@ void CVehicleMgr::UpdateVehicleMotion()
 
 	UpdateContainerMotion();
 
+	// RETAIL: 0x1010bd97: Contract J.A.C.K.'s vehicles can back up, and
+	// pushing against the way they move brakes.
+
     LTVector myVel = g_pMoveMgr->GetVelocity();
-	
+
     LTVector vAccel(0, 0, 0);
 	g_pPhysicsLT->GetAcceleration( hObj, &vAccel );
-
-    LTVector moveDir = myVel;
-	moveDir.Normalize();
 
     LTVector moveVel = myVel;
 	moveVel.y = 0;
 
-    LTBOOL bForward = LTFALSE;
-	if ((m_dwControlFlags & BC_CFLG_FORWARD))
-	{
-        bForward = LTTRUE;
-	}
+	g_pLTClient->GetObjectRotation(hObj, &rRot);
+    LTVector vForward = rRot.Forward();
+
+	bool bMovingForward = (myVel.Dot(vForward) > 0.0f);
+
+	bool bForward = !!(m_dwControlFlags & BC_CFLG_FORWARD);
+	bool bReverse = !!(m_dwControlFlags & BC_CFLG_REVERSE);
+	bool bLastForward = !!(m_dwLastControlFlags & BC_CFLG_FORWARD);
+	bool bLastReverse = !!(m_dwLastControlFlags & BC_CFLG_REVERSE);
 
 	// This case happens when we jump if the user stops pressing forward
 	// and we're in mid air...don't slow down!
-	if (!bForward && !g_pMoveMgr->CanDoFootstep())
+
+	if ((!bForward || !bReverse) && !g_pMoveMgr->CanDoFootstep())
 	{
-		bForward = LTTRUE;
+		bForward = bMovingForward;
+		bReverse = !bMovingForward;
 	}
 
-	LTBOOL bBrake = LTFALSE;
-	if ((m_dwControlFlags & BC_CFLG_REVERSE))
+	// Only brake if we are on the ground and moving...
+
+	bool bBrake = false;
+	if (g_pMoveMgr->CanDoFootstep() && !m_bVehicleStopped)
 	{
-		// Only brake if we are on the ground...
-        bBrake = g_pMoveMgr->CanDoFootstep();
+		bBrake = (bMovingForward ? bReverse : bForward);
 	}
 
-    LTBOOL bReverse = !bForward;
+	if (!m_pVehicleButes || !m_pVehicleButes->bHasReverse)
+	{
+		bReverse = false;
+	}
+
+	// Tip the vehicle when we start braking or let go...
+
+	if (!m_bVehicleStopped)
+	{
+		if (bBrake)
+		{
+			if (!m_bWasBraking)
+			{
+				CameraDelta delta;
+				float fDir = (bMovingForward ? 1.0f : -1.0f);
+				delta.Pitch.fVar	= DEG2RAD(g_vtVehicleBrakePitch.GetFloat()) * fDir;
+				delta.Pitch.fTime1	= 0.4f;
+				delta.Pitch.fTime2	= 0.5f;
+				delta.Pitch.eWave1	= Wave_SlowOff;
+				delta.Pitch.eWave2	= Wave_SlowOff;
+				m_VehicleModelOffsetMgr.AddDelta(delta);
+			}
+		}
+		else if (!bForward && !bReverse && !m_bWasBraking && (bLastReverse || bLastForward))
+		{
+			CameraDelta delta;
+			float fDir = (bMovingForward ? 1.0f : -1.0f);
+			delta.Pitch.fVar	= DEG2RAD(g_vtVehicleDecelPitch.GetFloat()) * fDir;
+			delta.Pitch.fTime1	= 0.25f;
+			delta.Pitch.fTime2	= 0.5f;
+			delta.Pitch.eWave1	= Wave_SlowOff;
+			delta.Pitch.eWave2	= Wave_SlowOff;
+			m_VehicleModelOffsetMgr.AddDelta(delta);
+		}
+	}
 
 	// Determine the acceleration to use...
 
@@ -878,13 +911,9 @@ void CVehicleMgr::UpdateVehicleMotion()
     LTFLOAT fMaxVel    = GetMaxVelMag(GetSurfaceVelMult(m_eSurface));
 
 	// If we have a velocity from a JumpVolume use that as the max...
-	
+
 	if( m_bHaveJumpVolumeVel )
 	{
-		// [KLS 9/1/02] Changed how this calculations works...
-		// See if it is time to use our normal velocity...(on the 
-		// ground and not in a jump volume)...
-
 		if (g_pMoveMgr->CanDoFootstep() && !m_hCurJumpVolume)
 		{
 			m_fJumpVolumeVel = 0.0f;
@@ -896,7 +925,7 @@ void CVehicleMgr::UpdateVehicleMotion()
 		}
 	}
 
-	if (bForward)
+	if (!bBrake && (bForward || bReverse))
 	{
 		LTFLOAT fAccelTime = GetVehicleAccelTime();
 
@@ -917,12 +946,10 @@ void CVehicleMgr::UpdateVehicleMotion()
 		if (m_fVehicleBaseMoveAccel < GetVehicleMinTurnAccel())
 		{
 			m_fVehicleBaseMoveAccel = GetVehicleMinTurnAccel();
-			bReverse = LTFALSE;
 		}
 	}
 
 	m_fVehicleBaseMoveAccel = m_fVehicleBaseMoveAccel > fMaxAccel ? fMaxAccel : m_fVehicleBaseMoveAccel;
-
 
 	// Limit velocity...
 
@@ -949,15 +976,7 @@ void CVehicleMgr::UpdateVehicleMotion()
 		g_pPhysicsLT->SetVelocity(hObj, &myVel);
 	}
 
-	g_pLTClient->GetObjectRotation(hObj, &rRot);
-
-    LTVector vForward = rRot.Forward();
-
-
-	LTFLOAT fAccelMulti = g_pMoveMgr->GetMoveAccelMultiplier();
-	fAccelMulti = (fAccelMulti > 1.0f ? 1.0f : fAccelMulti);
-
-    LTFLOAT fMoveAccel = (m_fVehicleBaseMoveAccel * fAccelMulti);
+    LTFLOAT fMoveAccel = m_fVehicleBaseMoveAccel;
 
 	if (!bInLiquid && !bFreeMovement)  // Can only move forward in x and z directions
 	{
@@ -965,20 +984,27 @@ void CVehicleMgr::UpdateVehicleMotion()
 		vForward.Normalize();
 	}
 
-
 	// If we aren't dead we can drive around
 
 	if (!g_pPlayerMgr->IsPlayerDead())
 	{
-		vAccel += (vForward * fMoveAccel);
-
-		if (bReverse || bBrake)
+		if ((bForward || bReverse) && !bBrake)
 		{
-			// Don't let us go backwards, slow us down...
+			vAccel += vForward * (fMoveAccel * (bReverse ? -1.0f : 1.0f));
+			m_fDecelStart = -1.0f;
+		}
+		else
+		{
+			// Slow us down the way we are going...
+
+			vAccel += vForward * (fMoveAccel * (bMovingForward ? 1.0f : -1.0f));
 
             LTVector vAccelDir = vAccel;
-			vAccelDir.Normalize();
             LTFLOAT fAccelMag = vAccel.Mag();
+			if (fAccelMag != 0.0f)
+			{
+				vAccelDir.Normalize();
+			}
 
 			// Determine the acceleration to use...
 
@@ -1008,10 +1034,6 @@ void CVehicleMgr::UpdateVehicleMotion()
 
 			m_fVehicleBaseMoveAccel = vAccel.Mag();
 		}
-		else
-		{
-			m_fDecelStart = -1.0f;
-		}
 	}
 
 	// Cap the acceleration...
@@ -1023,14 +1045,13 @@ void CVehicleMgr::UpdateVehicleMotion()
 	}
 
 	g_pPhysicsLT->SetAcceleration(hObj, &vAccel);
-	
+
 	// Add any container currents to my velocity...
 
     LTVector vel = g_pMoveMgr->GetVelocity();
 	vel += g_pMoveMgr->GetTotalCurrent();
 
 	g_pPhysicsLT->SetVelocity(hObj, &vel);
-
 
 	// If we're dead, we can't move...
 
@@ -1040,6 +1061,7 @@ void CVehicleMgr::UpdateVehicleMotion()
 		g_pPhysicsLT->SetVelocity(hObj, &zeroVec);
 	}
 
+	m_bWasBraking = bBrake;
 }
 
 // ----------------------------------------------------------------------- //
@@ -1057,7 +1079,7 @@ LTFLOAT	CVehicleMgr::GetVehicleAccelTime()
 	switch (m_ePPhysicsModel)
 	{
 		case PPM_SNOWMOBILE :
-			fTime = g_vtSnowmobileAccelTime.GetFloat();
+			fTime = g_vtVehicleAccelTime.GetFloat();
 		break;
 
 		case PPM_LURE :
@@ -1086,7 +1108,7 @@ LTFLOAT	CVehicleMgr::GetVehicleMinTurnAccel()
 	switch (m_ePPhysicsModel)
 	{
 		case PPM_SNOWMOBILE :
-			fValue = g_vtSnowmobileMinTurnAccel.GetFloat();
+			fValue = g_vtVehicleMinTurnAccel.GetFloat();
 		break;
 
 		case PPM_LURE :
@@ -1115,7 +1137,7 @@ LTFLOAT	CVehicleMgr::GetVehicleMaxDecel()
 	switch (m_ePPhysicsModel)
 	{
 		case PPM_SNOWMOBILE :
-			fValue = g_vtSnowmobileMaxDecel.GetFloat();
+			fValue = g_vtVehicleMaxDecel.GetFloat();
 		break;
 
 		case PPM_LURE :
@@ -1126,7 +1148,8 @@ LTFLOAT	CVehicleMgr::GetVehicleMaxDecel()
 		break;
 	}
 
-	return fValue;
+	// cjacksrc: RETAIL: CShell 0x10105977.
+	return fValue * g_pMoveMgr->GetMoveMultiplier();
 }
 
 // ----------------------------------------------------------------------- //
@@ -1144,7 +1167,7 @@ LTFLOAT	CVehicleMgr::GetVehicleDecelTime()
 	switch (m_ePPhysicsModel)
 	{
 		case PPM_SNOWMOBILE :
-			fValue = g_vtSnowmobileDecelTime.GetFloat();
+			fValue = g_vtVehicleDecelTime.GetFloat();
 		break;
 
 		case PPM_LURE :
@@ -1173,7 +1196,7 @@ LTFLOAT	CVehicleMgr::GetVehicleMaxBrake()
 	switch (m_ePPhysicsModel)
 	{
 		case PPM_SNOWMOBILE :
-			fValue = g_vtSnowmobileMaxBrake.GetFloat();
+			fValue = g_vtVehicleMaxBrake.GetFloat();
 		break;
 
 		case PPM_LURE :
@@ -1184,7 +1207,8 @@ LTFLOAT	CVehicleMgr::GetVehicleMaxBrake()
 		break;
 	}
 
-	return fValue;
+	// cjacksrc: RETAIL: CShell 0x10105977.
+	return fValue * g_pMoveMgr->GetMoveMultiplier();
 }
 
 // ----------------------------------------------------------------------- //
@@ -1202,7 +1226,7 @@ LTFLOAT	CVehicleMgr::GetVehicleBrakeTime()
 	switch (m_ePPhysicsModel)
 	{
 		case PPM_SNOWMOBILE :
-			fValue = g_vtSnowmobileBrakeTime.GetFloat();
+			fValue = g_vtVehicleBrakeTime.GetFloat();
 		break;
 
 		case PPM_LURE :
@@ -1230,7 +1254,7 @@ void CVehicleMgr::UpdateFriction()
 	switch (m_ePPhysicsModel)
 	{
 		case PPM_SNOWMOBILE :
-			UpdateVehicleFriction(SNOWMOBILE_SLIDE_TO_STOP_TIME);
+			UpdateVehicleFriction(g_vtVehicleSlideToStopTime.GetFloat());
 		break;
 
 		case PPM_LURE :
@@ -1347,14 +1371,79 @@ LTBOOL CVehicleMgr::CanDismount()
 
 // ----------------------------------------------------------------------- //
 //
+//	ROUTINE:	CVehicleMgr::SaveVehicleButes
+//
+//	PURPOSE:	RETAIL: 0x10106a40: write the tweaked handling back to the
+//				vehicle's record (a cheat)
+//
+// ----------------------------------------------------------------------- //
+
+void CVehicleMgr::SaveVehicleButes()
+{
+	if (m_ePPhysicsModel != PPM_SNOWMOBILE || !m_pVehicleButes) return;
+
+	m_pVehicleButes->fVelocity				= g_vtVehicleVel.GetFloat();
+	m_pVehicleButes->fAcceleration			= g_vtVehicleAccel.GetFloat();
+	m_pVehicleButes->fAccelerationTime		= g_vtVehicleAccelTime.GetFloat();
+	m_pVehicleButes->fMaxDeceleration		= g_vtVehicleMaxDecel.GetFloat();
+	m_pVehicleButes->fDecelerationTime		= g_vtVehicleDecelTime.GetFloat();
+	m_pVehicleButes->fMaxBrake				= g_vtVehicleMaxBrake.GetFloat();
+	m_pVehicleButes->fBrakeTime				= g_vtVehicleBrakeTime.GetFloat();
+	m_pVehicleButes->fStoppedPercent		= g_vtVehicleStoppedPercent.GetFloat();
+	m_pVehicleButes->fMaxSpeedPercent		= g_vtVehicleMaxSpeedPercent.GetFloat();
+	m_pVehicleButes->fMinTurnAccel			= g_vtVehicleMinTurnAccel.GetFloat();
+	m_pVehicleButes->fTurnRate				= g_vtVehicleTurnRate.GetFloat();
+	m_pVehicleButes->fInitialTurnRate		= g_vtVehicleInitialTurnRate.GetFloat();
+	m_pVehicleButes->fSurfaceSpeedUpPitch	= g_vtVehicleSurfaceSpeedUpPitch.GetFloat();
+	m_pVehicleButes->fSurfaceSlowDownPitch	= g_vtVehicleSurfaceSlowDownPitch.GetFloat();
+	m_pVehicleButes->fStartMotionPitch		= g_vtVehicleStartMotionPitch.GetFloat();
+	m_pVehicleButes->fStopMotionPitch		= g_vtVehicleStopMotionPitch.GetFloat();
+	m_pVehicleButes->fBrakePitch			= g_vtVehicleBrakePitch.GetFloat();
+	m_pVehicleButes->fDecelPitch			= g_vtVehicleDecelPitch.GetFloat();
+	m_pVehicleButes->vPVOffset				= m_vVehicleOffset;
+
+	char szMsg[64] = "";
+	if (g_pVehicleButeMgr->WriteVehicleButes(m_pVehicleButes))
+	{
+		LTSNPrintF(szMsg, ARRAY_LEN(szMsg), "Saved vehicle %s", m_pVehicleButes->sName.c_str());
+	}
+	else
+	{
+		LTSNPrintF(szMsg, ARRAY_LEN(szMsg), "ERROR Saving vehicle %s", m_pVehicleButes->sName.c_str());
+	}
+
+	g_pChatMsgs->AddMessage(szMsg, kMsgCheatConfirm);
+}
+
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	CVehicleMgr::CanShowCrosshair
+//
+//	PURPOSE:	RETAIL: 0x10105610: vehicles with weapons show it
+//
+// ----------------------------------------------------------------------- //
+
+bool CVehicleMgr::CanShowCrosshair() const
+{
+	if (m_ePPhysicsModel != PPM_SNOWMOBILE)
+		return true;
+
+	return (m_pVehicleButes ? m_pVehicleButes->bCanShowCrosshair : false);
+}
+
+// ----------------------------------------------------------------------- //
+//
 //	ROUTINE:	CVehicleMgr::EnableWeapon
 //
 //	PURPOSE:	Enable/disables the weapon.
 //
 // ----------------------------------------------------------------------- //
 
-void CVehicleMgr::EnableWeapon( bool bEnable )
+void CVehicleMgr::EnableWeapon( bool bEnable, bool bHolster )
 {
+	// RETAIL: 0x10105a90: Contract J.A.C.K. only holsters when asked to, and
+	// only turns the weapons on or off when they are not already.
+
 	// Get our weapon.
 	CClientWeaponMgr *pClientWeaponMgr = g_pPlayerMgr->GetClientWeaponMgr();
 	IClientWeaponBase* pClientWeapon = pClientWeaponMgr->GetCurrentClientWeapon();
@@ -1365,11 +1454,12 @@ void CVehicleMgr::EnableWeapon( bool bEnable )
 	if( bEnable )
 	{
 		// We must enable the weapon before holstering it...
-		
-		pClientWeaponMgr->EnableWeapons();
-		
+
+		if( !pClientWeaponMgr->WeaponsEnabled() )
+			pClientWeaponMgr->EnableWeapons();
+
 		// Check if we have a holstered weapon.
-		if( m_bHolsteredWeapon )
+		if( m_bHolsteredWeapon && bHolster )
 		{
 			g_pPlayerMgr->ToggleHolster( false );
 			m_bHolsteredWeapon = false;
@@ -1378,7 +1468,7 @@ void CVehicleMgr::EnableWeapon( bool bEnable )
 	// Disable the weapon.
 	else
 	{
-		if( !m_bHolsteredWeapon )
+		if( !m_bHolsteredWeapon && bHolster )
 		{
 			// Can't holster melee weapon. (why i don't know BEP).
 			if (!pClientWeapon->IsMeleeWeapon())
@@ -1388,7 +1478,8 @@ void CVehicleMgr::EnableWeapon( bool bEnable )
 			}
 		}
 
-		pClientWeaponMgr->DisableWeapons();
+		if( pClientWeaponMgr->WeaponsEnabled() )
+			pClientWeaponMgr->DisableWeapons();
 	}
 }
 
@@ -1402,6 +1493,8 @@ void CVehicleMgr::EnableWeapon( bool bEnable )
 
 LTBOOL CVehicleMgr::PreSetPhysicsModel(PlayerPhysicsModel eModel)
 {
+	// RETAIL: 0x10107b50
+
 	// Clear turning values...
 
 	m_vHeadOffset.Init();
@@ -1409,6 +1502,8 @@ LTBOOL CVehicleMgr::PreSetPhysicsModel(PlayerPhysicsModel eModel)
 	m_fHeadYaw = 0.0f;
 	m_fYawDiff = 0.0f;
 	m_fYawDelta	= 0.0f;
+	m_fContourRoll = 0.0f;
+	m_bHasVehicleWeapon = false;
 
 	HOBJECT hObj = g_pMoveMgr->GetObject();
 
@@ -1422,7 +1517,7 @@ LTBOOL CVehicleMgr::PreSetPhysicsModel(PlayerPhysicsModel eModel)
  		switch (eModel)
 		{
 			case PPM_SNOWMOBILE :
-				EnableWeapon( false );
+				EnableWeapon( false, true );
 			break;
 
 			case PPM_LURE :
@@ -1449,12 +1544,23 @@ LTBOOL CVehicleMgr::PreSetPhysicsModel(PlayerPhysicsModel eModel)
 		{
 			case PPM_SNOWMOBILE :
 			{
-				g_pClientSoundMgr->PlaySoundLocal("Snd\\Vehicle\\Snowmobile\\turnoff.wav", SOUNDPRIORITY_PLAYER_HIGH, PLAYSOUND_CLIENT);
+				if (m_pVehicleButes)
+				{
+					g_pClientSoundMgr->PlaySoundLocal(m_pVehicleButes->sTurnOffSnd.c_str(), SOUNDPRIORITY_PLAYER_HIGH, PLAYSOUND_CLIENT);
+				}
 
 				PlayVehicleAni("Deselect");
 
 				// Can't move until deselect is done...
 				g_pMoveMgr->AllowMovement(LTFALSE);
+
+				// RETAIL: m_bHasVehicleWeapon was cleared above, so this
+				// never runs.
+				if (m_bHasVehicleWeapon)
+				{
+					m_VehicleWeapon.SetDisable(true);
+					m_VehicleWeapon.Deactivate();
+				}
 
 				// Wait to change modes...
 				bRet = LTFALSE;
@@ -1464,7 +1570,7 @@ LTBOOL CVehicleMgr::PreSetPhysicsModel(PlayerPhysicsModel eModel)
 			case PPM_LURE :
 			{
 				// Enable the weapon.
-				EnableWeapon( true );
+				EnableWeapon( true, true );
 			}
 			break;
 
@@ -1488,8 +1594,11 @@ LTBOOL CVehicleMgr::PreSetPhysicsModel(PlayerPhysicsModel eModel)
 //
 // ----------------------------------------------------------------------- //
 
-void CVehicleMgr::SetPhysicsModel(PlayerPhysicsModel eModel, LTBOOL bDoPreSet)
+void CVehicleMgr::SetPhysicsModel(PlayerPhysicsModel eModel, uint8 nVehicleId, LTBOOL bDoPreSet)
 {
+	// RETAIL: 0x1010abe0: Contract J.A.C.K.'s vehicles are VehicleButeMgr
+	// records.
+
 	if (m_ePPhysicsModel == eModel) return;
 
 	// Do clean up...
@@ -1497,24 +1606,25 @@ void CVehicleMgr::SetPhysicsModel(PlayerPhysicsModel eModel, LTBOOL bDoPreSet)
 	if (bDoPreSet && !PreSetPhysicsModel(eModel)) return;
 
 	m_ePPhysicsModel = eModel;
+	m_pVehicleButes = g_pVehicleButeMgr->GetVehicle(nVehicleId);
 
  	switch (eModel)
 	{
 		case PPM_SNOWMOBILE :
 		{
+			if (!m_pVehicleButes)
+			{
+				g_pLTClient->CPrint("ERROR - Could not find vehicle record.");
+				SetPhysicsModel(PPM_NORMAL, 0xFF, LTTRUE);
+				return;
+			}
+
 			SetSnowmobilePhysicsModel();
 
-			if (g_vtSnowmobileInfoTrack.GetFloat())
+			if (g_vtVehicleInfoTrack.GetFloat())
 			{
-				g_pLTClient->CPrint("Snowmobile Physics Mode: ON");
+				g_pLTClient->CPrint("%s Physics Mode: ON", m_pVehicleButes->sName.c_str());
 			}
-		}
-		break;
-
-		case PPM_LIGHTCYCLE:
-		{
-			SetNormalPhysicsModel();
-			m_bTurned = true;
 		}
 		break;
 
@@ -1529,7 +1639,7 @@ void CVehicleMgr::SetPhysicsModel(PlayerPhysicsModel eModel, LTBOOL bDoPreSet)
 		{
 			SetNormalPhysicsModel();
 
-			if (g_vtSnowmobileInfoTrack.GetFloat())
+			if (g_vtVehicleInfoTrack.GetFloat())
 			{
 				g_pLTClient->CPrint("Normal Physics Mode: ON");
 			}
@@ -1562,7 +1672,7 @@ void CVehicleMgr::PlayVehicleAni(char* pAniName, LTBOOL bReset, LTBOOL bLoop)
     g_pLTClient->SetModelLooping(m_hVehicleModel, bLoop != LTFALSE);
 	g_pLTClient->SetModelAnimation(m_hVehicleModel, dwAnim);
 
-	if (g_vtSnowmobileInfoTrack.GetFloat() == SNOW_TRACK_ANIMATION)
+	if (g_vtVehicleInfoTrack.GetFloat() == SNOW_TRACK_ANIMATION)
 	{
        g_pLTClient->CPrint("Playing Ani(%s)", pAniName);
 	}
@@ -1606,17 +1716,55 @@ LTBOOL CVehicleMgr::IsCurVehicleAni(char* pAniName, LTBOOL & bIsDone)
 
 void CVehicleMgr::SetSnowmobilePhysicsModel()
 {
+	// RETAIL: 0x1010a430: the sounds, the weapon and the handling come
+	// from the vehicle's record.
+
+	if (!m_pVehicleButes) return;
+
 	if (!m_hVehicleStartSnd)
 	{
         uint32 dwFlags = PLAYSOUND_GETHANDLE | PLAYSOUND_CLIENT;
-		m_hVehicleStartSnd = g_pClientSoundMgr->PlaySoundLocal("Snd\\Vehicle\\Snowmobile\\startup.wav", SOUNDPRIORITY_PLAYER_HIGH, dwFlags);
+		m_hVehicleStartSnd = g_pClientSoundMgr->PlaySoundLocal(m_pVehicleButes->sStartUpSnd.c_str(), SOUNDPRIORITY_PLAYER_HIGH, dwFlags);
 	}
 
 	CreateVehicleModel();
 
-	m_vVehicleOffset.x = g_vtSnowmobileOffsetX.GetFloat();
-	m_vVehicleOffset.y = g_vtSnowmobileOffsetY.GetFloat();
-	m_vVehicleOffset.z = g_vtSnowmobileOffsetZ.GetFloat();
+	if (!m_pVehicleButes->sVehicleWeapon.empty())
+	{
+		WEAPON const* pWeapon = g_pWeaponMgr->GetWeapon(m_pVehicleButes->sVehicleWeapon.c_str());
+		if (pWeapon)
+		{
+			m_VehicleWeapon.ResetWeapon();
+			m_VehicleWeapon.Init(*pWeapon);
+			m_VehicleWeapon.SetVehicleModel(m_hVehicleModel);
+			if (m_VehicleWeapon.Activate())
+			{
+				m_bHasVehicleWeapon = true;
+				m_VehicleWeapon.SetDisable(true);
+			}
+		}
+	}
+
+	g_vtVehicleVel.SetFloat(m_pVehicleButes->fVelocity);
+	g_vtVehicleAccel.SetFloat(m_pVehicleButes->fAcceleration);
+	g_vtVehicleAccelTime.SetFloat(m_pVehicleButes->fAccelerationTime);
+	g_vtVehicleMaxDecel.SetFloat(m_pVehicleButes->fMaxDeceleration);
+	g_vtVehicleDecelTime.SetFloat(m_pVehicleButes->fDecelerationTime);
+	g_vtVehicleMaxBrake.SetFloat(m_pVehicleButes->fMaxBrake);
+	g_vtVehicleBrakeTime.SetFloat(m_pVehicleButes->fBrakeTime);
+	g_vtVehicleStoppedPercent.SetFloat(m_pVehicleButes->fStoppedPercent);
+	g_vtVehicleMaxSpeedPercent.SetFloat(m_pVehicleButes->fMaxSpeedPercent);
+	g_vtVehicleMinTurnAccel.SetFloat(m_pVehicleButes->fMinTurnAccel);
+	g_vtVehicleTurnRate.SetFloat(m_pVehicleButes->fTurnRate);
+	g_vtVehicleInitialTurnRate.SetFloat(m_pVehicleButes->fInitialTurnRate);
+	g_vtVehicleSurfaceSpeedUpPitch.SetFloat(m_pVehicleButes->fSurfaceSpeedUpPitch);
+	g_vtVehicleSurfaceSlowDownPitch.SetFloat(m_pVehicleButes->fSurfaceSlowDownPitch);
+	g_vtVehicleStartMotionPitch.SetFloat(m_pVehicleButes->fStartMotionPitch);
+	g_vtVehicleStopMotionPitch.SetFloat(m_pVehicleButes->fStopMotionPitch);
+	g_vtVehicleBrakePitch.SetFloat(m_pVehicleButes->fBrakePitch);
+	g_vtVehicleDecelPitch.SetFloat(m_pVehicleButes->fDecelPitch);
+
+	m_vVehicleOffset = m_pVehicleButes->vPVOffset;
 
 	// Reset acceleration so we don't start off moving...
 
@@ -1663,7 +1811,7 @@ void CVehicleMgr::SetPlayerLurePhysicsModel()
 		{
 			KillAllVehicleSounds();
 
-			char* pSound = GetAccelSnd();
+			char const* pSound = GetAccelSnd();
 
 			if (pSound)
 			{
@@ -1681,6 +1829,8 @@ void CVehicleMgr::SetPlayerLurePhysicsModel()
 	m_fYawDiff = 0.0f;
 	m_fYawDelta	= 0.0f;
 
+	// RETAIL: 0x1010a7c0
+	m_VehicleWeapon.Deactivate();
 }
 
 
@@ -1713,6 +1863,9 @@ void CVehicleMgr::SetNormalPhysicsModel()
 	// Remove player-view attachments
 
 	g_pPVAttachmentMgr->RemovePVAttachments();
+
+	// RETAIL: 0x10105c30
+	m_VehicleWeapon.Deactivate();
 }
 
 
@@ -1739,20 +1892,23 @@ void CVehicleMgr::CreateVehicleModel()
 			createStruct.m_Flags	  = FLAG_VISIBLE | FLAG_REALLYCLOSE;
 			createStruct.m_Flags2	  = FLAG2_FORCETRANSLUCENT | FLAG2_DYNAMICDIRLIGHT;
 
-			// NEED TO MOVE THESE INTO A BUTE FILE!!!
+			// RETAIL: 0x10109967: the player-view model comes from the
+			// vehicle's record.
 
-			SAFE_STRCPY(createStruct.m_Filename, "Guns\\Models_PV\\snowmobile.ltb");
-			SAFE_STRCPY(createStruct.m_SkinNames[1], "Guns\\Skins_PV\\snowmobile.dtx");
-			SAFE_STRCPY(createStruct.m_SkinNames[2], "Guns\\Skins_PV\\windshield.dtx");
-			SAFE_STRCPY(createStruct.m_RenderStyleNames[0], "RS\\default.ltb");
-			SAFE_STRCPY(createStruct.m_RenderStyleNames[1], "RS\\glass.ltb");
-
-			CCharacterFX* pCharFX = g_pMoveMgr->GetCharacterFX();
-
-			// jeffo - NOTE: Should pChar ever be NULL?
-			if (pCharFX  )
+			if (m_pVehicleButes)
 			{
-				SAFE_STRCPY(createStruct.m_SkinNames[0], g_pModelButeMgr->GetHandsSkinFilename(pCharFX->GetModelId()));
+				SAFE_STRCPY(createStruct.m_Filename, m_pVehicleButes->sPVModel.c_str());
+				m_pVehicleButes->blrPVSkins.CopyList(0, createStruct.m_SkinNames[0], MAX_CS_FILENAME_LEN+1);
+				m_pVehicleButes->blrPVRenderStyles.CopyList(0, createStruct.m_RenderStyleNames[0], MAX_CS_FILENAME_LEN+1);
+
+				// The first skin may be the player's hands...
+
+				if (m_pVehicleButes->blrPVSkins.GetNumItems() &&
+					!stricmp(m_pVehicleButes->blrPVSkins.GetItem(0), "Hands"))
+				{
+					CCharacterFX* pCharFX = g_pMoveMgr->GetCharacterFX();
+					SAFE_STRCPY(createStruct.m_SkinNames[0], g_pModelButeMgr->GetHandsSkinFilename(pCharFX ? pCharFX->GetModelId() : (ModelId)0));
+				}
 			}
 		}
 		break;
@@ -1896,10 +2052,10 @@ void CVehicleMgr::UpdateVehicleModel()
 			g_pMoveMgr->AllowMovement(LTTRUE);
 
 			ShowVehicleModel(LTFALSE);
-			SetPhysicsModel(PPM_NORMAL, LTFALSE);
+			SetPhysicsModel(PPM_NORMAL, 0xFF, LTFALSE);
 
 			// Enable the weapon...
-			EnableWeapon( true );
+			EnableWeapon( true, true );
 
 			// Tell the server we want off...NOTE: In multiplayer we may want
 			// to call this in PreSetPhysicsModel()
@@ -1984,17 +2140,12 @@ LTFLOAT CVehicleMgr::GetMaxVelMag(LTFLOAT fMult) const
 {
     LTFLOAT fMaxVel = 0.0f;
 
+	// cjacksrc: RETAIL: CShell 0x10105ca0: no light cycle, no clamp.
 	switch (m_ePPhysicsModel)
 	{
 		case PPM_SNOWMOBILE :
 		{
-			fMaxVel = g_vtSnowmobileVel.GetFloat();
-		}
-		break;
-
-		case PPM_LIGHTCYCLE:
-		{
-			fMaxVel = g_vtLightCycleVel.GetFloat();
+			fMaxVel = g_vtVehicleVel.GetFloat();
 		}
 		break;
 
@@ -2008,10 +2159,7 @@ LTFLOAT CVehicleMgr::GetMaxVelMag(LTFLOAT fMult) const
 
 	fMaxVel *= fMult;
 
-	LTFLOAT fMoveMulti = g_pMoveMgr->GetMoveMultiplier();
-	fMoveMulti = (fMoveMulti > 1.0f ? 1.0f : fMoveMulti);
-
-	fMaxVel *= (g_pMoveMgr->IsBodyInLiquid() ? fMoveMulti/2.0f : fMoveMulti);
+	fMaxVel *= (g_pMoveMgr->IsBodyInLiquid() ? g_pMoveMgr->GetMoveMultiplier()/2.0f : g_pMoveMgr->GetMoveMultiplier());
 
 	return fMaxVel;
 }
@@ -2032,7 +2180,7 @@ LTFLOAT CVehicleMgr::GetMaxAccelMag(LTFLOAT fMult) const
 	{
 		case PPM_SNOWMOBILE :
 		{
-			fMaxVel = g_vtSnowmobileAccel.GetFloat();
+			fMaxVel = g_vtVehicleAccel.GetFloat();
 		}
 		break;
 
@@ -2045,6 +2193,9 @@ LTFLOAT CVehicleMgr::GetMaxAccelMag(LTFLOAT fMult) const
 	}
 
 	fMaxVel *= fMult;
+
+	// cjacksrc: RETAIL: CShell 0x10105d1b.
+	fMaxVel *= g_pMoveMgr->GetMoveAccelMultiplier();
 
 	return fMaxVel;
 }
@@ -2067,9 +2218,14 @@ LTFLOAT CVehicleMgr::GetSurfaceVelMult(SurfaceType eSurf) const
 	{
 		case PPM_SNOWMOBILE :
 		{
-			if (pSurface)
+			// RETAIL: 0x1010b010: the speed for the vehicle's kind.
+			if (pSurface && m_pVehicleButes)
 			{
-				fVelMultiplier = pSurface->fSnowVelMult;
+				SURFACEVEHICLE const* pSurfVehicle = pSurface->GetVehicleType(m_pVehicleButes->nSurfaceVehicleType);
+				if (pSurfVehicle)
+				{
+					fVelMultiplier = pSurfVehicle->fVelMult;
+				}
 			}
 		}
 		break;
@@ -2095,6 +2251,10 @@ LTFLOAT CVehicleMgr::GetSurfaceVelMult(SurfaceType eSurf) const
 
 void CVehicleMgr::UpdateVehicleSounds()
 {
+	// RETAIL: 0x10109c00: Contract J.A.C.K.'s vehicles can reverse, brake
+	// against the way they move, and carry a weapon whose firing animation
+	// wins over the vehicle's.
+
 	// Update what gear the vehicle is in...
 
 	UpdateVehicleGear();
@@ -2110,23 +2270,33 @@ void CVehicleMgr::UpdateVehicleSounds()
 		}
 	}
 
-
 	// See if we are going forward or backward...
 
-    LTBOOL bForward = LTFALSE;
-	if ((m_dwControlFlags & BC_CFLG_FORWARD))
+	bool bForward = !!(m_dwControlFlags & BC_CFLG_FORWARD);
+	bool bReverse = !!(m_dwControlFlags & BC_CFLG_REVERSE);
+	bool bBrake = false;
+
+	// Pushing against the way we move is braking...
+
+	if (g_pMoveMgr->CanDoFootstep() && !m_bVehicleStopped)
 	{
-        bForward = LTTRUE;
+		LTVector vVel = g_pMoveMgr->GetVelocity();
+
+		LTRotation rRot;
+		g_pLTClient->GetObjectRotation(g_pMoveMgr->GetObject(), &rRot);
+
+		if (vVel.Dot(rRot.Forward()) > 0.0f)
+			bBrake = bReverse;
+		else
+			bBrake = bForward;
 	}
 
-	LTBOOL bBrake = LTFALSE;
-	if ((m_dwControlFlags & BC_CFLG_REVERSE))
+	if (!m_pVehicleButes->bHasReverse)
 	{
-        bBrake = g_pMoveMgr->CanDoFootstep();
+		bReverse = false;
 	}
 
 	LTBOOL bIsDone = LTFALSE;
-	LTBOOL bPlayAni = LTTRUE;
 
 	if (IsCurVehicleAni("Select", bIsDone))
 	{
@@ -2134,6 +2304,11 @@ void CVehicleMgr::UpdateVehicleSounds()
 		{
 			// Okay, we can move now...
 			g_pMoveMgr->AllowMovement(LTTRUE);
+
+			if (m_bHasVehicleWeapon)
+			{
+				m_VehicleWeapon.SetDisable(false);
+			}
 		}
 		else // Can't do anything until this is done...
 		{
@@ -2145,11 +2320,11 @@ void CVehicleMgr::UpdateVehicleSounds()
 		return;
 	}
 
-	bIsDone = LTFALSE;
+	// The weapon's firing animation plays over the vehicle's...
 
-	// Play the appropriate sound, based on acceleration...
+	#define VEHICLE_WEAPON_FIRING (m_bHasVehicleWeapon && m_VehicleWeapon.GetState() == W_FIRING)
 
-	if (!bForward)
+	if ((!bForward && !bReverse) || bBrake)
 	{
 		if (m_hVehicleAccelSnd)
 		{
@@ -2159,13 +2334,23 @@ void CVehicleMgr::UpdateVehicleSounds()
 
 		// Play braking ani if necessary...
 
-		if (bBrake && !m_bVehicleStopped)
+		bool bBraking = (bBrake && !m_bVehicleStopped);
+
+		if (m_bHasVehicleWeapon)
 		{
-			PlayVehicleAni("BrakeOn", LTFALSE);
+			m_VehicleWeapon.SetBraking(bBraking);
+		}
+
+		if (bBraking)
+		{
+			if (!VEHICLE_WEAPON_FIRING)
+			{
+				PlayVehicleAni("BrakeOn", LTFALSE);
+			}
 
 			if (!m_hBrakeSnd)
 			{
-				char* pSound = GetBrakeSnd();
+				char const* pSound = GetBrakeSnd();
 
 				if (pSound)
 				{
@@ -2173,7 +2358,6 @@ void CVehicleMgr::UpdateVehicleSounds()
 					m_hBrakeSnd = g_pClientSoundMgr->PlaySoundLocal(pSound, SOUNDPRIORITY_PLAYER_HIGH, dwFlags);
 				}
 			}
-
 		}
 		else
 		{
@@ -2194,7 +2378,7 @@ void CVehicleMgr::UpdateVehicleSounds()
 		}
 		else if (!m_hVehicleDecelSnd)
 		{
-			char* pSound = GetDecelSnd();
+			char const* pSound = GetDecelSnd();
 
 			if (pSound)
 			{
@@ -2203,7 +2387,7 @@ void CVehicleMgr::UpdateVehicleSounds()
 			}
 		}
 	}
-	else // Forward
+	else // Forward or reverse
 	{
 		// Make sure we're playing the accelerate sound...
 
@@ -2211,7 +2395,7 @@ void CVehicleMgr::UpdateVehicleSounds()
 		{
 			KillAllVehicleSounds();
 
-			char* pSound = GetAccelSnd();
+			char const* pSound = GetAccelSnd();
 
 			if (pSound)
 			{
@@ -2220,48 +2404,55 @@ void CVehicleMgr::UpdateVehicleSounds()
 			}
 		}
 
-		if (bForward && !m_bVehicleAtMaxSpeed)
+		if (m_bVehicleAtMaxSpeed)
 		{
-			// Play accelleration ani if necessary...
-
-			if (bPlayAni)
+			if (!VEHICLE_WEAPON_FIRING)
+			{
+				PlayVehicleAni("FullSpeed", LTFALSE, LTTRUE);
+			}
+		}
+		else
+		{
+			if (!VEHICLE_WEAPON_FIRING)
 			{
 				PlayVehicleAni("Accelerate", LTFALSE);
 			}
 		}
 	}
 
-
 	// See if we are idle...
 
-	if (!bForward)
+	if (bForward || bReverse) return;
+
+	if (m_bVehicleStopped)
 	{
-		if (m_bVehicleStopped )
+		if (!VEHICLE_WEAPON_FIRING)
 		{
 			PlayVehicleAni("Idle_0", LTFALSE, LTTRUE);
-
-			if (!m_hIdleSnd)
-			{
-				KillAllVehicleSounds(LTNULL);
-
-				char* pSound = GetIdleSnd();
-
-				if (pSound)
-				{
-					uint32 dwFlags = PLAYSOUND_LOOP | PLAYSOUND_GETHANDLE | PLAYSOUND_CLIENT;
-					m_hIdleSnd = g_pClientSoundMgr->PlaySoundLocal(pSound, SOUNDPRIORITY_PLAYER_HIGH, dwFlags);
-				}
-			}
 		}
-		else if( !bBrake )
+
+		if (!m_hIdleSnd)
 		{
-			if (bPlayAni)
+			KillAllVehicleSounds(LTNULL);
+
+			char const* pSound = GetIdleSnd();
+
+			if (pSound)
 			{
-				PlayVehicleAni("Decelerate", LTFALSE);
+				uint32 dwFlags = PLAYSOUND_LOOP | PLAYSOUND_GETHANDLE | PLAYSOUND_CLIENT;
+				m_hIdleSnd = g_pClientSoundMgr->PlaySoundLocal(pSound, SOUNDPRIORITY_PLAYER_HIGH, dwFlags);
 			}
 		}
 	}
+	else if (!bBrake)
+	{
+		if (!VEHICLE_WEAPON_FIRING)
+		{
+			PlayVehicleAni("Decelerate", LTFALSE);
+		}
+	}
 
+	#undef VEHICLE_WEAPON_FIRING
 }
 
 // ----------------------------------------------------------------------- //
@@ -2272,12 +2463,14 @@ void CVehicleMgr::UpdateVehicleSounds()
 //
 // ----------------------------------------------------------------------- //
 
-char* CVehicleMgr::GetIdleSnd()
+char const* CVehicleMgr::GetIdleSnd()
 {
+	// cjacksrc: RETAIL: CShell 0x10105170..: the vehicle's own sounds.
 	switch (m_ePPhysicsModel)
 	{
 		case PPM_SNOWMOBILE :
-			return "Snd\\Vehicle\\Snowmobile\\idle.wav";
+			if (m_pVehicleButes)
+				return m_pVehicleButes->sIdleSnd.c_str();
 		break;
 
 		case PPM_LURE :
@@ -2299,12 +2492,14 @@ char* CVehicleMgr::GetIdleSnd()
 //
 // ----------------------------------------------------------------------- //
 
-char* CVehicleMgr::GetAccelSnd()
+char const* CVehicleMgr::GetAccelSnd()
 {
+	// cjacksrc: RETAIL: CShell 0x10105170..: the vehicle's own sounds.
 	switch (m_ePPhysicsModel)
 	{
 		case PPM_SNOWMOBILE :
-			return "Snd\\Vehicle\\Snowmobile\\accel.wav";
+			if (m_pVehicleButes)
+				return m_pVehicleButes->sAccelSnd.c_str();
 		break;
 
 		case PPM_LURE :
@@ -2327,12 +2522,14 @@ char* CVehicleMgr::GetAccelSnd()
 //
 // ----------------------------------------------------------------------- //
 
-char* CVehicleMgr::GetDecelSnd()
+char const* CVehicleMgr::GetDecelSnd()
 {
- 	switch (m_ePPhysicsModel)
+	// cjacksrc: RETAIL: CShell 0x10105170..: the vehicle's own sounds.
+	switch (m_ePPhysicsModel)
 	{
 		case PPM_SNOWMOBILE :
-			return "Snd\\Vehicle\\Snowmobile\\decel.wav";
+			if (m_pVehicleButes)
+				return m_pVehicleButes->sDecelSnd.c_str();
 		break;
 
 		case PPM_LURE :
@@ -2354,12 +2551,14 @@ char* CVehicleMgr::GetDecelSnd()
 //
 // ----------------------------------------------------------------------- //
 
-char* CVehicleMgr::GetBrakeSnd()
+char const* CVehicleMgr::GetBrakeSnd()
 {
+	// cjacksrc: RETAIL: CShell 0x10105170..: the vehicle's own sounds.
 	switch (m_ePPhysicsModel)
 	{
 		case PPM_SNOWMOBILE :
-			return "Snd\\Vehicle\\Snowmobile\\brake.wav";
+			if (m_pVehicleButes)
+				return m_pVehicleButes->sBrakeSnd.c_str();
 		break;
 
 		case PPM_LURE :
@@ -2381,58 +2580,54 @@ char* CVehicleMgr::GetBrakeSnd()
 //
 // ----------------------------------------------------------------------- //
 
-char* CVehicleMgr::GetImpactSnd(LTFLOAT fCurVelocityPercent, SURFACE* pSurface)
+char const* CVehicleMgr::GetImpactSnd(LTFLOAT fCurVelocityPercent, SURFACE* pSurface)
 {
 	if (!pSurface) return LTNULL;
-
-    char* pSound = LTNULL;
-
-	//char s_szImpactSndName[128] = "";
-	//pSurface->GetRandomSnowmobileImpactSnd(szImpactSndName, ARRAY_LEN(szImpactSndName));
-	//return s_szImpactSndName;
 
 	if (pSurface->eType == ST_FLESH)
 	{
 		if (GetRandom(0, 1) == 1)
 		{
-			pSound = "Snd\\Vehicle\\vehiclehit1.wav";
+			return "Snd\\Vehicle\\vehiclehit1.wav";
 		}
 		else
 		{
-			pSound = "Snd\\Vehicle\\vehiclehit2.wav";
+			return "Snd\\Vehicle\\vehiclehit2.wav";
 		}
 	}
-	else
+
+	// cjacksrc: RETAIL: CShell 0x1010522f: the vehicle's own sounds.
+	switch (m_ePPhysicsModel)
 	{
-		switch (m_ePPhysicsModel)
+		case PPM_SNOWMOBILE :
 		{
-			case PPM_SNOWMOBILE :
+			if (!m_pVehicleButes)
+				return LTNULL;
+
+			if (fCurVelocityPercent > 0.1f && fCurVelocityPercent < 0.4f)
 			{
-				if (fCurVelocityPercent > 0.1f && fCurVelocityPercent < 0.4f)
-				{
-					pSound = "Snd\\Vehicle\\Snowmobile\\slowimpact.wav";
-				}
-				else if (fCurVelocityPercent < 0.7f)
-				{
-					pSound = "Snd\\Vehicle\\Snowmobile\\medimpact.wav";
-				}
-				else
-				{
-					pSound = "Snd\\Vehicle\\Snowmobile\\fastimpact.wav";
-				}
+				return m_pVehicleButes->sSlowImpactSnd.c_str();
 			}
-			break;
-
-			case PPM_LURE :
-			break;
-
-			case PPM_NORMAL:
-			default :
-			break;
+			else if (fCurVelocityPercent < 0.7f)
+			{
+				return m_pVehicleButes->sMedImpactSnd.c_str();
+			}
+			else
+			{
+				return m_pVehicleButes->sFastImpactSnd.c_str();
+			}
 		}
+		break;
+
+		case PPM_LURE :
+		break;
+
+		case PPM_NORMAL:
+		default :
+		break;
 	}
 
-	return pSound;
+	return LTNULL;
 }
 
 
@@ -2678,8 +2873,9 @@ void CVehicleMgr::HandleCollision()
 
 	float fMinImpactAngle = DEG2RAD(g_vtVehicleImpactMinAngle.GetFloat());
 
+	// RETAIL: 0x1010b2da: scaled by the vehicle's sensitivity.
 	fMinImpactAngle = fMinImpactAngle + (
-		(1.0f - fVelPercent) * (DEG2RAD(90.0f) - fMinImpactAngle));
+		(1.0f - fVelPercent * m_pVehicleButes->fImpactAngleSensitivity) * (DEG2RAD(90.0f) - fMinImpactAngle));
 
 	// See if we hit hard enough to play a sound and do damage...
 
@@ -2702,9 +2898,13 @@ void CVehicleMgr::HandleCollision()
 
 		// Play an fx based on the surface we hit...
 
-		if( pSurface && pSurface->szSnowmobileImpactFXName[0] )
+		SURFACEVEHICLE const* pSurfVehicle = LTNULL;
+		if( pSurface && m_pVehicleButes )
+			pSurfVehicle = pSurface->GetVehicleType(m_pVehicleButes->nSurfaceVehicleType);
+
+		if( pSurfVehicle && !pSurfVehicle->sImpactFX.empty() )
 		{
-			CLIENTFX_CREATESTRUCT fxCS(pSurface->szSnowmobileImpactFXName, 0, vPos);
+			CLIENTFX_CREATESTRUCT fxCS(pSurfVehicle->sImpactFX.c_str(), 0, vPos);
 			fxCS.m_vTargetNorm = m_cLastTouchInfo.m_Plane.m_Normal;
 			
 			g_pClientFXMgr->CreateClientFX(NULL, fxCS, LTTRUE);
@@ -2786,7 +2986,7 @@ void CVehicleMgr::HandleCollision()
 
 		if (pSurface && !m_hVehicleImpactSnd)
 		{
-			char* pSound = GetImpactSnd(fVelPercent, pSurface);
+			char const* pSound = GetImpactSnd(fVelPercent, pSurface);
 			if (pSound)
 			{
 				uint32 dwFlags = PLAYSOUND_GETHANDLE | PLAYSOUND_CLIENT;
@@ -2927,7 +3127,7 @@ void CVehicleMgr::HandleNodeControl(HOBJECT hObj, HMODELNODE hNode, LTMatrix *pG
 void CVehicleMgr::CalculateBankingVehicleRotation(LTVector & vPlayerPYR,
 										   LTVector & vPYR, LTFLOAT fYawDelta)
 {
-	if (g_vtSnowmobileInfoTrack.GetFloat() >= SNOW_TRACK_VERBOSE)
+	if (g_vtVehicleInfoTrack.GetFloat() >= SNOW_TRACK_VERBOSE)
 	{
 		g_pLTClient->CPrint("SNOWMOBILE VERBOSE INFO:");
 		g_pLTClient->CPrint("Initial vPlayerPYR.y	= %.2f", vPlayerPYR.y);
@@ -3037,7 +3237,7 @@ void CVehicleMgr::CalculateBankingVehicleRotation(LTVector & vPlayerPYR,
 
 		fAdjustedYawDelta = (fYawDelta > 0.0f ? fAdjustedYawDelta : -fAdjustedYawDelta);
 
-		if (g_vtSnowmobileInfoTrack.GetFloat() >= SNOW_TRACK_VERBOSE)
+		if (g_vtVehicleInfoTrack.GetFloat() >= SNOW_TRACK_VERBOSE)
 		{
 			g_pLTClient->CPrint("fAdjustedYawDelta		= %.2f", fAdjustedYawDelta);
 		}
@@ -3132,24 +3332,44 @@ void CVehicleMgr::CalculateBankingVehicleRotation(LTVector & vPlayerPYR,
 
 		m_fYawDelta *= g_vtVehicleTurnRateScale.GetFloat();
 
-		if (g_vtSnowmobileInfoTrack.GetFloat() >= SNOW_TRACK_VERBOSE)
+		if (g_vtVehicleInfoTrack.GetFloat() >= SNOW_TRACK_VERBOSE)
 		{
 			g_pLTClient->CPrint("Final m_fYawDelta		= %.2f", m_fYawDelta);
 		}
 
-		// Set the player's new yaw...
+	}
 
-		if (!m_bVehicleStopped)
-		{
-			vPlayerPYR.y += (m_fYawDelta * m_nVehicleTurnDirection);
-		}
+	// RETAIL: 0x1010624f: backing up turns the other way.
+
+	float fDirection = 1.0f;
+	if (m_bVehicleStopped)
+	{
+		if ((m_dwControlFlags & BC_CFLG_REVERSE) && m_pVehicleButes && m_pVehicleButes->bHasReverse)
+			fDirection = -1.0f;
+	}
+	else
+	{
+		LTVector vVel = g_pMoveMgr->GetVelocity();
+
+		LTRotation rRot;
+		g_pLTClient->GetObjectRotation(g_pMoveMgr->GetObject(), &rRot);
+
+		if (vVel.Dot(rRot.Forward()) <= 0.0f)
+			fDirection = -1.0f;
+	}
+
+	// Set the player's new yaw...
+
+	if (!m_bVehicleStopped)
+	{
+		vPlayerPYR.y += (m_nVehicleTurnDirection * m_fYawDelta * fDirection);
 	}
 
 	// Keep the camera and player pitch/yaw/roll in sync...
 
 	vPYR.y = vPlayerPYR.y;
 
-	if (g_vtSnowmobileInfoTrack.GetFloat() >= SNOW_TRACK_VERBOSE)
+	if (g_vtVehicleInfoTrack.GetFloat() >= SNOW_TRACK_VERBOSE)
 	{
 		g_pLTClient->CPrint("Final vPlayerPYR.y		= %.2f", vPlayerPYR.y);
 		g_pLTClient->CPrint("Final vPYR.y			= %.2f", vPYR.y);
@@ -3320,10 +3540,6 @@ void CVehicleMgr::CalculateVehicleRotation(LTVector & vPlayerPYR,
 			CalculateLureVehicleRotation( vPlayerPYR, vPYR );
 			break;
 
-		case PPM_LIGHTCYCLE:
-			CalculateLightCycleRotation( vPlayerPYR, vPYR );
-			break;
-
 		case PPM_NORMAL:
 			return;
 			break;
@@ -3446,7 +3662,6 @@ void CVehicleMgr::CalculateVehicleCameraDisplacment( LTVector& vDisplacement )
 
 		case PPM_NORMAL:
 		case PPM_SNOWMOBILE:
-		case PPM_LIGHTCYCLE:
 			return;
 			break;
 
@@ -3550,7 +3765,11 @@ void CVehicleMgr::CalculateVehicleContourRotation( LTVector &vPlayerPYR, LTVecto
 	GetContouringInfo( vPlayerF, vModelNormal, fModelAmount, fModelPitchPercent, fModelRollPercent );
 
 	// Save the roll we are applying so the canting can use it...
-	m_fContourRoll = fAmount * fRollPercent;
+	// RETAIL: 0x101089f4: only some vehicles roll with the ground.
+	if (m_pVehicleButes && m_pVehicleButes->bContourAffectsRoll)
+		m_fContourRoll = fAmount * fRollPercent;
+	else
+		m_fContourRoll = 0.0f;
 
 	vPlayerPYR.x += fAmount * fPitchPercent;
 	vPlayerPYR.z += m_fContourRoll;
@@ -3628,7 +3847,7 @@ void CVehicleMgr::UpdateSnowmobileGear()
 	// Print out info...
 
 	
-	if (g_vtSnowmobileInfoTrack.GetFloat() == SNOW_TRACK_GENERAL)
+	if (g_vtVehicleInfoTrack.GetFloat() == SNOW_TRACK_GENERAL)
 	{
 		// How fast are we going anyway...
 		
@@ -3642,7 +3861,7 @@ void CVehicleMgr::UpdateSnowmobileGear()
 		
 	myVel.y = 0.0f;
 
-	LTBOOL bUsingAccel = (LTBOOL) g_vtSnowmobileAccelGearChange.GetFloat();
+	LTBOOL bUsingAccel = (LTBOOL) g_vtVehicleAccelGearChange.GetFloat();
 
 	LTFLOAT fMaxVal  = bUsingAccel ? GetMaxAccelMag() : GetMaxVelMag();
 	LTFLOAT fVal	 = bUsingAccel ? m_fVehicleBaseMoveAccel : myVel.Mag();
@@ -3650,7 +3869,7 @@ void CVehicleMgr::UpdateSnowmobileGear()
 	LTBOOL bWasStopped = m_bVehicleStopped;
 
 	m_bVehicleStopped = LTFALSE;
-	if (fVal < fMaxVal * g_vtSnowmobileStoppedPercent.GetFloat())
+	if (fVal < fMaxVal * g_vtVehicleStoppedPercent.GetFloat())
 	{
         m_bVehicleStopped = LTTRUE;
 
@@ -3663,7 +3882,7 @@ void CVehicleMgr::UpdateSnowmobileGear()
 	if (!bWasStopped && m_bVehicleStopped)
 	{
 		CameraDelta delta;
-		delta.Pitch.fVar	= DEG2RAD(0.25f);
+		delta.Pitch.fVar	= DEG2RAD(g_vtVehicleStopMotionPitch.GetFloat());	// RETAIL: 0x1010903c
 		delta.Pitch.fTime1	= 0.4f;
 		delta.Pitch.fTime2	= 0.5;
 		delta.Pitch.eWave1	= Wave_SlowOff;
@@ -3676,7 +3895,7 @@ void CVehicleMgr::UpdateSnowmobileGear()
 
 		CameraDelta delta;
 
-		delta.Pitch.fVar	= DEG2RAD(-0.5f);
+		delta.Pitch.fVar	= DEG2RAD(g_vtVehicleStartMotionPitch.GetFloat());	// RETAIL: 0x1010907c
 		delta.Pitch.fTime1	= 0.25f;
 		delta.Pitch.fTime2	= 0.5;
 		delta.Pitch.eWave1	= Wave_SlowOff;
@@ -3685,9 +3904,15 @@ void CVehicleMgr::UpdateSnowmobileGear()
 	}
 
     m_bVehicleAtMaxSpeed = LTFALSE;
-	if (fVal > fMaxVal * g_vtSnowmobileMaxSpeedPercent.GetFloat())
+	if (fVal > fMaxVal * g_vtVehicleMaxSpeedPercent.GetFloat())
 	{
         m_bVehicleAtMaxSpeed = LTTRUE;
+	}
+
+	// RETAIL: 0x10109124: the weapon fires its full-speed animations.
+	if (m_bHasVehicleWeapon)
+	{
+		m_VehicleWeapon.SetFullSpeed(!!m_bVehicleAtMaxSpeed);
 	}
 
 	m_nLastGear = m_nCurGear;
@@ -3830,12 +4055,6 @@ bool CVehicleMgr::MoveLocalSolidObject( )
 		case PPM_SNOWMOBILE:
 			return false;
 			break;
-
-		case PPM_LIGHTCYCLE:
-		{
-			return(MoveLightCycle());
-			break;
-		}
 
 		case PPM_LURE:
 			return MoveToLure( );
@@ -4143,175 +4362,19 @@ bool CVehicleMgr::HandleCharacterTouch( HOBJECT hCharacter )
 }
 
 
-// ----------------------------------------------------------------------- //
-//
-//	ROUTINE:	CMoveMgr::UpdateLightCycleControlFlags
-//
-//	PURPOSE:	Update the Light Cycke control flags
-//
-// ----------------------------------------------------------------------- //
-void CVehicleMgr::UpdateLightCycleControlFlags()
-{
-}
-
-// ----------------------------------------------------------------------- //
-//
-//	ROUTINE:	CVehicleMgr::UpdateLightCycleMotion
-//
-//	PURPOSE:	Update our light cycle motion
-//
-// ----------------------------------------------------------------------- //
-void CVehicleMgr::UpdateLightCycleMotion()
-{
-	HOBJECT hObj = g_pMoveMgr->GetObject();
-	if(!hObj)
-	{
-		ASSERT(!"CVehicleMgr::UpdateLightCycleMotion:  Invalid client object.");
-		return;
-	}
-
-	LTVector vZero(0.0f, 0.0f, 0.0f);
-	LTVector vMoveVel(0.0f, 0.0f, 0.0f);
-
-	// Make sure the player is axis aligned and on the XZ plane (yaw)
-	float fYaw = g_pPlayerMgr->GetPlayerYaw();
-	AlignAngleToAxis(fYaw);
-	g_pPlayerMgr->SetPlayerYaw(fYaw);
-
-	LTRotation rot(0.0f, fYaw, 0.0f);
-	vMoveVel = rot.Forward();
-
-	LTFLOAT fMaxVel    = GetMaxVelMag();
-
-	// Set our current rotation...
-	vMoveVel *= fMaxVel;
-	
-	g_pPhysicsLT->SetAcceleration(g_pMoveMgr->GetObject(), &vZero);
-	g_pPhysicsLT->SetVelocity(hObj, &vMoveVel);
-}
-
-// ----------------------------------------------------------------------- //
-//
-//	ROUTINE:	CVehicleMgr::CalculateLightCycleRotation
-//
-//	PURPOSE:	Handles the rotation of the light cycle
-//
-// ----------------------------------------------------------------------- //
-void CVehicleMgr::CalculateLightCycleRotation(LTVector & vPlayerPYR,
-										   LTVector & vPYR )
-{
-}
-
 LTBOOL CVehicleMgr::OnCommandOn(int command)
 {
-	switch (m_ePPhysicsModel)
-	{
-		case PPM_LIGHTCYCLE:
-		{
-			if(command == COMMAND_ID_STRAFE_LEFT)
-			{
-				// Rotate the player 90 degrees to the left
-				g_pPlayerMgr->SetPlayerYaw(g_pPlayerMgr->GetPlayerYaw()-MATH_HALFPI);
-				m_bTurned = true;
-			}
-			else if(command == COMMAND_ID_STRAFE_RIGHT)
-			{
-				// Rotate the player 90 degrees to the right
-				g_pPlayerMgr->SetPlayerYaw(g_pPlayerMgr->GetPlayerYaw()+MATH_HALFPI);
-				m_bTurned = true;
-			}
-			return LTTRUE;
-		}
-		break;
-
-		default:
-		break;
-	}
-
+	// RETAIL: 0x10105440 - the light cycle is gone in CJ.
 	return LTFALSE;
 }
 
 LTBOOL CVehicleMgr::OnCommandOff(int command)
 {
-	switch (m_ePPhysicsModel)
-	{
-		case PPM_LIGHTCYCLE:
-		{
-			return LTTRUE;
-		}
-		break;
-
-		default:
-		break;
-	}
-
+	// RETAIL: 0x10105450 - the light cycle is gone in CJ.
 	return LTFALSE;
 }
 
-bool CVehicleMgr::MoveLightCycle()
-{
-	LTVector newPos, curPos;
-	MoveInfo info;
 
-	// Get physics interface
-	ILTClientPhysics* pPhysics = (ILTClientPhysics*)g_pPhysicsLT;
-
-	// Get our client-side player object
-	HOBJECT hObj = g_pMoveMgr->GetObject();
-	info.m_hObject = hObj;
-
-	// Do the dirty work
-	info.m_dt = g_pGameClientShell->GetFrameTime();
-	pPhysics->UpdateMovement(&info);
-
-	// Make sure we actually moved
-	if (info.m_Offset.MagSqr() > 0.01f)
-	{
-		g_pLTClient->GetObjectPos(hObj, &curPos);
-		newPos = curPos + info.m_Offset;
-		
-		if(m_bTurned)
-		{
-			SnapLightCycleToXZGrid(newPos,curPos,(uint32)(g_vtLightCycleGridSize.GetFloat()));
-			m_bTurned = false;
-		}
-
-		pPhysics->MoveObject(hObj, &newPos, 0);
-	}
-
-	return true;
-}
-
-void CVehicleMgr::SnapLightCycleToXZGrid(LTVector &vNewPos, LTVector &vOldPos, uint32 nGridSize)
-{
-	float fGridSize = (float)nGridSize;
-
-	float xDelta = (float)fabs(vNewPos.x - vOldPos.x);
-	float zDelta = (float)fabs(vNewPos.z - vOldPos.z);
-	
-	if(zDelta > xDelta) // Traveling along Z axis, so snap X component
-	{
-		// First, convert to an int
-		int x = ROUNDFLOAT(vNewPos.x);
-		
-		// Now snap it
-		if(nGridSize > 1)
-		{
-			vNewPos.x = ROUNDFLOAT((float)x / fGridSize) * fGridSize;
-		}
-	}
-	else // Traveling along X axis, so snap z component
-	{
-		// First, convert to an int
-		int z = ROUNDFLOAT(vNewPos.z);
-		
-		// Now snap it
-		if(nGridSize > 1)
-		{
-			vNewPos.z = ROUNDFLOAT((float)z / fGridSize) * fGridSize;
-		}
-	}
-}
 
 void CVehicleMgr::AlignAngleToAxis(float &fAngle)
 {
@@ -4483,7 +4546,6 @@ void CVehicleMgr::MoveVehicleObject( LTVector &vPos )
 		break;
 
 		case PPM_NORMAL:
-		case PPM_LIGHTCYCLE:
 		case PPM_LURE:
 		{
 			// Simple movement call...
@@ -4528,49 +4590,29 @@ void CVehicleMgr::Save(ILTMessage_Write *pMsg, SaveDataState eSaveDataState)
 
 	pMsg->Writebool( m_bHolsteredWeapon );
 
-// IMPORTANT NOTE!!! 
-// Serialization of VehicleMgr is very bad, since the rest of the code assumes it's going
-// to have to reset the state of the player physics model
-/*
-	pMsg->Writeuint32(m_ePPhysicsModel);
+	// RETAIL: 0x10109640: Contract J.A.C.K. keeps where the player sits on
+	// a lure.
 
-	pMsg->Writefloat(m_fAccelStart);
-	pMsg->Writefloat(m_fDecelStart);
-	pMsg->Writeuint32(m_dwControlFlags);
-	pMsg->Writeuint32(m_dwLastControlFlags);
-	pMsg->Writefloat(m_fVehicleBaseMoveAccel);
-
-	pMsg->Writeint32(m_nCurGear);
-	pMsg->Writeint32(m_nLastGear);
-	pMsg->Writebool(m_bTurned);
-
-	pMsg->Writebool(m_bVehicleStopped != LTFALSE);
-	pMsg->Writebool(m_bVehicleAtMaxSpeed != LTFALSE);
-	pMsg->Writebool(m_bVehicleTurning != LTFALSE);
-	pMsg->Writeint32(m_nVehicleTurnDirection);
-
-	pMsg->WriteLTVector(m_vVehiclePYR);
-
-	pMsg->Writefloat(m_fContourRoll);
-
-	pMsg->Writeuint32(m_eSurface);
-	pMsg->Writeuint32(m_eLastSurface);
-
-	pMsg->Writefloat(m_fYawDiff);
-	pMsg->Writefloat(m_fYawDelta);
-	pMsg->Writefloat(m_fHandlebarRoll);
-	pMsg->Writefloat(m_fHeadYaw);
-
-	pMsg->Writeuint32(m_nPlayerLureId);
-
-	pMsg->Writebool(m_bHaveJumpVolumeVel != LTFALSE);
-	pMsg->Writefloat(m_fJumpVolumeVel);
-
-	pMsg->Writebool(m_bSetLastAngles);
-	pMsg->WriteLTVector(m_vLastVehiclePYR);
-	pMsg->WriteLTVector(m_vLastPlayerAngles);
-	pMsg->WriteLTVector(m_vLastCameraAngles);
-*/
+	if( m_ePPhysicsModel == PPM_LURE )
+	{
+		PlayerLureFX* pPlayerLureFX = PlayerLureFX::GetPlayerLureFX( m_nPlayerLureId );
+		if( pPlayerLureFX )
+		{
+			LTransform const& offsetTransform = pPlayerLureFX->GetOffsetTransform( );
+			pMsg->Writebool( true );
+			pMsg->WriteLTVector( offsetTransform.m_Pos );
+			pMsg->WriteLTRotation( offsetTransform.m_Rot );
+			pMsg->WriteLTVector( offsetTransform.m_Scale );
+		}
+		else
+		{
+			pMsg->Writebool( false );
+		}
+	}
+	else
+	{
+		pMsg->Writebool( false );
+	}
 }
 
 // ----------------------------------------------------------------------- //
@@ -4585,48 +4627,14 @@ void CVehicleMgr::Load(ILTMessage_Read *pMsg, SaveDataState eLoadDataState)
 {
 	m_bHolsteredWeapon = pMsg->Readbool();
 
-// IMPORTANT NOTE!!! 
-// Serialization of VehicleMgr is very bad, since the rest of the code assumes it's going
-// to have to reset the state of the player physics model
-/*
-	SetPhysicsModel((PlayerPhysicsModel)pMsg->Readuint32());
+	// RETAIL: 0x101096d0
 
-	m_fAccelStart = pMsg->Readfloat();
-	m_fDecelStart = pMsg->Readfloat();
-	m_dwControlFlags = pMsg->Readuint32();
-	m_dwLastControlFlags = pMsg->Readuint32();
-	m_fVehicleBaseMoveAccel = pMsg->Readfloat();
-
-	m_nCurGear = pMsg->Readuint32();
-	m_nLastGear = pMsg->Readuint32();
-	m_bTurned = pMsg->Readbool();
-
-	m_bVehicleStopped = pMsg->Readbool() ? LTTRUE : LTFALSE;
-	m_bVehicleAtMaxSpeed = pMsg->Readbool() ? LTTRUE : LTFALSE;
-	m_bVehicleTurning = pMsg->Readbool() ? LTTRUE : LTFALSE;
-	m_nVehicleTurnDirection = pMsg->Readuint32();
-
-	m_vVehiclePYR = pMsg->ReadLTVector();
-
-	m_fContourRoll = pMsg->Readfloat();
-
-	m_eSurface = (SurfaceType)pMsg->Readuint32();
-	m_eLastSurface = (SurfaceType)pMsg->Readuint32();
-
-	m_fYawDiff = pMsg->Readfloat();
-	m_fYawDelta = pMsg->Readfloat();
-	m_fHandlebarRoll = pMsg->Readfloat();
-	m_fHeadYaw = pMsg->Readfloat();
-
-	m_nPlayerLureId = pMsg->Readuint32();
-
-	m_bHaveJumpVolumeVel = pMsg->Readbool() ? LTTRUE : LTFALSE;
-	m_fJumpVolumeVel = pMsg->Readfloat();
-
-	m_bSetLastAngles = pMsg->Readbool();
-	m_vLastVehiclePYR = pMsg->ReadLTVector();
-	m_vLastPlayerAngles = pMsg->ReadLTVector();
-	m_vLastCameraAngles = pMsg->ReadLTVector();
-*/
+	m_bHasLureTransform = pMsg->Readbool();
+	if( m_bHasLureTransform )
+	{
+		m_LureOffsetTransform.m_Pos = pMsg->ReadLTVector( );
+		m_LureOffsetTransform.m_Rot = pMsg->ReadLTRotation( );
+		m_LureOffsetTransform.m_Scale = pMsg->ReadLTVector( );
+	}
 }
 

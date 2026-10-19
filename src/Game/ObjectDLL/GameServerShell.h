@@ -457,6 +457,7 @@ class CGameServerShell : public IServerShellStub
 
         LTBOOL UpdateSessionName();
         LTBOOL UpdateGameServer();
+		bool UpdateGameSpy();	// RETAIL: Object 0x100dbcb0
 
         void		ClearClientList() { for (int i = 0; i < MAX_CLIENTS; i++) { m_aClients[i] = LTNULL; } }
         LTBOOL		AddClientToList(HCLIENT hClient);

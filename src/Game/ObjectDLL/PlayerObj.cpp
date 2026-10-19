@@ -3297,6 +3297,21 @@ void CPlayerObj::WriteVehicleMessage(ILTMessage_Write *pMsg)
 			pPlayerLure->WriteVehicleMessage( *pMsg );
 		}
 	}
+	// RETAIL: Object 0x1010faa0: Contract J.A.C.K. sends the vehicle's
+	// record, and tells every client's character FX too.
+	else if( m_ePPhysicsModel == PPM_SNOWMOBILE )
+	{
+		pMsg->Writeuint8(m_nVehicleId);
+	}
+
+	CAutoMessage cMsg;
+	cMsg.Writeuint8(MID_SFX_MESSAGE);
+	cMsg.Writeuint8(SFX_CHARACTER_ID);
+	cMsg.WriteObject(m_hObject);
+	cMsg.Writeuint8(CFX_PHYSICSMODEL);
+	cMsg.Writeuint8(m_ePPhysicsModel);
+	cMsg.Writeuint8(m_nVehicleId);
+	g_pLTServer->SendToClient(cMsg.Read(), LTNULL, 0);
 }
 
 

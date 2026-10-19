@@ -56,7 +56,8 @@ class CVehicleMgr
 
     uint32      GetControlFlags()	const { return m_dwControlFlags; }
  
-	LTBOOL		CanShowCrosshair()	const { return (m_ePPhysicsModel != PPM_SNOWMOBILE); }
+	bool		CanShowCrosshair()	const;
+	void		SaveVehicleButes();
 	LTBOOL      IsVehiclePhysics();
 
 	// cjacksrc: RETAIL: CShell 0x101055b0: the vehicle's own weapon.
@@ -87,7 +88,7 @@ class CVehicleMgr
 	
 	CCameraOffsetMgr* GetModelOffsetMgr() { return &m_VehicleModelOffsetMgr; }
 
-	void		SetPhysicsModel(PlayerPhysicsModel eModel, LTBOOL bDoPreSet=LTTRUE);
+	void		SetPhysicsModel(PlayerPhysicsModel eModel, uint8 nVehicleId, LTBOOL bDoPreSet=LTTRUE);
 
 	void		AdjustCameraRoll(LTFLOAT & fRoll);
 
@@ -103,7 +104,6 @@ class CVehicleMgr
 	LTBOOL		OnCommandOn(int command);
 	LTBOOL		OnCommandOff(int command);
 	void		AlignAngleToAxis(float &fAngle);
-	void		SnapLightCycleToXZGrid(LTVector &vNewPos, LTVector &vOldPos, uint32 nGridSize);
 	
 	void		MoveVehicleObject( LTVector &vPos );
 
@@ -119,11 +119,11 @@ class CVehicleMgr
 	void		UpdateVehicleMotion();
 	void		UpdateVehicleGear();
 	void		UpdateVehicleSounds();
-	char*		GetIdleSnd();
-	char*		GetBrakeSnd();
-	char*		GetAccelSnd();
-	char*		GetDecelSnd();
-	char*		GetImpactSnd(LTFLOAT fCurVelocityPercent, SURFACE* pSurface);
+	char const*	GetIdleSnd();
+	char const*	GetBrakeSnd();
+	char const*	GetAccelSnd();
+	char const*	GetDecelSnd();
+	char const*	GetImpactSnd(LTFLOAT fCurVelocityPercent, SURFACE* pSurface);
 	
 	LTFLOAT		GetVehicleAccelTime();
 	LTFLOAT		GetVehicleMinTurnAccel();
@@ -139,8 +139,6 @@ class CVehicleMgr
 	void		UpdateLureControlFlags();
 	void		UpdateLureMotion();
 	
-	void		UpdateLightCycleControlFlags();
-	void		UpdateLightCycleMotion();
 
 
 	void        KillAllVehicleSounds(HLTSOUND hException=LTNULL);
@@ -165,16 +163,14 @@ class CVehicleMgr
 	void		CalculateBankingVehicleRotation(LTVector & vPlayerPYR, LTVector & vPYR, LTFLOAT fYawDelta);
 	void		CalculateLureVehicleRotation(LTVector & vPlayerPYR, LTVector & vPYR);
 	void		CalculateVehicleContourRotation( LTVector &vPlayerPYR, LTVector &vPYR );
-	void		CalculateLightCycleRotation(LTVector & vPlayerPYR, LTVector & vPYR);
 		
 	bool		MoveToLure( );
-	bool		MoveLightCycle();
 
 	bool		HandleJumpVolumeTouch( HOBJECT hJumpVolume );
 	bool		HandleCharacterTouch( HOBJECT hCharacter );
 
 	void		UpdateInJumpVolume();
-	void		EnableWeapon( bool bEnable );
+	void		EnableWeapon( bool bEnable, bool bHolster );
 	
 	void		UpdateContainerMotion();
 	
@@ -189,7 +185,7 @@ class CVehicleMgr
 	// Movement state.
     uint32      m_dwControlFlags;
     uint32      m_dwLastControlFlags;
-	bool		m_bControlFlagsChanged;	// cjacksrc: RETAIL: 0x101056ec, not yet identified
+	bool		m_bWasBraking;	// RETAIL: 0x1010c509
 
 	float		m_fVehicleBaseMoveAccel;
 
@@ -248,13 +244,10 @@ class CVehicleMgr
 
 	bool			m_bResetLure;
 
-	// cjacksrc: Contract J.A.C.K.'s, read from the server (RETAIL:
-	// 0x101096ff), not yet identified: a position, a rotation and another
-	// vector, for the player lure.
+	// RETAIL: 0x101096d0: Contract J.A.C.K. saves the player lure's offset
+	// transform and puts it back when the lure is reset after a load.
 	bool			m_bHasLureTransform;
-	LTVector		m_vLurePos;
-	LTRotation		m_rLureRot;
-	LTVector		m_vLureOffset;
+	LTransform		m_LureOffsetTransform;
 	LTObjRef		m_hCurJumpVolume;
 
 	LTBOOL			m_bHaveJumpVolumeVel;
@@ -270,7 +263,7 @@ class CVehicleMgr
 
 	// cjacksrc: Contract J.A.C.K.'s vehicles have attributes and may
 	// carry a weapon (RETAIL: 0x10107cb3, 0x10107cff).
-	struct VEHICLEBUTES const*	m_pVehicleButes;
+	struct VEHICLEBUTES*	m_pVehicleButes;
 	CVehicleWeapon	m_VehicleWeapon;
 	bool			m_bHasVehicleWeapon;
 };

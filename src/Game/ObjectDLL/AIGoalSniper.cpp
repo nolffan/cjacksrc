@@ -18,6 +18,8 @@
 #include "AIHumanStateSniper.h"
 #include "AITarget.h"
 #include "AIVolume.h"
+#include "CharacterMgr.h"
+#include "PlayerObj.h"
 
 DEFINE_AI_FACTORY_CLASS_SPECIFIC(Goal, CAIGoalSniper, kGoal_Sniper);
 
@@ -40,6 +42,9 @@ CAIGoalSniper::CAIGoalSniper()
 
 	m_fNextViewNodeUpdate = 0.f;
 	m_pLastTargetInfoVol = LTNULL;
+
+	m_bSeekPlayer = LTFALSE;
+	m_bNoRadius = LTFALSE;
 }
 
 // ----------------------------------------------------------------------- //
@@ -56,6 +61,9 @@ void CAIGoalSniper::Save(ILTMessage_Write *pMsg)
 
 	SAVE_TIME( m_fNextViewNodeUpdate );
 	SAVE_COBJECT( m_pLastTargetInfoVol );
+	SAVE_HOBJECT( m_hSeekTarget );
+	SAVE_BOOL( m_bSeekPlayer );
+	SAVE_BOOL( m_bNoRadius );
 }
 
 void CAIGoalSniper::Load(ILTMessage_Read *pMsg)
@@ -64,6 +72,9 @@ void CAIGoalSniper::Load(ILTMessage_Read *pMsg)
 
 	LOAD_TIME( m_fNextViewNodeUpdate );
 	LOAD_COBJECT( m_pLastTargetInfoVol, AIVolume );
+	LOAD_HOBJECT( m_hSeekTarget );
+	LOAD_BOOL( m_bSeekPlayer );
+	LOAD_BOOL( m_bNoRadius );
 }
 
 // ----------------------------------------------------------------------- //
@@ -174,11 +185,14 @@ void CAIGoalSniper::HandleStateSniper()
 //
 // ----------------------------------------------------------------------- //
 
-void CAIGoalSniper::HandleTargetPos()
+AINode* CAIGoalSniper::HandleTargetPos()
 {
-	if( !m_pAI->HasTarget() )
+	// RETAIL: Object 0x10035370: a sniper told to seek the player looks
+	// for him before he is a target.
+
+	if( !m_pAI->HasTarget() && !m_hSeekTarget )
 	{
-		return;
+		return LTNULL;
 	}
 
 	// Do not change view nodes repeatedly every time player moves.
@@ -186,12 +200,17 @@ void CAIGoalSniper::HandleTargetPos()
 	// Ignore delay and change position if can't see target.
 
 	LTFLOAT fCurTime = g_pLTServer->GetTime();
-	if( m_pAI->GetTarget()->IsVisiblePartially() && ( fCurTime < m_fNextViewNodeUpdate ) )
+	if( m_pAI->HasTarget() && m_pAI->GetTarget()->IsVisiblePartially() && ( fCurTime < m_fNextViewNodeUpdate ) )
 	{
-		return;
+		return LTNULL;
 	}
 
-	CCharacter* pCharacter = (CCharacter*)g_pLTServer->HandleToObject( m_pAI->GetTarget()->GetObject() );
+	HOBJECT hTarget = m_pAI->HasTarget() ? m_pAI->GetTarget()->GetObject() : (HOBJECT)m_hSeekTarget;
+	CCharacter* pCharacter = (CCharacter*)g_pLTServer->HandleToObject( hTarget );
+	if( !pCharacter )
+	{
+		return LTNULL;
+	}
 
 	// Find target's current PlayerInfoVolume volume.
 
@@ -200,7 +219,7 @@ void CAIGoalSniper::HandleTargetPos()
 		( pInfoVolume->GetVolumeType() != AIInformationVolume::eTypePlayerInfo ) ||
 		( (AIVolume*)pInfoVolume == m_pLastTargetInfoVol ) )
 	{
-		return;
+		return LTNULL;
 	}
 
 	// Record changes in info volumes.
@@ -243,6 +262,8 @@ void CAIGoalSniper::HandleTargetPos()
 		SetSniperNode( (AINodeUseObject*)pSniperNode );
 		m_fNextViewNodeUpdate = fCurTime + VIEW_NODE_UPDATE_RATE;
 	}
+
+	return pSniperNode;
 }
 
 // ----------------------------------------------------------------------- //
@@ -255,6 +276,15 @@ void CAIGoalSniper::HandleTargetPos()
 
 AINode* CAIGoalSniper::FindNearestAttractorNode()
 {
+	// RETAIL: Object 0x10035550: remember who to look for.
+
+	if( m_pAI->HasTarget() && ( m_hSeekTarget != m_pAI->GetTarget()->GetObject() ))
+	{
+		m_hSeekTarget = m_pAI->GetTarget()->GetObject();
+	}
+
+	AINode* pNode;
+
 	// Find a guard node owned by this AI.
 
 	AINode* pGuardNode = g_pAINodeMgr->FindOwnedNode( kNode_Guard, m_pAI->m_hObject );
@@ -262,12 +292,23 @@ AINode* CAIGoalSniper::FindNearestAttractorNode()
 	{
 		// Only find attractor nodes owned by the owner node.
 
-		return FindGoalAttractors( LTTRUE, pGuardNode->m_hObject );
+		pNode = FindGoalAttractors( LTTRUE, pGuardNode->m_hObject );
+	}
+	else
+	{
+		// Find an unowned node.
+
+		pNode = FindGoalAttractors( LTFALSE, LTNULL );
 	}
 
-	// Find an unowned node.
+	// Without regard to the nodes' radius, any view of the target will do.
 
-	return FindGoalAttractors( LTFALSE, LTNULL );
+	if( !pNode && m_bNoRadius )
+	{
+		pNode = HandleTargetPos();
+	}
+
+	return pNode;
 }
 
 // ----------------------------------------------------------------------- //
@@ -345,6 +386,36 @@ LTBOOL CAIGoalSniper::HandleNameValuePair(const char *szName, const char *szValu
 		}
 		else {
 			AIASSERT1( 0, m_pAI->m_hObject, "CAIGoalSniper::HandleNameValuePair: Setting a sniper node that is not an AINodeUseObject: %s", szValue );
+		}
+
+		return LTTRUE;
+	}
+
+	// RETAIL: Object 0x10035185
+
+	if ( !_stricmp(szName, "SEEKPLAYER") )
+	{
+		if( IsTrueChar( szValue[0] ) )
+		{
+			m_bSeekPlayer = LTTRUE;
+			AITRACE( AIShowGoals, ( m_pAI->m_hObject, "CAIGoalSniper: SEEKPLAYER=1" ) );
+
+			CPlayerObj *pPlayer = g_pCharacterMgr->FindPlayer();
+			if ( pPlayer )
+			{
+				m_hSeekTarget = pPlayer->m_hObject;
+			}
+		}
+
+		return LTTRUE;
+	}
+
+	if ( !_stricmp(szName, "NORADIUS") )
+	{
+		if( IsTrueChar( szValue[0] ) )
+		{
+			m_bNoRadius = LTTRUE;
+			AITRACE( AIShowGoals, ( m_pAI->m_hObject, "CAIGoalSniper: NORADIUS=1" ) );
 		}
 
 		return LTTRUE;

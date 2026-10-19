@@ -16,6 +16,8 @@
 #include "ClientUtilities.h"
 #include "SFXMsgIds.h"
 #include "GameClientShell.h"
+#include "VehicleButeMgr.h"
+#include "FxFlags.h"
 
 #define RADAR_SNOWMOBILE_TYPE	"Snowmobile"
 
@@ -38,6 +40,13 @@ LTBOOL CPlayerVehicleFX::Init(HLOCALOBJ hServObj, ILTMessage_Read *pMsg)
 
 	cs.hServerObj = hServObj;
     cs.Read(pMsg);
+
+	// RETAIL: CShell 0x100a16c0: whether the vehicle is about to respawn.
+	m_bBlinking = pMsg->Readbool();
+	if (m_bBlinking)
+		StartBlink();
+	else
+		StopBlink();
 
 	return Init(&cs);
 }
@@ -81,5 +90,169 @@ LTBOOL CPlayerVehicleFX::Update()
 	if( !CSpecialFX::Update() || m_bWantRemove ) 
 		return LTFALSE;
 
+	// RETAIL: CShell 0x100a14d0
+	if (m_bBlinking)
+		UpdateBlink();
+
 	return LTTRUE;
+}
+
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	CPlayerVehicleFX::~CPlayerVehicleFX
+//
+//	PURPOSE:	RETAIL: CShell 0x100a1400
+//
+// ----------------------------------------------------------------------- //
+
+CPlayerVehicleFX::~CPlayerVehicleFX()
+{
+	if (m_bBlinking)
+	{
+		m_bBlinking = false;
+		g_pClientFXMgr->ShutdownClientFX(&m_FadeFX);
+	}
+}
+
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	CPlayerVehicleFX::OnServerMessage
+//
+//	PURPOSE:	RETAIL: CShell 0x100a1750: the respawn messages
+//
+// ----------------------------------------------------------------------- //
+
+LTBOOL CPlayerVehicleFX::OnServerMessage(ILTMessage_Read *pMsg)
+{
+	if (!pMsg) return LTFALSE;
+
+	switch (pMsg->Readuint8())
+	{
+		case PVFX_BLINK:
+			StartBlink();
+		break;
+
+		case PVFX_STOPBLINK:
+			StopBlink();
+		break;
+
+		case PVFX_MOVE:
+		{
+			LTVector vFrom = pMsg->ReadLTVector();
+			LTVector vTo = pMsg->ReadLTVector();
+			Move(vFrom, vTo);
+		}
+		break;
+
+		default:
+		break;
+	}
+
+	return LTTRUE;
+}
+
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	CPlayerVehicleFX::StartBlink
+//
+//	PURPOSE:	RETAIL: CShell 0x100a1500: fade in and out until respawning
+//
+// ----------------------------------------------------------------------- //
+
+void CPlayerVehicleFX::StartBlink()
+{
+	m_fAlpha = 1.0f;
+	m_bFadeIn = false;
+	m_bBlinking = true;
+
+	VEHICLEBUTES* pVehicle = g_pVehicleButeMgr->GetVehicle(m_cs.nVehicleId);
+
+	LTVector vPos;
+	g_pLTClient->GetObjectPos(m_hServerObject, &vPos);
+
+	if (pVehicle)
+	{
+		CLIENTFX_CREATESTRUCT fxInit(pVehicle->sMPFadeFX.c_str(), FXFLAG_LOOP | FXFLAG_NOSMOOTHSHUTDOWN, vPos);
+		g_pClientFXMgr->CreateClientFX(&m_FadeFX, fxInit, LTTRUE);
+	}
+
+	g_pLTClient->SetObjectColor(m_hServerObject, 1.0f, 1.0f, 1.0f, 1.0f);
+}
+
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	CPlayerVehicleFX::StopBlink
+//
+//	PURPOSE:	RETAIL: CShell 0x100a13b0
+//
+// ----------------------------------------------------------------------- //
+
+void CPlayerVehicleFX::StopBlink()
+{
+	m_fAlpha = 1.0f;
+	m_bBlinking = false;
+	g_pClientFXMgr->ShutdownClientFX(&m_FadeFX);
+	g_pLTClient->SetObjectColor(m_hServerObject, 1.0f, 1.0f, 1.0f, 1.0f);
+}
+
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	CPlayerVehicleFX::UpdateBlink
+//
+//	PURPOSE:	RETAIL: CShell 0x100a1320
+//
+// ----------------------------------------------------------------------- //
+
+void CPlayerVehicleFX::UpdateBlink()
+{
+	if (m_bFadeIn)
+	{
+		m_fAlpha += g_pLTClient->GetFrameTime() * 2.0f;
+		if (m_fAlpha > 1.0f)
+		{
+			m_fAlpha = 1.0f;
+			m_bFadeIn = false;
+		}
+	}
+	else
+	{
+		m_fAlpha -= g_pLTClient->GetFrameTime() * 2.0f;
+		if (m_fAlpha <= 0.01f)
+		{
+			m_fAlpha = 0.01f;
+			m_bFadeIn = true;
+		}
+	}
+
+	g_pLTClient->SetObjectColor(m_hServerObject, 1.0f, m_fAlpha, m_fAlpha, 1.0f);
+}
+
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	CPlayerVehicleFX::Move
+//
+//	PURPOSE:	RETAIL: CShell 0x100a15b0: the vehicle went back to its
+//				place
+//
+// ----------------------------------------------------------------------- //
+
+void CPlayerVehicleFX::Move(LTVector const& vFrom, LTVector const& vTo)
+{
+	m_fAlpha = 1.0f;
+	m_bBlinking = false;
+	g_pClientFXMgr->ShutdownClientFX(&m_FadeFX);
+	g_pLTClient->SetObjectColor(m_hServerObject, 1.0f, 1.0f, 1.0f, 1.0f);
+
+	VEHICLEBUTES* pVehicle = g_pVehicleButeMgr->GetVehicle(m_cs.nVehicleId);
+	if (!pVehicle) return;
+
+	LTVector vPos = vFrom;
+	CLIENTFX_CREATESTRUCT fxUnspawn(pVehicle->sMPUnspawnFX.c_str(), 0, vPos);
+	CLIENTFX_LINK fxUnspawnLink;
+	g_pClientFXMgr->CreateClientFX(&fxUnspawnLink, fxUnspawn, LTTRUE);
+
+	vPos = vTo;
+	CLIENTFX_CREATESTRUCT fxSpawn(pVehicle->sMPSpawnFX.c_str(), 0, vPos);
+	CLIENTFX_LINK fxSpawnLink;
+	g_pClientFXMgr->CreateClientFX(&fxSpawnLink, fxSpawn, LTTRUE);
 }

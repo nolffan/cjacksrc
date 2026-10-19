@@ -2259,6 +2259,12 @@ AMMO::AMMO()
 	bCanBeDeflected = false;
 	bCanAdjustInstDamage = true;
 
+	// RETAIL: Object 0x10160d40
+	bHeatSeeking			= false;
+	fHeatSeekingRange		= 2000.0f;
+	fHeatSeekingAngle		= 45.0f;
+	fHeatSeekingRateOfTurn	= 30.0f;
+
 	pProjectileFX			= NULL;
 	pImpactFX				= NULL;
 	pUWImpactFX				= NULL;
@@ -2335,6 +2341,10 @@ void AMMO::InitMembers( CButeMgr &buteMgr, char *aTagName )
 	fProgDamageLifetime   = (LTFLOAT) buteMgr.GetDouble( aTagName, WMGR_AMMO_PROGDAMAGELIFE, fProgDamageLifetime );
 	bCanBeDeflected       = !!buteMgr.GetInt( aTagName, WMGR_AMMO_CANBEDEFLECTED, bCanBeDeflected );
 	bCanAdjustInstDamage  = !!buteMgr.GetInt( aTagName, WMGR_AMMO_CANADJUSTINSTDAMAGE, bCanAdjustInstDamage );
+	bHeatSeeking          = !!buteMgr.GetInt( aTagName, "HeatSeeking", bHeatSeeking );
+	fHeatSeekingRange     = (float)buteMgr.GetInt( aTagName, "HeatSeekingRange", (int)fHeatSeekingRange );
+	fHeatSeekingAngle     = (float)buteMgr.GetInt( aTagName, "HeatSeekingAngle", (int)fHeatSeekingAngle );
+	fHeatSeekingRateOfTurn = (float)buteMgr.GetInt( aTagName, "HeatSeekingRateOfTurn", (int)fHeatSeekingRateOfTurn );
 
 
 	GetStringIfExist( buteMgr, aTagName, WMGR_AMMO_ICON, &szIcon, WMGR_MAX_FILE_PATH );

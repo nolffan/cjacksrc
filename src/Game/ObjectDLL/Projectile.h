@@ -169,6 +169,7 @@ class CProjectile : public GameBase
 		// update functions
 		void InitialUpdate(int nInfo);
 		void Update();
+		void UpdateHeatSeeking();	// RETAIL: Object 0x10120620
 
 		// 
 		void DoProjectile();
