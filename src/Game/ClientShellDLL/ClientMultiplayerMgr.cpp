@@ -318,9 +318,9 @@ bool ClientMultiplayerMgr::SetupClient( char const* pszHostName, char const* psz
 	m_sPrivateAddress = pszPrivateAddress;
 	m_bUsePublicAddress = bUsePublicAddress;
 
-	memset( &m_StartGameRequest, 0, sizeof( m_StartGameRequest ));
-	// No socket of our own yet (StartGameRequest::m_hSocket): the engine opens one.
-	m_StartGameRequest.m_hSocket = (uint32)-1;
+	// RETAIL: a fresh StartGameRequest (its constructor's defaults, no
+	// socket of our own yet), as 0x1001f2c0/0x1001eb80/0x1001f450 do.
+	m_StartGameRequest = StartGameRequest( );
 	m_ServerGameOptions.Clear( );
 	memset( &m_NetClientData, 0, sizeof( m_NetClientData ));
 
@@ -354,9 +354,9 @@ bool ClientMultiplayerMgr::SetupClient( char const* pszHostName, char const* psz
 // ----------------------------------------------------------------------- //
 bool ClientMultiplayerMgr::SetupServerSinglePlayer( )
 {
-	memset(&m_StartGameRequest, 0, sizeof(StartGameRequest));
-	// No socket of our own yet (StartGameRequest::m_hSocket): the engine opens one.
-	m_StartGameRequest.m_hSocket = (uint32)-1;
+	// RETAIL: a fresh StartGameRequest (its constructor's defaults, no
+	// socket of our own yet), as 0x1001f2c0/0x1001eb80/0x1001f450 do.
+	m_StartGameRequest = StartGameRequest( );
 	m_ServerGameOptions.Clear( );
 	memset( &m_NetClientData, 0, sizeof( m_NetClientData ));
 
@@ -382,9 +382,9 @@ bool ClientMultiplayerMgr::SetupServerSinglePlayer( )
 
 bool ClientMultiplayerMgr::SetupServerHost( int nPort, bool bLANOnly )
 {
-	memset( &m_StartGameRequest, 0, sizeof( m_StartGameRequest ));
-	// No socket of our own yet (StartGameRequest::m_hSocket): the engine opens one.
-	m_StartGameRequest.m_hSocket = (uint32)-1;
+	// RETAIL: a fresh StartGameRequest (its constructor's defaults, no
+	// socket of our own yet), as 0x1001f2c0/0x1001eb80/0x1001f450 do.
+	m_StartGameRequest = StartGameRequest( );
 	m_ServerGameOptions.Clear( );
 	memset( &m_NetClientData, 0, sizeof( m_NetClientData ));
 	
@@ -1060,6 +1060,12 @@ void ClientMultiplayerMgr::JoinServer( )
 	}
 
 	// The join is over; the browsers are made again when needed.
+	DeleteGameSpyBrowsers( );
+}
+
+// RETAIL: 0x1001ea20
+void ClientMultiplayerMgr::DeleteGameSpyBrowsers( )
+{
 	if( m_pGameSpyBrowser )
 	{
 		IGameSpyBrowser::Delete( m_pGameSpyBrowser );
@@ -1230,6 +1236,9 @@ bool ClientMultiplayerMgr::StartServerAsHost( )
 	// Initialize our protocol.
 	if (!SetService())
         return false;
+
+	// RETAIL: 0x1001eef1, a host has no use for the browsers.
+	DeleteGameSpyBrowsers( );
 
 	// Hook up the netgame and clientinfo.
 	ServerGameOptions* pServerGameOptions = &m_ServerGameOptions;

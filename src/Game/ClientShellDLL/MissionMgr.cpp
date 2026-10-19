@@ -80,8 +80,8 @@ bool CMissionMgr::Init()
     m_nNewMission = -1;
     m_nNewLevel = -1;
 
-	m_sCurrentWorldName.Empty( );
-	m_sNewWorldName.Empty( );
+	m_sCurrentWorldName = "";
+	m_sNewWorldName = "";
 
 	return true;
 }
@@ -224,7 +224,7 @@ bool CMissionMgr::FinishStartGameFromLevel()
 	// Tell the server to start with this level.
 	CAutoMessage cMsg;
 	cMsg.Writeuint8( MID_START_LEVEL );
-	cMsg.WriteString( m_sCurrentWorldName );
+	cMsg.WriteString( m_sCurrentWorldName.c_str( ));
 	g_pLTClient->SendToServer( cMsg.Read(), MESSAGE_GUARANTEED );
 
 	return true;
@@ -671,8 +671,9 @@ bool CMissionMgr::HandleMissionFailed()
 
 bool CMissionMgr::HandleExitLevel( ILTMessage_Read& msg  )
 {
-	msg.ReadString( m_sNewWorldName.GetBuffer( MAX_PATH ), MAX_PATH );
-	m_sNewWorldName.ReleaseBuffer( );
+	char szNewWorldName[MAX_PATH];
+	msg.ReadString( szNewWorldName, MAX_PATH );
+	m_sNewWorldName = szNewWorldName;
 	m_bExitingMission = msg.Readbool( );
 	m_bRestoringLevel = msg.Readbool( );
 	m_bServerWaiting  = msg.Readbool( );
@@ -680,7 +681,7 @@ bool CMissionMgr::HandleExitLevel( ILTMessage_Read& msg  )
 	int nMissionId, nLevel;
 
 	// Check if this is a valid mission level.
-	if (g_pMissionButeMgr->IsMissionLevel( m_sNewWorldName, nMissionId, nLevel))
+	if (g_pMissionButeMgr->IsMissionLevel( m_sNewWorldName.c_str( ), nMissionId, nLevel))
 	{
 		m_nNewMission = nMissionId;
 		m_nNewLevel = nLevel;
@@ -705,7 +706,7 @@ bool CMissionMgr::HandleExitLevel( ILTMessage_Read& msg  )
 	m_bNewMission = m_bExitingMission;
 
 	// Check if we didn't get a new world.
-	if( m_sNewWorldName.IsEmpty( ))
+	if( m_sNewWorldName.empty( ))
 	{
 		// Just go back to the main menu.
 		g_pInterfaceMgr->ChangeState( GS_SCREEN );
@@ -803,7 +804,7 @@ bool CMissionMgr::FinishExitLevel( )
 	}
 
 	// Set our new level information.
-	if( !SetNewLevel( m_sNewWorldName ) || !SetLoadingLevel( ))
+	if( !SetNewLevel( m_sNewWorldName.c_str( )) || !SetLoadingLevel( ))
 	{
 		g_pInterfaceMgr->LoadFailed( );
 		return false;

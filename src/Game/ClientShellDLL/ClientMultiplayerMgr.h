@@ -88,6 +88,7 @@ public:
 	// cjacksrc: GameSpy's browsers, for the Internet and the LAN (CShell.dll
 	// 0x1001e9b0); the Internet one answers a server's CD key challenge.
 	bool		CreateGameSpyBrowsers( );
+	void		DeleteGameSpyBrowsers( );	// RETAIL: 0x1001ea20
 	IGameSpyBrowser*	GetGameSpyBrowser( ) const { return m_pGameSpyBrowser; }
 	IGameSpyBrowser*	GetGameSpyLANBrowser( ) const { return m_pGameSpyLANBrowser; }
 

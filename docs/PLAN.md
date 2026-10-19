@@ -1305,6 +1305,32 @@ Round 1 (branch `cshell`), the items 8b leaves open:
   dialog closes, nothing behind it acts); mouse look is as in 8d's
   finding.
 
+- Mouse look, measured (M03S02, `turn 400 0 40` then `turn 0 300`):
+  the client's whole path is retail's (CalculateCameraRotation's maths,
+  the profile's Sensitivity 2 and InputRate 12, ImplementMouseSensitivity's
+  `scale` 0.0035, UseCursor/CursorCenter, the adaptive mouse off). Logging
+  the axis offsets per frame: our CShell turned 1.72 rad with our Object
+  and 3.28 rad with retail's Object.lto, with no jumps between frames;
+  the offsets themselves add up to less. The difference is the frame
+  rate: during the turn our game runs 39-45 fps against 48-75 with
+  retail's Object (afterwards about 140 against 170), and at fewer frames
+  more of the harness's pointer motion is lost to Wine's re-centring
+  (negative offsets: 16 against 5). Pitch moves down and clamps as
+  retail's. So the fix is our Object.lto's per-frame cost on the server
+  side, not CShell's input code.
+
+- Round 4 (21 -> 9): CMissionMgr's world names as std::string, fresh
+  StartGameRequests, DeleteGameSpyBrowsers for the host, the multiplayer
+  update under the menus (CPlayerMgr::UpdateUnderMenus,
+  CGameClientShell::UpdateEffectsNoRender), the time bomb's
+  SpecialOverrideFire on the target manager's object (0x10025760), and
+  the merged runs of stubs split. Where it stops: 9 unwritten -- four are
+  VehicleMgr's (the game package's), CreateObject's ICF-folded copy
+  (0x10095e60), and size-pairing leftovers (ClientMultiplayerMgr's
+  destructor 0x10020150 against ours of 160 bytes, OnCommandOff
+  0x10063ee0, SetupSavedLevel 0x10088810). Next: those, then the
+  unplaced functions.
+
 ### 8d. playtest coverage (branch `apps2`)
 
 Harness: `make control` (out/cjack-control: retail's game with our

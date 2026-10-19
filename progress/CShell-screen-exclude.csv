@@ -22,3 +22,4 @@ addr,reason
 0x10110ca0,NOT A FUNCTION: inside an instruction of CWeaponFX::CreateObject (0x10110390): a stray reference to the middle of its call split its extent
 0x1007fcc3,NOT A FUNCTION: inside an instruction of CLoadingScreen::Init (0x1007ed70): a stray reference to the middle of a mov split its extent
 0x1007e6b5,NOT A FUNCTION: inside an instruction of CLoadingScreen::UpdateMissionInfo (0x1007e400): a stray reference to the middle of a mov split its extent
+0x1004ce1f,NOT A FUNCTION: the last int3 of the padding before the function at 0x1004ce20 (a stray reference one byte early split it)

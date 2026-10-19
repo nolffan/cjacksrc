@@ -1031,6 +1031,13 @@ void CPlayerMgr::FirstPlayingUpdate()
 	}
 }
 
+// RETAIL: 0x100a1010. A multiplayer game goes on under the menus.
+void CPlayerMgr::UpdateUnderMenus()
+{
+	Update();
+	UpdatePlaying();
+}
+
 // ----------------------------------------------------------------------- //
 //
 //	ROUTINE:	CPlayerMgr::UpdatePlaying()
