@@ -26,6 +26,7 @@
 #include "Weapons.h"
 #include "Weapon.h"
 #include "Projectile.h"
+#include "ServerMissionMgr.h"
 
 CBankedList<CWeapon> s_bankCWeapon;
 
@@ -289,6 +290,15 @@ LTBOOL CWeapons::AddWeapon(LPBASECLASS pObject, HOBJECT hSender, ILTMessage_Read
     int     nAmmo     = pMsg->Readint32();
 	bool	bForce	  = pMsg->Readbool();
 
+	// RETAIL: Object 0x10166d07: where weapons stay, one already held is
+	// not picked up again.
+
+	if (IsMultiplayerGame() && g_pServerMissionMgr->GetServerSettings().m_bWeaponsStay &&
+		m_pWeapons && m_pWeapons[nWeaponId] && m_pWeapons[nWeaponId]->Have())
+	{
+		return LTFALSE;
+	}
+
 	// Make sure we always have the default ammo for the new weapon...
 
 	WEAPON const *pWeapon = g_pWeaponMgr->GetWeapon(nWeaponId);
@@ -345,6 +355,8 @@ LTBOOL CWeapons::AddWeapon(LPBASECLASS pObject, HOBJECT hSender, ILTMessage_Read
 LTBOOL CWeapons::AddWeapon(LPBASECLASS pObject, HOBJECT hSender, uint8 nWeaponId,
 						   uint8 nAmmoId, int nAmmo, bool bForcePickup)
 {
+	// RETAIL: Object 0x10166640
+
  	if (!IsValidIndex(nWeaponId)) return LTFALSE;
 
 	LTBOOL  bHaveIt   = LTTRUE;
@@ -353,61 +365,13 @@ LTBOOL CWeapons::AddWeapon(LPBASECLASS pObject, HOBJECT hSender, uint8 nWeaponId
 	if (m_pWeapons && m_pWeapons[nWeaponId] && m_pWeapons[nWeaponId]->Have())
 	{
 		bPickedUp = ( 0 != AddAmmo(nAmmoId, nAmmo) ) ;
-	}
-	else
-	{
-        bHaveIt   = LTFALSE;
-        bPickedUp = LTTRUE;
-		ObtainWeapon(nWeaponId, nAmmoId, nAmmo);
-	}
 
-
-	if (bPickedUp || bForcePickup)
-	{
-		// Tell weapon powerup it was picked up...
-		if (pObject)
+		if (!bPickedUp && !bForcePickup)
 		{
-			// RETAIL: Contract J.A.C.K.'s MID_PICKEDUP carries three flags: picked
-			// up, show it, leave the item (PickupItem::ObjectMessageFn, Object
-			// 0x10104590), written here in place (Object 0x10166640)
-			CAutoMessage cMsg;
-			cMsg.Writeuint32(MID_PICKEDUP);
-			cMsg.Writebool(true);
-			cMsg.Writebool(true);
-			cMsg.Writebool(false);
-			g_pLTServer->SendToObject(cMsg.Read(), pObject->m_hObject, hSender, MESSAGE_GUARANTEED);
-		}
+			// Tell a single player why nothing was picked up...
 
-		// Send the appropriate message to the client...
+			if (IsMultiplayerGame() || !IsPlayer(m_hCharacter)) return LTTRUE;
 
-		if (IsPlayer(m_hCharacter))
-		{
-            CPlayerObj* pPlayer = (CPlayerObj*)g_pLTServer->HandleToObject(m_hCharacter);
-            if (!pPlayer) return LTFALSE;
-
-			HCLIENT hClient = pPlayer->GetClient();
-			if (hClient)
-			{
-				CAutoMessage cMsg;
-				cMsg.Writeuint8(MID_PLAYER_INFOCHANGE);
-				cMsg.Writeuint8(IC_WEAPON_PICKUP_ID);
-                cMsg.Writeuint8(nWeaponId);
-                cMsg.Writeuint8(nAmmoId);
-                cMsg.Writefloat((LTFLOAT)GetAmmoCount(nAmmoId));
-                cMsg.Writebool(pPlayer->GetActivatePickup());
-				g_pLTServer->SendToClient(cMsg.Read(), hClient, MESSAGE_GUARANTEED);
-			}
-
-			if (bPickedUp)
-			{
-				HandlePotentialWeaponChange(pPlayer, nWeaponId, nAmmoId, bHaveIt);
-			}
-		}
-	}
-	else
-	{
-		if (IsPlayer(m_hCharacter))
-		{
             CPlayerObj* pPlayer = (CPlayerObj*)g_pLTServer->HandleToObject(m_hCharacter);
             if (!pPlayer) return LTFALSE;
 
@@ -423,6 +387,64 @@ LTBOOL CWeapons::AddWeapon(LPBASECLASS pObject, HOBJECT hSender, uint8 nWeaponId
 				cMsg.Writebool(pPlayer->GetActivatePickup());
 				g_pLTServer->SendToClient(cMsg.Read(), hClient, MESSAGE_GUARANTEED);
 			}
+
+			return LTTRUE;
+		}
+	}
+	else
+	{
+        bHaveIt   = LTFALSE;
+        bPickedUp = LTTRUE;
+		ObtainWeapon(nWeaponId, nAmmoId, nAmmo, LTFALSE);
+	}
+
+	// Tell weapon powerup it was picked up...
+
+	if (pObject)
+	{
+		// The pickup stays where weapons stay and we had the weapon.
+
+		bool bLeave = false;
+		if (IsMultiplayerGame() && g_pServerMissionMgr->GetServerSettings().m_bWeaponsStay &&
+			m_pWeapons && m_pWeapons[nWeaponId] && m_pWeapons[nWeaponId]->Have())
+		{
+			bLeave = true;
+		}
+
+		// RETAIL: Contract J.A.C.K.'s MID_PICKEDUP carries three flags: picked
+		// up, show it, leave the item (PickupItem::ObjectMessageFn, Object
+		// 0x10104590), written here in place
+		CAutoMessage cMsg;
+		cMsg.Writeuint32(MID_PICKEDUP);
+		cMsg.Writebool(true);
+		cMsg.Writebool(true);
+		cMsg.Writebool(bLeave);
+		g_pLTServer->SendToObject(cMsg.Read(), pObject->m_hObject, hSender, MESSAGE_GUARANTEED);
+	}
+
+	// Send the appropriate message to the client...
+
+	if (IsPlayer(m_hCharacter))
+	{
+        CPlayerObj* pPlayer = (CPlayerObj*)g_pLTServer->HandleToObject(m_hCharacter);
+        if (!pPlayer) return LTFALSE;
+
+		HCLIENT hClient = pPlayer->GetClient();
+		if (hClient)
+		{
+			CAutoMessage cMsg;
+			cMsg.Writeuint8(MID_PLAYER_INFOCHANGE);
+			cMsg.Writeuint8(IC_WEAPON_PICKUP_ID);
+            cMsg.Writeuint8(nWeaponId);
+            cMsg.Writeuint8(nAmmoId);
+            cMsg.Writefloat((LTFLOAT)GetAmmoCount(nAmmoId));
+            cMsg.Writebool(pPlayer->GetActivatePickup());
+			g_pLTServer->SendToClient(cMsg.Read(), hClient, MESSAGE_GUARANTEED);
+		}
+
+		if (bPickedUp)
+		{
+			HandlePotentialWeaponChange(pPlayer, nWeaponId, nAmmoId, bHaveIt);
 		}
 	}
 
@@ -515,6 +537,10 @@ LTBOOL CWeapons::AddAmmoBox(LPBASECLASS pObject, HOBJECT hSender, ILTMessage_Rea
 	// Send the appropriate message to the client...
 	if (IsPlayer(m_hCharacter))
 	{
+		// RETAIL: Object 0x1016710c: in multiplayer, only when something
+		// was taken.
+		if (IsMultiplayerGame() && !bTookAmmo) return LTTRUE;
+
         CPlayerObj* pPlayer = (CPlayerObj*)g_pLTServer->HandleToObject(m_hCharacter);
         if (!pPlayer) return LTFALSE;
 

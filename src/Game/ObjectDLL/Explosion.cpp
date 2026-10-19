@@ -514,14 +514,14 @@ bool Explosion::IsBlocked(HOBJECT hObj)
 	// to the object).  This will ensure that neither point
 	// is inside a wall and that nothing is blocking the damage...
 
+	IntersectInfo iInfo;
+	IntersectQuery qInfo;
+
     LTVector vObjPos;
 	g_pLTServer->GetObjectPos(hObj, &vObjPos);
 
 	LTVector vDir = vObjPos - m_vPos;
 	LTVector vStart = m_vPos + vDir * (1.0f / vDir.Mag());
-
-	IntersectInfo iInfo;
-	IntersectQuery qInfo;
 
 	qInfo.m_Flags	  = INTERSECT_HPOLY | INTERSECT_OBJECTS | IGNORE_NONSOLID;
 	qInfo.m_FilterFn  = ExplosionFilterFn;
