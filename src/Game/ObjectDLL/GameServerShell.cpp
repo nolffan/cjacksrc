@@ -198,7 +198,14 @@ LTRESULT CGameServerShell::OnServerInitialized()
 
 	m_SunVec[0] = m_SunVec[1] = m_SunVec[2] = 0;
 
-	if( !InitGameType())
+	// RETAIL: Object 0x100df6bb: the host's options are passed in.
+	ServerGameOptions** ppServerGameOptions = NULL;
+	uint32 dwLen = sizeof( ServerGameOptions* );
+	g_pLTServer->GetGameInfo((void**)&ppServerGameOptions, &dwLen);
+	if( !ppServerGameOptions || !*ppServerGameOptions )
+		return LT_ERROR;
+
+	if( !InitGameType( **ppServerGameOptions ))
 		return LT_ERROR;
 
 	// Create the AI class factory.
@@ -334,9 +341,6 @@ LTRESULT CGameServerShell::OnServerInitialized()
 	// (through the game options it was given) how its start went, and a
 	// multiplayer server publishes itself through GameSpy (Object.lto
 	// 0x100df9cd..0x100dfd4b).
-	ServerGameOptions** ppServerGameOptions = NULL;
-	uint32 dwLen = sizeof( ServerGameOptions* );
-	g_pLTServer->GetGameInfo((void**)&ppServerGameOptions, &dwLen);
 	ServerGameOptions* pHostOptions = ( ppServerGameOptions && *ppServerGameOptions ) ? *ppServerGameOptions : &m_ServerGameOptions;
 
 	if( !IsMultiplayerGame( ))
@@ -4204,16 +4208,9 @@ HCLIENT CGameServerShell::GetClientFromID(uint32 nID)
 //
 // ----------------------------------------------------------------------- //
 
-bool CGameServerShell::InitGameType()
+bool CGameServerShell::InitGameType( ServerGameOptions const& serverGameOptions )
 {
-	ServerGameOptions** ppServerGameOptions;
-    uint32 dwLen = sizeof( ServerGameOptions* );
-    g_pLTServer->GetGameInfo((void**)&ppServerGameOptions, &dwLen);
-
-	if( ppServerGameOptions && *ppServerGameOptions )
-	{
-		m_ServerGameOptions = **ppServerGameOptions;
-	}
+	m_ServerGameOptions = serverGameOptions;
 
 	// Toss any old missionmgr.
 	if( m_pServerMissionMgr )

@@ -177,6 +177,10 @@ void CLiteObjectMgr::RenameObject(GameBaseLite *pObject, const char *pName)
 
 bool CLiteObjectMgr::HasObject(GameBaseLite *pObject)
 {
+	// RETAIL: Object 0x100f2390
+	if (!pObject->IsRegistered())
+		return false;
+
 	return IsObjectInList(m_aActiveObjects, pObject) ||
 		IsObjectInList(m_aInactiveObjects, pObject);
 }

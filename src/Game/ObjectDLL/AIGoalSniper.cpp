@@ -121,6 +121,13 @@ void CAIGoalSniper::UpdateGoal()
 {
 	// Intentionally do not call super.
 
+	// RETAIL: Object 0x100356e0: keep looking for whoever is targeted.
+
+	if( m_pAI->HasTarget() )
+	{
+		m_hSeekTarget = m_pAI->GetTarget()->GetObject();
+	}
+
 	CAIState* pState = m_pAI->GetState();
 
 	switch(pState->GetStateType())

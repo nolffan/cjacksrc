@@ -25,3 +25,5 @@ addr,reason
 0x10111bf0,NOT A FUNCTION: case block of CPlayerObj::EngineMessageFn (0x10111b10; jump table at 0x10111c64)
 0x100ae2e4,NOT A FUNCTION: interior block of 0x100ae2a0 after its early return (jne at 0x100ae2d6)
 0x10139774,NOT A FUNCTION: interior block of 0x10139700 after its early return (jg at 0x10139742)
+0x100b2795,NOT A FUNCTION: interior block of CheckExpression (0x100b2780) after its early return (je at 0x100b278c)
+0x100b2954,NOT A FUNCTION: interior block of CheckExpression (0x100b2780) after a return (jne at 0x100b2800)

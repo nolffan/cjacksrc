@@ -463,7 +463,10 @@ dedicated server (package 7).
   StartSwitchingWorlds pauses only once; CLiteObjectMgr (de)activation
   ignores unregistered objects. progress/Object-screen-exclude.csv
   lists the enumerator's interior splits (jump-table cases, blocks after
-  an early return, stray targets). Object.lto: 83 -> 29 unwritten. Still
+  an early return, stray targets). Object.lto: 83 -> 26 unwritten.
+  Also: InitGameType takes the host's options (OnServerInitialized
+  reads them), CPlayerAttachments::HideAttachments, CLiteObjectMgr::
+  HasObject, the sniper goal's UpdateGoal. Still
   unwritten: the heat-seeking sort's instantiations (0x10121550..
   0x10122330; the predicate did not pair them), CSoundFilterMgr's
   constructor (0x1014a880: retail's filter list is a map and a vector,

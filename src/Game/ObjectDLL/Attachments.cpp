@@ -1459,6 +1459,25 @@ bool CPlayerAttachments::AcquireAmmo( uint8 nId )
 
 // ----------------------------------------------------------------------- //
 //
+//	ROUTINE:	CPlayerAttachments::HideAttachments
+//
+//	PURPOSE:	RETAIL: Object 0x1008f900
+//
+// ----------------------------------------------------------------------- //
+
+void CPlayerAttachments::HideAttachments(LTBOOL bHide)
+{
+	CAttachments::HideAttachments( bHide );
+
+	CAttachmentWeapon* pAttachmentWeapon = GetDefaultAttachmentWeapon();
+	if( pAttachmentWeapon )
+	{
+		SetWeaponAttachmentHiddenState( *pAttachmentWeapon );
+	}
+}
+
+// ----------------------------------------------------------------------- //
+//
 //	ROUTINE:	CPlayerAttachments::SetWeaponAttachmentHiddenState
 //
 //	PURPOSE:	If the weapon is visible make sure it's not supposed to be hidden...

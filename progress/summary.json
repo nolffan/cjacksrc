@@ -185,7 +185,7 @@
     },
     "Object.lto": {
       "attempted": 0,
-      "bytes_identical": 1425227,
+      "bytes_identical": 1424928,
       "bytes_total": 1634190,
       "crt": 737,
       "crt_bytes": 17120,
@@ -194,20 +194,20 @@
       "encrypted": 0,
       "encrypted_bytes": 0,
       "funcs": 9761,
-      "identical": 8595,
+      "identical": 8597,
       "kind": "image",
       "middleware": 0,
       "middleware_bytes": 0,
-      "near": 449,
+      "near": 450,
       "small": 688,
       "started": true,
-      "todo": 29,
-      "unlinked": 9274,
-      "unlinked_bytes": 267801,
-      "unplaced": 672,
-      "unplaced_bytes": 17833,
-      "unwritten": 29,
-      "unwritten_bytes": 4867
+      "todo": 26,
+      "unlinked": 9273,
+      "unlinked_bytes": 267723,
+      "unplaced": 671,
+      "unplaced_bytes": 17807,
+      "unwritten": 26,
+      "unwritten_bytes": 4964
     },
     "SRes.dll": {
       "attempted": 0,
@@ -316,16 +316,16 @@
   },
   "total": {
     "attempted": 0,
-    "bytes_identical": 4132550,
+    "bytes_identical": 4132251,
     "bytes_total": 4626938,
     "funcs": 29293,
-    "identical": 25494,
-    "near": 1036,
+    "identical": 25496,
+    "near": 1037,
     "small": 2605,
-    "todo": 158,
-    "unplaced": 3114,
-    "unplaced_bytes": 73592,
-    "unwritten": 158,
-    "unwritten_bytes": 24393
+    "todo": 155,
+    "unplaced": 3113,
+    "unplaced_bytes": 73566,
+    "unwritten": 155,
+    "unwritten_bytes": 24490
   }
 }
