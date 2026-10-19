@@ -3288,6 +3288,7 @@ void CCharacter::SetupBody(Body* pProp)
 	bi.bPermanentBody = m_bPermanentBody;
 	bi.fBodyLifetime = m_fBodyLifetime;
 	bi.bCanRevive = false;
+	bi.bMoveToFloor = m_bMoveToFloor;	// RETAIL: Object 0x1009f39e
 
 	pProp->Init(bi);
 }

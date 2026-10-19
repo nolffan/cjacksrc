@@ -16237,6 +16237,7 @@ Object.lto	sub_10048480
 Object.lto	sub_10048690
 Object.lto	sub_10048950
 Object.lto	sub_10048c50
+Object.lto	sub_10048d50
 Object.lto	sub_10049430
 Object.lto	sub_10049530
 Object.lto	sub_10049600
@@ -16672,6 +16673,7 @@ Object.lto	sub_1005a4e0
 Object.lto	sub_1005a5c0
 Object.lto	sub_1005aa20
 Object.lto	sub_1005adb0
+Object.lto	sub_1005ae90
 Object.lto	sub_1005b380
 Object.lto	sub_1005b6b0
 Object.lto	sub_1005b920
@@ -18188,6 +18190,7 @@ Object.lto	sub_1009f200
 Object.lto	sub_1009f2a0
 Object.lto	sub_1009f2c0
 Object.lto	sub_1009f2f0
+Object.lto	sub_1009f340
 Object.lto	sub_1009f3b0
 Object.lto	sub_1009f440
 Object.lto	sub_1009f470

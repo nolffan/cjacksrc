@@ -843,7 +843,12 @@ LTBOOL CAIMovement::UpdateMovementEncoding( EnumAnimMovement eMovementType, LTVe
 	rRot.m_Quat[2] *= fInvMag;
 	rRot.m_Quat[3] *= fInvMag;
 
-	g_pLTServer->SetObjectRotation( m_pAI->m_hObject, &rRot );
+	// RETAIL: Object 0x1005afbf: only a driving AI takes the hint's turn.
+
+	if( m_pAI->IsDriving() )
+	{
+		g_pLTServer->SetObjectRotation( m_pAI->m_hObject, &rRot );
+	}
 
 	LTVector vOldPos;
 	g_pLTServer->GetObjectPos( m_pAI->m_hObject, &vOldPos );
@@ -894,6 +899,18 @@ LTBOOL CAIMovement::UpdateMovementEncoding( EnumAnimMovement eMovementType, LTVe
 
 			vOldDirToDest = m_vDest - vOldPos;
 			vOldDirToDest.y = 0.f;
+
+			// RETAIL: Object 0x1005b1c3: already there, in xz.
+
+			if( vOldDirToDest.Mag() == 0.f )
+			{
+				AIError( "AI TRYING TO NORMALIZE A ZERO LENGTH VECTOR!" );
+				Clear();
+				m_eState = eStateDone;
+				*pvNewPos = m_vDest;
+				return LTTRUE;
+			}
+
 			vOldDirToDest.Normalize();
 
 			// Get the x and z components of the hint vector.
@@ -912,6 +929,16 @@ LTBOOL CAIMovement::UpdateMovementEncoding( EnumAnimMovement eMovementType, LTVe
 
 			vNewDirToDest = m_vDest - *pvNewPos;
 			vNewDirToDest.y = 0.f;
+
+			if( vNewDirToDest.Mag() == 0.f )
+			{
+				AIError( "AI TRYING TO NORMALIZE A ZERO LENGTH VECTOR!" );
+				Clear();
+				m_eState = eStateDone;
+				*pvNewPos = m_vDest;
+				return LTTRUE;
+			}
+
 			vNewDirToDest.Normalize();
 		}
 
