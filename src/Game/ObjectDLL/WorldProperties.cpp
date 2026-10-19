@@ -23,6 +23,7 @@
 #include "VersionMgr.h"
 #include "AIStimulusMgr.h"
 #include "ServerMissionMgr.h"
+#include "ServerSaveLoadMgr.h"
 
 LINKFROM_MODULE( WorldProperties );
 
@@ -111,6 +112,9 @@ CMDMGR_BEGIN_REGISTER_CLASS( WorldProperties )
 	CMDMGR_ADD_MSG( SHADOWALPHA, 2, NULL, "SHADOWALPHA <0-to-1>" )
 	CMDMGR_ADD_MSG( NEXTROUND, 1, NULL, "NEXTROUND" )
 	CMDMGR_ADD_MSG( ROUNDWON, 2, NULL, "ROUNDWON <0 or 1>" )
+	CMDMGR_ADD_MSG( ATTACKINGTEAM, 2, NULL, "ATTACKINGTEAM <0 or 1>" )
+	CMDMGR_ADD_MSG( ADDTEAMSCORE, 3, NULL, "ADDTEAMSCORE <0 or 1> <score>" )
+	CMDMGR_ADD_MSG( CHECKPOINTSAVE, 1, NULL, "CHECKPOINTSAVE" )
 
 CMDMGR_END_REGISTER_CLASS( WorldProperties, BaseClass )
 
@@ -728,6 +732,10 @@ bool WorldProperties::OnTrigger(HOBJECT hSender, const CParsedMsg &cMsg)
 	static CParsedMsg::CToken s_cTok_ShadowAlpha("ShadowAlpha");
 	static CParsedMsg::CToken s_cTok_NextRound("NextRound");
 	static CParsedMsg::CToken s_cTok_RoundWon("RoundWon");
+	// RETAIL: Object 0x1016d3bc: Contract J.A.C.K.'s.
+	static CParsedMsg::CToken s_cTok_AttackingTeam("AttackingTeam");
+	static CParsedMsg::CToken s_cTok_AddTeamScore("AddTeamScore");
+	static CParsedMsg::CToken s_cTok_CheckpointSave("CheckpointSave");
 
 	//Flag indicating whether or not a message should be sent down to the client
 	//indicating that we have changed the settings and that they need to update
@@ -872,6 +880,37 @@ bool WorldProperties::OnTrigger(HOBJECT hSender, const CParsedMsg &cMsg)
 				}
 			}
 		}
+	}
+	else if(cMsg.GetArg(0) == s_cTok_AttackingTeam)
+	{
+		// RETAIL: Object 0x1016d9c9: Demolition's attackers this round.
+		if( !IsCoopMultiplayerGameType( ) && cMsg.GetArgCount() > 1 )
+		{
+			uint8 nTeamId = atoi( cMsg.GetArg( 1 ));
+			if( nTeamId < MAX_TEAMS )
+			{
+				CTeamMgr::Instance( ).SetAttackingTeam( nTeamId );
+			}
+		}
+	}
+	else if(cMsg.GetArg(0) == s_cTok_AddTeamScore)
+	{
+		// RETAIL: Object 0x1016da36
+		if( IsTeamGameType( ) && cMsg.GetArgCount() > 2 )
+		{
+			uint8 nTeamId = atoi( cMsg.GetArg( 1 ));
+			int nScore = atoi( cMsg.GetArg( 2 ));
+			if( nTeamId < MAX_TEAMS )
+			{
+				CTeamMgr::Instance( ).AddToScore( nTeamId, nScore );
+			}
+		}
+	}
+	else if(cMsg.GetArg(0) == s_cTok_CheckpointSave)
+	{
+		// RETAIL: Object 0x1016dac9: the level saves a checkpoint.
+		g_pServerSaveLoadMgr->CheckpointSave( g_pServerMissionMgr->GetCurrentMission( ),
+			g_pServerMissionMgr->GetCurrentLevel( ));
 	}
 	else
 		return GameBase::OnTrigger(hSender, cMsg);

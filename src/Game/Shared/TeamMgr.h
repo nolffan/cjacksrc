@@ -39,6 +39,9 @@ public:
 	const char* GetName()		const { return m_sName.c_str(); }
 	uint32		GetModel()		const { return m_nModel; }
 	uint32		GetRoundScore( ) const { return m_nRoundScore; }
+	// RETAIL: Contract J.A.C.K.'s Demolition: the team attacking this round.
+	bool		IsAttacking( )	const { return m_bAttacking; }
+	void		SetAttacking( bool bAttacking ) { m_bAttacking = bAttacking; }
 
 #ifndef _CLIENTBUILD
 	void	AddPlayer(uint32 nClientID);
@@ -62,6 +65,7 @@ private:
 	uint32			m_nRoundScore;
 	std::string		m_sName;
 	uint32			m_nModel;
+	bool			m_bAttacking;	// RETAIL: Object 0x101524a5
 };
 
 
@@ -104,6 +108,9 @@ public:
 
 	void	AddToScore( uint8 nTeamID, int32 nScore = 1 );
 	void	WonRound( uint8 nTeamID );
+
+	// RETAIL: Object 0x10152700: Demolition's attackers this round.
+	void	SetAttackingTeam( uint8 nTeamID );
 
 	// Prepares for a new round.
 	void	NewRound( );

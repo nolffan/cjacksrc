@@ -31,6 +31,7 @@
 #define TRANSITION_FILENAME		"Trans.sav"
 #define RELOADLEVEL_FILENAME	"Reload.sav"
 #define CHECKPOINT_FILENAME		"Checkpoint.sav"	// RETAIL: Contract J.A.C.K.'s checkpoints
+#define CHECKPOINT_DIR			"Checkpoint"		// RETAIL: Object 0x10141110
 #define QUICKSAVE_FILENAME		"Quick.sav"
 #define SAVEGAMEINI_FILENAME	"Save1001.ini"  // v1.001
 #define QUICKSAVE_INIKEY		"SaveGame00"
@@ -169,6 +170,15 @@ class CSaveLoadMgr
 			sprintf( szReloadSaveFile, "%s\\%s", GetRootSaveDir( pProfile ), RELOADLEVEL_FILENAME );
 
 			return szReloadSaveFile;
+		}
+
+		// RETAIL: Object 0x101410d0
+		char const* const GetCheckpointSaveDir( const char *pProfile = NULL ) const
+		{
+			static char szCheckpointSavePath[MAX_PATH];
+			sprintf( szCheckpointSavePath, "%s\\%s", GetRootSaveDir( pProfile ), CHECKPOINT_DIR );
+
+			return szCheckpointSavePath;
 		}
 
 		// RETAIL: CShell 0x100b58b0

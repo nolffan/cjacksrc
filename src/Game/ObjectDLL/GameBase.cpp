@@ -37,6 +37,7 @@ BEGIN_CLASS(GameBase)
 		ADD_BOOLPROP_FLAG(Deathmatch, 1, PF_GROUP(16))
 		ADD_BOOLPROP_FLAG(TeamDeathmatch, 1, PF_GROUP(16))
 		ADD_BOOLPROP_FLAG(DoomsDay, 1, PF_GROUP(16))
+		ADD_BOOLPROP_FLAG(Demolition, 1, PF_GROUP(16))
 END_CLASS_DEFAULT_FLAGS(GameBase, BaseClass, NULL, NULL, CF_HIDDEN)
 
 
@@ -803,6 +804,13 @@ bool GameBase::ReadProp( ObjectCreateStruct* pStruct )
 		case eGameTypeDoomsDay:
 		{
 			if( !pStruct->m_cProperties.GetPropBool( "DoomsDay", true ))
+				return false;
+		}
+		break;
+		// RETAIL: Object 0x100d8856
+		case eGameTypeDemolition:
+		{
+			if( !pStruct->m_cProperties.GetPropBool( "Demolition", true ))
 				return false;
 		}
 		break;

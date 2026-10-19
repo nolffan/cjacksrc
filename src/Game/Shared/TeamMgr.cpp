@@ -34,6 +34,7 @@ CTeam::CTeam()
 	m_nScore = 0;
 	m_nRoundScore = 0;
 	m_nModel = eModelIdInvalid;
+	m_bAttacking = false;
 }
 
 // ----------------------------------------------------------------------- //
@@ -85,6 +86,8 @@ void CTeam::WriteData(ILTMessage_Write *pMsg,bool bScoreOnly)
 	{
 		pMsg->WriteString(m_sName.c_str());
 		pMsg->Writeuint32(m_nModel);
+		// RETAIL: Object 0x101524a5
+		pMsg->Writebool(m_bAttacking);
 	}
 
 }
@@ -113,6 +116,7 @@ void CTeam::ReadData(ILTMessage_Read *pMsg)
 		m_sName = szTeamName;
 
 		m_nModel	= pMsg->Readuint32();
+		m_bAttacking = pMsg->Readbool();
 	}
 
 }
@@ -499,6 +503,23 @@ void CTeamMgr::WonRound( uint8 nTeamID )
 		return;
 
 	pTeam->WonRound( );
+}
+
+void CTeamMgr::SetAttackingTeam( uint8 nTeamID )
+{
+	if( !GetTeam( nTeamID ))
+		return;
+
+	TeamArray::iterator iter;
+	for( iter = m_teams.begin(); iter != m_teams.end(); ++iter )
+	{
+		(*iter)->SetAttacking( (*iter)->GetID( ) == nTeamID );
+	}
+
+	for( iter = m_teams.begin(); iter != m_teams.end(); ++iter )
+	{
+		(*iter)->UpdateClient( false );
+	}
 }
 
 void CTeamMgr::NewRound( )
