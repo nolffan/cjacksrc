@@ -968,6 +968,7 @@ void CClientWeapon::Term()
 
 	// remove all client fx
 	RemoveMuzzleFlash();
+	RemoveHeatFX();		// RETAIL: 0x10025e07
 	RemovePVAttachClientFX();
 
 	// clear weapon info
@@ -1107,10 +1108,6 @@ WeaponState CClientWeapon::Update( bool bFire, FireType eFireType /*=FT_NORMAL_F
 
 		vFlashOffset = vFireOffset;
 
-		// this does not need the muzzle position set,
-		// that will be done later
-		StartMuzzleFlash();
-
 		// Send message to server telling player to fire...
 		Fire( bFire );
 	}
@@ -1165,9 +1162,12 @@ WeaponState CClientWeapon::Update( bool bFire, FireType eFireType /*=FT_NORMAL_F
 void CClientWeapon::ChangeAmmoWithReload( uint8 nNewAmmoId, bool bForce /*=false*/ )
 {
 	// Update the player's stats...
-	if ( ( W_RELOADING == GetState() ) && !bForce )
+	// RETAIL: 0x1002320b: a forced change breaks off the reload.
+	if ( W_RELOADING == GetState() )
 	{
-		return;
+		if ( !bForce )
+			return;
+		PlayIdleAnimation();
 	}
 
 	if ( CanChangeToAmmo( nNewAmmoId ) && ( nNewAmmoId != m_nAmmoId ) )
@@ -1627,6 +1627,12 @@ void CClientWeapon::SetVisible( bool bVis /*=true*/ )
 		m_MuzzleFlashFX.GetInstance()->Hide();
 	}
 
+	// RETAIL: 0x10025f5c
+	if( m_HeatFX.IsValid() )
+	{
+		m_HeatFX.GetInstance()->Hide();
+	}
+
 	// hide/show the pv FX
 	if ( bVis )
 	{
@@ -1704,34 +1710,38 @@ void CClientWeapon::CreateSilencer()
 	}
 
 
-	// Okay create/setup the model...
-	ObjectCreateStruct createStruct;
-	INIT_OBJECTCREATESTRUCT( createStruct );
-
-	// copy the model filename
-	SAFE_STRCPY( createStruct.m_Filename, pMod->szAttachModel );
-
-	// add the skin names
-	pMod->blrAttachSkins.CopyList( 0,
-	                               createStruct.m_SkinNames[ 0 ],
-	                               ( MAX_CS_FILENAME_LEN + 1 ) );
-
-	// add the render styles
-	pMod->blrAttachRenderStyles.CopyList( 0,
-	                                      createStruct.m_RenderStyleNames[ 0 ],
-	                                      ( MAX_CS_FILENAME_LEN + 1 ) );
-
-	// create the model
-	m_hSilencerModel = CreateModelObject( m_hSilencerModel, &createStruct );
-
-	if ( m_hSilencerModel )
+	// RETAIL: 0x100282be: only a mod with an attachment model makes one.
+	if ( pMod->szAttachModel && pMod->szAttachModel[0] )
 	{
-		// make it visible
-		g_pCommonLT->SetObjectFlags( m_hSilencerModel, OFT_Flags, FLAG_VISIBLE, FLAG_VISIBLE );
+		// Okay create/setup the model...
+		ObjectCreateStruct createStruct;
+		INIT_OBJECTCREATESTRUCT( createStruct );
 
-		// The vector should be OK, do a const cast to match
-		// the attach scale with the non-const engine.
-		g_pLTClient->SetObjectScale( m_hSilencerModel, const_cast<LTVector *>( &(pMod->vAttachScale) ) );
+		// copy the model filename
+		SAFE_STRCPY( createStruct.m_Filename, pMod->szAttachModel );
+
+		// add the skin names
+		pMod->blrAttachSkins.CopyList( 0,
+		                               createStruct.m_SkinNames[ 0 ],
+		                               ( MAX_CS_FILENAME_LEN + 1 ) );
+
+		// add the render styles
+		pMod->blrAttachRenderStyles.CopyList( 0,
+		                                      createStruct.m_RenderStyleNames[ 0 ],
+		                                      ( MAX_CS_FILENAME_LEN + 1 ) );
+
+		// create the model
+		m_hSilencerModel = CreateModelObject( m_hSilencerModel, &createStruct );
+
+		if ( m_hSilencerModel )
+		{
+			// make it visible
+			g_pCommonLT->SetObjectFlags( m_hSilencerModel, OFT_Flags, FLAG_VISIBLE, FLAG_VISIBLE );
+
+			// The vector should be OK, do a const cast to match
+			// the attach scale with the non-const engine.
+			g_pLTClient->SetObjectScale( m_hSilencerModel, const_cast<LTVector *>( &(pMod->vAttachScale) ) );
+		}
 	}
 
 	// if we've reached this point, we have the mod
@@ -1852,34 +1862,38 @@ void CClientWeapon::CreateScope()
 	}
 
 
-	// Okay create/setup the model...
-	ObjectCreateStruct createStruct;
-	INIT_OBJECTCREATESTRUCT( createStruct );
-
-	// copy the model filename
-	SAFE_STRCPY( createStruct.m_Filename, pMod->szAttachModel );
-
-	// add the skin names
-	pMod->blrAttachSkins.CopyList( 0,
-	                               createStruct.m_SkinNames[ 0 ], 
-	                               ( MAX_CS_FILENAME_LEN + 1 ) );
-
-	// add the render styles
-	pMod->blrAttachRenderStyles.CopyList( 0,
-	                                      createStruct.m_RenderStyleNames[ 0 ],
-	                                      ( MAX_CS_FILENAME_LEN + 1 ) );
-
-	// create the model
-	m_hScopeModel = CreateModelObject( m_hScopeModel, &createStruct );
-
-	if ( m_hScopeModel )
+	// RETAIL: 0x1002845e: only a mod with an attachment model makes one.
+	if ( pMod->szAttachModel && pMod->szAttachModel[0] )
 	{
-		// make it visible
-		g_pCommonLT->SetObjectFlags( m_hScopeModel, OFT_Flags, FLAG_VISIBLE, FLAG_VISIBLE );
+		// Okay create/setup the model...
+		ObjectCreateStruct createStruct;
+		INIT_OBJECTCREATESTRUCT( createStruct );
 
-		// The vector should be OK, do a const cast to match
-		// the attach scale with the non-const engine.
-		g_pLTClient->SetObjectScale(m_hScopeModel, const_cast<LTVector *>( &(pMod->vAttachScale) ) );
+		// copy the model filename
+		SAFE_STRCPY( createStruct.m_Filename, pMod->szAttachModel );
+
+		// add the skin names
+		pMod->blrAttachSkins.CopyList( 0,
+		                               createStruct.m_SkinNames[ 0 ], 
+		                               ( MAX_CS_FILENAME_LEN + 1 ) );
+
+		// add the render styles
+		pMod->blrAttachRenderStyles.CopyList( 0,
+		                                      createStruct.m_RenderStyleNames[ 0 ],
+		                                      ( MAX_CS_FILENAME_LEN + 1 ) );
+
+		// create the model
+		m_hScopeModel = CreateModelObject( m_hScopeModel, &createStruct );
+
+		if ( m_hScopeModel )
+		{
+			// make it visible
+			g_pCommonLT->SetObjectFlags( m_hScopeModel, OFT_Flags, FLAG_VISIBLE, FLAG_VISIBLE );
+
+			// The vector should be OK, do a const cast to match
+			// the attach scale with the non-const engine.
+			g_pLTClient->SetObjectScale(m_hScopeModel, const_cast<LTVector *>( &(pMod->vAttachScale) ) );
+		}
 	}
 
 	// if we've reached this point, we have the mod
@@ -2113,6 +2127,9 @@ bool CClientWeapon::Deselect( ClientWeaponCallBackFn cbFn, void *pData )
 {
 	ASSERT( 0 != cbFn );
 
+	// RETAIL: 0x10028793: the heat fx goes with the weapon.
+	RemoveHeatFX();
+
 	// setup the callback
 	m_cbDeselect = cbFn;
 	m_pcbData = pData;
@@ -2316,10 +2333,7 @@ void CClientWeapon::Deactivate()
 	// set the state to inactave
 	SetState( W_INACTIVE );
 
-	// hide the weapon
-	SetVisible( false );
-
-	// disable the weapon
+	// disable the weapon (RETAIL: 0x100289cf, without hiding it first)
 	SetDisable( true );
 
 	// turn off all keyframed ClientFX
@@ -2340,6 +2354,7 @@ void CClientWeapon::Deactivate()
 
 	// remove all client fx
 	RemoveMuzzleFlash();
+	RemoveHeatFX();		// RETAIL: 0x10028a80
 	RemovePVAttachClientFX();
 
 	// remove the weapon model
@@ -2847,7 +2862,8 @@ WeaponState CClientWeapon::UpdateModelState( bool bFire )
 	// Determine what we should be doing...
 	// (mostly updates animations, also
 	// updates a couple supporting variables)
-	if (bFire)
+	// RETAIL: 0x10023714: an overheated weapon doesn't fire.
+	if (!(m_fHeat >= 1.0f) && bFire)
 	{
 		UpdateFiring();
 	}
@@ -4715,6 +4731,9 @@ void CClientWeapon::Fire( bool bFire )
 	ASSERT( 0 != m_hObject );
 	ASSERT( 0 != m_pAmmo );
 
+	// RETAIL: 0x10029879: the flash starts here, before the gadget check.
+	StartMuzzleFlash();
+
 	// Special case, check for gadget modes that don't actually support firing...
 	if ( DT_GADGET_INFRA_RED == m_pAmmo->eInstDamageType )
 	{
@@ -5046,7 +5065,7 @@ void CClientWeapon::ClientFire( LTVector const &vPath, LTVector const &vFirePos,
 
 		default:
 		{
-			g_pLTClient->CPrint( "ERROR in CClientWeapon::ClientFire().  Invalid Ammo Type!" );
+			DebugCPrint( 1, "ERROR in CClientWeapon::ClientFire().  Invalid Ammo Type!" );	// RETAIL: 0x100299cb
 		}
 		break;
 	}
@@ -5207,6 +5226,10 @@ bool ClientWeapon_VectorObjFilterFn(HOBJECT hTest, void *pUserData)
 		CBodyFX *pBody = g_pGameClientShell->GetSFXMgr()->GetBodyFromHitBox( hTest );
 		if ( pBody )
 		{
+			// RETAIL: 0x10026c13: a time bomb's vector passes through bodies.
+			if ( pParams->m_pWeapon->GetAmmo()->eInstDamageType == DT_GADGET_TIME_BOMB )
+				return false;
+
 			return CheckVectorNodeIntersect(pBody->GetModelSkeleton(), pBody->GetServerObj(), pParams->m_vFirePos, pParams->m_vEndPos);
 		}
 
@@ -5645,32 +5668,33 @@ bool CClientWeapon::SpecialOverrideFire()
 		return false;
 	}
 
-	if( DT_GADGET_TIME_BOMB != m_pAmmo->eInstDamageType )
+	// RETAIL: 0x1002576c
+	if( DT_GADGET_TIME_BOMB == m_pAmmo->eInstDamageType )
 	{
-		return true;
+		HOBJECT hTarget = g_pPlayerMgr->GetTargetMgr()->GetTargetObject();
+		if( hTarget )
+		{
+			uint32 dwUsrFlgs;
+			g_pCommonLT->GetObjectFlags( hTarget, OFT_User, dwUsrFlgs );
+			if( dwUsrFlgs & USRFLG_GADGET_BOMBABLE )
+			{
+				if( !IsTeamGameType() )
+					return true;
+
+				CGadgetTargetFX *pGadget = dynamic_cast<CGadgetTargetFX*>(g_pGameClientShell->GetSFXMgr()->FindSpecialFX( SFX_GADGETTARGET_ID, hTarget ));
+				if( pGadget )
+				{
+					CLIENT_INFO *pLocalCI = g_pInterfaceMgr->GetClientInfoMgr()->GetLocalClient();
+					if( pLocalCI && pGadget->GetTeamID() != INVALID_TEAM && pLocalCI->nTeamID == pGadget->GetTeamID() )
+						return true;
+				}
+			}
+		}
+
+		return false;
 	}
 
-	HOBJECT hTarget = g_pPlayerMgr->GetTargetMgr()->GetTargetObject();
-	if( !hTarget )
-		return false;
-
-	uint32 dwUsrFlgs = 0;
-	g_pCommonLT->GetObjectFlags( hTarget, OFT_User, dwUsrFlgs );
-	if( !( dwUsrFlgs & USRFLG_GADGET_BOMBABLE ))
-		return false;
-
-	if( !IsTeamGameType() )
-		return true;
-
-	CGadgetTargetFX *pGadget = dynamic_cast<CGadgetTargetFX*>(g_pGameClientShell->GetSFXMgr()->FindSpecialFX( SFX_GADGETTARGET_ID, hTarget ));
-	if( !pGadget )
-		return false;
-
-	CLIENT_INFO *pLocalCI = g_pInterfaceMgr->GetClientInfoMgr()->GetLocalClient();
-	if( !pLocalCI )
-		return false;
-
-	return ( pGadget->GetTeamID() != INVALID_TEAM && pLocalCI->nTeamID == pGadget->GetTeamID() );
+	return true;
 }
 
 

@@ -970,7 +970,9 @@ void CLoadingScreen::UpdateMissionInfo()
 
 	EnterCriticalSection(&m_MissionUpdate);
 
-	if( !g_pMissionMgr->IsCustomLevel( ))
+	// RETAIL: 0x1007e425: a mission's names only once its world is known.
+	char const* pszWorld = g_pMissionMgr->GetCurrentWorldName( );
+	if( pszWorld && pszWorld[0] && !g_pMissionMgr->IsCustomLevel( ))
 	{
 		int nCurMission = g_pMissionMgr->GetCurrentMission( );
 		MISSION* pMission = g_pMissionButeMgr->GetMission( nCurMission );
@@ -1006,10 +1008,6 @@ void CLoadingScreen::UpdateMissionInfo()
 				m_photo = pMission->sPhoto;
 			}
 
-		}
-		else
-		{
-			SetDefaultMissionNames( );
 		}
 
 	}

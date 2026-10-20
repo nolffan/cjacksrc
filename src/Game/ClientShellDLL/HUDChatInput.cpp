@@ -140,7 +140,12 @@ void CHUDChatInput::Show(bool bShow, bool bTeam)
 
 	if (bShow)
 	{
-		m_pStr->SetText(LoadTempString(IDS_SAY));
+		// RETAIL: 0x100533fc: "TEAM SAY:" (the reused IDS_MULTIPLAYER_LAN)
+		// for a team message.
+		if (bTeam)
+			m_pStr->SetText(LoadTempString(IDS_MULTIPLAYER_LAN));
+		else
+			m_pStr->SetText(LoadTempString(IDS_SAY));
 		m_szChatStr[0] = 0;
 	
 		Update();

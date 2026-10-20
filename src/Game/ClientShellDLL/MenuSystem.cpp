@@ -125,6 +125,10 @@ uint32 CMenuSystem::OnCommand(uint32 nCommand, uint32 nParam1, uint32 nParam2)
 		case eGameTypeTeamDeathmatch:
 			g_pInterfaceMgr->SwitchToScreen(SCREEN_ID_HOST_TDM_OPTIONS);
 			break;
+		// RETAIL: 0x10085e0f
+		case eGameTypeDemolition:
+			g_pInterfaceMgr->SwitchToScreen(SCREEN_ID_HOST_DEMOLITION_OPTIONS);
+			break;
 		case eGameTypeDoomsDay:
 			g_pInterfaceMgr->SwitchToScreen(SCREEN_ID_HOST_DD_OPTIONS);
 			break;
