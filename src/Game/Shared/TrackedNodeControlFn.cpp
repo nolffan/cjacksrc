@@ -731,7 +731,8 @@ void TrackedNodeControlFn(const NodeControlData& Data, void* pUser)
 			LTMatrix mModelOr;
 			ModelRot.ConvertToMatrix(mModelOr);
 
-			MatMul3x3(&mBindingSpace, &mModelOr, &mOriginalBinding);
+			// RETAIL: Object 0x10154ea0 (MatMul3Tx3), in CShell too.
+			MatMul3Tx3(&mBindingSpace, &mModelOr, &mOriginalBinding);
 			mBindingSpace.SetTranslation(vTranslation);
 		}
 

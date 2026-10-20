@@ -476,7 +476,7 @@ LTBOOL CAIGoalSniper::HandleNameValuePair(const char *szName, const char *szValu
 			m_bSeekPlayer = LTTRUE;
 			AITRACE( AIShowGoals, ( m_pAI->m_hObject, "CAIGoalSniper: SEEKPLAYER=1" ) );
 
-			CPlayerObj *pPlayer = g_pCharacterMgr->FindPlayer();
+			CPlayerObj *pPlayer = g_pCharacterMgr->FindRandomPlayer();	// RETAIL: a random player (0x100ab580)
 			if ( pPlayer )
 			{
 				m_hSeekTarget = pPlayer->m_hObject;

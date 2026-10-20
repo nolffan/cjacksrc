@@ -435,6 +435,10 @@ void CAIHuman::DestroyArmor()
 {
 	CAI::DestroyArmor();
 
+	// RETAIL: Object 0x10038970: a dead AI may have no attachments left.
+	if( !m_pAttachments )
+		return;
+
 	// Get a list of all of the prop-objects attatched as the m_ap* versions
 	// are unreliable
 	BaseClass* apObjects[AI_MAX_OBJECTS];
@@ -1120,20 +1124,8 @@ void CAIHuman::UnmarkDoors()
 
 void CAIHuman::CloseDoors()
 {
-	Door* pDoor;
-	for( uint8 iDoor=0; iDoor < 2; ++iDoor )
-	{
-		if( m_hLastDoor[iDoor] )
-		{
-			pDoor = (Door*)g_pLTServer->HandleToObject( m_hLastDoor[iDoor] );
-			if( pDoor && ( pDoor->GetAIUser() == m_hObject ) )
-			{
-				SendTriggerMsgToObject(this, m_hLastDoor[iDoor], LTFALSE, "ACTIVATE");
-			}
-		}
-	}
-
-	UnmarkDoors();
+	// RETAIL: Object 0x1003a350 is an empty function: Contract J.A.C.K.'s
+	// AIs leave the doors they open.
 }
 
 // ----------------------------------------------------------------------- //

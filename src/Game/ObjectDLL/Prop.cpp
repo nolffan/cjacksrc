@@ -1730,12 +1730,21 @@ void Prop::UpdateFade()
 	bool bDone = false;
 	float fCurTime = g_pLTServer->GetTime();
 
+	// RETAIL: Object 0x10127d33: a fade with no duration is done once it
+	// starts.
+
+	if( m_fFadeDuration <= MATH_EPSILON && m_fFadeStartTime <= fCurTime )
+	{
+		bDone = true;
+	}
+
 	// Update the fade if the delay has past...
 
-	if( m_fFadeStartTime <= fCurTime )
+	else if( m_fFadeStartTime <= fCurTime )
 	{
 		float t = (fCurTime - m_fFadeStartTime) / m_fFadeDuration;
-		float fAlpha = Clamp( LTLERP( m_fStartAlpha, m_fEndAlpha, t ), 0.0f, 1.0f );
+		float fAlpha = LTLERP( m_fStartAlpha, m_fEndAlpha, t );
+		fAlpha = Clamp( fAlpha, 0.0f, 1.0f );
 
 		float r, g, b, a;
 		g_pLTServer->GetObjectColor( m_hObject, &r, &g, &b, &a );

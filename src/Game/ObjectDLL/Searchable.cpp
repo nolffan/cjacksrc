@@ -229,10 +229,7 @@ void CSearchable::InitialUpdate(LPBASECLASS pObject)
 		m_pRandomItemSet = g_pSearchItemMgr->GetSet((uint8)0);
 	}
 
-	if (!m_hstrSoundName)
-	{
-		m_hstrSoundName = g_pLTServer->CreateString("Interface\\Snd\\SearchPropLoop.wav");
-	}
+	// RETAIL: Object 0x101384d0 gives no default search sound here.
 
 	CalcTotalTime();
 	CalcSearchTime();
@@ -874,7 +871,7 @@ void CSearchable::Enable(bool bEnable)
 
 	if (m_hObject)
 	{
-		// RETAIL: Object 0x10138130: activation only, no USRFLG_CAN_SEARCH.
+		// RETAIL: Object 0x10138130: activation only (no USRFLG_CAN_SEARCH).
 		g_pCommonLT->SetObjectFlags( m_hObject, OFT_User, bEnable ? USRFLG_CAN_ACTIVATE : 0, USRFLG_CAN_ACTIVATE );
 	}
 }

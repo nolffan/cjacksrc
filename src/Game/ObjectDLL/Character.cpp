@@ -2658,6 +2658,8 @@ void CCharacter::SetDeathAnimation()
 
 HMODELANIM CCharacter::GetDeathAni(LTBOOL bFront)
 {
+	// RETAIL: Object 0x1009efa0 reports missing animations at debug level 1.
+
 	HMODELANIM hAni = INVALID_ANI;
 	const char* szDeathAni = NULL;
 
@@ -2678,7 +2680,7 @@ HMODELANIM CCharacter::GetDeathAni(LTBOOL bFront)
 
 		if ( hAni == INVALID_ANI )
 		{
-			g_pLTServer->CPrint( "Character %s is missing animation %s.", GetObjectName(m_hObject), szDeathAni );
+			DebugCPrint( 1, "Character %s is missing animation %s.", GetObjectName(m_hObject), szDeathAni );
 
 			szDeathAni = g_pModelButeMgr->GetSkeletonDefaultFrontDeathAni(m_eModelSkeleton);
 			if ( szDeathAni )
@@ -2690,7 +2692,7 @@ HMODELANIM CCharacter::GetDeathAni(LTBOOL bFront)
 		if( hAni == INVALID_ANI )
 		{
 			AIASSERT( 0, m_hObject, "No death animation found." );	
-			g_pLTServer->CPrint( "Character %s is missing animation %s.", GetObjectName(m_hObject), szDeathAni );
+			DebugCPrint( 1, "Character %s is missing animation %s.", GetObjectName(m_hObject), szDeathAni );
 		}
 
 	}
@@ -2711,7 +2713,7 @@ HMODELANIM CCharacter::GetDeathAni(LTBOOL bFront)
 
 		if ( hAni == INVALID_ANI )
 		{
-			g_pLTServer->CPrint( "Character %s is missing animation %s.", GetObjectName(m_hObject), szDeathAni );
+			DebugCPrint( 1, "Character %s is missing animation %s.", GetObjectName(m_hObject), szDeathAni );
 
 			szDeathAni = g_pModelButeMgr->GetSkeletonDefaultBackDeathAni(m_eModelSkeleton);
 			if ( szDeathAni )
@@ -2723,7 +2725,7 @@ HMODELANIM CCharacter::GetDeathAni(LTBOOL bFront)
 		if( hAni == INVALID_ANI )
 		{
 			AIASSERT( 0, m_hObject, "No death animation found." );	
-			g_pLTServer->CPrint( "Character %s is missing animation %s.", GetObjectName(m_hObject), szDeathAni );
+			DebugCPrint( 1, "Character %s is missing animation %s.", GetObjectName(m_hObject), szDeathAni );
 		}
 	}
 
