@@ -180,9 +180,13 @@ void CWeapon::ReloadClip(LTBOOL bPlayReload, int nNewAmmo /*=-1*/, uint8 nAmmoId
 	
 	// Add a sound stimulus for the reloading sound.
 
-	LTVector vPos;
-	g_pLTServer->GetObjectPos(m_hModelObject, &vPos);
-	g_pAIStimulusMgr->RegisterStimulus(kStim_EnemyWeaponReloadSound, m_hObject, m_hModelObject, vPos, fRadiusMult, 1.f);
+	// RETAIL: Object 0x1015ef54: only a character's reload is heard.
+	if( IsCharacter( m_hObject ))
+	{
+		LTVector vPos;
+		g_pLTServer->GetObjectPos(m_hModelObject, &vPos);
+		g_pAIStimulusMgr->RegisterStimulus(kStim_EnemyWeaponReloadSound, m_hObject, m_hModelObject, vPos, fRadiusMult, 1.f);
+	}
 }
 
 

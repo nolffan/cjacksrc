@@ -554,6 +554,22 @@ dedicated server (package 7).
     (0x10092e20) tests a bool at 0xc24 the constructor sets last.
   - Also the layout agent's: GADGETTARGET has `AmmoType` (char*, 0xb8)
     that Bombable::SetupDefusedState (0x1009cbb0) spawns the pickup from.
+  - Decided: lite objects removed by their REMOVE message go at the end
+    of the next update (retail's CLiteObjectMgr::RemoveObject takes a
+    second argument; the one-argument form, 0x100f2730, passes true and
+    removes at once). The object is unregistered meanwhile, and an
+    unregistered object ignores its messages.
+  - Decided: Body::Update (0x10094e50) takes the update message's data
+    and runs Prop's update itself, with the body undeactivatable until
+    it's done (the bool at 0xc24).
+  - Decided: Body::RemovePowerupObjects (0x10093180) clears the spears'
+    touch notify on `m_ahWeapons[iWeapon]` after the weapons' loop, the
+    handle one past the array; ours keeps that read.
+  - Names ours: ScatterVolume::SetSFXMessage (0x10135b60, uncalled,
+    `UpdateSFX(false)`).
+  - Pairs by size had swapped HandleTransmissionMessage/HandleOverlayMessage,
+    LiteObjectMgr RemoveObject/Update and Body SetCanCarry/
+    RemovePowerupObjects (own_symbols in targets.py).
 - **Tools** (not committed, one-offs under out/): rtti.py (vtables by
   RTTI), vtcmp.py (a class's vtable, retail beside ours), ctorcmp.py
   (constructor store offsets aligned), place.py (the scoreboard's

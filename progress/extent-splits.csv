@@ -189,3 +189,4 @@ Object.lto,0x10059ef0,AimMagnet::AimMagnet (push 0; call GameBase::GameBase): af
 CShell.dll,0x1002a730,CClientWeaponMgr::ToggleHolster: two bytes of int3 after CClientWeaponMgr::ChangeWeapon (0x1002a520); CPlayerMgr::ToggleHolster (0x10098d30) jumps to it
 CShell.dll,0x10034de0,DamageFlagToType: uncalled, kept by DamageTypes.obj (/Ox, no /Gy); enumerated with the empty function at 0x10034dd0
 Object.lto,0x10152770,CTeamMgr::IsAttackingTeam (a team lookup and its attacking flag, ret 4): after the padding that ends CTeamMgr::SetAttackingTeam at 0x10152700; nothing calls it
+Object.lto,0x10135b60,ScatterVolume::SetSFXMessage (push 0; call UpdateSFX 0x10135a10; ret): after the padding that ends UpdateSFX; nothing calls it

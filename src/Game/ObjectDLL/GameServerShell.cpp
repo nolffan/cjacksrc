@@ -4043,15 +4043,22 @@ bool CGameServerShell::UpdateGameSpy()
 
 	m_nLastPublishTime = nTime;
 
+	// RETAIL: Object 0x100dbcf3: the player limit is read (one more for
+	// a listen server's host) and never published.
+	uint32 nMaxPlayers = 0;
+	g_pLTServer->GetMaxConnections( nMaxPlayers );
+	if( !m_ServerGameOptions.m_bDedicated )
+		nMaxPlayers++;
+
 	ServerMissionSettings sms = g_pServerMissionMgr->GetServerSettings( );
 
 	char szValue[256];
 
 	// The world's name, without its path...
 
-	char szMapName[_MAX_FNAME];
-	_splitpath( m_sWorld, NULL, NULL, szMapName, NULL );
-	m_pGameSpyServer->SetServerProperty( "mapname", szMapName );
+	// RETAIL: Object 0x100dbd33: the name goes into szValue.
+	_splitpath( m_sWorld, NULL, NULL, szValue, NULL );
+	m_pGameSpyServer->SetServerProperty( "mapname", szValue );
 
 	sprintf( szValue, "%d", sms.m_nScoreLimit );
 	m_pGameSpyServer->SetServerProperty( "fraglimit", szValue );
@@ -4085,7 +4092,8 @@ bool CGameServerShell::UpdateGameSpy()
 		sprintf( szValue, "%d", pPlayer->GetPlayerScore( )->GetScore( ));
 		m_pGameSpyServer->SetServerProperty( szKey, szValue );
 
-		float fPing = 0.0f;
+		// RETAIL: Object 0x100dbf00: fPing isn't initialised.
+		float fPing;
 		g_pLTServer->GetClientPing( pPlayer->GetClient( ), fPing );
 		uint16 nPing = ( uint16 )( fPing + 0.5f );
 

@@ -200,22 +200,20 @@ void Explosion::Start(HOBJECT hFiredFrom)
 	// RETAIL: Object 0x100ccba0.  A single player's own explosions are
 	// bigger, with a bigger kill zone, than everyone else's.
 
-	LTFLOAT fKillZone;
 	if (!IsMultiplayerGame() && IsPlayer(m_hFiredFrom))
 	{
 		m_fDamageRadius		*= g_vtExSPRadiusMulti.GetFloat();
 		m_fProgDamageRadius	*= g_vtExSPRadiusMulti.GetFloat();
-		fKillZone = g_vtExSPKillZone.GetFloat();
+		m_fMinDamageRadius	= g_vtExSPKillZone.GetFloat() * m_fDamageRadius;
 	}
 	else
 	{
 		m_fDamageRadius		*= g_vtExRadiusMulti.GetFloat();
 		m_fProgDamageRadius	*= g_vtExRadiusMulti.GetFloat();
-		fKillZone = g_vtExKillZone.GetFloat();
+		m_fMinDamageRadius	= g_vtExKillZone.GetFloat() * m_fDamageRadius;
 	}
 
-	m_fMinDamageRadius = fKillZone * m_fDamageRadius;
-	m_fMinDamageRadius = Clamp(m_fMinDamageRadius, 0.0f, m_fDamageRadius);
+	m_fMinDamageRadius = LTCLAMP(m_fMinDamageRadius, 0.0f, m_fDamageRadius);	// RETAIL: Object 0x100ccdf7
 
 	// Do Area damage to the objects caught in the blast...
 

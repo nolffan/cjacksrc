@@ -118,7 +118,8 @@ LTBOOL CAIVolumeMgr::StraightPathExists(CAI* pAI, const LTVector& vOrigin, const
 	AIVolume* pVolumeOrigin = FindContainingVolume( LTNULL, vOrigin, eAxisAll, fVerticalThreshold, pStartVolumeHint );		
 	if( ( !pVolumeOrigin ) || 
 		( pVolumeOrigin->GetVolumeType() & dwExcludeVolumes ) ||
-		( !( pVolumeOrigin->GetVolumeType() & pAI->GetCurValidVolumeMask() ) ) )
+		( !( pVolumeOrigin->GetVolumeType() & pAI->GetCurValidVolumeMask() ) ) ||
+		( pVolumeOrigin->GetDoor( 0 ) ) )	// RETAIL: Object 0x1007da7b: not through a door
 	{
 		return LTFALSE;
 	}
@@ -128,7 +129,8 @@ LTBOOL CAIVolumeMgr::StraightPathExists(CAI* pAI, const LTVector& vOrigin, const
 	AIVolume* pVolumeDest = FindContainingVolume( LTNULL, vDest, eAxisAll, fVerticalThreshold, pStartVolumeHint );		
 	if( ( !pVolumeDest ) || 
 		( pVolumeDest->GetVolumeType() & dwExcludeVolumes ) ||
-		( !( pVolumeDest->GetVolumeType() & pAI->GetCurValidVolumeMask() ) ) )
+		( !( pVolumeDest->GetVolumeType() & pAI->GetCurValidVolumeMask() ) ) ||
+		( pVolumeDest->GetDoor( 0 ) ) )	// RETAIL: Object 0x1007da7b: not through a door
 	{
 		return LTFALSE;
 	}

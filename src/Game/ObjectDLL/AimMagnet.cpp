@@ -303,7 +303,11 @@ bool AimMagnet::OnTrigger( HOBJECT hSender, const CParsedMsg &cMsg )
 		if( cMsg.GetArgCount( ) > 1 )
 		{
 			uint32 nTeamId = atoi( cMsg.GetArg( 1 ));
-			SetTeam(( nTeamId < MAX_TEAMS ) ? nTeamId : INVALID_TEAM );
+			// RETAIL: Object 0x10059bdb: written as if/else.
+			if( nTeamId < MAX_TEAMS )
+				SetTeam( nTeamId );
+			else
+				SetTeam( INVALID_TEAM );
 		}
 	}
 	else if( cMsg.GetArg(0) == s_cTok_Target )

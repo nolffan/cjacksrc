@@ -31,6 +31,9 @@ public:
 	void AddObject(GameBaseLite *pObject);
 	// Delete an object
 	void RemoveObject(GameBaseLite *pObject);
+	// RETAIL: Object 0x100f2610: or, not immediately, at the end of
+	// the next update
+	void RemoveObject(GameBaseLite *pObject, bool bImmediate);
 	// Rename an object
 	void RenameObject(GameBaseLite *pObject, const char *pName);
 	// Is the mgr currently tracking this object?

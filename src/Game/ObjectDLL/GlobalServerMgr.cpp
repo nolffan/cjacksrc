@@ -395,6 +395,12 @@ void CGlobalServerMgr::Term()
 		g_pTriggerTypeMgr->Term();
 	}
 
+	// RETAIL: Object 0x100e47b5.
+	if( g_pVehicleButeMgr )
+	{
+		g_pVehicleButeMgr->Term();
+	}
+
 	CGlobalMgr::Term( );
 }
 

@@ -47,6 +47,7 @@ protected:
 private:
 	void WriteScatterInfo( ILTMessage_Write& cMsg );
 	void UpdateSFX( bool bSendToClients );
+	void SetSFXMessage( );
 	bool ReadProp( ObjectCreateStruct* pOCS );
 };
 

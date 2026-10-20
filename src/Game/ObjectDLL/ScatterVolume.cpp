@@ -147,22 +147,35 @@ bool ScatterVolume::ReadProp( ObjectCreateStruct* pOCS )
 
 void ScatterVolume::UpdateSFX( bool bSendToClients )
 {
-	{
-		CAutoMessage cMsg;
-		cMsg.Writeuint8( SFX_SCATTER_ID );
-		WriteScatterInfo( cMsg );
-		g_pLTServer->SetObjectSFXMessage( m_hObject, cMsg.Read() );
-	}
+	// RETAIL: Object 0x10135b3f: the first message lives to the end.
+	CAutoMessage cMsg;
+	cMsg.Writeuint8( SFX_SCATTER_ID );
+	WriteScatterInfo( cMsg );
+	g_pLTServer->SetObjectSFXMessage( m_hObject, cMsg.Read() );
 
 	if( bSendToClients )
 	{
-		CAutoMessage cMsg;
-		cMsg.Writeuint8( MID_SFX_MESSAGE );
-		cMsg.Writeuint8( SFX_SCATTER_ID );
-		cMsg.WriteObject( m_hObject );
-		WriteScatterInfo( cMsg );
-		g_pLTServer->SendToClient( cMsg.Read(), LTNULL, MESSAGE_GUARANTEED );
+		CAutoMessage cClientMsg;
+		cClientMsg.Writeuint8( MID_SFX_MESSAGE );
+		cClientMsg.Writeuint8( SFX_SCATTER_ID );
+		cClientMsg.WriteObject( m_hObject );
+		WriteScatterInfo( cClientMsg );
+		g_pLTServer->SendToClient( cClientMsg.Read(), LTNULL, MESSAGE_GUARANTEED );
 	}
+}
+
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	ScatterVolume::SetSFXMessage
+//
+//	PURPOSE:	RETAIL: Object 0x10135b60.  Only sets the special fx
+//				message.  Nothing calls it; the name is ours.
+//
+// ----------------------------------------------------------------------- //
+
+void ScatterVolume::SetSFXMessage( )
+{
+	UpdateSFX( false );
 }
 
 

@@ -1042,10 +1042,7 @@ void CAIHuman::KickDoors(HOBJECT hDoor1, HOBJECT hDoor2)
 				LTVector vPos;
 				g_pLTServer->GetObjectPos(m_hLastDoor[iDoor], &vPos);		
 
-				LTVector vDims;
-				g_pPhysicsLT->GetObjectDims(m_hLastDoor[iDoor], &vDims);
-	
-				LTFLOAT fWidth = (vDims.x > vDims.z) ? vDims.x : vDims.z;
+				// RETAIL: Object 0x1003b364: the door's dims aren't read.
 
 				CPlayerObj* pPlayer = (CPlayerObj*)GetTarget()->GetCharacter();
 				pPlayer->PushCharacter( vPos, 96.f, 0.f, 1.f, 1000.f );	
@@ -2410,6 +2407,24 @@ void CAIHuman::SetAIType( const char* const szType )
 		g_pLTServer->CPrint( "Unknown CharacterType: %s, defaulting to ground", szType );
 		SetHumanType(eHT_Ground);
 	}
+}
+
+//----------------------------------------------------------------------------
+//              
+//	ROUTINE:	CAIHuman::SetMoveToFloor()
+//              
+//	PURPOSE:	RETAIL: Object 0x10039750.  An AI put back on the floor is
+//				forced to the ground on its next update.
+//              
+//----------------------------------------------------------------------------
+void CAIHuman::SetMoveToFloor( bool bMoveToFloor )
+{
+	if( bMoveToFloor == m_bMoveToFloor )
+		return;
+
+	m_bMoveToFloor = bMoveToFloor;
+	if( bMoveToFloor )
+		m_bForceGround = LTTRUE;
 }
 
 

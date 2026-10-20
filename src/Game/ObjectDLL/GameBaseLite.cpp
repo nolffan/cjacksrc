@@ -143,10 +143,15 @@ bool GameBaseLite::OnTrigger(HOBJECT hSender, const CParsedMsg &cMsg)
 {
 	static CParsedMsg::CToken s_cTok_Remove("REMOVE");
 
+	// RETAIL: Object 0x100d91fd.
+	if (!IsRegistered())
+		return false;
+
 	if (cMsg.GetArg(0) == s_cTok_Remove)
 	{
 		// Remove ourselves from the ObjectLiteMgr
-		g_pGameServerShell->GetLiteObjectMgr()->RemoveObject(this);
+		// RETAIL: Object 0x100d924b: at the end of the next update.
+		g_pGameServerShell->GetLiteObjectMgr()->RemoveObject(this, false);
 	}
 	else
 	{
@@ -159,6 +164,10 @@ bool GameBaseLite::OnTrigger(HOBJECT hSender, const CParsedMsg &cMsg)
 void GameBaseLite::TriggerMsg(HOBJECT hSender, const char* pMsg)
 {
 	if (!pMsg) return;
+
+	// RETAIL: Object 0x100d927d: an object waiting for removal ignores
+	// its messages.
+	if (!IsRegistered()) return;
 
 	ConParse parse;
 	parse.Init(pMsg);
