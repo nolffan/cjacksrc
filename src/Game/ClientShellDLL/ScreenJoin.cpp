@@ -42,10 +42,16 @@
 #define IDS_CJ_TIMELIMIT			131		// "Time limit"
 #define IDS_CJ_RUNSPEED				132		// "Run speed"
 #define IDS_CJ_FRIENDLYFIRE			133		// "Friendly fire"
+#define IDS_CJ_DIFFICULTY			134		// "Difficulty"
+#define IDS_CJ_PLAYERDIFF			135		// "Player difficulty factor"
 #define IDS_CJ_TEAMDEATHMATCH		140		// "Team Deathmatch"
 #define IDS_CJ_DOOMSDAY				141		// "Doomsday"
 #define IDS_CJ_ROUNDS				142		// "Rounds"
 #define IDS_CJ_DEMOLITION			143		// "Demolition"
+
+// RETAIL: a macro, so the value's expression runs twice when it is under
+// the limit.
+#define ClampToUint16( nValue ) ((( nValue ) < 0xffff ) ? ( nValue ) : 0xffff )
 
 namespace
 {
@@ -103,93 +109,72 @@ namespace
 		}
 	};
 
-	int ClampToUint16( int nValue )
-	{
-		return ( nValue < 0xffff ) ? nValue : 0xffff;
-	}
 
-	// The game type's name, for a server's row.
-	int GetGameTypeStringId( uint8 nGameType )
-	{
-		switch( nGameType )
-		{
-			case eGameTypeCooperative:		return IDS_CJ_COOPERATIVE;
-			case eGameTypeDeathmatch:		return IDS_CJ_DEATHMATCH;
-			case eGameTypeTeamDeathmatch:	return IDS_CJ_TEAMDEATHMATCH;
-			case eGameTypeDoomsDay:			return IDS_CJ_DOOMSDAY;
-			case eGameTypeDemolition:		return IDS_CJ_DEMOLITION;
-			default:						return IDS_CJ_UNKNOWN;
-		}
-	}
-
-	// A server's option, "Name 1", as "Label: Yes" or "Label: 1".
-	void AddOption( std::string& sOptions, int nLabelId, char const* pszToken, bool bYesNo )
-	{
-		if( !pszToken )
-			return;
-
-		sOptions += LoadTempString( nLabelId );
-		sOptions += ": ";
-
-		char const* pszValue = strpbrk( pszToken, "0123456789" );
-		if( bYesNo )
-		{
-			sOptions += LoadTempString(( pszValue && *pszValue >= '1' ) ? IDS_YES : IDS_NO );
-		}
-		else if( pszValue )
-		{
-			sOptions += pszValue;
-		}
-	}
 }
 
 // The sorts of the server list (RETAIL: 0x100cc5a0 to 0x100d06b0).
 class CServerSortName
 {
 public:
-	bool operator()(const CServerEntry* x, const CServerEntry* y) const
+	bool operator()(TServerMap::iterator x, TServerMap::iterator y) const
 	{
-		return (stricmp(x->m_sName.c_str(), y->m_sName.c_str()) < 0 );
+		const CServerEntry& cX = x->second;
+		const CServerEntry& cY = y->second;
+		return (_stricmp(cX.m_sName.c_str(), cY.m_sName.c_str()) < 0 );
 	}
 };
 class CServerSortVersion
 {
 public:
-	bool operator()(const CServerEntry* x, const CServerEntry* y) const
+	bool operator()(TServerMap::iterator x, TServerMap::iterator y) const
 	{
-		return (stricmp(x->m_sVersion.c_str(), y->m_sVersion.c_str()) < 0 );
+		// RETAIL: then by mod.
+		const CServerEntry& cX = x->second;
+		const CServerEntry& cY = y->second;
+		int nResult = _stricmp(cX.m_sVersion.c_str(), cY.m_sVersion.c_str());
+		if (nResult)
+			return (nResult < 0);
+		return (_stricmp(cX.m_sModName.c_str(), cY.m_sModName.c_str()) < 0);
 	}
 };
 class CServerSortPing
 {
 public:
-	bool operator()(const CServerEntry* x, const CServerEntry* y) const
+	bool operator()(TServerMap::iterator x, TServerMap::iterator y) const
 	{
-		return (x->m_nPing < y->m_nPing );
+		// RETAIL: a server with no ping goes last.
+		const CServerEntry& cX = x->second;
+		const CServerEntry& cY = y->second;
+		if (cX.m_nPing == 0xffff)
+			return false;
+		if (cY.m_nPing == 0xffff)
+			return true;
+		return (cX.m_nPing < cY.m_nPing );
 	}
 };
 class CServerSortPlayers
 {
 public:
-	bool operator()(const CServerEntry* x, const CServerEntry* y) const
+	bool operator()(TServerMap::iterator x, TServerMap::iterator y) const
 	{
-		return (x->m_nNumPlayers < y->m_nNumPlayers );
+		return (x->second.m_nNumPlayers < y->second.m_nNumPlayers );
 	}
 };
 class CServerSortLock
 {
 public:
-	bool operator()(const CServerEntry* x, const CServerEntry* y) const
+	bool operator()(TServerMap::iterator x, TServerMap::iterator y) const
 	{
-		return (x->m_bUsePassword && !y->m_bUsePassword );
+		// RETAIL: the locked first; a lock never sorts after an open server.
+		return (x->second.m_bUsePassword || !y->second.m_bUsePassword );
 	}
 };
 class CServerSortType
 {
 public:
-	bool operator()(const CServerEntry* x, const CServerEntry* y) const
+	bool operator()(TServerMap::iterator x, TServerMap::iterator y) const
 	{
-		return (x->m_nGameType < y->m_nGameType );
+		return (x->second.m_nGameType < y->second.m_nGameType );
 	}
 };
 
@@ -212,29 +197,23 @@ CServerEntry::CServerEntry( ) :
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
+
 // RETAIL: 0x100cb6e0
 CScreenJoin::CScreenJoin() :
-	m_pFindCtrl			( NULL ),
 	m_pServerListCtrl	( NULL ),
-	m_pPlayerListCtrl	( NULL ),
-	m_pWait				( NULL ),
-	m_pDetails			( NULL ),
-	m_pJoin				( NULL ),
-	m_pOptions			( NULL ),
-	m_pMission			( NULL ),
-	m_pPort				( NULL ),
 	m_eCurState			( eState_Inactive ),
 	m_nVersionFilter	( 0 ),
 	m_nPlayersFilter	( 0 ),
 	m_nPingFilter		( 0 ),
 	m_nModFilter		( 0 ),
-	m_nGameTypeFilter	( 0 ),
 	m_nLastSort			( CMD_SORT_PING ),
-	m_nSearchStep		( 0 ),
-	m_bInternetOk		( true )
+	m_nSearchStep		( 0 )
 {
-	strcpy( m_szPort, "27888" );
+	InitializeCriticalSection( &m_csServers );
+	m_bInternetOk = true;
+#ifdef CJACK_MODERN
 	InitializeCriticalSection( &m_csPendingServers );
+#endif
 }
 
 // RETAIL: 0x100cb7b0
@@ -243,7 +222,10 @@ CScreenJoin::~CScreenJoin()
 	if( m_bInit )
 		Term( );
 
+	DeleteCriticalSection( &m_csServers );
+#ifdef CJACK_MODERN
 	DeleteCriticalSection( &m_csPendingServers );
+#endif
 }
 
 // RETAIL: 0x100cb4a0
@@ -252,10 +234,11 @@ void CScreenJoin::ClearServers()
 	if( m_bInit && m_pServerListCtrl )
 		m_pServerListCtrl->RemoveAll( );
 	m_cServers.clear( );
-
+#ifdef CJACK_MODERN
 	EnterCriticalSection( &m_csPendingServers );
 	m_cPendingServers.clear( );
 	LeaveCriticalSection( &m_csPendingServers );
+#endif
 }
 
 // RETAIL: 0x100cb6d0
@@ -557,31 +540,13 @@ uint32 CScreenJoin::OnCommand(uint32 dwCommand, uint32 dwParam1, uint32 dwParam2
 
 	case CMD_SEARCH :
 	{
-		IGameSpyBrowser* pBrowser = g_pClientMultiplayerMgr->GetGameSpyBrowser();
-		IGameSpyBrowser* pLANBrowser = g_pClientMultiplayerMgr->GetGameSpyLANBrowser();
-		if ((!pBrowser || pBrowser->GetBrowserStatus() != IGameSpyBrowser::eBrowserStatus_Processing) &&
-			(!pLANBrowser || pLANBrowser->GetBrowserStatus() != IGameSpyBrowser::eBrowserStatus_Processing))
-		{
-			ChangeState(eState_UpdateDir);
-		}
+		FindServers();
 		break;
 	}
 
 	case CMD_OK:
 	{
 		HandleCallback(dwParam1,dwParam2);
-		break;
-	}
-
-	case CMD_EDIT_PORT:
-	{
-		MBCreate mb;
-		mb.eType = LTMB_EDIT;
-		mb.pFn = EditPortCallBack;
-		mb.pString = m_szPort;
-		mb.nMaxChars = 5;
-		mb.eInput = CLTGUIEditCtrl::kInputNumberOnly;
-		g_pInterfaceMgr->ShowMessageBox(IDS_CJ_LAN_PORT,&mb);
 		break;
 	}
 
@@ -618,6 +583,18 @@ uint32 CScreenJoin::OnCommand(uint32 dwCommand, uint32 dwParam1, uint32 dwParam2
 		}
 
 		CheckPassword();
+		break;
+	}
+
+	case CMD_EDIT_PORT:
+	{
+		MBCreate mb;
+		mb.eType = LTMB_EDIT;
+		mb.pFn = EditPortCallBack;
+		mb.pString = m_szPort;
+		mb.nMaxChars = 5;
+		mb.eInput = CLTGUIEditCtrl::kInputNumberOnly;
+		g_pInterfaceMgr->ShowMessageBox(IDS_CJ_LAN_PORT,&mb);
 		break;
 	}
 	default:
@@ -666,7 +643,7 @@ void    CScreenJoin::OnFocus(LTBOOL bFocus)
 		SetCapture(m_pWait);
 
 		sprintf(m_szPort, "%d", pProfile->m_nClientPort);
-		m_pPort->SetString(1, m_szPort);
+		m_pPort->GetColumn(1)->SetString(m_szPort);
 
 		// Search when the browsers are new: they are made again after a join.
 		bool bNewBrowsers = false;
@@ -677,7 +654,10 @@ void    CScreenJoin::OnFocus(LTBOOL bFocus)
 		}
 
 		m_bInternetOk = true;
-		ChangeState(bNewBrowsers ? eState_Startup : eState_Waiting);
+		if (bNewBrowsers)
+			ChangeState(eState_Startup);
+		else
+			ChangeState(eState_Waiting);
 
 		// we may have gotten here after failing a join, so rebuild our history
 		if (m_pScreenMgr->GetLastScreenID() == SCREEN_ID_NONE)
@@ -703,53 +683,162 @@ void    CScreenJoin::OnFocus(LTBOOL bFocus)
 	CBaseScreen::OnFocus(bFocus);
 }
 
-// ----------------------------------------------------------------------- //
-//
-//	ROUTINE:	CScreenJoin::OnServerInfo
-//
-//	PURPOSE:	A browser found a server, or its details.
-//
-// ----------------------------------------------------------------------- //
-
-// RETAIL: 0x100cb500. Retail made and added the server's row on the
-// browser's thread; cjacksrc reads the server there and leaves the rows to
-// the screen's update, so neither thread waits on the other's lock.
-void CScreenJoin::OnServerInfo( IGameSpyBrowser& gameSpyBrowser, void* hGameServer, void* pUserData )
+// RETAIL: 0x100c9fd0. NOLF2's cooperative details from the old server
+// directory's message, without the skills; nothing calls it.
+void CScreenJoin::ReadCoopDetails(std::string& sOptions,CLTMsgRef_Read& cRead)
 {
-	CScreenJoin* pScreen = ( CScreenJoin* )pUserData;
-	if( !pScreen )
-		return;
+	char aStringBuffer[256];
 
-	std::pair<std::string, CServerEntry> server;
-	if( !pScreen->ReadServerInfo( gameSpyBrowser, hGameServer, server.first, server.second ))
-		return;
+	bool bFriendlyFire = cRead->Readbool();
+	sprintf(aStringBuffer,"%s: ",LoadTempString(IDS_CJ_FRIENDLYFIRE));
+	sOptions += aStringBuffer;
+	if (bFriendlyFire)
+		sprintf(aStringBuffer,"%s; ",LoadTempString(IDS_YES));
+	else
+		sprintf(aStringBuffer,"%s; ",LoadTempString(IDS_NO));
+	sOptions += aStringBuffer;
 
-	server.second.m_bLANBrowser = ( &gameSpyBrowser == g_pClientMultiplayerMgr->GetGameSpyLANBrowser( ));
+	uint8 nDiff = cRead->Readuint8();
+	sprintf(aStringBuffer,"%s: ",LoadTempString(IDS_CJ_DIFFICULTY));
+	sOptions += aStringBuffer;
+	switch  (nDiff)
+	{
+	case 3:
+		sprintf(aStringBuffer,"%s; ",LoadTempString(IDS_NEW_INSANE));
+		break;
+	case 2:
+		sprintf(aStringBuffer,"%s; ",LoadTempString(IDS_NEW_HARD));
+		break;
+	case 1:
+		sprintf(aStringBuffer,"%s; ",LoadTempString(IDS_NEW_MEDIUM));
+		break;
+	case 0:
+	default:
+		sprintf(aStringBuffer,"%s; ",LoadTempString(IDS_NEW_EASY));
+		break;
+	}
+	sOptions += aStringBuffer;
 
+	float fPlayerDiff = cRead->Readfloat();
+	sprintf(aStringBuffer,"%s: %0.2f; ",LoadTempString(IDS_CJ_PLAYERDIFF),fPlayerDiff);
+	sOptions += aStringBuffer;
 
-	EnterCriticalSection( &pScreen->m_csPendingServers );
-	pScreen->m_cPendingServers.push_back( server );
-	LeaveCriticalSection( &pScreen->m_csPendingServers );
+	//read player list
+	bool bPlayerToRead = cRead->Readbool();
+	while (bPlayerToRead)
+	{
+		cRead->ReadString(aStringBuffer, sizeof(aStringBuffer));
+		uint16 nPing = cRead->Readuint16();
+		bPlayerToRead = cRead->Readbool();
+
+		// Create a control
+		CLTGUIColumnCtrl* pCtrl = CreateColumnCtrl(0,0,kDefaultPos,LTTRUE);
+		// Do the name
+		pCtrl->AddColumn(aStringBuffer, kColumnWidth_PlayerName,LTTRUE);
+
+		// Do the ping
+		sprintf(aStringBuffer, "%d", nPing);
+		pCtrl->AddColumn(aStringBuffer, kColumnWidth_Ping);
+
+		m_pPlayerListCtrl->AddControl(pCtrl);
+	}
 }
 
-// RETAIL: 0x100cacc0
-bool CScreenJoin::ReadServerInfo( IGameSpyBrowser& gameSpyBrowser, void* hGameServer, std::string& sKey,
+// RETAIL: 0x100ca210. A server's row of the list.
+static bool SetupServerCtrl( CLTGUIColumnCtrl* pCtrl, CServerEntry& cServer, const char* pszKey )
+{
+	if( pCtrl->GetNumColumns( ) == 0 )
+	{
+		pCtrl->AddColumn( "", kColumnWidth_ServerName, LTTRUE );
+		pCtrl->AddColumn( "", kColumnWidth_GameType, LTTRUE );
+		pCtrl->AddColumn( "", kColumnWidth_Ping, LTTRUE );
+		pCtrl->AddColumn( "", kColumnWidth_Players, LTTRUE );
+		pCtrl->AddColumn( "", kColumnWidth_Lock, LTTRUE );
+		pCtrl->AddColumn( "", kColumnWidth_Version, LTTRUE );
+	}
+
+	char szTemp[256];
+
+	pCtrl->GetColumn( 0 )->SetString( cServer.m_sName.c_str( ));
+
+	switch( cServer.m_nGameType )
+	{
+		case eGameTypeCooperative:
+			sprintf( szTemp, "%s", LoadTempString( IDS_CJ_COOPERATIVE ));
+			break;
+		case eGameTypeDeathmatch:
+			sprintf( szTemp, "%s", LoadTempString( IDS_CJ_DEATHMATCH ));
+			break;
+		case eGameTypeTeamDeathmatch:
+			sprintf( szTemp, "%s", LoadTempString( IDS_CJ_TEAMDEATHMATCH ));
+			break;
+		case eGameTypeDoomsDay:
+			sprintf( szTemp, "%s", LoadTempString( IDS_CJ_DOOMSDAY ));
+			break;
+		case eGameTypeDemolition:
+			sprintf( szTemp, "%s", LoadTempString( IDS_CJ_DEMOLITION ));
+			break;
+		default:
+			sprintf( szTemp, "%s", LoadTempString( IDS_CJ_UNKNOWN ));
+			break;
+	}
+	pCtrl->GetColumn( 1 )->SetString( szTemp );
+
+	if( cServer.m_nPing == 0xffff )
+		szTemp[0] = '\0';
+	else
+		sprintf( szTemp, "%d", cServer.m_nPing );
+	pCtrl->GetColumn( 2 )->SetString( szTemp );
+
+	sprintf( szTemp, "%d/%d", cServer.m_nNumPlayers, cServer.m_nMaxPlayers );
+	pCtrl->GetColumn( 3 )->SetString( szTemp );
+
+	if( cServer.m_bUsePassword )
+		pCtrl->GetColumn( 4 )->SetString( "x" );
+	else
+		pCtrl->GetColumn( 4 )->SetString( " " );
+
+	if( _stricmp( cServer.m_sModName.c_str( ), "Retail" ) == 0 )
+		sprintf( szTemp, "%s", cServer.m_sVersion.c_str( ));
+	else
+		sprintf( szTemp, "%s, %s", cServer.m_sVersion.c_str( ), cServer.m_sModName.c_str( ));
+	pCtrl->GetColumn( 5 )->SetString( szTemp );
+
+	// Only our version, with our mod, can be joined.
+	bool bEnable = true;
+	if( _stricmp( cServer.m_sVersion.c_str( ), g_pVersionMgr->GetVersion( )) != 0 ||
+		_stricmp( cServer.m_sModName.c_str( ), g_pClientMultiplayerMgr->GetModName( )) != 0 )
+		bEnable = false;
+	pCtrl->Enable( bEnable );
+
+	pCtrl->SetParam1(( uint32 )pszKey );
+
+	return true;
+}
+
+// RETAIL: 0x100cacc0. A server's details from its browser, and its key.
+static bool ReadServerInfo( IGameSpyBrowser& gameSpyBrowser, void* hGameServer, std::string& sKey,
 	CServerEntry& cServer )
 {
 	char szPrivateIP[256];
 	char szPublicIP[256];
-	unsigned short nPrivatePort = 0;
-	unsigned short nPublicPort = 0;
+	unsigned short nPrivatePort;
+	unsigned short nPublicPort;
 	char szValue[256];
 
 	if( !gameSpyBrowser.GetServerConnectInfo( hGameServer, szPrivateIP, &nPrivatePort, szPublicIP, &nPublicPort,
 		&cServer.m_bUsePublicAddress, &cServer.m_bDirectConnect ))
 		return false;
 
-	sprintf( szValue, "%s:%d", szPrivateIP, nPrivatePort );
-	sKey = szValue;
-	sprintf( szValue, "%s:%d", szPublicIP, nPublicPort );
-	cServer.m_sPublicAddress = szValue;
+	sKey = szPrivateIP;
+	sKey += ":";
+	sprintf( szValue, "%d", nPrivatePort );
+	sKey += szValue;
+
+	cServer.m_sPublicAddress = szPublicIP;
+	cServer.m_sPublicAddress += ":";
+	sprintf( szValue, "%d", nPublicPort );
+	cServer.m_sPublicAddress += szValue;
 
 	if( !gameSpyBrowser.GetServerProperty( hGameServer, "hostname", szValue, sizeof( szValue )))
 		return false;
@@ -796,17 +885,17 @@ bool CScreenJoin::ReadServerInfo( IGameSpyBrowser& gameSpyBrowser, void* hGameSe
 	if( gameSpyBrowser.GetServerProperty( hGameServer, "timelimit", szValue, sizeof( szValue )))
 		cServer.m_nTimeLimit = ( uint16 )ClampToUint16( atoi( szValue ));
 
-	int nNumPlayers = gameSpyBrowser.GetNumPlayers( hGameServer );
+	uint32 nNumPlayers = gameSpyBrowser.GetNumPlayers( hGameServer );
 	cServer.m_Players.resize( 0 );	// RETAIL: 0x100cafc8
 	cServer.m_Players.reserve( nNumPlayers );
-	for( int nPlayer = 0; nPlayer < nNumPlayers; nPlayer++ )
+	CServerPlayer player;
+	for( uint32 nPlayer = 0; nPlayer < nNumPlayers; nPlayer++ )
 	{
 		char szKey[256];
 		sprintf( szKey, "player_%d", nPlayer );
 		if( !gameSpyBrowser.GetServerProperty( hGameServer, szKey, szValue, sizeof( szValue )))
 			break;
 
-		CServerPlayer player;
 		player.m_sName = szValue;
 
 		sprintf( szKey, "ping_%d", nPlayer );
@@ -826,7 +915,89 @@ bool CScreenJoin::ReadServerInfo( IGameSpyBrowser& gameSpyBrowser, void* hGameSe
 	return true;
 }
 
-// Add or update the rows of the servers the browsers found.
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	CScreenJoin::OnServerInfo
+//
+//	PURPOSE:	A browser found a server, or its details.
+//
+// ----------------------------------------------------------------------- //
+
+// RETAIL: 0x100cb500. On the browser's thread: the server goes into the
+// list, and a new one's row into the list control.
+void CScreenJoin::OnServerInfo( IGameSpyBrowser& gameSpyBrowser, void* hGameServer, void* pUserData )
+{
+	CServerEntry cServer;
+	std::string sKey;
+	if( !ReadServerInfo( gameSpyBrowser, hGameServer, sKey, cServer ))
+		return;
+
+	CScreenJoin* pScreen = ( CScreenJoin* )pUserData;
+	cServer.m_bLANBrowser = ( &gameSpyBrowser == g_pClientMultiplayerMgr->GetGameSpyLANBrowser( ));
+
+	// The details asked for are the selected server's.
+	bool bNew = false;
+	if( pScreen->m_sSelectedServer.length( ))
+		sKey = pScreen->m_sSelectedServer;
+
+#ifdef CJACK_MODERN
+	// RETAIL_BUGS.md: retail takes the screen's lock here, on the browser's
+	// thread and holding the browser's locks, while the screen's render
+	// holds the screen's lock and asks the browsers for their status.
+	EnterCriticalSection( &pScreen->m_csPendingServers );
+	pScreen->m_cPendingServers.push_back( std::make_pair( sKey, cServer ));
+	LeaveCriticalSection( &pScreen->m_csPendingServers );
+	return;
+#endif
+
+	TServerMap::iterator iServer = pScreen->m_cServers.find( sKey );
+	if( iServer == pScreen->m_cServers.end( ))
+	{
+		bNew = true;
+		cServer.m_pCtrl = pScreen->CreateColumnCtrl( CMD_DETAILS, IDS_HELP_JOIN );
+		std::pair<TServerMap::iterator, bool> cInserted = pScreen->m_cServers.insert( std::pair<std::string, CServerEntry>( sKey, cServer ));
+		iServer = cInserted.first;
+	}
+	else
+	{
+		cServer.m_pCtrl = iServer->second.m_pCtrl;
+		iServer->second = cServer;
+	}
+
+	SetupServerCtrl( cServer.m_pCtrl, cServer, iServer->first.c_str( ));
+
+	if( bNew )
+	{
+		EnterCriticalSection( &pScreen->m_csServers );
+		pScreen->m_pServerListCtrl->AddControl( cServer.m_pCtrl );
+		LeaveCriticalSection( &pScreen->m_csServers );
+	}
+}
+
+#ifdef CJACK_MODERN
+// MODERN.md GAME-3: OnServerInfo's work on the screen's thread.
+void CScreenJoin::AddServer( std::string const& sKey, CServerEntry& cServer )
+{
+	bool bNew = false;
+	TServerMap::iterator iServer = m_cServers.find( sKey );
+	if( iServer == m_cServers.end( ))
+	{
+		bNew = true;
+		cServer.m_pCtrl = CreateColumnCtrl( CMD_DETAILS, IDS_HELP_JOIN );
+		iServer = m_cServers.insert( std::make_pair( sKey, cServer )).first;
+	}
+	else
+	{
+		cServer.m_pCtrl = iServer->second.m_pCtrl;
+		iServer->second = cServer;
+	}
+
+	SetupServerCtrl( cServer.m_pCtrl, cServer, iServer->first.c_str( ));
+
+	if( bNew )
+		m_pServerListCtrl->AddControl( cServer.m_pCtrl );
+}
+
 void CScreenJoin::AddPendingServers()
 {
 	TPendingServers cPending;
@@ -836,77 +1007,9 @@ void CScreenJoin::AddPendingServers()
 
 	TPendingServers::iterator iPending;
 	for( iPending = cPending.begin( ); iPending != cPending.end( ); iPending++ )
-	{
-		bool bNew = false;
-		TServerMap::iterator iServer = m_cServers.find( iPending->first );
-		if( iServer == m_cServers.end( ))
-		{
-			bNew = true;
-			iServer = m_cServers.insert( TServerMap::value_type( iPending->first, iPending->second )).first;
-			iServer->second.m_pCtrl = CreateColumnCtrl( CMD_DETAILS, IDS_HELP_JOIN );
-		}
-		else
-		{
-			CLTGUIColumnCtrl* pCtrl = iServer->second.m_pCtrl;
-			iServer->second = iPending->second;
-			iServer->second.m_pCtrl = pCtrl;
-		}
-
-		SetupServerCtrl( iServer->second, iServer->first.c_str( ));
-
-		if( bNew )
-			m_pServerListCtrl->AddControl( iServer->second.m_pCtrl );
-	}
+		AddServer( iPending->first, iPending->second );
 }
-
-// RETAIL: 0x100ca210
-void CScreenJoin::SetupServerCtrl( CServerEntry& cServer, const char* pszKey )
-{
-	CLTGUIColumnCtrl* pCtrl = cServer.m_pCtrl;
-	if( !pCtrl )
-		return;
-
-	if( pCtrl->GetNumColumns( ) == 0 )
-	{
-		pCtrl->AddColumn( "", kColumnWidth_ServerName, LTTRUE );
-		pCtrl->AddColumn( "", kColumnWidth_GameType, LTTRUE );
-		pCtrl->AddColumn( "", kColumnWidth_Ping, LTTRUE );
-		pCtrl->AddColumn( "", kColumnWidth_Players, LTTRUE );
-		pCtrl->AddColumn( "", kColumnWidth_Lock, LTTRUE );
-		pCtrl->AddColumn( "", kColumnWidth_Version, LTTRUE );
-	}
-
-	char szTemp[256];
-
-	pCtrl->SetString( 0, cServer.m_sName.c_str( ));
-
-	sprintf( szTemp, "%s", LoadTempString( GetGameTypeStringId( cServer.m_nGameType )));
-	pCtrl->SetString( 1, szTemp );
-
-	if( cServer.m_nPing == 0xffff )
-		szTemp[0] = '\0';
-	else
-		sprintf( szTemp, "%d", cServer.m_nPing );
-	pCtrl->SetString( 2, szTemp );
-
-	sprintf( szTemp, "%d/%d", cServer.m_nNumPlayers, cServer.m_nMaxPlayers );
-	pCtrl->SetString( 3, szTemp );
-
-	pCtrl->SetString( 4, cServer.m_bUsePassword ? "x" : " " );
-
-	if( strcmp( cServer.m_sModName.c_str( ), "Retail" ) == 0 )
-		sprintf( szTemp, "%s", cServer.m_sVersion.c_str( ));
-	else
-		sprintf( szTemp, "%s, %s", cServer.m_sVersion.c_str( ), cServer.m_sModName.c_str( ));
-	pCtrl->SetString( 5, szTemp );
-
-	// Only our version, with our mod, can be joined.
-	bool bEnable = ( strcmp( cServer.m_sVersion.c_str( ), g_pVersionMgr->GetVersion( )) == 0 &&
-		strcmp( cServer.m_sModName.c_str( ), g_pClientMultiplayerMgr->GetModName( )) == 0 );
-	pCtrl->Enable( bEnable );
-
-	pCtrl->SetParam1(( uint32 )pszKey );
-}
+#endif
 
 // RETAIL: 0x100caa60. Show the servers the filters let through.
 void CScreenJoin::DisplayCurServerList()
@@ -915,8 +1018,7 @@ void CScreenJoin::DisplayCurServerList()
 
 	for( uint16 i = 0; i < m_pServerListCtrl->GetNumControls( ); i++ )
 	{
-		CLTGUICtrl* pCtrl = m_pServerListCtrl->GetControl( i );
-		const char* pszKey = ( const char* )pCtrl->GetParam1( );
+		const char* pszKey = ( const char* )m_pServerListCtrl->GetControl( i )->GetParam1( );
 		if( !pszKey || !pszKey[0] )
 			return;
 
@@ -928,14 +1030,15 @@ void CScreenJoin::DisplayCurServerList()
 		bool bShow = true;
 
 		if( m_nVersionFilter )
-			bShow = ( strcmp( cServer.m_sVersion.c_str( ), g_pVersionMgr->GetVersion( )) == 0 );
+			bShow &= ( _stricmp( cServer.m_sVersion.c_str( ), g_pVersionMgr->GetVersion( )) == 0 );
 
+		int nGameType = cServer.m_nGameType;
 		switch( m_nGameTypeFilter )
 		{
-			case 1: bShow &= ( cServer.m_nGameType == eGameTypeDeathmatch ); break;
-			case 2: bShow &= ( cServer.m_nGameType == eGameTypeTeamDeathmatch ); break;
-			case 3: bShow &= ( cServer.m_nGameType == eGameTypeDoomsDay ); break;
-			case 4: bShow &= ( cServer.m_nGameType == eGameTypeDemolition ); break;
+			case 1: bShow &= ( nGameType == eGameTypeDeathmatch ); break;
+			case 2: bShow &= ( nGameType == eGameTypeTeamDeathmatch ); break;
+			case 3: bShow &= ( nGameType == eGameTypeDoomsDay ); break;
+			case 4: bShow &= ( nGameType == eGameTypeDemolition ); break;
 			default: break;
 		}
 
@@ -948,7 +1051,7 @@ void CScreenJoin::DisplayCurServerList()
 				bShow &= ( cServer.m_nNumPlayers < cServer.m_nMaxPlayers );
 				break;
 			case 3:
-				bShow &= ( cServer.m_nNumPlayers > 0 && cServer.m_nNumPlayers < cServer.m_nMaxPlayers );
+				bShow &= ( cServer.m_nNumPlayers < cServer.m_nMaxPlayers ) & ( cServer.m_nNumPlayers > 0 );
 				break;
 			default:
 				break;
@@ -965,10 +1068,10 @@ void CScreenJoin::DisplayCurServerList()
 		switch( m_nModFilter )
 		{
 			case 1:
-				bShow &= ( strcmp( cServer.m_sModName.c_str( ), "Retail" ) == 0 );
+				bShow &= ( _stricmp( cServer.m_sModName.c_str( ), "Retail" ) == 0 );
 				break;
 			case 2:
-				bShow &= ( strcmp( cServer.m_sModName.c_str( ), g_pClientMultiplayerMgr->GetModName( )) == 0 );
+				bShow &= ( _stricmp( cServer.m_sModName.c_str( ), g_pClientMultiplayerMgr->GetModName( )) == 0 );
 				break;
 			default:
 				break;
@@ -977,7 +1080,7 @@ void CScreenJoin::DisplayCurServerList()
 		if( bShow && nFirst == CLTGUIListCtrl::kNoSelection )
 			nFirst = i;
 
-		pCtrl->Show( bShow );
+		m_pServerListCtrl->GetControl( i )->Show( bShow );
 	}
 
 	if( nFirst != CLTGUIListCtrl::kNoSelection )
@@ -998,7 +1101,7 @@ void CScreenJoin::ShowDetails()
 	CServerEntry& cServer = iServer->second;
 
 	// The mission, if the map is one of ours.
-	std::string sMission;
+	std::string sMission( "" );
 	int nMission, nLevel;
 	if( g_pMissionButeMgr->IsMissionLevel( cServer.m_sMapName.c_str( ), nMission, nLevel ))
 	{
@@ -1007,60 +1110,79 @@ void CScreenJoin::ShowDetails()
 		{
 			if( pMission->nNameId > 0 )
 				sMission = LoadTempString( pMission->nNameId );
-			else if( !pMission->sName.empty( ))
+			else if( pMission->sName.length( ))
 				sMission = pMission->sName;
 		}
 	}
 
-	if( sMission.empty( ))
-		sMission = cServer.m_sMapName;
+	if( !sMission.length( ))
+		sMission = cServer.m_sMapName.c_str( );
 
 	m_pMission->SetString( sMission.c_str( ));
 
 	// The options: "FriendlyFire 1; WeaponsStay 0; Rounds 3; RunSpeed 100".
-	std::string sOptions;
+	std::string sOptions( "" );
 	sOptions.reserve( 64 );
 
-	char szOptions[256];
+	char szOptions[256] = "";
 	strncpy( szOptions, cServer.m_sOptions.c_str( ), sizeof( szOptions ) - 1 );
 	szOptions[sizeof( szOptions ) - 1] = '\0';
 
-	if( szOptions[0] )
+	if( strlen( szOptions ))
 	{
 		char* pszToken = strtok( szOptions, ";" );
 		if( pszToken )
 		{
-			AddOption( sOptions, IDS_CJ_FRIENDLYFIRE, pszToken, true );
+			sOptions += LoadTempString( IDS_CJ_FRIENDLYFIRE );
+			sOptions += ": ";
+			char const* pszValue = strpbrk( pszToken, "0123456789" );
+			if( pszValue && *pszValue >= '1' )
+				sOptions += LoadTempString( IDS_YES );
+			else
+				sOptions += LoadTempString( IDS_NO );
 			sOptions += ";  ";
 		}
 
 		pszToken = strtok( NULL, ";" );
 		if( pszToken )
 		{
-			AddOption( sOptions, IDS_WEAPONS_STAY, pszToken, true );
+			sOptions += LoadTempString( IDS_WEAPONS_STAY );
+			sOptions += ": ";
+			char const* pszValue = strpbrk( pszToken, "0123456789" );
+			if( pszValue && *pszValue >= '1' )
+				sOptions += LoadTempString( IDS_YES );
+			else
+				sOptions += LoadTempString( IDS_NO );
 			sOptions += ";  ";
 		}
 
 		pszToken = strtok( NULL, ";" );
 		if( pszToken )
 		{
-			AddOption( sOptions, IDS_CJ_ROUNDS, pszToken, false );
+			sOptions += LoadTempString( IDS_CJ_ROUNDS );
+			sOptions += ": ";
+			sOptions += strpbrk( pszToken, "0123456789" );
 			sOptions += ";  ";
 		}
 
 		pszToken = strtok( NULL, ";" );
 		if( pszToken )
-			AddOption( sOptions, IDS_CJ_RUNSPEED, pszToken, false );
+		{
+			sOptions += LoadTempString( IDS_CJ_RUNSPEED );
+			sOptions += ": ";
+			sOptions += strpbrk( pszToken, "0123456789" );
+		}
 	}
 
 	char szTemp[256];
-	if( cServer.m_nGameType == eGameTypeDeathmatch || cServer.m_nGameType == eGameTypeTeamDeathmatch )
+	int nGameType = cServer.m_nGameType;
+	if( nGameType == eGameTypeDeathmatch || nGameType == eGameTypeTeamDeathmatch )
 	{
 		sprintf( szTemp, "; %s: %d", LoadTempString( IDS_SCORE_LIMIT ), cServer.m_nFragLimit );
 		sOptions += szTemp;
 	}
 
-	if( cServer.m_nGameType != eGameTypeDemolition )
+	if( nGameType != eGameTypeDemolition )
 	{
 		sprintf( szTemp, "; %s: %d", LoadTempString( IDS_CJ_TIMELIMIT ), cServer.m_nTimeLimit );
 		sOptions += szTemp;
@@ -1069,14 +1191,13 @@ void CScreenJoin::ShowDetails()
 	m_pOptions->SetString( sOptions.c_str( ));
 
 	// The players.
-	std::vector<CServerPlayer>::iterator iPlayer;
-	for( iPlayer = cServer.m_Players.begin( ); iPlayer != cServer.m_Players.end( ); iPlayer++ )
+	for( uint32 nPlayer = 0; nPlayer < cServer.m_Players.size( ); nPlayer++ )
 	{
 		CLTGUIColumnCtrl* pCtrl = CreateColumnCtrl( 0, 0, kDefaultPos, LTTRUE );
-		pCtrl->AddColumn( iPlayer->m_sName.c_str( ), kColumnWidth_PlayerName, LTTRUE );
+		pCtrl->AddColumn( cServer.m_Players[nPlayer].m_sName.c_str( ), kColumnWidth_PlayerName, LTTRUE );
 
-		sprintf( szTemp, "%d", iPlayer->m_nPing );
-		pCtrl->AddColumn( szTemp, kColumnWidth_Ping );
+		sprintf( szTemp, "%d", cServer.m_Players[nPlayer].m_nPing );
+		pCtrl->AddColumn( szTemp, kColumnWidth_Ping, LTFALSE );
 
 		m_pPlayerListCtrl->AddControl( pCtrl );
 	}
@@ -1108,8 +1229,25 @@ void CScreenJoin::SetDetailErrorMessage(const char *szError)
 // RETAIL: 0x100cc230
 LTBOOL CScreenJoin::Render(HSURFACE hDestSurf)
 {
+	EnterCriticalSection( &m_csServers );
+#ifdef CJACK_MODERN
+	AddPendingServers();
+#endif
 	Update();
-	return CBaseScreen::Render(hDestSurf);
+	LTBOOL bResult = CBaseScreen::Render(hDestSurf);
+	LeaveCriticalSection( &m_csServers );
+	return bResult;
+}
+
+// RETAIL: 0x100cbee0
+void CScreenJoin::FindServers()
+{
+	if (g_pClientMultiplayerMgr->GetGameSpyBrowser()->GetBrowserStatus() == IGameSpyBrowser::eBrowserStatus_Processing)
+		return;
+	if (g_pClientMultiplayerMgr->GetGameSpyLANBrowser()->GetBrowserStatus() == IGameSpyBrowser::eBrowserStatus_Processing)
+		return;
+
+	ChangeState(eState_UpdateDir);
 }
 
 // RETAIL: 0x100cbf20
@@ -1117,13 +1255,7 @@ LTBOOL CScreenJoin::HandleKeyDown(int key, int rep)
 {
 	if (key == VK_F5)
 	{
-		IGameSpyBrowser* pBrowser = g_pClientMultiplayerMgr->GetGameSpyBrowser();
-		IGameSpyBrowser* pLANBrowser = g_pClientMultiplayerMgr->GetGameSpyLANBrowser();
-		if ((!pBrowser || pBrowser->GetBrowserStatus() != IGameSpyBrowser::eBrowserStatus_Processing) &&
-			(!pLANBrowser || pLANBrowser->GetBrowserStatus() != IGameSpyBrowser::eBrowserStatus_Processing))
-		{
-			ChangeState(eState_UpdateDir);
-		}
+		FindServers();
         return LTTRUE;
 	}
     return CBaseScreen::HandleKeyDown(key,rep);
@@ -1135,7 +1267,7 @@ bool CScreenJoin::IsCurrentGame(const char *pAddr)
 	if (!IsMultiplayerGame( )) return false;
 
 	uint32 aAddr[4];
-	uint32 nPort = 0;
+	uint16 nPort;	// RETAIL: "%d" writes 4 bytes into it
 	aAddr[0] = 0;
 	aAddr[1] = 0;
 	aAddr[2] = 0;
@@ -1150,7 +1282,7 @@ bool CScreenJoin::IsCurrentGame(const char *pAddr)
 		(aAddr[1] == (uint32)nServerAddr[1]) &&
 		(aAddr[2] == (uint32)nServerAddr[2]) &&
 		(aAddr[3] == (uint32)nServerAddr[3]) &&
-		(nPort == (uint32)nServerPort))
+		(nPort == nServerPort))
 		return true;
 	else
 		return false;
@@ -1192,8 +1324,15 @@ void CScreenJoin::JoinCurGame()
 
 	if( !g_pClientMultiplayerMgr->SetupClient( cServer.m_sName.c_str( ), m_sPassword.c_str( ),
 			!cServer.m_bDirectConnect, cServer.m_bUsePublicAddress,
-			cServer.m_sPublicAddress.c_str( ), iServer->first.c_str( )) ||
-		!g_pMissionMgr->StartGameAsClient( ))
+			cServer.m_sPublicAddress.c_str( ), iServer->first.c_str( )))
+	{
+		ChangeState(eState_Inactive);
+		g_pInterfaceMgr->LoadFailed(SCREEN_ID_JOIN);
+		g_pInterfaceMgr->ConnectionFailed(g_pClientMultiplayerMgr->GetLastConnectionResult());
+		return;
+	}
+
+	if( !g_pMissionMgr->StartGameAsClient( ))
 	{
 		ChangeState(eState_Inactive);
 		g_pInterfaceMgr->LoadFailed(SCREEN_ID_JOIN);
@@ -1220,23 +1359,41 @@ bool CScreenJoin::PreState(EState eNewState)
 	}
 }
 
+// RETAIL: 0x100cb360
+bool CScreenJoin::PostState_UpdateDir(EState eNewState)
+{
+	SortServers(m_nLastSort);
+	return true;
+}
+
+// RETAIL: 0x100caa40
+bool CScreenJoin::PostState_QueryDetails(EState eNewState)
+{
+	ShowDetails();
+	m_pFindCtrl->Enable(LTTRUE);
+	return true;
+}
+
+// RETAIL: 0x100c9f90
+bool CScreenJoin::PostState_Waiting(EState eNewState)
+{
+	m_pFindCtrl->Enable(LTFALSE);
+	m_pWait->Show(LTTRUE);
+	SetCapture(m_pWait);
+	return true;
+}
+
 // RETAIL: 0x100cb380
 bool CScreenJoin::PostState(EState eNewState)
 {
 	switch (m_eCurState)
 	{
 		case eState_UpdateDir :
-			SortServers(m_nLastSort);
-			return true;
+			return PostState_UpdateDir(eNewState);
 		case eState_QueryDetails :
-			ShowDetails();
-			m_pFindCtrl->Enable(LTTRUE);
-			return true;
+			return PostState_QueryDetails(eNewState);
 		case eState_Waiting :
-			m_pFindCtrl->Enable(LTFALSE);
-			m_pWait->Show(LTTRUE);
-			SetCapture(m_pWait);
-			return true;
+			return PostState_Waiting(eNewState);
 		default :
 			return true;
 	}
@@ -1246,7 +1403,7 @@ bool CScreenJoin::PostState(EState eNewState)
 bool CScreenJoin::ChangeState(EState eNewState)
 {
 	// Finish the old state
-	if (!PostState(eNewState))
+	if (!PostState(m_eCurState))
 		return false;
 
 	// Enter the new state
@@ -1268,15 +1425,19 @@ bool CScreenJoin::ChangeState(EState eNewState)
 	return true;
 }
 
-// RETAIL: 0x100cc090
+// RETAIL: 0x100cbab0
+void CScreenJoin::Update_State_Startup()
+{
+	ChangeState(eState_UpdateDir);
+}
+
+// RETAIL: inlined in Render (0x100cc230)
 void CScreenJoin::Update()
 {
-	AddPendingServers();
-
 	switch (m_eCurState)
 	{
 		case eState_Startup :
-			ChangeState(eState_UpdateDir);
+			Update_State_Startup();
 			break;
 		case eState_UpdateDir :
 			Update_State_UpdateDir();
@@ -1298,10 +1459,11 @@ bool CScreenJoin::PreState_UpdateDir()
 
 	m_pServerListCtrl->RemoveAll();
 	m_cServers.clear();
-
+#ifdef CJACK_MODERN
 	EnterCriticalSection( &m_csPendingServers );
-	m_cPendingServers.clear();
+	m_cPendingServers.clear( );
 	LeaveCriticalSection( &m_csPendingServers );
+#endif
 
 	m_bInternetOk = true;
 	m_nSearchStep = 0;
@@ -1318,26 +1480,29 @@ bool CScreenJoin::PreState_QueryDetails()
 
 	CServerEntry& cServer = iServer->second;
 
-	if( strcmp( cServer.m_sVersion.c_str( ), g_pVersionMgr->GetVersion( )) != 0 )
+	if( _stricmp( cServer.m_sVersion.c_str( ), g_pVersionMgr->GetVersion( )) != 0 )
 	{
 		SetDetailErrorMessage( LoadTempString( IDS_SERVER_DETAIL_VERSION ));
 		return false;
 	}
 
-	// "ip:port"
-	const std::string& sAddress = iServer->first;
-	std::string::size_type nColon = sAddress.find_last_of( ':' );
-	if( nColon == std::string::npos || nColon > 16 || nColon + 1 >= sAddress.length( ))
+	// The server's public "ip:port".
+	const std::string& sAddress = cServer.m_sPublicAddress;
+	std::string::size_type nColon = sAddress.rfind( ":", sAddress.length( ) - 1 );
+	if( nColon == std::string::npos || nColon > 16 )
 		return false;
 
-	char szIP[17];
+	char szIP[16];
 	strncpy( szIP, sAddress.c_str( ), nColon );
 	szIP[nColon] = '\0';
+	if( !sAddress.c_str( )[nColon + 1] )
+		return false;
+
 	unsigned short nPort = ( unsigned short )ClampToUint16( atoi( sAddress.c_str( ) + nColon + 1 ));
 
 	IGameSpyBrowser* pBrowser = cServer.m_bLANBrowser ? g_pClientMultiplayerMgr->GetGameSpyLANBrowser( ) :
 		g_pClientMultiplayerMgr->GetGameSpyBrowser( );
-	if( !pBrowser || !pBrowser->RequestServerDetails( szIP, nPort, cServer.m_bDirectConnect, OnServerInfo, this ))
+	if( !pBrowser->RequestServerDetails( szIP, nPort, cServer.m_bDirectConnect, OnServerInfo, this ))
 	{
 		SetDetailErrorMessage( LoadTempString( IDS_SERVER_NORESPONSE ));
 		return false;
@@ -1361,68 +1526,78 @@ bool CScreenJoin::PreState_Waiting()
 // game's servers and the demo's, then the Internet, while it answers.
 void CScreenJoin::Update_State_UpdateDir()
 {
-	IGameSpyBrowser* pBrowser = g_pClientMultiplayerMgr->GetGameSpyBrowser();
-	IGameSpyBrowser* pLANBrowser = g_pClientMultiplayerMgr->GetGameSpyLANBrowser();
-
 	IGameSpyBrowser* pWaitBrowser;		// the browser of the last request
 	IGameSpyBrowser* pNextBrowser;		// the browser of the next one
-	bool bInternet = false;				// the next request is the Internet's
-	bool bCheckInternet = false;		// the last request was the Internet's
+	bool bInternet;						// the next request is the Internet's
+	bool bCheckInternet;				// the last request was the Internet's
 	int nNextStep;
-	int nStatusId = 0;
+	int nStatusId = -1;
 
 	switch (m_nSearchStep)
 	{
 		case 0 :
-			pWaitBrowser = pBrowser;
-			pNextBrowser = pBrowser;
+			pWaitBrowser = g_pClientMultiplayerMgr->GetGameSpyBrowser();
+			bCheckInternet = false;
 			nNextStep = 2;
+			pNextBrowser = pWaitBrowser;
 			nStatusId = IDS_CJ_QUERY_LAN;
+			bInternet = false;
 			break;
 		case 2 :
-			pWaitBrowser = pBrowser;
-			pNextBrowser = pLANBrowser;
+			pWaitBrowser = g_pClientMultiplayerMgr->GetGameSpyBrowser();
+			pNextBrowser = g_pClientMultiplayerMgr->GetGameSpyLANBrowser();
+			bCheckInternet = false;
 			nNextStep = 4;
 			nStatusId = IDS_CJ_QUERY_LAN_DEMO;
+			bInternet = false;
 			break;
 		case 4 :
-			pWaitBrowser = pLANBrowser;
-			pNextBrowser = pBrowser;
-			bInternet = true;
+			pWaitBrowser = g_pClientMultiplayerMgr->GetGameSpyLANBrowser();
+			pNextBrowser = g_pClientMultiplayerMgr->GetGameSpyBrowser();
+			bCheckInternet = false;
 			nNextStep = 1;
+			bInternet = true;
 			nStatusId = IDS_CJ_QUERY_INTERNET;
 			break;
 		case 1 :
-			pWaitBrowser = pBrowser;
-			pNextBrowser = pLANBrowser;
-			bInternet = true;
+			pWaitBrowser = g_pClientMultiplayerMgr->GetGameSpyBrowser();
+			pNextBrowser = g_pClientMultiplayerMgr->GetGameSpyLANBrowser();
 			bCheckInternet = true;
 			nNextStep = 3;
+			bInternet = true;
 			nStatusId = IDS_CJ_QUERY_INTERNET_DEMO;
 			break;
 		case 3 :
-			pWaitBrowser = pLANBrowser;
-			pNextBrowser = NULL;
+			pWaitBrowser = g_pClientMultiplayerMgr->GetGameSpyLANBrowser();
 			bCheckInternet = true;
 			nNextStep = 5;
+			pNextBrowser = NULL;
+			bInternet = false;
 			break;
+		case 5 :
+			// Every request is done.
+			ChangeState(eState_Waiting);
+			return;
 		default :
 			ChangeState(eState_Waiting);
 			return;
 	}
 
-	if (!pWaitBrowser)
+	// Wait for the last request.
+	switch (pWaitBrowser->GetBrowserStatus())
 	{
-		ChangeState(eState_Waiting);
-		return;
+		case IGameSpyBrowser::eBrowserStatus_Idle :
+		case IGameSpyBrowser::eBrowserStatus_Complete :
+		case IGameSpyBrowser::eBrowserStatus_Error :
+			break;
+		case IGameSpyBrowser::eBrowserStatus_Processing :
+			return;
+		default :
+			ChangeState(eState_Waiting);
+			return;
 	}
 
-	// Wait for the last request.
-	IGameSpyBrowser::EBrowserStatus eStatus = pWaitBrowser->GetBrowserStatus();
-	if (eStatus == IGameSpyBrowser::eBrowserStatus_Processing)
-		return;
-
-	if (eStatus == IGameSpyBrowser::eBrowserStatus_Error && bCheckInternet)
+	if (pWaitBrowser->GetBrowserStatus() == IGameSpyBrowser::eBrowserStatus_Error && bCheckInternet)
 		m_bInternetOk = false;
 
 	pWaitBrowser->HaltRequest();
@@ -1438,7 +1613,9 @@ void CScreenJoin::Update_State_UpdateDir()
 			uint16 w = 16 + pText->GetBaseWidth();
 			uint16 h = 16 + pText->GetBaseHeight();
 			m_pWait->SetSize(w, h);
-			m_pWait->SetBasePos(LTIntPt((640 - w) / 2, (480 - h) / 2));
+			uint16 x = (640 - w) / 2;
+			uint16 y = (480 - h) / 2;
+			m_pWait->SetBasePos(LTIntPt(x, y));
 		}
 
 		unsigned short nPort = (unsigned short)atoi(m_szPort);
@@ -1452,15 +1629,45 @@ void CScreenJoin::Update_State_UpdateDir()
 // RETAIL: 0x100cbd40
 void CScreenJoin::Update_State_QueryDetails()
 {
-	IGameSpyBrowser* pBrowser = g_pClientMultiplayerMgr->GetGameSpyBrowser();
-	IGameSpyBrowser* pLANBrowser = g_pClientMultiplayerMgr->GetGameSpyLANBrowser();
-	if ((pBrowser && pBrowser->GetBrowserStatus() == IGameSpyBrowser::eBrowserStatus_Processing) ||
-		(pLANBrowser && pLANBrowser->GetBrowserStatus() == IGameSpyBrowser::eBrowserStatus_Processing))
+	if (g_pClientMultiplayerMgr->GetGameSpyBrowser()->GetBrowserStatus() == IGameSpyBrowser::eBrowserStatus_Processing)
+		return;
+	if (g_pClientMultiplayerMgr->GetGameSpyLANBrowser()->GetBrowserStatus() == IGameSpyBrowser::eBrowserStatus_Processing)
 		return;
 
 	// The details are in (OnServerInfo).
-	AddPendingServers();
 	ChangeState(eState_Waiting);
+}
+
+// RETAIL: 0x100cb0d0. The servers, in the sort's order.
+static void GetSortedServers( std::vector<TServerMap::iterator>& cSorted, TServerMap& cServers, uint32 nSortField )
+{
+	cSorted.resize( 0 );
+	cSorted.reserve( cServers.size( ));
+	TServerMap::iterator iServer;
+	for( iServer = cServers.begin( ); iServer != cServers.end( ); iServer++ )
+		cSorted.push_back( iServer );
+
+	switch( nSortField )
+	{
+	case CMD_SORT_NAME:
+		std::sort( cSorted.begin( ), cSorted.end( ), CServerSortName( ));
+		break;
+	case CMD_SORT_PING:
+		std::sort( cSorted.begin( ), cSorted.end( ), CServerSortPing( ));
+		break;
+	case CMD_SORT_PLAYER:
+		std::sort( cSorted.begin( ), cSorted.end( ), CServerSortPlayers( ));
+		break;
+	case CMD_SORT_LOCK:
+		std::sort( cSorted.begin( ), cSorted.end( ), CServerSortLock( ));
+		break;
+	case CMD_SORT_VERSION:
+		std::sort( cSorted.begin( ), cSorted.end( ), CServerSortVersion( ));
+		break;
+	case CMD_SORT_TYPE:
+		std::sort( cSorted.begin( ), cSorted.end( ), CServerSortType( ));
+		break;
+	}
 }
 
 // RETAIL: 0x100cb270
@@ -1469,47 +1676,19 @@ void CScreenJoin::SortServers(uint32 nSortField)
 	m_pServerListCtrl->RemoveAll(LTFALSE);
 	m_nLastSort = nSortField;
 
-	std::vector<CServerEntry*> cSorted;
-	cSorted.reserve(m_cServers.size());
-	TServerMap::iterator iServer;
-	for (iServer = m_cServers.begin(); iServer != m_cServers.end(); iServer++)
-		cSorted.push_back(&iServer->second);
-
-	switch(nSortField)
-	{
-	case CMD_SORT_NAME:
-		std::sort(cSorted.begin(),cSorted.end(),CServerSortName());
-		break;
-	case CMD_SORT_PING:
-		std::sort(cSorted.begin(),cSorted.end(),CServerSortPing());
-		break;
-	case CMD_SORT_PLAYER:
-		std::sort(cSorted.begin(),cSorted.end(),CServerSortPlayers());
-		break;
-	case CMD_SORT_LOCK:
-		std::sort(cSorted.begin(),cSorted.end(),CServerSortLock());
-		break;
-	case CMD_SORT_VERSION:
-		std::sort(cSorted.begin(),cSorted.end(),CServerSortVersion());
-		break;
-	case CMD_SORT_TYPE:
-		std::sort(cSorted.begin(),cSorted.end(),CServerSortType());
-		break;
-	default:
-		break;
-	};
+	std::vector<TServerMap::iterator> cSorted;
+	GetSortedServers( cSorted, m_cServers, nSortField );
 
 	uint16 nSelected = CLTGUIListCtrl::kNoSelection;
-	std::vector<CServerEntry*>::iterator iSorted;
-	for (iSorted = cSorted.begin(); iSorted != cSorted.end(); iSorted++)
+	std::vector<TServerMap::iterator>::iterator iSorted;
+	for( iSorted = cSorted.begin( ); iSorted != cSorted.end( ); iSorted++ )
 	{
-		CServerEntry* pServer = *iSorted;
-		if (!pServer->m_pCtrl)
+		TServerMap::value_type& cServer = **iSorted;
+		if( !cServer.second.m_pCtrl )
 			continue;
 
-		uint16 nIndex = m_pServerListCtrl->AddControl(pServer->m_pCtrl);
-		const char* pszKey = (const char*)pServer->m_pCtrl->GetParam1();
-		if (pszKey && m_sSelectedServer == pszKey)
+		uint16 nIndex = m_pServerListCtrl->AddControl( cServer.second.m_pCtrl );
+		if( _stricmp( cServer.first.c_str( ), m_sSelectedServer.c_str( )) == 0 )
 			nSelected = nIndex;
 	}
 

@@ -45,6 +45,10 @@ modes at any size; our Bink player on FFmpeg in place of RAD's
 * **GAME-2: the chassis's update.** The update a chassis sends the
   clients names SFX_CHASSIS_ID and the chassis, as every special-fx
   message does (`RETAIL_BUGS.md`; src/Game/ObjectDLL/Chassis.cpp).
+* **GAME-3: the join screen's lock.** The server browsers' thread queues
+  each server it finds under a lock of its own, and the screen files the
+  queue on its render, so neither thread waits for a lock the other holds
+  (`RETAIL_BUGS.md`; src/Game/ClientShellDLL/ScreenJoin.cpp, .h).
 * **APPS-1: the launcher's own path.** The game's path is written into
   `sExe` with a bound (`RETAIL_BUGS.md`; src/Game/Launcher/Launcher.cpp).
 * **APPS-2: the launcher's find handles.** ExistRezFile, ExistRezDir and
