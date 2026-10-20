@@ -829,7 +829,8 @@ LPBASECLASS	CGameServerShell::OnClientEnterWorld(HCLIENT hClient)
     CPlayerObj* pPlayer			= LTNULL;
 	ModelId		ePlayerModelId	= eModelIdInvalid;
 
-	g_pPhysicsLT->SetStairHeight( g_StairStepHeight.GetFloat() );
+	// RETAIL: Object 0x100de0c0 leaves the stair height to
+	// OnServerInitialized.
 
 	// This will be filled in with clientdata for mp games.
 	NetClientData ncd;
@@ -899,8 +900,9 @@ LPBASECLASS	CGameServerShell::OnClientEnterWorld(HCLIENT hClient)
 	}
 
 	// RETAIL: Object 0x100de246: the client hears the other players'
-	// weapon sound loops.
+	// weapon sound loops.  Retail asks for the first client twice.
 	HCLIENT hOtherClient = g_pLTServer->GetNextClient( LTNULL );
+	hOtherClient = g_pLTServer->GetNextClient( LTNULL );
 	while( hOtherClient )
 	{
 		CPlayerObj* pOtherPlayer = dynamic_cast< CPlayerObj* >(( LPBASECLASS )g_pLTServer->GetClientUserData( hOtherClient ));
