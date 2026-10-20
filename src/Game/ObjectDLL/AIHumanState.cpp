@@ -1745,7 +1745,7 @@ LTBOOL CAIHumanStateSearch::FindNode()
 			m_pSearchNode = LTNULL;
 		}
 
-		AINodeSearch* pNode = pRegion->FindNearestSearchNode(GetAI()->GetPosition(), fCurTime);
+		AINodeSearch* pNode = pRegion->FindNearestSearchNode(GetAI(), GetAI()->GetPosition(), fCurTime);
 		if ( !pNode )
 		{
 			return LTFALSE;

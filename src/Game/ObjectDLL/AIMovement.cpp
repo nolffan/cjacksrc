@@ -222,7 +222,10 @@ LTBOOL CAIMovement::Update()
 		// This NEEDS to check eAxisAll with the vertical threshold.
 
 		AIVolume* pVolume = g_pAIVolumeMgr->FindContainingVolume( LTNULL, vNewPos, eAxisAll, m_pAI->GetVerticalThreshold(), m_pAI->GetLastVolume() );		
-		if( ( pVolume && pVolume->IsVolumeEnabled() ) || m_bIgnoreVolumes )
+		// RETAIL: Object 0x1005c0e6: an AI with a destination moves
+		// even outside the volumes.
+
+		if( ( pVolume && pVolume->IsVolumeEnabled() ) || m_bIgnoreVolumes || ( m_eState == eStateSet ) )
 		{
 			if( m_eState != eStateSet )
 			{
@@ -301,16 +304,6 @@ LTBOOL CAIMovement::Update()
 			}
 
 			return LTTRUE;
-		}
-
-		// Destination is unreachable by volumes.
-		// Put us somewhere valid.
-
-		else if( m_eState == eStateSet )
-		{
-			m_pAI->Move(m_vLastValidVolumePos);
-			m_eState = eStateDone;
-			m_bMoved = LTTRUE;
 		}
 	}
 
