@@ -6271,6 +6271,9 @@ void CInterfaceMgr::NextWeapon(int nCommand)
 	{
 		m_WeaponChooser.NextWeapon(nClass);
 	}
+
+	// RETAIL: 0x1006530c: the next weapon comes up at once.
+	g_pPlayerMgr->ChangeWeapon(m_WeaponChooser.GetCurrentSelection());
 }
 
 // ----------------------------------------------------------------------- //

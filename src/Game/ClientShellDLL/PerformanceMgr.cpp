@@ -320,9 +320,18 @@ void CPerformanceMgr::SetDetailLevels(int nLevel, int* pOffsetArray)
 //sets current options from given cfg
 void CPerformanceMgr::SetPerformanceOptions(sPerformCfg *pCfg, int nCfg)
 {
+	// RETAIL: 0x100950a5: a change of sound quality restarts the sound.
+	bool bOldSound16 = GetConsoleBool("sound16bit",false);
+	bool bNewSound16 = (pCfg->nSettings[kPerform_SoundQuality] != 0);
+
 	for (int i = 0; i < kNumDetailSettings; i++)
 	{
 		WriteConsoleInt(sSettings[i].szVar,pCfg->nSettings[i]);
+	}
+
+	if (bNewSound16 != bOldSound16)
+	{
+		g_pGameClientShell->InitSound();
 	}
 
 	uint32 dwAdvancedOptions = g_pInterfaceMgr->GetAdvancedOptions();
