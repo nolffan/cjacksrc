@@ -3006,8 +3006,10 @@ void CVehicleMgr::HandleCollision()
 		m_fAccelStart = -1.0f;
 
 		// Reset the ani/sounds...
+		// RETAIL: 0x1010b81c. Not the ani while the vehicle's weapon fires.
 
-		PlayVehicleAni("Idle_0", LTFALSE, LTTRUE);
+		if( !m_bHasVehicleWeapon || m_VehicleWeapon.GetState() != W_FIRING )
+			PlayVehicleAni("Idle_0", LTFALSE, LTTRUE);
 		KillAllVehicleSounds(LTNULL);
 
 		
