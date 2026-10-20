@@ -554,6 +554,22 @@ dedicated server (package 7).
     (0x10092e20) tests a bool at 0xc24 the constructor sets last.
   - Also the layout agent's: GADGETTARGET has `AmmoType` (char*, 0xb8)
     that Bombable::SetupDefusedState (0x1009cbb0) spawns the pickup from.
+  - Decided: lite objects removed by their REMOVE message go at the end
+    of the next update (retail's CLiteObjectMgr::RemoveObject takes a
+    second argument; the one-argument form, 0x100f2730, passes true and
+    removes at once). The object is unregistered meanwhile, and an
+    unregistered object ignores its messages.
+  - Decided: Body::Update (0x10094e50) takes the update message's data
+    and runs Prop's update itself, with the body undeactivatable until
+    it's done (the bool at 0xc24).
+  - Decided: Body::RemovePowerupObjects (0x10093180) clears the spears'
+    touch notify on `m_ahWeapons[iWeapon]` after the weapons' loop, the
+    handle one past the array; ours keeps that read.
+  - Names ours: ScatterVolume::SetSFXMessage (0x10135b60, uncalled,
+    `UpdateSFX(false)`).
+  - Pairs by size had swapped HandleTransmissionMessage/HandleOverlayMessage,
+    LiteObjectMgr RemoveObject/Update and Body SetCanCarry/
+    RemovePowerupObjects (own_symbols in targets.py).
 - **Tools** (not committed, one-offs under out/): rtti.py (vtables by
   RTTI), vtcmp.py (a class's vtable, retail beside ours), ctorcmp.py
   (constructor store offsets aligned), place.py (the scoreboard's
@@ -647,6 +663,40 @@ Class layouts and save/load against retail, in both game DLLs (branch
     calls 0x10165ed0; TrackedNodeControlFn calls MatMul3x3 where retail
     calls MatMul3Tx3 (both DLLs); ~CCredit and ~CIntelItemList call Term and
     Clear where retail calls a shared 0x101026f0.
+
+- **Round 3** (branch `layouts`):
+  - Admin (SCMD) messages: the list-game-options reply was checked case by
+    case against retail's writer (Object 0x101367f0's jump table): DM, TDM,
+    Doomsday, Demolition and coop write what ours writes; ScmdConsole (the
+    reader in CShell and ContractJackServer.exe) is identical in every
+    image. Set-game-option differs only in codegen.
+  - CSoundButeMgr's index table: the same layout; retail's constructor
+    copies a one-byte traits object (0x11bc) that a hash_compare-derived
+    traits class reproduces, but that splits the hash_map instantiations
+    ButeMgr shares (four more unplaced), so it is left as it is.
+  - SnowFX: CSnowFXParticle is 0x14 bytes with a flag at +0x10.
+  - Engine unplaced: math_phys.h's constants (PI, its fractions, the
+    degree conversions) are dynamically initialized in every file that
+    includes it outside a precompiled header. Retail has 54 sets in
+    Lithtech.exe (the renderer's files and transformmaker) and 25 in
+    server.dll; ours had 277 and 107. Lithtech and server now precompile
+    bdefs.h (bdefs.cpp makes it; files that include it after another
+    header force-include it), except the files retail compiled without it
+    (server: udpdriver, wave, world_blind_object_data, world_blocker_data,
+    world_tree and the ILT interface files at the end of the project;
+    Lithtech: transformmaker, ltdirectmusicloader, D3DRender). CSystemInfo
+    (systeminfo.cpp) is linked, as retail keeps it. Merged rows are split
+    (extent-splits.csv) or excluded as interior blocks. server.dll's
+    .text$x is compiler_output. Lithtech.exe 1392 -> 592 unplaced,
+    server.dll 475 -> 28, no identical function lost.
+  - Left: Lib_UI's math_phys initializers (196 rows: retail's UI files
+    carry none; a precompiled cui.h stops at a nested include in an #if
+    block, C2856, so it needs the headers' include guards reworked or the
+    2003 header chain); D3DRender's 71 (more of its files than retail's
+    have them); ltmem's and RezMgr's; Lithtech's exception funclets
+    (inside the SecuROM pages, not comparable); the remaining ICF-folded
+    dtors and small helpers (both images).
+  - HUDScores' new bool (cshell's) is at retail's 0x1cf5.
 
 ### 5. gamespy
 

@@ -256,6 +256,10 @@ void GearItem::Load(ILTMessage_Read *pMsg, uint32 dwLoadFlags)
 
 void GearItem::PickedUp(bool bWasPickedUp, bool bDisplayMsg, bool bLeaveItem)
 {
+	// RETAIL: Object 0x100e3b6e: in multiplayer, only what was picked up.
+	if( IsMultiplayerGame( ) && !bWasPickedUp )
+		return;
+
 	// Did we really pick it up?
 
 	bool bPickedUp = bWasPickedUp;

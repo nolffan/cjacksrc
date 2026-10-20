@@ -375,13 +375,17 @@ bool GunMount::FireWeapon( )
 	LTRotation rRot;
 	g_pLTServer->GetObjectRotation( m_hObject, &rRot );
 
+	// RETAIL: Object 0x100e540b: the forward is taken before the flash
+	// position.
+	LTVector vForward = rRot.Forward( );
+
 	LTVector vFlashPos;
 	if( !GetFlashPosition( vFlashPos ))
 		return false;
 
 	WeaponFireInfo weaponFireInfo;
 	weaponFireInfo.hFiredFrom	= m_hObject;
-	weaponFireInfo.vPath		= rRot.Forward( );
+	weaponFireInfo.vPath		= vForward;
 	weaponFireInfo.vFirePos		= vFlashPos;
 	weaponFireInfo.vFlashPos	= vFlashPos;
 
@@ -435,7 +439,8 @@ bool GunMount::IsAnimationDone( )
 	if( g_pModelLT->GetPlaybackState( pWeapon->GetModelObject( ), MAIN_TRACKER, dwState ) != LT_OK )
 		return true;
 
-	return !!( dwState & MS_PLAYDONE );
+	// RETAIL: Object 0x100e4c54: the flag's bit converts to the bool.
+	return ( dwState & MS_PLAYDONE ) ? true : false;
 }
 
 // ----------------------------------------------------------------------- //

@@ -2182,7 +2182,10 @@ void CAI::SetLyingDown(bool bLyingDown)
 				g_pPhysicsLT->SetObjectDims(m_hHitBox, &vHitDims, 0);
 
 				pHitBox->SetOffset( LTVector( 0.0f, 0.0f, 0.0f ) );
-				pHitBox->Update();
+
+				// RETAIL: Object 0x10009c83: only with its model.
+				if( pHitBox->GetModelObject() )
+					pHitBox->Update();
 			}
 
 			UpdateClientHitBox();
@@ -2805,8 +2808,9 @@ bool CAI::HandleCommand(const CParsedMsg &cMsg)
 			{
 				if( m_pState && ( m_pState->GetStateType() == kState_HumanUseObject ))
 				{
-					float fHeight = (float)atof( cMsg.GetArg(2).c_str() );
-					((CAIHumanStateUseObject*)m_pState)->Drive( fHeight );
+					// RETAIL: Object 0x10010469: the state is read before
+					// the height.
+					((CAIHumanStateUseObject*)m_pState)->Drive( (float)atof( cMsg.GetArg(2).c_str() ));
 				}
 			}
 			else

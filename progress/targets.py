@@ -144,7 +144,10 @@ TARGETS = [
          # __ftol2 (0x10064030), the .text$x funclets, and from 0x10064900
          # the dynamic initializers and atexit destructors (the lowest
          # entry of the __xc_a table, .data 0x10073000) to 0x10069f9b
-         app=[(0x10001000, 0x10064024), (0x10064900, 0x10069f9b)]),
+         app=[(0x10001000, 0x10064024), (0x10064900, 0x10069f9b)],
+         # .text$x: the exception funclets (`mov eax, <FuncInfo>; jmp
+         # ___CxxFrameHandler`), after the import thunks
+         compiler_output=[(0x100646f0, 0x10064900)]),
     dict(label="SndDrv.dll", what="the sound driver", kind="image",
          shipped=REFERENCE + "/SndDrv.dll", stem="SndDrv",
          built="src/Engine/built/Final/snddrv/SndDrv.dll", optional=True,
@@ -342,6 +345,27 @@ TARGETS = [
              # MID_ALLOBJECTSCREATED calls 0x10059980
              "?ReadProp@AimMagnet@@AAEIPAUObjectCreateStruct@@@Z": 0x10059710,
              "?ResolveTarget@AimMagnet@@AAEXXZ": 0x10059980,
+             # by size these two swapped: 0x1010f060 writes
+             # MID_PLAYER_TRANSMISSION (0x7b), 0x10111ca0 compares the
+             # "Off" token and writes MID_PLAYER_OVERLAY (0x78)
+             "?HandleTransmissionMessage@CPlayerObj@@QAE_NABVCParsedMsg@@@Z":
+                 0x1010f060,
+             "?HandleOverlayMessage@CPlayerObj@@QAE_NABVCParsedMsg@@@Z":
+                 0x10111ca0,
+             # by size these two swapped: 0x100f2610 (the two-argument
+             # RemoveObject) asks the object
+             # IsActive, 0x100f3050 brackets the update with
+             # StartCounter/EndCounter
+             "?RemoveObject@CLiteObjectMgr@@QAEXPAVGameBaseLite@@_N@Z":
+                 0x100f2610,
+             "?Update@CLiteObjectMgr@@QAEXXZ": 0x100f3050,
+             # RemoveObject(pObject) is RemoveObject(pObject, true)
+             "?RemoveObject@CLiteObjectMgr@@QAEXPAVGameBaseLite@@@Z":
+                 0x100f2730,
+             # by size these two swapped: 0x10093180 walks the weapons
+             # (0x8b4) and spears (0x900), 0x10095bf0 sends BFX_CAN_CARRY
+             "?RemovePowerupObjects@Body@@QAEXXZ": 0x10093180,
+             "?SetCanCarry@Body@@UAEX_N@Z": 0x10095bf0,
          }),
     dict(label="ClientFx.fxd", what="the game: client effects", kind="image",
          shipped=REFERENCE + "/ClientFx.fxd", stem="ClientFx",

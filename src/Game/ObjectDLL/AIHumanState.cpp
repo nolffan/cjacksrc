@@ -6328,7 +6328,15 @@ void CAIHumanStateAttackFromCover::Update()
 
 	if ( m_bPlayFirstSound || m_bFirstUpdate )
 	{
-		GetAI()->PlayCombatSound(kAIS_Cover);
+		// RETAIL: Object 0x1004ce3b: an AI sent to seek the player says
+		// it was ordered to cover.
+		if( m_bSeekPlayer )
+		{
+			GetAI()->PlayCombatSound(kAIS_OrderedCover);
+		}
+		else {
+			GetAI()->PlayCombatSound(kAIS_Cover);
+		}
 	}
 
 	// If we've had too many retries just attack

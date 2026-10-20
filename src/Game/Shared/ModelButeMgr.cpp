@@ -897,7 +897,8 @@ ModelId CModelButeMgr::GetModelId(const char *szName)
 // !!!    g_pLTBase->CPrint("CModelButeMgr::GetModel - Could not find Model \"%s\"", szName);
     _ASSERT(LTFALSE);
 
-	return (ModelId)iModel;
+	// RETAIL: Object 0x100fa69b, CShell 0x1008937b.
+	return eModelIdInvalid;
 }
 
 const char* CModelButeMgr::GetModelName(ModelId eModelId)

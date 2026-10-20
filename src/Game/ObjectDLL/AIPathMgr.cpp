@@ -368,13 +368,16 @@ LTBOOL CAIPathMgr::FindRandomPosition(CAI* pAI, AIVolume* pVolume, const LTVecto
 	uint8 iRand;
 	uint8 nNeighbors = pVolume->GetNumNeighbors();
 	AIVolumeNeighbor* apNeighbors[CAISpatialRepresentationMgr::kMaxNeighbors];
-	for( uint8 iNeighbor=0; iNeighbor < pVolume->GetNumNeighbors(); ++iNeighbor )
+
+	// RETAIL: Object 0x10069a0f: one uint8 counter for all three loops.
+	uint8 iNeighbor;
+	for( iNeighbor=0; iNeighbor < pVolume->GetNumNeighbors(); ++iNeighbor )
 	{
 		apNeighbors[iNeighbor] = LTNULL;
 	}
 
 	uint8 cBlanks, iSpot;
-	for(int iNeighbor=0; iNeighbor < pVolume->GetNumNeighbors(); ++iNeighbor )
+	for( iNeighbor=0; iNeighbor < pVolume->GetNumNeighbors(); ++iNeighbor )
 	{
 		iRand = GetRandom( 0, nNeighbors - 1 );
 		cBlanks = 0;
@@ -398,7 +401,7 @@ LTBOOL CAIPathMgr::FindRandomPosition(CAI* pAI, AIVolume* pVolume, const LTVecto
 	// Recurse through neighbors.
 
 	AIVolume* pVol;
-	for(int iNeighbor = 0; iNeighbor < pVolume->GetNumNeighbors(); ++iNeighbor )
+	for( iNeighbor = 0; iNeighbor < pVolume->GetNumNeighbors(); ++iNeighbor )
 	{
 		// Do not recurse through previously visited volumes (pathIndex).
 		// Do not go thru doors.
