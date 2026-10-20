@@ -70,7 +70,7 @@ void CClientInfoMgr::UpdateClient ( char const* pszName, bool bIsAdmin, uint32 n
 	else
 	{
 		//hmmm... we should have found them...
-		g_pLTClient->CPrint("CClientInfoMgr::UpdateClient () : Unknown Client %d (%s)", nID, pszName);
+		DebugCPrint( 1, "CClientInfoMgr::UpdateClient () : Unknown Client %d (%s)", nID, pszName);
 	}
 
 

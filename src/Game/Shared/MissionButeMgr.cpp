@@ -409,11 +409,7 @@ int MISSION::BuildWeaponsList(char* pszStr, int* pArray, int nArrayLen)
 			}
 			else
 			{
-#ifdef _CLIENTBUILD
-                g_pLTClient->CPrint("Error in %s: Unknown weapon: %s", g_pMissionButeMgr->GetAttributeFile( ),pWpnName);
-#else
-                DebugCPrint(1,"Error in %s: Unknown weapon: %s", g_pMissionButeMgr->GetAttributeFile( ),pWpnName);
-#endif
+                DebugCPrint(1,"Error in %s: Unknown weapon: %s", g_pMissionButeMgr->GetAttributeFile( ),pWpnName);	// RETAIL: CShell too
             }
 			pWpnName = strtok(NULL,",");
 		}
@@ -458,11 +454,7 @@ int MISSION::BuildAmmoList(char *pszStr, int* pArray, int nArrayLen)
 			}
 			else
 			{
-#ifdef _CLIENTBUILD
-                g_pLTClient->CPrint("Error in %s: Unknown ammo: %s", g_pMissionButeMgr->GetAttributeFile( ),pAmmoName);
-#else
-                DebugCPrint(1,"Error in %s: Unknown ammo: %s", g_pMissionButeMgr->GetAttributeFile( ),pAmmoName);
-#endif
+                DebugCPrint(1,"Error in %s: Unknown ammo: %s", g_pMissionButeMgr->GetAttributeFile( ),pAmmoName);	// RETAIL: CShell too
 			}
 
 			pAmmoName = strtok(NULL,",");
@@ -507,11 +499,7 @@ int MISSION::BuildModsList(char *pszStr, int* pArray, int nArrayLen)
 			}
 			else
 			{
-#ifdef _CLIENTBUILD
-                g_pLTClient->CPrint("Error in %s: Unknown weapon mod: %s", g_pMissionButeMgr->GetAttributeFile( ),pModName);
-#else
-                DebugCPrint(1,"Error in %s: Unknown weapon mod: %s", g_pMissionButeMgr->GetAttributeFile( ),pModName);
-#endif
+                DebugCPrint(1,"Error in %s: Unknown weapon mod: %s", g_pMissionButeMgr->GetAttributeFile( ),pModName);	// RETAIL: CShell too
 			}
 
 			pModName = strtok(NULL,",");

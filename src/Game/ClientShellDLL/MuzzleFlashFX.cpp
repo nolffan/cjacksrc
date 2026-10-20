@@ -287,7 +287,7 @@ LTBOOL CMuzzleFlashFX::Update()
 
 		if( !GetAttachmentSocketTransform(m_cs.hParent, "Flash", vPos, rRot))
 		{
-			g_pLTClient->CPrint( "CMuzzleFlashFX::Update:  Invalid attachment." );
+			DebugCPrint( 1, "CMuzzleFlashFX::Update:  Invalid attachment." );
 			ASSERT( !"CMuzzleFlashFX::Update:  Invalid attachment." );
 			return LTFALSE;
 		}

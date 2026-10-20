@@ -592,7 +592,7 @@ void CMusic::SetMenuVolume(const long nVolume)
 	// Set current volume (even if not everything is initialized yet)
 	m_nMenuVolume = nVolume;
 
-	g_pLTClient->CPrint("CMusic::SetMenuVolume(%d)",nVolume);
+	DebugCPrint( 2, "CMusic::SetMenuVolume(%d)",nVolume);
 	
 	// make sure mgrs are initialized
 	if (!IsLevelInitialized()) return;
@@ -650,7 +650,7 @@ void CMusic::SetTriggerVolume(const long nVolume)
 	// Set current volume (even if not everything is initialized yet)
 	m_nTriggerVolume = nVolume;
 
-	g_pLTClient->CPrint("CMusic::SetTriggerVolume(%d)",nVolume);
+	DebugCPrint( 2, "CMusic::SetTriggerVolume(%d)",nVolume);
 	
 	// make sure mgrs are initialized
 	if (!IsLevelInitialized()) return;

@@ -642,7 +642,7 @@ bool CClientWeapon::OnModelKey( HLOCALOBJ hObj, ArgList* pArgList )
 				else
 				{
 					// Not enough params
-					g_pLTClient->CPrint("CClientWeapon::OnModelKey - ERROR - Not enough RS arguments! Syntax: RS <RSNum> <RSName>\n");
+					DebugCPrint( 1, "CClientWeapon::OnModelKey - ERROR - Not enough RS arguments! Syntax: RS <RSNum> <RSName>\n");
 				}
 
 				// Move past all arguments of this key

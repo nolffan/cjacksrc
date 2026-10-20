@@ -1099,7 +1099,7 @@ void CUserProfile::ApplyPerformance(bool bForceDisplay)
 	SetSound();
 	SetDisplay();
 
-	g_pLTClient->CPrint("CUserProfile::ApplyPerformance(%d) : nOverall = %d",bForceDisplay,nOverall);
+	DebugCPrint( 1, "CUserProfile::ApplyPerformance(%d) : nOverall = %d",bForceDisplay,nOverall);
 	switch (nOverall)
 	{
 	case 0:
@@ -1488,7 +1488,7 @@ void CUserProfile::SetDisplay()
 	m_nScreenHeight = currentMode.m_Height;
 	m_nScreenDepth = currentMode.m_BitDepth;
 
-	g_pLTClient->CPrint("CUserProfile::SetDisplay() : %d x %d %d",m_nScreenWidth,m_nScreenHeight,m_nScreenDepth);
+	DebugCPrint( 1, "CUserProfile::SetDisplay() : %d x %d %d",m_nScreenWidth,m_nScreenHeight,m_nScreenDepth);
 
 }
 

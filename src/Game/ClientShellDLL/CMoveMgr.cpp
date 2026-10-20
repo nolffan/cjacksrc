@@ -1770,7 +1770,7 @@ void CMoveMgr::UpdatePushers()
 						// fly too high...
 						if (vel.y > g_vtMaxPushYVelocity.GetFloat())
 						{
-							g_pLTClient->CPrint("Old Pusher Y Vel = %.2f", vel.y);
+							DebugCPrint( 1, "Old Pusher Y Vel = %.2f", vel.y);
 							vel.y = g_vtMaxPushYVelocity.GetFloat();
 						}
 

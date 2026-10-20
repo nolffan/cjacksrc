@@ -1388,8 +1388,8 @@ void CInterfaceMgr::UpdateSplashScreenState()
 	{
 		if((g_fSplashSndDuration <= 0.0f) || g_pLTClient->IsDone(m_hSplashSound))
 		{
-			g_pLTClient->CPrint("Current Time: %.4f", g_pLTClient->GetTime());
-			g_pLTClient->CPrint("Splash sound done playing...");
+			DebugCPrint( 1, "Current Time: %.4f", g_pLTClient->GetTime());
+			DebugCPrint( 1, "Splash sound done playing...");
 
 			g_pLTClient->SoundMgr()->KillSound(m_hSplashSound);
 			m_hSplashSound = LTNULL;
@@ -1888,7 +1888,7 @@ LTBOOL CInterfaceMgr::OnMessage(uint8 messageID, ILTMessage_Read *pMsg)
 			char szName[MAX_PLAYER_NAME];
             pMsg->ReadString( szName, ARRAY_LEN( szName ));
             uint32 nID = (uint32) pMsg->Readuint32();
-			g_pLTClient->CPrint("MID_PLAYER_CONNECTED : Client  %d (%s)", nID, szName);
+			DebugCPrint( 0, "MID_PLAYER_CONNECTED : Client  %d (%s)", nID, szName);
 			m_ClientInfo.PlayerConnected( szName, nID );
             return LTTRUE;
 		}
@@ -1939,7 +1939,7 @@ LTBOOL CInterfaceMgr::OnMessage(uint8 messageID, ILTMessage_Read *pMsg)
 			case MID_PI_JOIN:
 				{
 					//new player entering
-					g_pLTClient->CPrint("MID_PLAYER_INFO:MID_PI_JOIN - Adding client %d (%s)", nID, szName);
+					DebugCPrint( 0, "MID_PLAYER_INFO:MID_PI_JOIN - Adding client %d (%s)", nID, szName);
 					m_ClientInfo.AddClient(szName, bIsAdmin, nID, nTeamId);
 					if( nLocalID != nID )
 						g_pGameClientShell->CSPrint(FormatTempString(IDS_JOINEDGAME, szName));		
@@ -1947,13 +1947,13 @@ LTBOOL CInterfaceMgr::OnMessage(uint8 messageID, ILTMessage_Read *pMsg)
 			case MID_PI_EXIST:
 				{
 					//we are joining and this is info about a player already in the game
-					g_pLTClient->CPrint("MID_PLAYER_INFO:MID_PI_EXIST - Adding client %d (%s)", nID, szName);
+					DebugCPrint( 0, "MID_PLAYER_INFO:MID_PI_EXIST - Adding client %d (%s)", nID, szName);
 					m_ClientInfo.AddClient(szName, bIsAdmin, nID, nTeamId);
 				} break;
 			case MID_PI_UPDATE:
 				{
 					//this is an update about a player already in the game
-					g_pLTClient->CPrint("MID_PLAYER_INFO:MID_PI_UPDATE - Updating client %d (%s)", nID, szName);
+					DebugCPrint( 1, "MID_PLAYER_INFO:MID_PI_UPDATE - Updating client %d (%s)", nID, szName);
 					m_ClientInfo.UpdateClient(szName, bIsAdmin, nID, nTeamId);
 
 					//if this is a team game, and this is our player's update, update our team info
@@ -5521,7 +5521,7 @@ void CInterfaceMgr::AddInterfaceFX(CLIENTFX_LINK* pLink, char *pFXName, LTVector
 	}
 	else
 	{
-		g_pLTClient->CPrint("ERROR: Failed to create interface FX %s",pFXName);
+		DebugCPrint( 1, "ERROR: Failed to create interface FX %s",pFXName);
 	}
 
 }
@@ -6006,7 +6006,7 @@ void CInterfaceMgr::Disconnected(uint32 nDisconnectFlag)
 				nMsgId = IDS_DISCONNECTED_FROM_SERVER;
 			}
 
-			g_pLTClient->CPrint("CInterfaceMgr::Disconnected(%d)", nDisconnectCode);
+			DebugCPrint( 0, "CInterfaceMgr::Disconnected(%d)", nDisconnectCode);
 		}
 		break;
 	}
@@ -6122,7 +6122,7 @@ void CInterfaceMgr::UpdateClientList()
 		// Don't send update requests more than once per second
 		if ((g_pLTClient->GetTime() - m_fLastUpdateRequestTime) > 1.0f)
 		{
-			g_pLTClient->CPrint("Asking for clientlist update");
+			DebugCPrint( 2, "Asking for clientlist update");
 			SendEmptyServerMsg(MID_MULTIPLAYER_UPDATE, MESSAGE_GUARANTEED);
 			m_fLastUpdateRequestTime = g_pLTClient->GetTime();
 		}
