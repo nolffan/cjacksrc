@@ -20704,6 +20704,7 @@ Object.lto	sub_10104130
 Object.lto	sub_10104190
 Object.lto	sub_101043a0
 Object.lto	sub_101043e0
+Object.lto	sub_10104410
 Object.lto	sub_101044f0
 Object.lto	sub_10104590
 Object.lto	sub_10104620
@@ -20716,6 +20717,7 @@ Object.lto	sub_10104d00
 Object.lto	sub_10104e40
 Object.lto	sub_10104f70
 Object.lto	sub_10105100
+Object.lto	sub_10105130
 Object.lto	sub_10105380
 Object.lto	sub_10105460
 Object.lto	sub_10105540
