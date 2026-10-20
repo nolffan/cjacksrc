@@ -339,7 +339,7 @@ void CHUDRadar::AddObject( HOBJECT hObj, uint8 nRadarType, uint8 nVisibleTeamId 
 
 	if( m_mapRadarObjects.find( hObj ) != m_mapRadarObjects.end() )
 	{
-		g_pLTClient->CPrint("HUDRadar: failed adding object (duplicate)");
+		DebugCPrint( 1, "HUDRadar: failed adding object (duplicate)");
 		return;
 	}
 
@@ -349,7 +349,7 @@ void CHUDRadar::AddObject( HOBJECT hObj, uint8 nRadarType, uint8 nVisibleTeamId 
 		HTEXTURE hTex = g_pInterfaceResMgr->GetTexture( pType->szIcon );
 		if( !hTex )
 		{
-			g_pLTClient->CPrint("HUDRadar: failed adding object (no texture %s)", pType->szIcon);
+			DebugCPrint( 1, "HUDRadar: failed adding object (no texture %s)", pType->szIcon);
 			return;
 		}
 		
@@ -372,7 +372,7 @@ void CHUDRadar::AddObject( HOBJECT hObj, uint8 nRadarType, uint8 nVisibleTeamId 
 	}
 	else
 	{
-		g_pLTClient->CPrint("HUDRadar: failed adding object (unknown type %d)",nRadarType);
+		DebugCPrint( 1, "HUDRadar: failed adding object (unknown type %d)",nRadarType);
 	}
 }
 
@@ -396,7 +396,7 @@ void CHUDRadar::AddObject( HOBJECT hObj, const char *pRadarType, uint8 nVisibleT
 	}
 	else
 	{
-		g_pLTClient->CPrint("HUDRadar: failed adding object (unknown type %s)",pRadarType);
+		DebugCPrint( 1, "HUDRadar: failed adding object (unknown type %s)",pRadarType);
 	}
 }
 

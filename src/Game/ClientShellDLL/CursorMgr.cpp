@@ -67,13 +67,13 @@ LTBOOL CCursorMgr::Init()
 
 	if (g_pLTClient->Cursor()->LoadCursorBitmapResource(MAKEINTRESOURCE(IDC_POINTER), m_hCursor) != LT_OK)
 	{
-		g_pLTClient->CPrint("can't load cursor resource.");
+		DebugCPrint( 1, "can't load cursor resource.");
         return LTFALSE;
 	}
 
     if (g_pLTClient->Cursor()->SetCursor(m_hCursor) != LT_OK)
 	{
-		g_pLTClient->CPrint("can't set cursor.");
+		DebugCPrint( 1, "can't set cursor.");
         return LTFALSE;
 	}
 
@@ -182,7 +182,7 @@ void CCursorMgr::UseCursor(LTBOOL bUseCursor, LTBOOL bLockCursorToCenter)
 		// copied the following 4 lines from Init()
 		if (g_pLTClient->Cursor()->SetCursor(m_hCursor) != LT_OK)
 		{
-			g_pLTClient->CPrint("can't set cursor.");
+			DebugCPrint( 1, "can't set cursor.");
 		}
 	}
 	else

@@ -112,8 +112,8 @@ LTBOOL CNodeController::Init(CCharacterFX* pCharacterFX)
 			}
 			else
 			{
-				g_pLTClient->CPrint("ERROR in CNodeController::Init()!");
-				g_pLTClient->CPrint("    More than (%d) model nodes!", kMaxNodes);
+				DebugCPrint( 1, "ERROR in CNodeController::Init()!");
+				DebugCPrint( 1, "    More than (%d) model nodes!", kMaxNodes);
 				return LTFALSE;
 			}
 		}
@@ -232,7 +232,7 @@ void CNodeController::UpdateLipFlapControl(NCSTRUCT *pNodeControl)
 		
 			if( ltRes != LT_OK )
 			{
-				g_pLTClient->CPrint("CNodeController::UpdateLipFlapControl:  Could not read sound data!  Is it streamed?");
+				DebugCPrint( 1, "CNodeController::UpdateLipFlapControl:  Could not read sound data!  Is it streamed?");
 			}
 		}
 	
@@ -396,7 +396,7 @@ LTBOOL CNodeController::HandleNodeControlMessage(uint8 byMsgId, ILTMessage_Read 
 
 		default :
 		{
-			g_pLTClient->CPrint("ERROR in CNodeController::HandleNodeControlMessage invalid message Id!");
+			DebugCPrint( 1, "ERROR in CNodeController::HandleNodeControlMessage invalid message Id!");
 		}
 		break;
 	}
@@ -554,7 +554,7 @@ void CNodeController::HandleNodeControlLipSync( char const* pszSoundFile, LTFLOA
 	{
 		pStream->Release();
 	
-		g_pLTClient->CPrint("Playing sound '%s' as a lip FLAP sound: (nFileType != LIPSYNC_FILE_ID) || (nVersion != LIPSYNC_FILE_VERSION)!!!", pszSoundFile);
+		DebugCPrint( 1, "Playing sound '%s' as a lip FLAP sound: (nFileType != LIPSYNC_FILE_ID) || (nVersion != LIPSYNC_FILE_VERSION)!!!", pszSoundFile);
 	
 		HandleNodeControlLipFlap( szSound, fRadius );
 		return;

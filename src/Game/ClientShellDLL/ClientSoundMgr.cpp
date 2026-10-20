@@ -224,7 +224,7 @@ HLTSOUND CClientSoundMgr::PlaySound(PlaySoundInfo & psi)
 
 	if (hResult != LT_OK)
 	{
-		g_pLTClient->CPrint("ERROR in CClientSoundMgr::PlaySound() - Couldn't play sound '%s'", psi.m_szSoundName);
+		DebugCPrint( 1, "ERROR in CClientSoundMgr::PlaySound() - Couldn't play sound '%s'", psi.m_szSoundName);
 		
 		return LTNULL;
 	}

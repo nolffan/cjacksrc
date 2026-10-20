@@ -1380,7 +1380,7 @@ void CCharacterFX::OnModelKey(HLOCALOBJ hObj, ArgList *pArgs)
 				else
 				{
 					// Not enough params
-					g_pLTClient->CPrint("CCharacterFX::OnModelKey - ERROR - Not enough RS arguments! Syntax: RS <RSNum> <RSName>\n");
+					DebugCPrint( 1, "CCharacterFX::OnModelKey - ERROR - Not enough RS arguments! Syntax: RS <RSNum> <RSName>\n");
 				}
 
 				// Move past all arguments of this key

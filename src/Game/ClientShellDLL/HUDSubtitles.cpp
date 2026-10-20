@@ -212,7 +212,7 @@ LTBOOL CHUDSubtitles::Show(int nStringId, LTVector vSpeakerPos, LTFLOAT fRadius,
 	
 	if (!strlen(pStr))
 	{
-		g_pLTClient->CPrint("CHUDSubtitles::Show(%d) : No Text",nStringId);
+		DebugCPrint( 2, "CHUDSubtitles::Show(%d) : No Text",nStringId);
 		return LTFALSE;
 	}
 	
