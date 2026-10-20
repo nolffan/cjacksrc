@@ -435,7 +435,8 @@ bool CClientSaveLoadMgr::HandleSaveData( ILTMessage_Read& msg )
 	cMsg.Writeuint8( MID_SAVE_DATA) ;
 
 	// need to check if we're jumping, if we are, refuse to save
-	if (g_pMoveMgr->CanSave())
+	// RETAIL: 0x1002130f: but a level switch always saves.
+	if (eSaveDataState == eSaveDataStateSwitchLevels || g_pMoveMgr->CanSave())
 	{
 		cMsg.Writebool(true);
 		g_pGameClientShell->BuildClientSaveMsg( cMsg, eSaveDataState );

@@ -30,6 +30,7 @@ class CHUDDistance : public CHUDItem
 
 		LTBOOL      Init();
 		void		Term();		// RETAIL: 0x10057580
+		void		Reset();	// RETAIL: 0x10057610
 		void        Render();
 		void        Update();
 		void        UpdateLayout();

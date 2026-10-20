@@ -56,12 +56,14 @@ CInterfaceMgr*  g_pInterfaceMgr = LTNULL;
 #define MAX_INTERFACE_LIGHTS	5
 #define INVALID_ANI			((HMODELANIM)-1)
 
+// RETAIL: 0x100637e0: Contract J.A.C.K.'s five intro movies.
 static enum MovieOrderEnum 
 {
 	eSierra,
-	eFox,
-	eMonolith,
-	eLithTech
+	eLithTech,
+	eJupiter,
+	eVUGames,
+	eNVidia
 };
 
 //hack to track whether we are trying to host/join a LAN only or an internet game
@@ -69,7 +71,7 @@ bool g_bLAN = false;
 
 static MovieOrderEnum gMovieOrder[] =
 {
-	eSierra, eFox, eMonolith, eLithTech
+	eSierra, eLithTech, eJupiter, eVUGames, eNVidia
 };
 
 LTFLOAT      g_fSplashSndDuration = 0.0f;
@@ -3867,13 +3869,14 @@ LTBOOL CInterfaceMgr::PreSplashScreenState(GameState eCurState)
 	// Play splash screen sound...
 
     uint32 dwFlags = PLAYSOUND_GETHANDLE | PLAYSOUND_CLIENT;
-	m_hSplashSound = g_pClientSoundMgr->PlayInterfaceSound(IM_SPLASH_SOUND);
+	// RETAIL: 0x1006439f: with its flags, and the times at debug level 1.
+	m_hSplashSound = g_pClientSoundMgr->PlayInterfaceSound(IM_SPLASH_SOUND, dwFlags);
 
 	if (m_hSplashSound)
 	{
 		g_pLTClient->SoundMgr()->GetSoundDuration(m_hSplashSound, g_fSplashSndDuration);
-		g_pLTClient->CPrint("Splash sound duration: %.4f", g_fSplashSndDuration);
-		g_pLTClient->CPrint("Current Time: %.4f", g_pLTClient->GetTime());
+		DebugCPrint(1, "Splash sound duration: %.4f", g_fSplashSndDuration);
+		DebugCPrint(1, "Current Time: %.4f", g_pLTClient->GetTime());
 	}
 
 	// Create the splash screen...
@@ -5887,16 +5890,20 @@ char* CInterfaceMgr::GetCurrentMovie()
 			pMovie = "Movies\\sierralogo.bik";
 		break;
 
-		case eFox :
-			pMovie = "Movies\\foxlogo.bik";
-		break;
-
-		case eMonolith :
+		case eLithTech :
 			pMovie = "Movies\\lithLogo.bik";
 		break;
 
-		case eLithTech :
-			pMovie = "Movies\\ltLogo.bik";
+		case eJupiter :
+			pMovie = "Movies\\Jupiter.bik";
+		break;
+
+		case eVUGames :
+			pMovie = "Movies\\VUGlogo.bik";
+		break;
+
+		case eNVidia :
+			pMovie = "Movies\\nvidia.bik";
 		break;
 
 		default : break;
