@@ -3760,8 +3760,9 @@ void CPlayerMgr::CalculateCameraRotation()
 		offsets[0] = offsets[1] = 0.0f;
 	}
 
-    float fYawDelta    = offsets[0] / fVal;
-    float fPitchDelta  = offsets[1] / fVal;
+	// RETAIL: 0x1009d7cc. The zoom scales the offsets.
+    float fYawDelta    = offsets[0] * (1.0f / fVal);
+    float fPitchDelta  = offsets[1] * (1.0f / fVal);
 
 	if (g_vtAdaptiveMouse.GetFloat() && fYawDelta != 0.0f)
 	{
@@ -3781,20 +3782,23 @@ void CPlayerMgr::CalculateCameraRotation()
 		}
 	}
 
-	m_fYaw += fYawDelta;
-
 	// [kml] 12/26/00 Check varying degrees of strafe and look.
+	// RETAIL: 0x1009d8f2. Turning by key replaces the mouse's yaw.
 	if(!(m_dwPlayerFlags & BC_CFLG_STRAFE))
 	{
 		if(m_dwPlayerFlags & BC_CFLG_LEFT)
 		{
-			m_fYaw -= g_pGameClientShell->GetFrameTime() * ((m_dwPlayerFlags & BC_CFLG_RUN) ? g_vtFastTurnRate.GetFloat() : g_vtNormalTurnRate.GetFloat());
+			fYawDelta = ((m_dwPlayerFlags & BC_CFLG_RUN) ? g_vtFastTurnRate.GetFloat() : g_vtNormalTurnRate.GetFloat()) * g_pGameClientShell->GetFrameTime() * -1.0f;
 		}
 		if(m_dwPlayerFlags & BC_CFLG_RIGHT)
 		{
-			m_fYaw += g_pGameClientShell->GetFrameTime() * ((m_dwPlayerFlags & BC_CFLG_RUN) ? g_vtFastTurnRate.GetFloat() : g_vtNormalTurnRate.GetFloat());
+			fYawDelta = ((m_dwPlayerFlags & BC_CFLG_RUN) ? g_vtFastTurnRate.GetFloat() : g_vtNormalTurnRate.GetFloat()) * g_pGameClientShell->GetFrameTime();
 		}
 	}
+
+	m_fYaw += fYawDelta;
+
+	float fPitch = m_fPitch;
 
 	if (pSettings->MouseLook() || (m_dwPlayerFlags & BC_CFLG_LOOKUP) || (m_dwPlayerFlags & BC_CFLG_LOOKDOWN)
 		|| m_bHoldingMouseLook)
@@ -3803,22 +3807,22 @@ void CPlayerMgr::CalculateCameraRotation()
 		{
 			if (pSettings->MouseInvertY())
 			{
-				m_fPitch -= fPitchDelta;
+				fPitch -= fPitchDelta;
 			}
 			else
 			{
-				m_fPitch += fPitchDelta;
+				fPitch += fPitchDelta;
 			}
 		}
 
 		if(m_dwPlayerFlags & BC_CFLG_LOOKUP)
 		{
-			m_fPitch -= g_pGameClientShell->GetFrameTime() * g_vtLookUpRate.GetFloat();
+			fPitch -= g_pGameClientShell->GetFrameTime() * g_vtLookUpRate.GetFloat();
 		}
 
 		if(m_dwPlayerFlags & BC_CFLG_LOOKDOWN)
 		{
-			m_fPitch += g_pGameClientShell->GetFrameTime() * g_vtLookUpRate.GetFloat();
+			fPitch += g_pGameClientShell->GetFrameTime() * g_vtLookUpRate.GetFloat();
 		}
 		// Don't allow much movement up/down if 3rd person...
 
@@ -3826,21 +3830,27 @@ void CPlayerMgr::CalculateCameraRotation()
 		{
             float fMinY = DEG2RAD(45.0f) - 0.1f;
 
-			if (m_fPitch < -fMinY) m_fPitch = -fMinY;
-			if (m_fPitch > fMinY)  m_fPitch = fMinY;
+			if (fPitch < -fMinY) fPitch = -fMinY;
+			else if (fPitch > fMinY)  fPitch = fMinY;
 		}
 	}
-	else if (m_fPitch != 0.0f && GetConsoleInt("AutoCenter",0))
+	else if (fPitch != 0.0f && GetConsoleInt("AutoCenter",0))
 	{
-        float fPitchDelta = (g_pGameClientShell->GetFrameTime() * g_vtLookUpRate.GetFloat());
-		if (m_fPitch > 0.0f) m_fPitch -= Min(fPitchDelta, m_fPitch);
-		if (m_fPitch < 0.0f) m_fPitch += Min(fPitchDelta, -m_fPitch);
+        float fAutoDelta = (g_pGameClientShell->GetFrameTime() * g_vtLookUpRate.GetFloat());
+		if (fPitch > 0.0f) fPitch -= Min(fAutoDelta, fPitch);
+		if (fPitch < 0.0f)
+		{
+			float fNegPitch = -fPitch;
+			fPitch += Min(fAutoDelta, fNegPitch);
+		}
 	}
 
     float fMinY = MATH_HALFPI - 0.1f;
 
-	if (m_fPitch < -fMinY) m_fPitch = -fMinY;
-	if (m_fPitch > fMinY)  m_fPitch = fMinY;
+	// RETAIL: 0x1009db13. The pitch's change goes to the vehicle too.
+	float fNewPitch = (fPitch > -fMinY) ? ((fMinY < fPitch) ? fMinY : fPitch) : -fMinY;
+	fPitchDelta = fNewPitch - m_fPitch;
+	m_fPitch = fNewPitch;
 
 
 	// Set camera and player variables...
@@ -3854,7 +3864,7 @@ void CPlayerMgr::CalculateCameraRotation()
 		LTVector vPlayerPYR(m_fPlayerPitch, m_fPlayerYaw, m_fPlayerRoll);
 		LTVector vPYR(m_fPitch, m_fYaw, m_fRoll);
 
-		m_pMoveMgr->GetVehicleMgr()->CalculateVehicleRotation(vPlayerPYR, vPYR, fYawDelta);
+		m_pMoveMgr->GetVehicleMgr()->CalculateVehicleRotation(vPlayerPYR, vPYR, fYawDelta, fPitchDelta);
 
 		m_fPlayerPitch	= vPlayerPYR.x;
 		m_fPlayerYaw	= vPlayerPYR.y;

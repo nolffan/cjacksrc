@@ -5637,6 +5637,7 @@ CShell.dll	sub_101096d0
 CShell.dll	sub_101097c0
 CShell.dll	sub_10109810
 CShell.dll	sub_10109820
+CShell.dll	sub_1010a0a0
 CShell.dll	sub_1010a100
 CShell.dll	sub_1010a120
 CShell.dll	sub_1010a3e0

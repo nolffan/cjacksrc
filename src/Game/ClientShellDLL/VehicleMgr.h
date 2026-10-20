@@ -71,7 +71,7 @@ class CVehicleMgr
 
 	PlayerPhysicsModel GetPhysicsModel()	const { return m_ePPhysicsModel; }
 
-	void		CalculateVehicleRotation(LTVector & vPlayerPYR, LTVector & vPYR, LTFLOAT fYawDelta);
+	void		CalculateVehicleRotation(LTVector & vPlayerPYR, LTVector & vPYR, LTFLOAT fYawDelta, LTFLOAT fPitchDelta);
 
 	// Allows vehicles to perterb the camera placement.
 	void		CalculateVehicleCameraDisplacment( LTVector& vDisplacement );
@@ -163,7 +163,7 @@ class CVehicleMgr
 	LTFLOAT		GetSurfaceVelMult(SurfaceType eType) const;
 
 	void		CalculateBankingVehicleRotation(LTVector & vPlayerPYR, LTVector & vPYR, LTFLOAT fYawDelta);
-	void		CalculateLureVehicleRotation(LTVector & vPlayerPYR, LTVector & vPYR);
+	void		CalculateLureVehicleRotation(LTVector & vPlayerPYR, LTVector & vPYR, LTFLOAT fYawDelta, LTFLOAT fPitchDelta);
 	void		CalculateVehicleContourRotation( LTVector &vPlayerPYR, LTVector &vPYR );
 		
 	bool		MoveToLure( );
