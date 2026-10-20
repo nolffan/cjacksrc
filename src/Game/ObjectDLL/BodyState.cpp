@@ -100,7 +100,9 @@ void CBodyStateNormal::Init(Body* pBody)
 	
 	// Make sure it's on the ground...
 	
-	MoveObjectToFloor( m_pBody->m_hObject );
+	// RETAIL: Object 0x10098798: if it moves to the floor.
+	if( m_pBody->GetMoveToFloor() )
+		MoveObjectToFloor( m_pBody->m_hObject );
 }
 
 void CBodyStateNormal::InitLoad(Body* pBody)
@@ -736,6 +738,9 @@ void CBodyStateLadder::Init(Body* pBody)
 	g_pModelLT->GetCurAnimLength(m_pBody->m_hObject, pat, dwLength);
     m_fTimer = (LTFLOAT)dwLength/1000.0f;
 
+	// RETAIL: Object 0x100995c1: not to the floor while it falls.
+	m_pBody->SetMoveToFloor( LTFALSE );
+
 	// Move away from the ladder.
 
 	g_pPhysicsLT->SetVelocity(m_pBody->m_hObject, &LTVector( -pVolume->GetForward().x*10.f, 0.f, -pVolume->GetForward().z*10.f ) );
@@ -774,6 +779,9 @@ void CBodyStateLadder::Update()
         HMODELANIM hAni = g_pLTServer->GetModelAnimation(m_pBody->m_hObject);
 		if ( hAni == m_hAniStop )
 		{
+			// RETAIL: Object 0x1009964c: landed, to the floor again.
+			m_pBody->SetMoveToFloor( LTTRUE );
+
 			// If the land ani is done, we're done with the whole state...
 
             if ( g_pLTServer->GetModelPlaybackState(m_pBody->m_hObject) & MS_PLAYDONE )

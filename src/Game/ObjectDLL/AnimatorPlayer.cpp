@@ -1285,6 +1285,10 @@ void CAnimatorPlayer::ResetAniTracker(AniTracker eAniTracker)
 {
 	CAnimator::ResetAniTracker(eAniTracker);
 
+	// RETAIL: Object 0x1008c4fe: single player only.
+	if( IsMultiplayerGame( ))
+		return;
+
 	CAutoMessage cMsg;
 	cMsg.Writeuint8(MID_SFX_MESSAGE);
 	cMsg.Writeuint8(SFX_CHARACTER_ID);

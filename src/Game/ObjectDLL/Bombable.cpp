@@ -469,6 +469,9 @@ void Bombable::HandleActivateMsg( HOBJECT hSender )
 
 	if( (dwFlags & USRFLG_CAN_ACTIVATE) && m_bDisabled )
 	{
+		// RETAIL: Object 0x1009c4f3: one player at a time defuses it.
+		g_pCommonLT->SetObjectFlags( m_hObject, OFT_User, 0, USRFLG_CAN_ACTIVATE );
+
 		// Play the disabling sound...
 
 		if( m_hstrDefusingSnd )

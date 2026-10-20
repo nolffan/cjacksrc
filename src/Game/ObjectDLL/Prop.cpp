@@ -1675,7 +1675,11 @@ void Prop::HandleAttachmentTouch( HOBJECT hToucher )
 				g_pLTServer->SetObjectRotation( m_hObject, &rRot );
 
 				m_bRotating = false;
-				StartFade( s_vtAttachmentFadeDuration.GetFloat(), s_vtAttachmentFadeDelay.GetFloat() );
+				// RETAIL: Object 0x10128800: multiplayer fades at once.
+				float fDuration = s_vtAttachmentFadeDuration.GetFloat();
+				if( IsMultiplayerGame( ))
+					fDuration = 0.0f;
+				StartFade( fDuration, s_vtAttachmentFadeDelay.GetFloat() );
 			}
 		}
 	}

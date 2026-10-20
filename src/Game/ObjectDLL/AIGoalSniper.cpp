@@ -344,7 +344,7 @@ AINode* CAIGoalSniper::FindNearestAttractorNode()
 {
 	// RETAIL: Object 0x10035550: remember who to look for.
 
-	if( m_pAI->HasTarget() && ( m_hSeekTarget != m_pAI->GetTarget()->GetObject() ))
+	if( m_pAI->HasTarget() )
 	{
 		m_hSeekTarget = m_pAI->GetTarget()->GetObject();
 	}

@@ -402,7 +402,8 @@ static LTBOOL ValidateTransmissionMsg( ILTPreInterface *pInterface, ConParse &cp
 {
 	if( !pInterface ) return LTFALSE;
 
-	if( cpMsgParams.m_nArgs < 2 || cpMsgParams.m_nArgs > 4 )
+	// RETAIL: Object 0x10106821: a fifth argument names the sound.
+	if( cpMsgParams.m_nArgs < 2 || cpMsgParams.m_nArgs > 5 )
 	{
 		if( CCommandMgrPlugin::s_bShowMsgErrors )
 		{
@@ -435,8 +436,10 @@ static LTBOOL ValidateTransmissionMsg( ILTPreInterface *pInterface, ConParse &cp
 
 	if( cpMsgParams.m_nArgs == 4 )
 	{
+		// RETAIL: Object 0x101068c3: -1 is no team.
 		if( !_stricmp( cpMsgParams.m_Args[3], "0" ) ||
-			!_stricmp( cpMsgParams.m_Args[3], "1" ))
+			!_stricmp( cpMsgParams.m_Args[3], "1" ) ||
+			!_stricmp( cpMsgParams.m_Args[3], "-1" ))
 		{
 			return LTTRUE;
 		}
@@ -1024,7 +1027,11 @@ uint32 CPlayerObj::EngineMessageFn(uint32 messageID, void *pData, LTFLOAT fData)
 				ObjectCreateStruct* pStruct = (ObjectCreateStruct*)pData;
 				if (pStruct)
 				{
-					pStruct->m_Flags2 |= FLAG2_PLAYERCOLLIDE | FLAG2_SPECIALNONSOLID | FLAG2_SERVERDIMS;
+					// RETAIL: Object 0x10111b73: special non-solid only in
+					// single player.
+					pStruct->m_Flags2 |= FLAG2_PLAYERCOLLIDE | FLAG2_SERVERDIMS;
+					if( !IsMultiplayerGame( ))
+						pStruct->m_Flags2 |= FLAG2_SPECIALNONSOLID;
 				}
 
 				uint32 dwRet = CCharacter::EngineMessageFn(messageID, pData, fData);
@@ -1815,7 +1822,12 @@ bool CPlayerObj::HandleTransmissionMessage(const CParsedMsg &cMsg)
 		nTeam= (uint8)atoi( cMsg.GetArg( 3 ));
 	}
 
+	// RETAIL: Object 0x1010f0ee: the fifth argument names the sound.
 	uint32 nSound = 0;
+	if( cMsg.GetArgCount( ) >= 5 )
+	{
+		nSound = atoi( cMsg.GetArg( 4 ));
+	}
 
 	// If this is a communication transmission, get the activeplayer's client id and send it down.
 	uint32 nActivePlayerClientId = -1;

@@ -56,6 +56,9 @@ class CAIHuman : public CAI
 
 		virtual void CreateAttachments();
 
+		// RETAIL: Object 0x10039750
+		virtual void SetMoveToFloor( bool bMoveToFloor );
+
 		// Senses
 
         virtual LTBOOL IsObjectVisibleFromKnee(ObjectFilterFn fn, HOBJECT hObj, LTFLOAT fVisibleDistanceSqr, LTBOOL bFOV /* = LTTRUE */);

@@ -251,7 +251,7 @@ WorldProperties::~WorldProperties( )
     g_pLTServer->SetGameConVar( szWindX, "" );
     g_pLTServer->SetGameConVar( szWindY, "" );
     g_pLTServer->SetGameConVar( szWindZ, "" );
-    //g_pLTServer->SetGameConVar( szFarZ, "" );
+    g_pLTServer->SetGameConVar( szFarZ, "" );	// RETAIL: Object 0x1016bb36
     g_pLTServer->SetGameConVar( szAllSkyPortals, "" );
     g_pLTServer->SetGameConVar( szFogEnable, "" );
     g_pLTServer->SetGameConVar( szFogR, "" );
@@ -498,7 +498,8 @@ void WorldProperties::ReadProps()
 		float fMaxFarZ = (vWorldMin - vWorldMax).Mag();
 		if (fFarZ > fMaxFarZ)
 		{
-			DebugCPrint(1,"!!! FarZ for level is too large!  Please adjust the FarZ value in the WorldProperties object.");
+			// RETAIL: Object 0x1016c55a: the message gives the largest.
+			DebugCPrint(1,"!!! FarZ for level is too large!  Please adjust the FarZ value in the WorldProperties object to less than %0.0f.", fMaxFarZ);
 			sprintf(buf, "%f", fMaxFarZ);
 			g_pLTServer->SetGameConVar(szFarZ, buf);
 		}

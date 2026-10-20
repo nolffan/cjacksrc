@@ -201,3 +201,4 @@ Lithtech.exe,0x00473cc0,shelltransfer.obj's second stub (xor al,al; ret 8): afte
 Lithtech.exe,0x00473cd0,shelltransfer.obj's third stub (ret 0x10): after the second at 0x473cc0
 Lithtech.exe,0x0049bc70,the second string getter (mov eax,0x569300; ret): after the one at 0x49bc60 (mov eax,"CLTSoundMgrServer"; ret); enumerated as one row with it
 Lithtech.exe,0x0041ab50,CounterFinal::StartMicro (push ecx; call QueryPerformanceCounter; ret): uncalled; enumerated inside CountMS 0x41ab40 (jmp EndMS)
+Object.lto,0x10135b60,ScatterVolume::SetSFXMessage (push 0; call UpdateSFX 0x10135a10; ret): after the padding that ends UpdateSFX; nothing calls it

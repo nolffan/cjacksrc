@@ -103,11 +103,8 @@ BOOL CWinUtil::CreateDir (char const* strPath)
 
 BOOL CWinUtil::FileExist (char const* strPath)
 {
-	OFSTRUCT ofs;
-	HFILE hFile = OpenFile (strPath, &ofs, OF_EXIST);
-	if (hFile == HFILE_ERROR) return FALSE;
-
-	return TRUE;
+	// RETAIL: Object 0x10167d40: asks for the file's attributes.
+	return GetFileAttributes( strPath ) != (DWORD)-1;
 }
 
 BOOL CWinUtil::CopyDir( char const* pSrc, char const* pDest )
