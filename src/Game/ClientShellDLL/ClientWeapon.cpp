@@ -4471,43 +4471,55 @@ void CClientWeapon::UpdateMuzzleFlash( WeaponState eState, LTVector const &vOffs
 	m_vFlashPos = m_vCamPos + vFlashCameraRelativeOffestInWorldSpace;
 	
 	
-	if( !m_MuzzleFlashFX.IsValid() )
-	{
-		return;
-	}
-
-	// skip everything if we are using the silencer
-	if ( m_bHaveSilencer )
-	{
-		return;
-	}
-
 	// get the object flags
 	uint32 dwFlags;
 	g_pCommonLT->GetObjectFlags( m_hObject, OFT_Flags, dwFlags );
 
 	// if the object is not visible hide it
+	// RETAIL: 0x100254cd: the heat fx goes with the muzzle flash.
 	if ( ! ( dwFlags & FLAG_VISIBLE ) )
 	{
-		m_MuzzleFlashFX.GetInstance()->Hide();
+		if( m_MuzzleFlashFX.IsValid() )
+			m_MuzzleFlashFX.GetInstance()->Hide();
+		if( m_HeatFX.IsValid() )
+			m_HeatFX.GetInstance()->Hide();
 		return;
 	}
 
-	LTFLOAT fCurTime = g_pLTClient->GetTime();
-	LTFLOAT fFlashDuration = m_MuzzleFlashFX.GetInstance()->m_fDuration;
-
-
-	if ( ( fCurTime >= ( m_fFlashStartTime + fFlashDuration ) ) ||
-	     ( g_pPlayerMgr->GetPlayerState() != PS_ALIVE ) ||
-	     ( IsLiquid( g_pPlayerMgr->GetCurContainerCode()) && !m_pWeapon->bUseUWMuzzleFX  ) )
+	// skip the flash if we are using the silencer
+	if( m_MuzzleFlashFX.IsValid() && !m_bHaveSilencer )
 	{
-		m_MuzzleFlashFX.GetInstance()->Hide();
+		LTFLOAT fCurTime = g_pLTClient->GetTime();
+		LTFLOAT fFlashDuration = m_MuzzleFlashFX.GetInstance()->m_fDuration;
+
+		if ( ( fCurTime >= ( m_fFlashStartTime + fFlashDuration ) ) ||
+			 ( g_pPlayerMgr->GetPlayerState() != PS_ALIVE ) ||
+			 ( IsLiquid( g_pPlayerMgr->GetCurContainerCode()) && !m_pWeapon->bUseUWMuzzleFX  ) )
+		{
+			m_MuzzleFlashFX.GetInstance()->Hide();
+		}
+		else
+		{
+			// Align the flash object to the direction the model is facing...
+			m_MuzzleFlashFX.GetInstance()->Show();
+			m_MuzzleFlashFX.GetInstance()->SetPos( m_vFlashPos, m_vFlashOffset );
+		}
 	}
-	else
+
+	// RETAIL: 0x1002557a: an overheated weapon shows its heat fx at the muzzle.
+	if( m_HeatFX.IsValid() )
 	{
-		// Align the flash object to the direction the model is facing...
-		m_MuzzleFlashFX.GetInstance()->Show();
-		m_MuzzleFlashFX.GetInstance()->SetPos( m_vFlashPos, m_vFlashOffset );
+		if ( ( m_fHeat < 1.0f ) ||
+			 ( g_pPlayerMgr->GetPlayerState() != PS_ALIVE ) ||
+			 ( IsLiquid( g_pPlayerMgr->GetCurContainerCode()) ) )
+		{
+			m_HeatFX.GetInstance()->Hide();
+		}
+		else
+		{
+			m_HeatFX.GetInstance()->Show();
+			m_HeatFX.GetInstance()->SetPos( m_vFlashPos, m_vFlashOffset );
+		}
 	}
 }
 

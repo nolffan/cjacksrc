@@ -888,6 +888,13 @@ bool CClientFXMgr::UpdateAllActiveFX(LTBOOL bAppHasFocus)
 		//cache the next pointer in case the instance gets removed
 		pNextNode	= pInstNode->m_pNext;
 
+		// RETAIL: 0x1001d7ca: an instance follows its parent object.
+		if( pInst->m_hParent )
+		{
+			g_pLTClient->GetObjectPos( pInst->m_hParent, &pInst->m_vPos );
+			g_pLTClient->GetObjectRotation( pInst->m_hParent, &pInst->m_rRot );
+		}
+
 		//see if this instance is suspended, if so, just call the suspended update
 		if(UpdateInstanceSuspended(vCameraPos, pInst))
 		{

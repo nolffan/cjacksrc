@@ -35,14 +35,26 @@ static int g_TDMRadioArray[] =
 	IDS_DIALOGUE_33596
 };
 
+// RETAIL: 0x1014bb18
 static int g_DDRadioArray[] =
 {
-	IDS_DIALOGUE_33575,
-	IDS_DIALOGUE_33579,
-	IDS_DIALOGUE_33582,
-	IDS_DIALOGUE_33588,
-	IDS_DIALOGUE_33590,
-	IDS_DIALOGUE_33596
+	IDS_DIALOGUE_10356,
+	IDS_DIALOGUE_10357,
+	IDS_DIALOGUE_10358,
+	IDS_DIALOGUE_10359,
+	IDS_DIALOGUE_10360,
+	IDS_DIALOGUE_10361
+};
+
+// RETAIL: 0x1014bb30
+static int g_DemoRadioArray[] =
+{
+	IDS_DIALOGUE_10338,
+	IDS_DIALOGUE_10339,
+	IDS_DIALOGUE_10340,
+	IDS_DIALOGUE_10337,
+	IDS_DIALOGUE_10341,
+	IDS_DIALOGUE_10342
 };
 
 static GameType eGameType = eGameTypeSingle;
@@ -99,6 +111,8 @@ void CHUDRadio::Update()
 void CHUDRadio::Show(bool bShow)
 {
 	m_bVisible = bShow;
+	// RETAIL: 0x1005f63c
+	Update();
 
 	if (eGameType != g_pGameClientShell->GetGameType())
 	{
@@ -115,6 +129,9 @@ void CHUDRadio::Show(bool bShow)
 					break;
 				case eGameTypeDoomsDay:
 					m_pText[i]->GetColumn(1)->SetString(LoadTempString(g_DDRadioArray[i]));
+					break;
+				case eGameTypeDemolition:
+					m_pText[i]->GetColumn(1)->SetString(LoadTempString(g_DemoRadioArray[i]));
 					break;
 				default:
 					m_pText[i]->GetColumn(1)->SetString(LoadTempString(g_CoopRadioArray[i]));
@@ -145,6 +162,9 @@ void CHUDRadio::Choose(uint8 nChoice)
 		break;
 	case eGameTypeDoomsDay:
 		g_pClientMultiplayerMgr->DoTaunt(nLocalID,g_DDRadioArray[nChoice]);
+		break;
+	case eGameTypeDemolition:
+		g_pClientMultiplayerMgr->DoTaunt(nLocalID,g_DemoRadioArray[nChoice]);
 		break;
 	default:
 		g_pClientMultiplayerMgr->DoTaunt(nLocalID,g_CoopRadioArray[nChoice]);

@@ -16,6 +16,8 @@
 #include "TO2PlayerMgr.h"
 #include "ClientWeaponBase.h"
 #include "ClientWeaponMgr.h"
+#include "CMoveMgr.h"
+#include "VehicleMgr.h"
 
 CHUDWeaponHeat::CHUDWeaponHeat()
 {
@@ -53,9 +55,13 @@ void CHUDWeaponHeat::Render()
 
 void CHUDWeaponHeat::Update()
 {
-	// RETAIL: a vehicle's own weapon (CVehicleMgr's CVehicleWeapon) comes
-	// first when the player rides one; still to come with CVehicleWeapon.
-	IClientWeaponBase *pClientWeapon = g_pPlayerMgr->GetClientWeaponMgr( )->GetCurrentClientWeapon( );
+	// RETAIL: 0x10062280: a vehicle's own weapon comes first when the
+	// player rides one.
+	IClientWeaponBase *pClientWeapon;
+	if( g_pMoveMgr->GetVehicleMgr( )->IsVehiclePhysics( ) && g_pMoveMgr->GetVehicleMgr( )->HasVehicleWeapon( ))
+		pClientWeapon = g_pMoveMgr->GetVehicleMgr( )->GetVehicleWeapon( );
+	else
+		pClientWeapon = g_pPlayerMgr->GetClientWeaponMgr( )->GetCurrentClientWeapon( );
 	if( !pClientWeapon )
 		return;
 
@@ -74,18 +80,18 @@ void CHUDWeaponHeat::Update()
 
 	if( fHeat < 0.5f )
 	{
-		float fR = m_vCool.x + ( m_vWarm.x - m_vCool.x ) * fHeat * 2.0f;
-		float fG = m_vCool.y + ( m_vWarm.y - m_vCool.y ) * fHeat * 2.0f;
-		float fB = m_vCool.z + ( m_vWarm.z - m_vCool.z ) * fHeat * 2.0f;
-		m_Bar.SetColor( SET_ARGB( 0xFF, (uint8)fR, (uint8)fG, (uint8)fB ));
+		LTVector vColor( m_vCool.x + ( m_vWarm.x - m_vCool.x ) * fHeat * 2.0f,
+						 m_vCool.y + ( m_vWarm.y - m_vCool.y ) * fHeat * 2.0f,
+						 m_vCool.z + ( m_vWarm.z - m_vCool.z ) * fHeat * 2.0f );
+		m_Bar.SetColor( SET_ARGB( 0xFF, (uint8)vColor.x, (uint8)vColor.y, (uint8)vColor.z ));
 	}
 	else if( fHeat < 1.0f )
 	{
 		float f = ( fHeat - 0.5f ) * 2.0f;
-		float fR = m_vWarm.x + ( m_vHot.x - m_vWarm.x ) * f;
-		float fG = m_vWarm.y + ( m_vHot.y - m_vWarm.y ) * f;
-		float fB = m_vWarm.z + ( m_vHot.z - m_vWarm.z ) * f;
-		m_Bar.SetColor( SET_ARGB( 0xFF, (uint8)fR, (uint8)fG, (uint8)fB ));
+		LTVector vColor( m_vWarm.x + ( m_vHot.x - m_vWarm.x ) * f,
+						 m_vWarm.y + ( m_vHot.y - m_vWarm.y ) * f,
+						 m_vWarm.z + ( m_vHot.z - m_vWarm.z ) * f );
+		m_Bar.SetColor( SET_ARGB( 0xFF, (uint8)vColor.x, (uint8)vColor.y, (uint8)vColor.z ));
 	}
 	else
 	{

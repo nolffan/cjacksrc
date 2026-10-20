@@ -217,6 +217,7 @@ void CPerformanceMgr::BuildConfigList()
 }
 
 
+// RETAIL: 0x10094e40: every failed check is reported at debug level 1.
 LTBOOL	CPerformanceMgr::IsCurrentConfig(int nCfg,bool bIgnoreResolution)
 {
 	uint32 dwAdvancedOptions = g_pInterfaceMgr->GetAdvancedOptions();
@@ -233,12 +234,12 @@ LTBOOL	CPerformanceMgr::IsCurrentConfig(int nCfg,bool bIgnoreResolution)
 		uint16 nScreenSize = (uint16)GetConsoleInt("screenwidth",640);
 		if (nScreenSize < pCfg->nMinScreenSize) 
 		{
-//			g_pLTClient->CPrint("CPerformanceMgr::IsCurrentConfig(%d) : failed on MinScreenSize",nCfg);
+			DebugCPrint(1,"CPerformanceMgr::IsCurrentConfig(%d) : failed on MinScreenSize",nCfg);
 			return LTFALSE;
 		}
 		if (nScreenSize > pCfg->nMaxScreenSize) 
 		{
-//			g_pLTClient->CPrint("CPerformanceMgr::IsCurrentConfig(%d) : failed on MaxScreenSize",nCfg);
+			DebugCPrint(1,"CPerformanceMgr::IsCurrentConfig(%d) : failed on MaxScreenSize",nCfg);
 			return LTFALSE;
 		}
 	}
@@ -254,7 +255,7 @@ LTBOOL	CPerformanceMgr::IsCurrentConfig(int nCfg,bool bIgnoreResolution)
 			int vsync = !!GetConsoleInt("VSyncOnFlip",1);
 			if (buff != (vsync + 1))
 			{
-//				g_pLTClient->CPrint("CPerformanceMgr::IsCurrentConfig(%d) : failed on %s",nCfg,sSettings[i].szName);
+				DebugCPrint(1,"CPerformanceMgr::IsCurrentConfig(%d) : failed on %s",nCfg,sSettings[i].szName);
 				return LTFALSE;
 			}
 			continue;		
@@ -264,7 +265,7 @@ LTBOOL	CPerformanceMgr::IsCurrentConfig(int nCfg,bool bIgnoreResolution)
 		int n = GetConsoleInt(sSettings[i].szVar,0);
 		if (n != pCfg->nSettings[i])
 		{
-//			g_pLTClient->CPrint("CPerformanceMgr::IsCurrentConfig(%d) : failed on %s",nCfg,sSettings[i].szName);
+			DebugCPrint(1,"CPerformanceMgr::IsCurrentConfig(%d) : failed on %s",nCfg,sSettings[i].szName);
 			return LTFALSE;
 		}
 
@@ -277,7 +278,7 @@ LTBOOL	CPerformanceMgr::IsCurrentConfig(int nCfg,bool bIgnoreResolution)
 		{
 			if (pCfg->nDetails[grp] != GetConsoleInt(sTextureGroups[grp].szVar,0) )
 			{
-//				g_pLTClient->CPrint("CPerformanceMgr::IsCurrentConfig(%d) : failed on %s",nCfg,sTextureGroups[grp].szName);
+				DebugCPrint(1,"CPerformanceMgr::IsCurrentConfig(%d) : failed on %s",nCfg,sTextureGroups[grp].szName);
 				return LTFALSE;
 			}
 		}

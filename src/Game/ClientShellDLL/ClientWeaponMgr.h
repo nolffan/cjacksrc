@@ -78,6 +78,7 @@ public:
 
 	// When the weapon is holstered, draw this weapon as the default.
 	bool            SetDefaultWeapon( uint8 nWeaponId = 0 );
+	uint8           GetDefaultWeaponId() const { return (uint8)m_nDefaultWeaponId; }
 
 
 	// Enable/Disable all the weapons

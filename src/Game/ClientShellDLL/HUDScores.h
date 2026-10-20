@@ -53,6 +53,7 @@ protected:
 	
 	int			m_nDraw;
 	bool		m_bScreen;
+	bool		m_bRefreshScreen;	// RETAIL: +0x1cf5: fill the end screen's scores once
     LTIntPt		m_BasePos;
 	uint8		m_nBaseFontSize;
 	uint32		m_nTextColor;
