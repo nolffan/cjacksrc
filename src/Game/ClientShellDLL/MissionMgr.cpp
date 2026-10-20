@@ -803,24 +803,26 @@ bool CMissionMgr::HandleEndGame( ILTMessage_Read& msg  )
 bool CMissionMgr::FinishExitLevel( )
 {
 	// We already handled the exiting level.
-	if( !m_bExitingLevel )
-		return true;
-
-	m_bExitingLevel = false;
-	m_bExitingMission = false;
-
-	// Tell the server we're done exiting.
-
-	if (m_bServerWaiting)
+	if( m_bExitingLevel )
 	{
-		SendEmptyServerMsg( MID_EXIT_LEVEL, MESSAGE_GUARANTEED );
-	}
+		m_bExitingLevel = false;
+		m_bExitingMission = false;
 
-	// Set our new level information.
-	if( !SetNewLevel( m_sNewWorldName.c_str( )) || !SetLoadingLevel( ))
-	{
-		g_pInterfaceMgr->LoadFailed( );
-		return false;
+		// Tell the server we're done exiting.
+
+		if (m_bServerWaiting)
+		{
+			SendEmptyServerMsg( MID_EXIT_LEVEL, MESSAGE_GUARANTEED );
+		}
+
+		// Set our new level information.
+		// RETAIL: 0x10088e98: no new world's name fails too.
+		char const* pszNewWorldName = m_sNewWorldName.c_str( );
+		if( !pszNewWorldName || !pszNewWorldName[0] || !SetNewLevel( pszNewWorldName ) || !SetLoadingLevel( ))
+		{
+			g_pInterfaceMgr->LoadFailed( );
+			return false;
+		}
 	}
 
 	return true;
