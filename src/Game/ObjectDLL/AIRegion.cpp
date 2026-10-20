@@ -314,7 +314,7 @@ const LTVector& AIRegion::GetExtentsMin() const
 
 // ----------------------------------------------------------------------- //
 
-AINodeSearch* AIRegion::FindNearestSearchNode(const LTVector& vPos, LTFLOAT fCurTime) const
+AINodeSearch* AIRegion::FindNearestSearchNode(CAI* pAI, const LTVector& vPos, LTFLOAT fCurTime) const
 {
 	_ASSERT(IsSearchable());
 
@@ -334,7 +334,7 @@ AINodeSearch* AIRegion::FindNearestSearchNode(const LTVector& vPos, LTFLOAT fCur
 
 		if ( fDistanceSqr < fMinDistanceSqr )
 		{
-			if ( kStatus_Ok == pNode->GetStatus(LTNULL, vPos, LTNULL) )
+			if ( kStatus_Ok == pNode->GetStatus(pAI, vPos, LTNULL) )
 			{
 				fMinDistanceSqr = fDistanceSqr;
 				pClosestNode = pNode;

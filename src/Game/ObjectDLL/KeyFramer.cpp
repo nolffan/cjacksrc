@@ -639,8 +639,6 @@ bool KeyFramer::CreateObjectList()
 	// Make sure our object and key index are valid...
 
     const char* pNames = m_sObjectName.c_str();
-	if (!pNames || !pNames[0])
-		return false;
 
 
 	// Find all the objects with the given names (m_hstrObjectName may be

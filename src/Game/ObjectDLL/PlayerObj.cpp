@@ -5402,7 +5402,7 @@ LTBOOL CPlayerObj::DoActivate(CActivationData* pData)
 
 	// If we're on a vehicle, time to get off...
 
-	if( (m_ePPhysicsModel != PPM_NORMAL) && (m_ePPhysicsModel != PPM_LURE) )
+	if( m_ePPhysicsModel == PPM_SNOWMOBILE )	// RETAIL: Object 0x1010c711
 	{
 		SetPhysicsModel(PPM_NORMAL);
 	    return LTFALSE;

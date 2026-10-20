@@ -393,9 +393,12 @@ SURFACE::SURFACE()
 
 SURFACE::~SURFACE()
 {
-	for (uint32 i=0; i < aVehicleTypes.size(); i++)
+	// RETAIL: Object 0x10151040 deletes and erases from the front.
+	std::vector<SURFACEVEHICLE*>::iterator iter = aVehicleTypes.begin( );
+	while( iter != aVehicleTypes.end( ))
 	{
-		debug_delete(aVehicleTypes[i]);
+		debug_delete( *iter );
+		aVehicleTypes.erase( iter );
 	}
 	aVehicleTypes.clear();
 }
