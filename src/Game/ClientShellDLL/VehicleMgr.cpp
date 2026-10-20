@@ -1442,7 +1442,14 @@ bool CVehicleMgr::OnModelKey(HLOCALOBJ hObj, ArgList* pArgs)
 
 bool CVehicleMgr::AllowHeadBob() const
 {
-	return ( m_ePPhysicsModel != PPM_LURE );
+	switch( m_ePPhysicsModel )
+	{
+		case PPM_LURE:
+			return false;
+
+		default:
+			return true;
+	}
 }
 
 // ----------------------------------------------------------------------- //

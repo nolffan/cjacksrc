@@ -276,10 +276,17 @@ void AimMagnet::ResolveTarget( )
 
 AimMagnet::~AimMagnet()
 {
-	AimMagnetList::iterator iter = std::find( m_lstAimMagnets.begin( ), m_lstAimMagnets.end( ), this );
-	if( iter != m_lstAimMagnets.end( ))
+	// RETAIL: Object 0x10059a80: a search loop that erases what it finds.
+	AimMagnetList::iterator iter = m_lstAimMagnets.begin( );
+	while( iter != m_lstAimMagnets.end( ))
 	{
-		m_lstAimMagnets.erase( iter );
+		if( *iter == this )
+		{
+			m_lstAimMagnets.erase( iter );
+			break;
+		}
+
+		iter++;
 	}
 }
 

@@ -191,6 +191,8 @@ void CWeaponChooser::Update()
 			if (m_AutoSwitchTimer.Stopped())
 			{
 				NextWeapon(-1);
+				// RETAIL: 0x1010dbed: each step switches the weapon.
+				g_pPlayerMgr->ChangeWeapon(m_nWeapon);
 				m_AutoSwitchTimer.Start(g_vtChooserAutoSwitchFreq.GetFloat());
 			}
 		}
@@ -206,6 +208,7 @@ void CWeaponChooser::Update()
 			if (m_AutoSwitchTimer.Stopped())
 			{
 				PrevWeapon();
+				g_pPlayerMgr->ChangeWeapon(m_nWeapon);	// RETAIL: 0x1010dbaf
 				m_AutoSwitchTimer.Start(g_vtChooserAutoSwitchFreq.GetFloat());
 			}
 		}

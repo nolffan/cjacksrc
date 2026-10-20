@@ -22,6 +22,7 @@ CHUDCrosshair*		g_pCrosshair = LTNULL;
 CHUDCompass*		g_pCompass = LTNULL;
 CHUDObjectives*		g_pObjectives = LTNULL;
 CHUDRadio*			g_pRadio = LTNULL;
+CHUDDistance*		g_pHUDDistance = LTNULL;
 
 inline void CHUDItem::SetRenderState()
 {
@@ -89,6 +90,7 @@ LTBOOL CTO2HUDMgr::Init()
 	g_pCompass = &m_Compass;
 	g_pObjectives = &m_Objectives;
 	g_pRadio = &m_Radio;
+	g_pHUDDistance = &m_Distance;	// RETAIL: 0x100fa729
 
 	m_itemArray.push_back(&m_WpnChooser);
 	m_itemArray.push_back(&m_AmmoChooser);

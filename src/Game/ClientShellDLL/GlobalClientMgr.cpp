@@ -221,6 +221,12 @@ void CGlobalClientMgr::Term()
 		g_pTriggerTypeMgr->Term();
 	}
 
+	// RETAIL: 0x1004e746
+	if( g_pVehicleButeMgr )
+	{
+		g_pVehicleButeMgr->Term();
+	}
+
 	CGlobalMgr::Term( );
 }
 

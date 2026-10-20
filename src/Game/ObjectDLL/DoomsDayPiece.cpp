@@ -64,7 +64,7 @@ LTRESULT CDoomsDayPiecePlugin::PreHook_EditStringList(
 	{
 		// Fill the list with our piece types...
 
-		for( int i = 0; i < kDoomsDay_MAXTYPES; i++ )
+		for( uint32 i = 0; i < kDoomsDay_MAXTYPES; i++ )	// RETAIL: Object 0x100c8ab0: unsigned
 		{
 			strcpy( aszStrings[(*pcStrings)++], c_aszDDPieceTypes[i] );
 		}

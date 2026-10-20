@@ -28,10 +28,10 @@ too, since Contract J.A.C.K. was built from the same code: check each
 against the retail binary before listing it. Those Contract J.A.C.K. no
 longer has go at the end, so nobody looks again.
 
-**Fixed so far** (in the modern build): eighteen -- the two GameSpy handle
+**Fixed so far** (in the modern build): nineteen -- the two GameSpy handle
 bugs (MODERN.md GS-1), GetCommandName (GAME-1), the chassis's update
 (GAME-2), the join screen's deadlock (GAME-3), a body's spears
-(GAME-4), the world shaders' section order (EN-1), ShowVersionInfo (EN-3),
+(GAME-4), the message queue's lost message (GAME-5), the world shaders' section order (EN-1), ShowVersionInfo (EN-3),
 the music thread's handle (EN-4), a failed transition segment (EN-5),
 batched screen quads' colours (EN-6), SoundSys's null Term (EN-7),
 SetCamera's unset viewport (EN-8), the launcher's path overrun (APPS-1),
@@ -196,6 +196,21 @@ flags, or none. The spears keep their touch notify until they're
 removed, so nothing shows in the game.
 
 Fixed in the modern build: src/Game/ObjectDLL/Body.cpp, MODERN.md GAME-4.
+
+### A message queue with no active messages writes through NULL
+
+CShell.dll 0x1005a820 (CHUDMessageQueue::AddMessage,
+src/Game/ClientShellDLL/HUDMessageQueue.cpp). To show a message the queue
+reuses its oldest active message; when it has none it allocates a new
+CHUDMessage but drops the pointer, then creates and shows the message
+through NULL. Init() fills the list with MaxMessages messages and leaves it
+empty only when every one fails to create, so the game should never reach
+it; when it does, the first chat or pickup message crashes the client and
+leaks the allocation.
+
+Fixed in the modern build: src/Game/ClientShellDLL/HUDMessageQueue.cpp,
+MODERN.md GAME-5.
+
 ### The ShowVersionInfo console command calls a null function
 
 Lithtech.exe 0x41a360 (con_ShowVersionInfo, src/Engine/runtime/client/src/

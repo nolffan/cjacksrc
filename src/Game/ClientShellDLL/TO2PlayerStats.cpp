@@ -1575,6 +1575,7 @@ void CTO2PlayerStats::DropInventory(LTBOOL bRemoveGear)
 		}
 
 		m_Keys.Clear();
+		g_pHUDCarrying->ClearKeys();	// RETAIL: 0x100fcb05
 
 	}
 
@@ -1644,6 +1645,7 @@ void CTO2PlayerStats::ClearMissionInfo()
 	ResetObjectives();
 	m_nDamage = 0;
 	m_Keys.Clear();
+	g_pHUDCarrying->ClearKeys();	// RETAIL: 0x100fcc00
 	m_IntelList.Clear();
 }
 

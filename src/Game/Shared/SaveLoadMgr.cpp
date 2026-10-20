@@ -300,18 +300,26 @@ bool CSaveLoadMgr::ReadSaveINI( const char *pKey, char* pszSaveTitle, uint32 nSa
     char* pWorldName = strtok(LTNULL,"|");
 	char* pTimeStr = strtok(LTNULL,"|");
 
-	if( pszSaveTitle && nSaveTitleSize > 0 && pTitle )
+	// RETAIL: CShell 0x100b50f5, Object 0x10132530: a field that was asked
+	// for and is missing or empty fails the read.
+	if( pszSaveTitle && nSaveTitleSize > 0 )
 	{
+		if( !pTitle || !pTitle[0] )
+			return false;
 		strncpy( pszSaveTitle, pTitle, nSaveTitleSize );
 		pszSaveTitle[nSaveTitleSize-1] = 0;
 	}
-	if( pszWorldName && nWorldNameSize > 0 && pWorldName )
+	if( pszWorldName && nWorldNameSize > 0 )
 	{
+		if( !pWorldName || !pWorldName[0] )
+			return false;
 		strncpy( pszWorldName, pWorldName, nWorldNameSize );
 		pszWorldName[nWorldNameSize-1] = 0;
 	}
-	if( pSaveTime && pTimeStr )
+	if( pSaveTime )
 	{
+		if( !pTimeStr || !pTimeStr[0] )
+			return false;
 		*pSaveTime = ( time_t )atol( pTimeStr );
 	}
 

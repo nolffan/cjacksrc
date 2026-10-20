@@ -523,7 +523,7 @@ void KeyFramer::GoInActive()
 //
 // ----------------------------------------------------------------------- //
 
-LTBOOL KeyFramer::CreateKeyList()
+bool KeyFramer::CreateKeyList()
 {
 	// RETAIL: Object 0x100eb090
 
