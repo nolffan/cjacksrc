@@ -104,17 +104,18 @@ class CAnimationProps
 
 		// Comparison
 
-		bool operator==(const CAnimationProps& Props) const
+		// RETAIL: Object 0x10082330..0x10082420 return LTBOOLs.
+		LTBOOL operator==(const CAnimationProps& Props) const
 		{
 			for ( uint32 iProp = 0 ; iProp < kAPG_Count ; ++iProp )
 			{
 				if ( !(m_aProps[iProp] == Props.m_aProps[iProp]) )
 				{
-					return false;
+					return LTFALSE;
 				}
 			}
 
-			return true;
+			return LTTRUE;
 		}
 
 		// LessThan is used for sorting props in STL maps.
@@ -136,30 +137,32 @@ class CAnimationProps
 			return false;
 		}
 
-		bool Contains(const CAnimationProps& Props) const
+		// RETAIL: Object 0x10082330..0x10082420 return LTBOOLs.
+		LTBOOL Contains(const CAnimationProps& Props) const
 		{
 			for ( uint32 iProp = 0 ; iProp < kAPG_Count ; iProp++ )
 			{
 				if ( !m_aProps[iProp].Contains(Props.m_aProps[iProp]) )
 				{
-					return false;
+					return LTFALSE;
 				}
 			}
 
-			return true;
+			return LTTRUE;
 		}
 
-		bool Disjoint(const CAnimationProps& Props) const
+		// RETAIL: Object 0x10082330..0x10082420 return LTBOOLs.
+		LTBOOL Disjoint(const CAnimationProps& Props) const
 		{
 			for ( uint32 iProp = 0 ; iProp < kAPG_Count ; iProp++ )
 			{
 				if ( !m_aProps[iProp].Disjoint(Props.m_aProps[iProp]) )
 				{
-					return false;
+					return LTFALSE;
 				}
 			}
 
-			return true;
+			return LTTRUE;
 		}
 
 		// Simple accessors

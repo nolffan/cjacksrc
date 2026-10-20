@@ -47,7 +47,7 @@ class GunMount : public GameBase
 			ePostFiring,
 		};
 
-		LTBOOL			ReadProp( ObjectCreateStruct *pStruct );
+		bool			ReadProp( ObjectCreateStruct *pStruct );	// RETAIL: Object 0x100e5077 returns a bool
 		void			InitialUpdate( );
 		void			Update( );
 
