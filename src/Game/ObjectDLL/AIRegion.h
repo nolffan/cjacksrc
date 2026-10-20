@@ -51,7 +51,7 @@ class AIRegion : public BaseClass
 		void RemoveSearcher(CAI* pAI);
 		HSTRING GetPostSearchMsg() { return m_cPostSearchMsgs >= 1 ? m_ahstrPostSearchMsgs[--m_cPostSearchMsgs] : LTNULL; }
 		LTBOOL IsSearchable() const { return m_cSearchNodes > 0; }
-		AINodeSearch* FindNearestSearchNode(const LTVector& vPos, LTFLOAT fCurTime) const;
+		AINodeSearch* FindNearestSearchNode(CAI* pAI, const LTVector& vPos, LTFLOAT fCurTime) const;	// RETAIL: Object 0x1006d000 takes the AI
 
 		uint32			GetNumSearchNodes() const { return m_cSearchNodes; }
 		AINodeSearch*	GetSearchNode(uint32 iNode) { return ( iNode < m_cSearchNodes ) ? m_apSearchNodes[iNode] : LTNULL; }
