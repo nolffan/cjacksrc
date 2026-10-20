@@ -745,6 +745,13 @@ void CGameServerShell::OnRemoveClient(HCLIENT hClient)
 	// Tell the scmd about it.
 	ScmdServer::Instance( ).OnRemoveClient( hClient );
 
+	// RETAIL: Object 0x100de035: GameSpy releases the client's CD key.
+	if( m_pGameSpyServer )
+	{
+		uint32 nClientId = g_pLTServer->GetClientID( hClient );
+		m_pGameSpyServer->ReleaseCDKey( nClientId );
+	}
+
 	// Remove this client from our list of clients.
 	ClientDataList::iterator iter = m_ClientDataList.begin( );
 	for( ; iter != m_ClientDataList.end( ); iter++ )
@@ -822,7 +829,8 @@ LPBASECLASS	CGameServerShell::OnClientEnterWorld(HCLIENT hClient)
     CPlayerObj* pPlayer			= LTNULL;
 	ModelId		ePlayerModelId	= eModelIdInvalid;
 
-	g_pPhysicsLT->SetStairHeight( g_StairStepHeight.GetFloat() );
+	// RETAIL: Object 0x100de0c0 leaves the stair height to
+	// OnServerInitialized.
 
 	// This will be filled in with clientdata for mp games.
 	NetClientData ncd;
@@ -892,8 +900,9 @@ LPBASECLASS	CGameServerShell::OnClientEnterWorld(HCLIENT hClient)
 	}
 
 	// RETAIL: Object 0x100de246: the client hears the other players'
-	// weapon sound loops.
+	// weapon sound loops.  Retail asks for the first client twice.
 	HCLIENT hOtherClient = g_pLTServer->GetNextClient( LTNULL );
+	hOtherClient = g_pLTServer->GetNextClient( LTNULL );
 	while( hOtherClient )
 	{
 		CPlayerObj* pOtherPlayer = dynamic_cast< CPlayerObj* >(( LPBASECLASS )g_pLTServer->GetClientUserData( hOtherClient ));
@@ -3260,7 +3269,7 @@ GameStartPoint* CGameServerShell::FindStartPoint(CPlayerObj* pPlayer)
 
 				if( !bSafe )
 				{
-					g_pLTServer->CPrint( "No Team start point for team (%i)!", pPlayer ? pPlayer->GetTeamID() : INVALID_TEAM );
+					DebugCPrint( 1, "No Team start point for team (%i)!", pPlayer ? pPlayer->GetTeamID() : INVALID_TEAM );
 					
 					nIndex = GetRandom(0,1);
 					bool bSafe = false;

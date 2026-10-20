@@ -3006,8 +3006,10 @@ void CVehicleMgr::HandleCollision()
 		m_fAccelStart = -1.0f;
 
 		// Reset the ani/sounds...
+		// RETAIL: 0x1010b81c. Not the ani while the vehicle's weapon fires.
 
-		PlayVehicleAni("Idle_0", LTFALSE, LTTRUE);
+		if( !m_bHasVehicleWeapon || m_VehicleWeapon.GetState() != W_FIRING )
+			PlayVehicleAni("Idle_0", LTFALSE, LTTRUE);
 		KillAllVehicleSounds(LTNULL);
 
 		
@@ -3429,59 +3431,38 @@ static inline float LimitToPosNegPi( float fAngle )
 }
 
 
+// RETAIL: 0x10107ed0. Contract J.A.C.K. turns the camera by the mouse's
+// deltas in the lure's own Euler angles: the yaw slows towards straight up
+// or down, the limits apply to the difference from the lure, and the
+// pitch stops short of vertical.
 void CVehicleMgr::CalculateLureVehicleRotation(LTVector & vPlayerPYR,
-										   LTVector & vPYR )
+										   LTVector & vPYR, LTFLOAT fYawDelta, LTFLOAT fPitchDelta )
 {
 	// Get the playerlurefx.  It has all of the data about the lure.
 	PlayerLureFX* pPlayerLureFX = PlayerLureFX::GetPlayerLureFX( m_nPlayerLureId );
 	if( !pPlayerLureFX )
-	{
-		ASSERT( !"CVehicleMgr::CalculateLureVehicleRotation: Missing PlayerLureFX." );
 		return;
-	}
-/*
-	// Check if the camera has unlimited freedom.
-	if( pPlayerLureFX->GetCameraFreedom( ) == kPlayerLureCameraFreedomUnlimited )
-	{
-		// Use the camera's euler angles as the object's euler angles.
-		vPlayerPYR = vPYR;
 
-		// Don't allow pitch, though.
-		vPlayerPYR.x = 0.0f;
-
-		return;
-	}
-
-*/	// Get the client player object.
+	// Get the client player object.
 	HOBJECT hObj = g_pMoveMgr->GetObject( );
 	if( !hObj )
-	{
-		ASSERT( !"CVehicleMgr::CalculateLureVehicleRotation:  Missing client-side player object." );
 		return;
-	}
 
 	// Get the rotation of the client object, which has been set by MoveToLure.
-	// We need to rotation to calculate the euler angles for the restricted camera.
-    LTRotation rRot;
+	LTRotation rRot;
 	g_pLTClient->GetObjectRotation( hObj, &rRot );
 
-	// Get the yaw for the restricted rotation.
-	LTVector vForward = rRot.Forward( );
-	vForward.Normalize( );
-	float fYaw = ( float )atan2( vForward.x, vForward.z );
+	// The player's euler angles are the lure's.
+	EulerAngles EA = Eul_FromQuat( rRot, EulOrdYXZr );
+	vPlayerPYR.y = EA.x;
+	vPlayerPYR.x = EA.y;
+	vPlayerPYR.z = EA.z;
 
-	// Figure out the length of the foward vector projected on the xz plane.  This
-	// is needed because Euler angles are calculated cummulatively, not just based
-	// on the global coordinate axis.
-	float fXZLen = ( float )sqrt( 1.0f - vForward.y * vForward.y );
-
-	// Use xzlen to find out the pitch.
-	float fPitch = -( float )atan2( vForward.y, fXZLen );
-
-	// Set the player's euler angles.  Don't allow roll.
-	vPlayerPYR.x = fPitch;
-	vPlayerPYR.y = fYaw;
-	vPlayerPYR.z = 0.0f;
+	// Where the camera was, and where the mouse takes it.
+	float fOldPitch = vPYR.x - fPitchDelta;
+	float fOldYaw = vPYR.y - fYawDelta;
+	LTVector vNewPYR = vPYR;
+	vNewPYR.y = fOldYaw + ( MATH_HALFPI - ( float )fabs( vNewPYR.x )) * fYawDelta * ( 1.0f / MATH_HALFPI );
 
 	// Check if the camera has unlimited freedom.
 	if( pPlayerLureFX->GetCameraFreedom( ) != kPlayerLureCameraFreedomUnlimited )
@@ -3491,58 +3472,46 @@ void CVehicleMgr::CalculateLureVehicleRotation(LTVector & vPlayerPYR,
 		float fPitchMin = 0.0f;
 		float fYawMax = 0.0f;
 		float fYawMin = 0.0f;
-		switch( pPlayerLureFX->GetCameraFreedom( ))
+		if( pPlayerLureFX->GetCameraFreedom( ) == kPlayerLureCameraFreedomLimited )
 		{
-			case kPlayerLureCameraFreedomLimited:
-				// Convert the left/right/up/down angles to min/max's in radians.
-				pPlayerLureFX->GetLimitedRanges( fYawMin, fYawMax, fPitchMax, fPitchMin );
+			// Convert the left/right/up/down angles to min/max's in radians.
+			pPlayerLureFX->GetLimitedRanges( fYawMin, fYawMax, fPitchMax, fPitchMin );
 
-				// Convert over to radians.  Have to negate the values for pitch since it 
-				// works opposite intuitive values.
-				fYawMin = ( fYawMin * MATH_PI ) / 180.0f;
-				fYawMax = ( fYawMax * MATH_PI ) / 180.0f;
-				fPitchMax = ( -fPitchMax * MATH_PI ) / 180.0f;
-				fPitchMin = ( -fPitchMin * MATH_PI ) / 180.0f;
-				break;
-			case kPlayerLureCameraFreedomNone:
-				fPitchMax = 0.0f;
-				fPitchMin = 0.0f;
-				fYawMax = 0.0f;
-				fYawMin = 0.0f;
-				break;
-			default:
-				ASSERT( !"CVehicleMgr::CalculateLureVehicleRotation: Invalid camera freedom enum." );
-				break;
+			// Convert over to radians.  Have to negate the values for pitch since it 
+			// works opposite intuitive values.
+			fYawMin = ( fYawMin * MATH_PI ) / 180.0f;
+			fYawMax = ( fYawMax * MATH_PI ) / 180.0f;
+			fPitchMax = ( -fPitchMax * MATH_PI ) / 180.0f;
+			fPitchMin = ( -fPitchMin * MATH_PI ) / 180.0f;
 		}
 
-		// Clamp the pitch and yaw.  Don't allow roll, since the camera can't roll anyway.
-		// Make sure the differences are between -PI and PI so they are usable.  Otherwise
-		// we could think we have a large difference with say -PI and PI, which looks
-		// like a difference of 2PI, when it's actually zero.
-		LTVector vDiff = vPYR - vPlayerPYR;
-		vDiff.x = LimitToPosNegPi( vDiff.x );
-		vDiff.y = LimitToPosNegPi( vDiff.y );
-		vDiff.x = Clamp( vDiff.x, fPitchMin, fPitchMax );
-		vDiff.y = Clamp( vDiff.y, fYawMin, fYawMax );
-		vDiff.z = 0.0f;
+		// Clamp the pitch and yaw to the lure's.  Make sure the differences are
+		// between -PI and PI so they are usable.
+		LTVector vDiff;
+		vDiff.x = vNewPYR.x - vPlayerPYR.x;
+		vDiff.y = vNewPYR.y - vPlayerPYR.y;
+		vDiff.x = Clamp( LimitToPosNegPi( vDiff.x ), fPitchMin, fPitchMax );
+		vDiff.y = Clamp( LimitToPosNegPi( vDiff.y ), fYawMin, fYawMax );
 
 		// Set the new camera euler angles.
-		vPYR = vPlayerPYR + vDiff;
+		vNewPYR.x = vDiff.x + vPlayerPYR.x;
+		vNewPYR.y = vDiff.y + vPlayerPYR.y;
 	}
 
-	// Set the camera roll to lure's roll.
-	LTRotation	rPlayerRot( vPlayerPYR.x, vPlayerPYR.y, vPlayerPYR.z );
-	LTVector	vPlayerF = rPlayerRot.Forward();
-	vPlayerF.y = 0.0f;
-	vPlayerF.Normalize();
+	// Turn the old camera rotation by the change.
+	LTRotation rOld( fOldPitch, fOldYaw, vPlayerPYR.z );
+	float fPitch = vNewPYR.x;
+	if( fPitch <= -DEG2RAD( 76.5f ))
+		fPitch = -DEG2RAD( 76.5f );
+	else if( fPitch > DEG2RAD( 76.5f ))
+		fPitch = DEG2RAD( 76.5f );
+	LTRotation rDelta( fPitch - fOldPitch, vNewPYR.y - fOldYaw, 0.0f );
+	LTRotation rNew = rOld * rDelta;
 
-	float fAmount;
-	float fPitchPercent;
-	float fRollPercent;
-	GetContouringInfo( vPlayerF, rRot.Up( ), fAmount, fPitchPercent, fRollPercent );
-
-	vPYR.z = fAmount * fRollPercent;
-
+	EulerAngles EANew = Eul_FromQuat( rNew, EulOrdYXZr );
+	vPYR.y = EANew.x;
+	vPYR.x = EANew.y;
+	vPYR.z = EANew.z;
 }
 
 // ----------------------------------------------------------------------- //
@@ -3554,7 +3523,7 @@ void CVehicleMgr::CalculateLureVehicleRotation(LTVector & vPlayerPYR,
 // ----------------------------------------------------------------------- //
 
 void CVehicleMgr::CalculateVehicleRotation(LTVector & vPlayerPYR,
-										   LTVector & vPYR, LTFLOAT fYawDelta)
+										   LTVector & vPYR, LTFLOAT fYawDelta, LTFLOAT fPitchDelta)
 {
 	// Do movement based on physics model.
 	switch( m_ePPhysicsModel )
@@ -3566,7 +3535,7 @@ void CVehicleMgr::CalculateVehicleRotation(LTVector & vPlayerPYR,
 			break;
 
 		case PPM_LURE:
-			CalculateLureVehicleRotation( vPlayerPYR, vPYR );
+			CalculateLureVehicleRotation( vPlayerPYR, vPYR, fYawDelta, fPitchDelta );
 			break;
 
 		case PPM_NORMAL:

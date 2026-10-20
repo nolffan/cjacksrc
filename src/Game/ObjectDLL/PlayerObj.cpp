@@ -2449,7 +2449,8 @@ void CPlayerObj::UpdateCommands()
 {
 	if (!GetClient( ) ) return;
 
-	if ( m_bAllowInput && !m_bChatting )
+	// RETAIL: Object 0x1010af81: a chatting player still animates.
+	if ( m_bAllowInput )
 	{
 		// Posture
 		if (IsCarryingHeavyObject())
@@ -2546,7 +2547,13 @@ void CPlayerObj::UpdateCommands()
 
 		if ( m_ePPhysicsModel == PPM_SNOWMOBILE )
 		{
-			m_Animator.SetMain(CAnimatorPlayer::eSnowmobile);
+			// RETAIL: Object 0x1010b16a: the vehicle says whether the player
+			// rides a snowmobile or a motorcycle.
+			VEHICLEBUTES* pVehicle = g_pVehicleButeMgr->GetVehicle( m_nVehicleId );
+			if( pVehicle )
+			{
+				m_Animator.SetMain( (CAnimatorPlayer::Main)( CAnimatorPlayer::eSnowmobile + ( pVehicle->bMotorcycle ? 1 : 0 )));
+			}
 		}
 		else if ( m_nMotionStatus != MS_NONE && ((GetControlFlags() & BC_CFLG_DUCK) == 0) )
 		{
@@ -4437,6 +4444,13 @@ void CPlayerObj::AcquireDefaultWeapon()
 	cClientMsg.Writeuint8(0);
 	cClientMsg.Writefloat(0.0f);
 	g_pLTServer->SendToClient(cClientMsg.Read( ), GetClient( ), MESSAGE_GUARANTEED);
+
+	// RETAIL: Object 0x1011020a: the player gets the holster weapon too.
+	WEAPON const* pHolster = g_pWeaponMgr->GetHolsterWeapon( );
+	if( pHolster )
+	{
+		m_pPlayerAttachments->ObtainWeapon( pHolster->nId, AMMO_DEFAULT_ID, -1, LTTRUE );
+	}
 }
 
 // ----------------------------------------------------------------------- //

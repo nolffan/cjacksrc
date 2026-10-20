@@ -27,6 +27,7 @@
 #include "GadgetDisabler.h"
 #include "VehicleMgr.h"
 #include "ChassisPieceFX.h"
+#include "ChassisFX.h"
 
 VarTrack	g_vtActivationDistance;
 VarTrack	g_vtReviveDistance;
@@ -164,7 +165,8 @@ void CTargetMgr::Update()
 			m_bSearchTarget = true;
 			SetTargetStringID(IDS_TARGET_SEARCHING);
 			
-			float fDistAway = 10000.0f;
+			// RETAIL: 0x100f7d88. The distance is not set first.
+			float fDistAway;
 			CheckForIntersect(fDistAway);
 			
 			return;
@@ -234,21 +236,17 @@ void CTargetMgr::Update()
 
 	bool bPlayersOnly = g_pPlayerMgr->IsPlayerDead() || (g_pPlayerMgr->GetMoveMgr()->GetVehicleMgr()->CanShowCrosshair() ? false : true);
 
-
 	if (!bPlayersOnly)
 	{
 		//special case handling for bodies
 		if (pBody || pCharacter)
 		{
+			// RETAIL: 0x100f7fe2. Contract J.A.C.K. glows what can be moved or
+			// searched, and a body or character offers search, move or wake.
 			bool bCanSearch = !!(dwUserFlags & USRFLG_CAN_SEARCH);
+			m_bCanActivate = false;
 			if (pBody)
 			{
-				if (fDistAway <= g_vtActivationDistance.GetFloat())
-				{
-					// Make target glow, so it stands out more...
-					g_pCommonLT->SetObjectFlags(m_hTarget, OFT_User, USRFLG_GLOW, USRFLG_GLOW);
-				}
-				
 				if (pBody->CanBeRevived() && fDistAway <= g_vtReviveDistance.GetFloat() && IsRevivePlayerGameType( ))
 				{
 					// Get the client information of the body and us.
@@ -274,6 +272,9 @@ void CTargetMgr::Update()
 							m_bCanActivate = true;  //!CheckForCharacters(vObjPos, vDims, pBody->GetClientId());
 							m_bMoveTarget = true;
 							m_ActivationData.m_nType = MID_ACTIVATE_REVIVE;
+
+							// Make target glow, so it stands out more...
+							g_pCommonLT->SetObjectFlags(m_hTarget, OFT_User, USRFLG_GLOW, USRFLG_GLOW);
 						}
 						else
 						{
@@ -281,18 +282,23 @@ void CTargetMgr::Update()
 							m_bCanActivate = false;
 							m_bMoveTarget = false;
 							LTStrCpy(m_szString, pCI->sName.c_str(), ARRAY_LEN(m_szString));
-
 						}
-
-						return;
 					}
-
 				}
 				else
 				{
 					m_bMoveTarget = (pBody->CanBeCarried() && g_pPlayerMgr->CanDropCarriedObject());
 				}
 
+				// Make target glow, so it stands out more...
+				if (m_bMoveTarget || bCanSearch)
+					g_pCommonLT->SetObjectFlags(m_hTarget, OFT_User, USRFLG_GLOW, USRFLG_GLOW);
+
+				if (!m_bSearchTarget && !m_bCanActivate && !m_bMoveTarget)
+				{
+					ClearTargetInfo();
+					return;
+				}
 			}
 			else if (pCharacter)
 			{
@@ -328,11 +334,6 @@ void CTargetMgr::Update()
 
 				return;
 			}
-			else if (pBody)
-			{
-				return;
-			}
-
 		}
 		else
 		{
@@ -356,18 +357,17 @@ void CTargetMgr::Update()
 	}
 
 	//are we aiming at a person?
+	// RETAIL: 0x100f7f8a. The character is the one whose hit box was hit.
 	if (dwUserFlags & USRFLG_CHARACTER)
 	{
-		CCharacterFX* const pFX = (CCharacterFX*)g_pGameClientShell->GetSFXMgr()->FindSpecialFX(SFX_CHARACTER_ID, m_hTarget);
-
 		// All we care about if we're on a vehicle (or if we are dead) is the Multiplayer check below...
 
 		if (!bPlayersOnly)
 		{
 			//display debug info if we have any 
-			if( pFX && pFX->GetInfoString() && *pFX->GetInfoString() )
+			if( pCharacter && pCharacter->GetInfoString() && *pCharacter->GetInfoString() )
 			{
-				SAFE_STRCPY(m_szDebugString,pFX->GetInfoString());			
+				SAFE_STRCPY(m_szDebugString,pCharacter->GetInfoString());			
 			}
 			else
 			{
@@ -388,9 +388,9 @@ void CTargetMgr::Update()
 		// This is the only thing we care about if we're dead or on a vehicle...(we care
 		// if we're off a vehicle too)
 
-		if (IsMultiplayerGame() && pFX && pFX->m_cs.bIsPlayer )
+		if (IsMultiplayerGame() && pCharacter && pCharacter->m_cs.bIsPlayer )
 		{
-			uint32 nId = pFX->m_cs.nClientID;
+			uint32 nId = pCharacter->m_cs.nClientID;
 			CClientInfoMgr* pCIMgr = g_pInterfaceMgr->GetClientInfoMgr();
 			CLIENT_INFO* pCI = pCIMgr->GetClientByID(nId);
 
@@ -398,6 +398,7 @@ void CTargetMgr::Update()
 			{
 				m_nString = 0;
 				SAFE_STRCPY(m_szString,pCI->sName.c_str());
+				m_bCanActivate = true;
 
 				if (IsTeamGameType())
 				{
@@ -409,34 +410,36 @@ void CTargetMgr::Update()
 	
 		// All we care about if we're dead or on a vehicle is the Multiplayer check above...
 
-		if (!bPlayersOnly)
+		if (bPlayersOnly)
 		{
-			if( (fDistAway <= g_vtTargetDistance.GetFloat()) && pFX )
+			ClearTargetInfo();
+			return;
+		}
+
+		if( (fDistAway <= g_vtTargetDistance.GetFloat()) && pCharacter )
+		{
+			// If a nameid was specified for the model display the name...
+
+			uint16 nNameId = g_pModelButeMgr->GetModelNameId( pCharacter->m_cs.eModelId );
+			if( nNameId != (uint16)-1 )
 			{
-				// If a nameid was specified for the model display the name...
-
-				uint16 nNameId = g_pModelButeMgr->GetModelNameId( pFX->m_cs.eModelId );
-				if( nNameId != (uint16)-1 )
+				if( nNameId > 0 )
 				{
-					if( nNameId > 0 )
-					{
-						SetTargetStringID( nNameId );
-						return;
-					}
+					SetTargetStringID( nNameId );
+					return;
+				}
 
-					// warn the player if we are pointing at a friend...
-					if( pFX->m_cs.eCrosshairCharacterClass != BAD )
-					{
-						SetTargetStringID( IDS_TARGET_INNOCENT );
-						return;
-					}
+				// RETAIL: 0x100f841e. A friend is not named.
+				if( pCharacter->m_cs.eCrosshairCharacterClass != BAD )
+				{
+					m_nString = 0;
+					m_szString[0] = 0;
+					return;
 				}
 			}
 		}
 	}
-
-	// All we care about if we're dead or on a vehicle is the above Multiplayer check...
-	if (bPlayersOnly)
+	else if (bPlayersOnly)
 	{
 		// Didn't see another player in Multiplayer, so we have no target...
 		ClearTargetInfo();
@@ -493,58 +496,107 @@ void CTargetMgr::Update()
 		}
 	}
 
+	// RETAIL: 0x100f853e. Everything after this is within reach.
+	bool bCanActivate = !!(dwUserFlags & USRFLG_CAN_ACTIVATE);
+	if( !( fDistAway <= g_vtActivationDistance.GetFloat() ))
+		return;
+
 	//can we pick up or activate it?
-	if (dwUserFlags & USRFLG_CAN_ACTIVATE && (fDistAway <= g_vtActivationDistance.GetFloat()))
+	if (bCanActivate)
 	{
 		//special case for bombs to defuse
 		CGadgetTargetFX* const pGTFX = (CGadgetTargetFX*)g_pGameClientShell->GetSFXMgr()->FindSpecialFX(SFX_GADGETTARGET_ID, m_hTarget);
-		if (pGTFX)
+		if (pGTFX && eBombable == pGTFX->GetType())
 		{
-			GadgetTargetType eGadgetType = pGTFX->GetType();
-			if (eBombable == eGadgetType)
+			// Can only defuse a bomb that doesn't belong to your team...
+			
+			if( IsTeamGameType() )
 			{
-				// Can only defuse a bomb that doesn't belong to your team...
-				
-				if( IsTeamGameType() )
-				{
-					CLIENT_INFO *pLocalCI = g_pInterfaceMgr->GetClientInfoMgr()->GetLocalClient();
-					if( !pLocalCI )
-						return;
+				CLIENT_INFO *pLocalCI = g_pInterfaceMgr->GetClientInfoMgr()->GetLocalClient();
+				if( !pLocalCI )
+					return;
 
-					if( pGTFX->GetTeamID() != INVALID_TEAM )
+				if( pGTFX->GetTeamID() != INVALID_TEAM )
+				{
+					if( pLocalCI->nTeamID == pGTFX->GetTeamID() )
 					{
-						if( pLocalCI->nTeamID == pGTFX->GetTeamID() )
-						{
-							m_bCanActivate = false;
-						}
+						m_bCanActivate = false;
 					}
 				}
-
-				SetTargetStringID(IDS_TARGET_DEFUSE);
-				return;
 			}
+
+			SetTargetStringID(IDS_TARGET_DEFUSE);
+			return;
 		}
 
-		CPickupItemFX* const pFX = (CPickupItemFX*)g_pGameClientShell->GetSFXMgr()->FindSpecialFX(SFX_PICKUPITEM_ID, m_hTarget);
-
-		// If this is a pickupitem, then display any team association it has.
-		if( IsTeamGameType() && pFX )
+		// RETAIL: 0x100f8630. Not while ducking at a vehicle.
+		if( g_pGameClientShell->GetSFXMgr()->FindSpecialFX( SFX_PLAYERVEHICLE_ID, m_hTarget ) &&
+			( g_pPlayerMgr->GetMoveMgr()->GetControlFlags() & BC_CFLG_DUCK ))
 		{
-			m_nTargetTeam = pFX->GetTeamId( );
+			bCanActivate = false;
 		}
-		
-		// If we're looking at a pickup, use the take string, otherwise it's just something to interact with.
-		SetTargetStringID(pFX ? IDS_TARGET_TAKE : IDS_TARGET_USE);
-		return;
 	}
 
-	// Are we looking at a doomsday piece...
-	
+	// The DoomsDay chassis and its pieces...
+	ChassisFX *pChassis = dynamic_cast<ChassisFX*>(g_pGameClientShell->GetSFXMgr()->FindSpecialFX( SFX_CHASSIS_ID, m_hTarget ));
 	ChassisPieceFX *pDDPiece = dynamic_cast<ChassisPieceFX*>(g_pGameClientShell->GetSFXMgr()->FindSpecialFX( SFX_CHASSISPIECE_ID, m_hTarget ));
-	if( pDDPiece && (fDistAway <= g_vtActivationDistance.GetFloat()) )
+
+	if (bCanActivate)
 	{
-		m_bCanActivate = false;
+		CPickupItemFX* const pFX = (CPickupItemFX*)g_pGameClientShell->GetSFXMgr()->FindSpecialFX(SFX_PICKUPITEM_ID, m_hTarget);
+		if( pFX || ( !pChassis && !pDDPiece ))
+		{
+			// If this is a pickupitem, then display any team association it has.
+			if( IsTeamGameType() && pFX )
+			{
+				m_nTargetTeam = pFX->GetTeamId( );
+			}
+
+			// If we're looking at a pickup, use the take string, otherwise it's just something to interact with.
+			SetTargetStringID(pFX ? IDS_TARGET_TAKE : IDS_TARGET_USE);
+			return;
+		}
+	}
+
+	// RETAIL: 0x100f8721. A piece is picked up; a carried piece goes into
+	// the chassis it is close enough to.
+	if( !g_pPlayerMgr->GetCarryingObject() && pDDPiece )
+	{
+		m_ActivationData.m_nType = MID_ACTIVATE_MOVE;
 		m_bMoveTarget = true;
+		m_bCanActivate = false;
+		if( bCanActivate )
+		{
+			ACTIVATETYPE *pType = g_pActivateTypeMgr->GetActivateType( pDDPiece->GetActivateType() );
+			if( pType )
+			{
+				uint32 dwStringID = pType->dwStateID[0];
+				if( dwStringID != (uint32)-1 )
+				{
+					SetTargetStringID( dwStringID );
+					m_bCanActivate = true;
+				}
+			}
+		}
+	}
+	else if( g_pPlayerMgr->GetCarryingChassisPiece() && pChassis && fDistAway <= pChassis->GetDropZoneRadius() )
+	{
+		m_ActivationData.m_nType = MID_ACTIVATE_MOVE;
+		m_bMoveTarget = true;
+		m_bCanActivate = false;
+		if( bCanActivate )
+		{
+			ACTIVATETYPE *pType = g_pActivateTypeMgr->GetActivateType( pChassis->GetActivateType() );
+			if( pType )
+			{
+				uint32 dwStringID = pType->dwStateID[0];
+				if( dwStringID != (uint32)-1 )
+				{
+					SetTargetStringID( dwStringID );
+					m_bCanActivate = true;
+				}
+			}
+		}
 	}
 }
 
@@ -751,7 +803,24 @@ static bool ActivateFilterFn(HOBJECT hTest, void *pUserData)
 
 		return true;
 	}
-	
+
+	// RETAIL: 0x100f6dfc. A chassis is kept only when it is our team's, or
+	// no team's.
+	ChassisFX *pChassis = dynamic_cast<ChassisFX*>(g_pGameClientShell->GetSFXMgr()->FindSpecialFX( SFX_CHASSIS_ID, hTest ));
+	if( pChassis )
+	{
+		if( pChassis->GetTeam() != INVALID_TEAM )
+		{
+			CLIENT_INFO *pLocalCI = g_pInterfaceMgr->GetClientInfoMgr()->GetLocalClient();
+			if( !pLocalCI )
+				return false;
+
+			if( pLocalCI->nTeamID != pChassis->GetTeam() )
+				return false;
+		}
+
+		return true;
+	}
 
 	// If it's a body, ignore it (we only care about its hit box)
 	CBodyFX* pBody = g_pGameClientShell->GetSFXMgr()->GetBodyFX(hTest);
@@ -765,7 +834,16 @@ static bool ActivateFilterFn(HOBJECT hTest, void *pUserData)
 	if (pBody)
 	{
 		// Save body for later since it may overlap a higher priority object
-		SetFallbackActivationObject(hTest, (IntersectQuery*)pUserData);
+		// RETAIL: 0x100f6e92. Only a body a teammate can revive.
+		if( pBody->CanBeRevived() && IsRevivePlayerGameType( ))
+		{
+			uint32 nId = pBody->GetClientId();
+			CClientInfoMgr* pCIMgr = g_pInterfaceMgr->GetClientInfoMgr();
+			CLIENT_INFO* pCI = pCIMgr->GetClientByID(nId);
+			CLIENT_INFO* pLocalCI = g_pInterfaceMgr->GetClientInfoMgr()->GetLocalClient();
+			if( pCI && pLocalCI && pCI->nTeamID == pLocalCI->nTeamID )
+				SetFallbackActivationObject(hTest, (IntersectQuery*)pUserData);
+		}
 		return false;
 	}
 

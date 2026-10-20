@@ -2197,7 +2197,7 @@ void CAI::SetUnconscious(bool bUnconscious)
 
 	m_bUnconscious = bUnconscious;
 
-	g_pCommonLT->SetObjectFlags(m_hObject, OFT_User, (bUnconscious ? USRFLG_CAN_SEARCH : 0), USRFLG_CAN_SEARCH);
+	// RETAIL: Object 0x1000c3f0: an unconscious AI is not made searchable.
 
 	if (bUnconscious)
 	{

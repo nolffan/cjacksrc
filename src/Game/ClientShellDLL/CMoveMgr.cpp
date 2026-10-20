@@ -2012,18 +2012,37 @@ void CMoveMgr::MoveLocalSolidObject()
 			pPhysics->MoveObject(m_hObject, &newPos, 0);
 		}
 
+		// RETAIL: 0x1002caaa. Where the move was meant to go, against where
+		// it went.
+		LTVector vDesiredPos = newPos;
 		g_pLTClient->GetObjectPos(m_hObject, &newPos);
+
+		LTVector vDims;
+		g_pPhysicsLT->GetObjectDims(m_hObject, &vDims);
 
 		// Deal with the issue that comes up when you're standing on something
 		// you should be sliding on, but you're blocked, so gravity keeps
 		// getting applied to the velocity.  Only do this if the UpdateMovement
 		// affected our y direction.
-		if ( fabsf( info.m_Offset.y ) > 0.01f && fabsf(newPos.y - curPos.y) < 0.01f)
+		if ( fabsf( info.m_Offset.y ) > 0.01f && fabsf(vDesiredPos.y - newPos.y) > vDims.y)
 		{
 			LTVector vObjVel;
 			pPhysics->GetVelocity(m_hObject, &vObjVel);
 			vObjVel.y = 0.0f;
 			pPhysics->SetVelocity(m_hObject, &vObjVel);
+		}
+
+		// RETAIL: 0x1002cb43. A jump that is blocked loses the speed it could
+		// not use, all but its fall.
+		if (m_bJumped && !m_bOnGround && !newPos.NearlyEquals(vDesiredPos, 0.01f))
+		{
+			LTVector vVel;
+			pPhysics->GetVelocity(m_hObject, &vVel);
+
+			LTVector vNewVel = (vDesiredPos - curPos) / info.m_dt;
+			vNewVel.y = vVel.y;
+			if (vNewVel.MagSqr() < vVel.MagSqr())
+				pPhysics->SetVelocity(m_hObject, &vNewVel);
 		}
 	}
 

@@ -498,7 +498,7 @@ void WorldProperties::ReadProps()
 		float fMaxFarZ = (vWorldMin - vWorldMax).Mag();
 		if (fFarZ > fMaxFarZ)
 		{
-			g_pLTServer->CPrint("!!! FarZ for level is too large!  Please adjust the FarZ value in the WorldProperties object.");
+			DebugCPrint(1,"!!! FarZ for level is too large!  Please adjust the FarZ value in the WorldProperties object.");
 			sprintf(buf, "%f", fMaxFarZ);
 			g_pLTServer->SetGameConVar(szFarZ, buf);
 		}

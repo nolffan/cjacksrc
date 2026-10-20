@@ -529,6 +529,13 @@ LTBOOL CSearchItemMgrPlugin::PopulateStringList(char** aszStrings, uint32* pcStr
 	int nNumSets = g_pSearchItemMgr->GetNumSets();
 	_ASSERT(nNumSets > 0);
 
+	// RETAIL: Object 0x1013973c: with no sets the list offers "<none>".
+	if (nNumSets <= 0)
+	{
+		strcpy(aszStrings[(*pcStrings)++], "<none>");
+		return LTTRUE;
+	}
+
     SEARCH_SET* pSet = LTNULL;
 
 	for (int i=0; i < nNumSets; i++)

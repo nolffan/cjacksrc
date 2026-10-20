@@ -520,7 +520,9 @@ class CPlayerAttachments : public CHumanAttachments
 			CAttachmentWeapon* pAttachmentWeapon = GetDefaultAttachmentWeapon();
 			if ( pAttachmentWeapon )
 			{
-				pAttachmentWeapon->GetWeapons()->Reset();
+				// RETAIL: the weapons are only deselected (CWeapons::
+				// DeselectCurWeapon, Object 0x10165ed0), not dropped.
+				pAttachmentWeapon->GetWeapons()->DeselectCurWeapon();
 				SetWeaponAttachmentHiddenState( *pAttachmentWeapon );
 			}
 		}
