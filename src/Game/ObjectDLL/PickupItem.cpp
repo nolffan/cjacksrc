@@ -208,6 +208,7 @@ PickupItem::PickupItem() : GameBase(OT_MODEL)
 	m_vScale.Init(1.0f, 1.0f, 1.0f);
 
 	m_nTeamId = INVALID_TEAM;
+	m_bAllObjectsCreated = false;
 }
 
 // ----------------------------------------------------------------------- //
@@ -245,7 +246,7 @@ uint32 PickupItem::EngineMessageFn(uint32 messageID, void *pData, LTFLOAT fData)
 
 		case MID_TOUCHNOTIFY:
 		{
-			if( !m_bTouchPickup ) break;
+			if( !m_bTouchPickup || !m_bAllObjectsCreated ) break;
 
 			HOBJECT hObj = (HOBJECT)pData;
 
@@ -330,6 +331,12 @@ uint32 PickupItem::EngineMessageFn(uint32 messageID, void *pData, LTFLOAT fData)
 			CreateSpecialFX( );
 
 			return dwRet;
+		}
+		break;
+
+		case MID_ALLOBJECTSCREATED:
+		{
+			m_bAllObjectsCreated = true;	// RETAIL: Object 0x1010532f
 		}
 		break;
 

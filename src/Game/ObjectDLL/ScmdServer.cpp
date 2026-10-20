@@ -1334,6 +1334,7 @@ bool ScmdServer_Impl::HandleSetGameOption( HCLIENT hClient, ILTMessage_Read& msg
 			cMsg.Writeuint8( sms.m_nTimeLimit);
 			cMsg.Writeuint8( sms.m_nRounds);
 			cMsg.Writebool( sms.m_bFriendlyFire);
+			cMsg.Writebool( sms.m_bWeaponsStay);	// RETAIL: Object 0x10136d98
 			cMsg.Writeuint8( sms.m_nMPDifficulty);
 			cMsg.Writefloat( sms.m_fPlayerDiffFactor);
 			g_pLTServer->SendToClient( cMsg.Read( ), hHost, MESSAGE_GUARANTEED );

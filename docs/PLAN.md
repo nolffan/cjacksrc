@@ -607,6 +607,47 @@ Class layouts and save/load against retail, in both game DLLs (branch
   keys to the HUD; AttackGrenadeThrowOffset is read but not yet used
   (CAIHumanStrategyGrenadeThrow::Update 0x10055f30, the game agent's).
 
+- **Round 2** (branch `layouts`, after master's merge of round 1):
+  - Done: CSearchable/SearchProp set only USRFLG_CAN_ACTIVATE; MISSION's
+    NumSecrets (0xf1c) and the end-mission screen's secrets line
+    (CScreenEndMission 0x7ac); ClientMultiplayerMgr's public-address flag
+    at 0x16a8, true (0x16e4 bytes); the ammo chooser's 1.5 s; WEAPON's
+    heat FX name freed and cleared in retail's order; InterfaceMgr.obj's
+    static piece-id helper (0x10062ec0); PickupItem's all-objects-created
+    flag (0xbd).
+  - CShell sizes: every class allocated with operator new (53) has
+    retail's size but CScreenJoin (the cshell agent's). The per-class
+    constructor store sets (217 RTTI classes) differ only where adjacent
+    bank allocators merge in the scan, and in CSoundButeMgr's index table
+    (a map's comparator byte at 0x11bc in retail; same size).
+  - Messages, writer against reader on both sides: MID_MULTIPLAYER_OPTIONS
+    carries weapons stay after friendly fire (ScmdServer writer, client
+    reader, each game type's options); the host screens' own
+    MID_MULTIPLAYER_OPTIONS (client to server) were already retail's. The
+    display timer's paused flag is a bool. Exit level (string, three bools)
+    and weapon fire (three bytes, three vectors, seed, perturb, time, impact)
+    agree on both sides: the scorer had paired them with other functions by
+    size. The SFX create structs' Write/Read are identical in both DLLs.
+  - Save check (static): every Save/Load either is byte-identical or has
+    retail's ILTMessage call sequence (slot and bit width, by function);
+    tools/callcheck.py finds no wrong callee in any Save/Load; the vtables'
+    Save/Load slots are retail's (AIVolumeJunction's two only pair
+    crosswise, being byte-identical twins).
+  - String tables (pointer runs of four or more strings, both DLLs): the
+    only difference left was the AI sound table's OrderedCover (the game
+    agent's fix, now merged). CShell's tables all match.
+  - Left: ScmdServer's list-game-options reply (the dedicated server
+    app's protocol) per game type; CTO2PlayerStats and the enum checks for
+    message IDs and commands that have no string table (none seen to
+    differ in the mixed joins).
+  - Wrong callees callcheck found (not save/load, for the function
+    agents): AIGoalSniper::HandleNameValuePair calls FindPlayer where
+    retail calls 0x100ab580; CAIHuman::DestroyArmor's base call;
+    CPlayerAttachments::ResetAllWeapons calls CWeapons::Reset where retail
+    calls 0x10165ed0; TrackedNodeControlFn calls MatMul3x3 where retail
+    calls MatMul3Tx3 (both DLLs); ~CCredit and ~CIntelItemList call Term and
+    Clear where retail calls a shared 0x101026f0.
+
 ### 5. gamespy
 
 `src/Game/Libs/GameSpy/GameSpy.dsw` builds `GameSpy.dll` (and

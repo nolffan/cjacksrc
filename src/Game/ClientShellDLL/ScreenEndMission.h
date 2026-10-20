@@ -38,6 +38,7 @@ protected:
 	CLTGUITextCtrl		*m_pMarksmanship;
 	CLTGUITextCtrl		*m_pNonInjury;
 	CLTGUITextCtrl		*m_pTimesHit;
+	CLTGUITextCtrl		*m_pSecrets;	// RETAIL: 0x7a0, "You found %d of %d secrets."
 	CLTGUIListCtrl		*m_pList;
 
 	CLTGUITextCtrl		*m_pContinue;

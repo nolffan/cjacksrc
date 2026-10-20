@@ -28,9 +28,9 @@ too, since Contract J.A.C.K. was built from the same code: check each
 against the retail binary before listing it. Those Contract J.A.C.K. no
 longer has go at the end, so nobody looks again.
 
-**Fixed so far** (in the modern build): sixteen -- the two GameSpy handle
+**Fixed so far** (in the modern build): seventeen -- the two GameSpy handle
 bugs (MODERN.md GS-1), GetCommandName (GAME-1), the chassis's update
-(GAME-2), the world shaders' section order (EN-1), ShowVersionInfo (EN-3),
+(GAME-2), the join screen's deadlock (GAME-3), the world shaders' section order (EN-1), ShowVersionInfo (EN-3),
 the music thread's handle (EN-4), a failed transition segment (EN-5),
 batched screen quads' colours (EN-6), SoundSys's null Term (EN-7),
 SetCamera's unset viewport (EN-8), the launcher's path overrun (APPS-1),
@@ -164,6 +164,23 @@ client could use it, so nothing shows in the game.
 
 Fixed in the modern build: src/Game/ObjectDLL/Chassis.cpp, MODERN.md
 GAME-2.
+
+### The join screen can deadlock with the server browsers' thread
+
+CShell.dll 0x100cb500 (CScreenJoin::OnServerInfo) and 0x100cc230
+(CScreenJoin::Render), src/Game/ClientShellDLL/ScreenJoin.cpp. A browser
+reports each server it finds from its own thread, inside its callback,
+holding its own locks; OnServerInfo files the server and then takes the
+screen's lock to add the server's row to the list. The screen's render
+holds that same lock while its update asks the browsers for their status
+and halts their requests, which takes the browsers' locks. If a server
+arrives while the screen is rendering a search step, each thread waits for
+the other's lock and the game hangs on the join screen. OnServerInfo also
+changes the server list without the screen's lock while the render can be
+reading it.
+
+Fixed in the modern build: src/Game/ClientShellDLL/ScreenJoin.cpp,
+MODERN.md GAME-3.
 ### The ShowVersionInfo console command calls a null function
 
 Lithtech.exe 0x41a360 (con_ShowVersionInfo, src/Engine/runtime/client/src/
