@@ -591,8 +591,6 @@ bool Body::OnTrigger(HOBJECT hSender, const CParsedMsg &cMsg)
 			{
 				// Bring the player back from the dead and get rid of the body...
 
-				pDeadPlayer->Revive();
-
 				CPlayerObj *pReviver = dynamic_cast<CPlayerObj*>( g_pLTServer->HandleToObject( hSender ));
 				if (pReviver)
 				{
@@ -602,6 +600,10 @@ bool Body::OnTrigger(HOBJECT hSender, const CParsedMsg &cMsg)
 				// Get rid of any weapons or other poerups we had...
 
 				RemovePowerupObjects();
+
+				// RETAIL: Object 0x1009453a: revived after the body's
+				// attachments are gone.
+				pDeadPlayer->Revive();
 
 				// Remove the body...
 				

@@ -618,6 +618,8 @@ void PickupItem::PostPropRead(ObjectCreateStruct *pStruct)
 		m_hstrRespawnSoundFile = g_pLTServer->CreateString(DEFAULT_RESPAWN_SOUND);
 	}
 
+	// RETAIL: Object 0x10104389: every pickup can be picked up by touch.
+	m_bTouchPickup = LTTRUE;
 }
 
 

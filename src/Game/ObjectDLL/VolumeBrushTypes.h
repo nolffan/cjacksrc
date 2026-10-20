@@ -220,6 +220,7 @@ class Gravity : public VolumeBrush
 		Gravity() : VolumeBrush()
 		{
 			m_eContainerCode = CC_GRAVITY;
+			m_fGravity = -2000.0f;	// RETAIL: Object 0x1015e617
 		}
 
 

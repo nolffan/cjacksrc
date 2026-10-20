@@ -261,11 +261,12 @@ void SpecialFX::TurnON()
 		}
 	
 		g_pLTServer->SetObjectSFXMessage( m_hObject, cMsg.Read() );
-
-		// Set flags so the client knows we are on...
-		g_pCommonLT->SetObjectFlags( m_hObject, OFT_Flags, FLAG_FORCECLIENTUPDATE, FLAG_FORCECLIENTUPDATE );
-		g_pCommonLT->SetObjectFlags( m_hObject, OFT_User, USRFLG_SFX_ON, USRFLG_SFX_ON );
 	}
+
+	// RETAIL: Object 0x10142a65: looping or not.
+	// Set flags so the client knows we are on...
+	g_pCommonLT->SetObjectFlags( m_hObject, OFT_Flags, FLAG_FORCECLIENTUPDATE, FLAG_FORCECLIENTUPDATE );
+	g_pCommonLT->SetObjectFlags( m_hObject, OFT_User, USRFLG_SFX_ON, USRFLG_SFX_ON );
 
 	m_bIsOn = true;
 }	
@@ -282,12 +283,10 @@ void SpecialFX::TurnOFF()
 {
 	if (!m_bIsOn) return;
 
-	if (m_bLoop)
-	{
-		// Set flags so the client knows we are off...
-		g_pCommonLT->SetObjectFlags( m_hObject, OFT_Flags, 0, FLAG_FORCECLIENTUPDATE );
-		g_pCommonLT->SetObjectFlags( m_hObject, OFT_User, 0, USRFLG_SFX_ON );
-	}
+	// RETAIL: Object 0x10141f4a: looping or not.
+	// Set flags so the client knows we are off...
+	g_pCommonLT->SetObjectFlags( m_hObject, OFT_Flags, 0, FLAG_FORCECLIENTUPDATE );
+	g_pCommonLT->SetObjectFlags( m_hObject, OFT_User, 0, USRFLG_SFX_ON );
 
 	m_bIsOn = false;
 }

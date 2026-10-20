@@ -184,21 +184,20 @@ void SnowVolume::TurnOn( bool bOn )
 
 void SnowVolume::UpdateSFX( bool bSendToClients )
 {
-	{
-		CAutoMessage cMsg;
-		cMsg.Writeuint8( SFX_SNOW_ID );
-		WriteSnowInfo( cMsg );
-		g_pLTServer->SetObjectSFXMessage( m_hObject, cMsg.Read() );
-	}
+	// RETAIL: Object 0x101491cf: the first message lives to the end.
+	CAutoMessage cMsg;
+	cMsg.Writeuint8( SFX_SNOW_ID );
+	WriteSnowInfo( cMsg );
+	g_pLTServer->SetObjectSFXMessage( m_hObject, cMsg.Read() );
 
 	if( bSendToClients )
 	{
-		CAutoMessage cMsg;
-		cMsg.Writeuint8( MID_SFX_MESSAGE );
-		cMsg.Writeuint8( SFX_SNOW_ID );
-		cMsg.WriteObject( m_hObject );
-		WriteSnowInfo( cMsg );
-		g_pLTServer->SendToClient( cMsg.Read(), LTNULL, MESSAGE_GUARANTEED );
+		CAutoMessage cClientMsg;
+		cClientMsg.Writeuint8( MID_SFX_MESSAGE );
+		cClientMsg.Writeuint8( SFX_SNOW_ID );
+		cClientMsg.WriteObject( m_hObject );
+		WriteSnowInfo( cClientMsg );
+		g_pLTServer->SendToClient( cClientMsg.Read(), LTNULL, MESSAGE_GUARANTEED );
 	}
 }
 

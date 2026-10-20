@@ -1043,6 +1043,14 @@ bool ScmdServer_Impl::HandleListGameOptions( HCLIENT hClient, ILTMessage_Read& m
 		}
 		break;
 
+		case eGameTypeCooperative:
+		{
+			cMsg.Writebool( sms.m_bFriendlyFire) ;
+			cMsg.Writeuint8( sms.m_nMPDifficulty );
+			cMsg.Writefloat( sms.m_fPlayerDiffFactor );
+		}
+		break;
+
 		// Contract J.A.C.K.'s, as ScmdConsole reads them.
 		case eGameTypeDemolition:
 		{
@@ -1050,14 +1058,6 @@ bool ScmdServer_Impl::HandleListGameOptions( HCLIENT hClient, ILTMessage_Read& m
 			cMsg.Writeuint8( sms.m_nRounds );
 			cMsg.Writebool( sms.m_bFriendlyFire );
 			cMsg.Writebool( sms.m_bWeaponsStay );
-		}
-		break;
-
-		case eGameTypeCooperative:
-		{
-			cMsg.Writebool( sms.m_bFriendlyFire) ;
-			cMsg.Writeuint8( sms.m_nMPDifficulty );
-			cMsg.Writefloat( sms.m_fPlayerDiffFactor );
 		}
 		break;
 
@@ -1254,6 +1254,40 @@ bool ScmdServer_Impl::HandleSetGameOption( HCLIENT hClient, ILTMessage_Read& msg
 		}
 		break;
 
+		case eGameTypeCooperative:
+		{
+			switch( nGameOption )
+			{
+				// Friendly fire.
+				case 0:
+				{
+					SetGameOption( sms.m_bFriendlyFire, ( bool )( !!atoi( szVal )), false, true );
+				}
+				break;
+
+				// mp difficulty.
+				case 1:
+				{
+					SetGameOption( sms.m_nMPDifficulty, atoi( szVal ), 0, 255 );
+				}
+				break;
+
+				// player diff factor.
+				case 2:
+				{
+					SetGameOption( sms.m_fPlayerDiffFactor, ( float )atof( szVal ), 0.0f, 20.0f );
+				}
+				break;
+
+				default:
+				{
+					bOk = false;
+				}
+				break;
+			}
+		}
+		break;
+
 		case eGameTypeDemolition:
 		{
 			// RETAIL: Object 0x10136c83: rounds from 1 to 255, weapons stay is option 3.
@@ -1283,40 +1317,6 @@ bool ScmdServer_Impl::HandleSetGameOption( HCLIENT hClient, ILTMessage_Read& msg
 					SetGameOption( sms.m_bWeaponsStay, ( bool )( !!atoi( szVal )), false, true );
 				}
 				break;
-				default:
-				{
-					bOk = false;
-				}
-				break;
-			}
-		}
-		break;
-
-		case eGameTypeCooperative:
-		{
-			switch( nGameOption )
-			{
-				// Friendly fire.
-				case 0:
-				{
-					SetGameOption( sms.m_bFriendlyFire, ( bool )( !!atoi( szVal )), false, true );
-				}
-				break;
-
-				// mp difficulty.
-				case 1:
-				{
-					SetGameOption( sms.m_nMPDifficulty, atoi( szVal ), 0, 255 );
-				}
-				break;
-
-				// player diff factor.
-				case 2:
-				{
-					SetGameOption( sms.m_fPlayerDiffFactor, ( float )atof( szVal ), 0.0f, 20.0f );
-				}
-				break;
-
 				default:
 				{
 					bOk = false;
