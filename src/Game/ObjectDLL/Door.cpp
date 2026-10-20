@@ -573,10 +573,11 @@ void Door::UpdatePowerOff( const LTFLOAT &fCurTime )
 
 	if( g_pCharacterMgr->FindCharactersWithinRadius( &lstChars, vPos, 64.0f, CCharacterMgr::kList_AIs ))
 	{
-		CCharacter** ppChar = lstChars.GetItem( TLIT_FIRST );
-		if( ppChar && *ppChar )
+		// RETAIL: Object 0x100c9aa0: the list found isn't empty.
+		CCharacter* pChar = *lstChars.GetItem( TLIT_FIRST );
+		if( pChar )
 		{
-			m_hActivateObj = (*ppChar)->m_hObject;
+			m_hActivateObj = pChar->m_hObject;
 			SetPowerOn( );
 			return;
 		}

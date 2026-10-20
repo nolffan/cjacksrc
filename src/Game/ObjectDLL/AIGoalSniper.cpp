@@ -79,7 +79,7 @@ void CAIGoalSniper::OnLinkBroken( LTObjRefNotifier *pRef, HOBJECT hObj )
 {
 	super::OnLinkBroken( pRef, hObj );
 
-	if( pRef == &m_hSeekTarget && m_bSeekPlayer )
+	if( &m_hSeekTarget == pRef && m_bSeekPlayer )	// RETAIL: Object 0x100352fa
 	{
 		CPlayerObj* pPlayer = g_pCharacterMgr->FindRandomPlayer( );
 		if( pPlayer )

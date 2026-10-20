@@ -77,16 +77,6 @@ void CAIGoalAttackMelee::ActivateGoal()
 
 LTBOOL CAIGoalAttackMelee::HandleGoalSenseTrigger(AISenseRecord* pSenseRecord)
 {
-	if( !super::HandleGoalSenseTrigger( pSenseRecord ) )
-	{
-		return LTFALSE;
-	}
-
-	if( m_pGoalMgr->IsCurGoal( this ) )
-	{
-		return LTTRUE;
-	}
-
 	uint32 dwExcludeVolumes =	AIVolume::kVolumeType_Ladder |
 								AIVolume::kVolumeType_Stairs |
 								AIVolume::kVolumeType_Ledge |
@@ -95,5 +85,13 @@ LTBOOL CAIGoalAttackMelee::HandleGoalSenseTrigger(AISenseRecord* pSenseRecord)
 								AIVolume::kVolumeType_Teleport |
 								AIVolume::kVolumeType_AmbientLife;
 
-	return g_pAIVolumeMgr->StraightPathExists( m_pAI, m_pAI->GetPosition(), pSenseRecord->vLastStimulusPos, m_pAI->GetVerticalThreshold() * 2.f, dwExcludeVolumes, m_pAI->GetLastVolume() );
+	// RETAIL: Object 0x1001eef9: one condition, true or false.
+	if( super::HandleGoalSenseTrigger( pSenseRecord ) &&
+		( m_pGoalMgr->IsCurGoal( this ) ||
+		  g_pAIVolumeMgr->StraightPathExists( m_pAI, m_pAI->GetPosition(), pSenseRecord->vLastStimulusPos, m_pAI->GetVerticalThreshold() * 2.f, dwExcludeVolumes, m_pAI->GetLastVolume() ) ) )
+	{
+		return LTTRUE;
+	}
+
+	return LTFALSE;
 }

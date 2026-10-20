@@ -141,7 +141,7 @@ bool CDemolitionMissionMgr::EndGame( )
 	if( !pszFilename )
 		return false;
 
-	return !!ExitLevel( pszFilename, false );
+	return ExitLevel( pszFilename, false ) ? true : false;	// RETAIL: Object 0x100c89fa
 }
 
 // ----------------------------------------------------------------------- //

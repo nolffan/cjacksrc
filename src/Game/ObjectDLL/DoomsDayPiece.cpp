@@ -192,7 +192,7 @@ bool DoomsDayPiece::OnCarry( HOBJECT hSender )
 	{
 		// Don't allow the player to remove pieces from it's own device....
 
-		if( pDevice->GetTeamID() != INVALID_TEAM && pPlayer->GetTeamID() == pDevice->GetTeamID() )
+		if( pDevice->GetTeamID() != INVALID_TEAM && pDevice->GetTeamID() == pPlayer->GetTeamID() )	// RETAIL: Object 0x100c8d03
 			return false;
 
 		nDDAction = MID_DOOMSDAY_PIECE_STOLEN;

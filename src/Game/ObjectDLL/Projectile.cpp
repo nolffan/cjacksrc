@@ -2171,7 +2171,8 @@ LTBOOL CProjectile::HandleVectorImpact(IntersectInfo & iInfo, LTVector & vFrom,
 		WEAPON const* pWeapon = g_pWeaponMgr->GetWeapon(m_pWeaponData->nId);
 		if (fDist > (float)pWeapon->nEffectiveVectorRange)
 		{
-			AdjustDamage(1.0f / (float)exp(0.6931472f * (fDist - (float)pWeapon->nEffectiveVectorRange) / pWeapon->fVectorHalfDamageDist));
+			// RETAIL: Object 0x1011fac1: ln 2 over the half-damage distance first.
+			AdjustDamage(1.0f / (float)exp((fDist - (float)pWeapon->nEffectiveVectorRange) * (0.6931472f / pWeapon->fVectorHalfDamageDist)));
 		}
 
 		ImpactDamageObject(m_hFiredFrom, iInfo.m_hObject);
