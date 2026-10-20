@@ -516,7 +516,7 @@ void CTeamMgr::WonRound( uint8 nTeamID )
 	pTeam->WonRound( );
 }
 
-void CTeamMgr::SetAttackingTeam( uint8 nTeamID )
+void CTeamMgr::SetAttackingTeam( uint8 nTeamID, bool /*bUnused*/ )
 {
 	if( !GetTeam( nTeamID ))
 		return;
@@ -531,6 +531,15 @@ void CTeamMgr::SetAttackingTeam( uint8 nTeamID )
 	{
 		(*iter)->UpdateClient( false );
 	}
+}
+
+bool CTeamMgr::IsAttackingTeam( uint8 nTeamID )
+{
+	CTeam* pTeam = GetTeam( nTeamID );
+	if( !pTeam )
+		return false;
+
+	return pTeam->IsAttacking( );
 }
 
 void CTeamMgr::NewRound( )

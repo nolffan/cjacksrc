@@ -110,8 +110,12 @@ public:
 	void	AddToScore( uint8 nTeamID, int32 nScore = 1 );
 	void	WonRound( uint8 nTeamID );
 
-	// RETAIL: Object 0x10152700: Demolition's attackers this round.
-	void	SetAttackingTeam( uint8 nTeamID );
+	// RETAIL: Object 0x10152700: Demolition's attackers this round.  The
+	// world's command passes true for the second argument, which is unused.
+	void	SetAttackingTeam( uint8 nTeamID, bool bUnused = true );
+
+	// RETAIL: Object 0x10152770 (nothing calls it; TeamMgr.obj keeps it).
+	bool	IsAttackingTeam( uint8 nTeamID );
 
 	// Prepares for a new round.
 	void	NewRound( );

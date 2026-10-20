@@ -296,7 +296,15 @@ void VolumeBrush::ReadProp(ObjectCreateStruct *pStruct)
 
 	if( g_pLTServer->GetPropGeneric("PhysicsModel", &genProp ) == LT_OK )
 	{
-		m_ePPhysicsModel = GetPlayerPhysicsModelFromPropertyName(genProp.m_String);
+		// RETAIL: Object 0x1015d358: "Snowmobile" by name, and an empty
+		// name leaves the model as it is.
+		if( genProp.m_String[0] )
+		{
+			if( !_stricmp( genProp.m_String, "Snowmobile" ))
+				m_ePPhysicsModel = PPM_SNOWMOBILE;
+			else
+				m_ePPhysicsModel = GetPlayerPhysicsModelFromPropertyName(genProp.m_String);
+		}
 	}
 }
 

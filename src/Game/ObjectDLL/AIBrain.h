@@ -95,6 +95,7 @@ class CAIBrain : public CAIClassAbstract
 		LTFLOAT	GetAttackChaseTimeRandomMax() const { return m_pBrain->fAttackChaseTimeRandomMax; }
 		LTFLOAT GetAttackPoseCrouchChance() const { return m_pBrain->fAttackPoseCrouchChance; }
 		LTFLOAT GetAttackPoseCrouchTime() const { return m_pBrain->fAttackPoseCrouchTime; }
+		LTFLOAT GetAttackGrenadeThrowOffset() const { return m_pBrain->fAttackGrenadeThrowOffset; }
 		LTFLOAT GetAttackSoundTimeMin() const { return m_pBrain->fAttackSoundTimeMin; }
 		LTBOOL  AttacksWhileMoving() const { return m_pBrain->bAttackWhileMoving; }
 

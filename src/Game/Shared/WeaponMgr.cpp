@@ -805,9 +805,15 @@ LTBOOL CWeaponMgr::LoadOverrideButes( const char *szAttributeFile /*=WEAPON_DEFA
 
 	// RETAIL: CShell 0x1011434e: Contract J.A.C.K. remembers the override
 	// file, which GetFileCRC sums in, unless it is the attribute file itself.
-	m_sOverrideFile = _stricmp( s_AttributeFile, szAttributeFile ) ? szAttributeFile : "";
+	if( _stricmp( s_AttributeFile, szAttributeFile ))
+		m_sOverrideFile = szAttributeFile;
+	else
+		m_sOverrideFile = "";
 
 	char szName[WMGR_MAX_NAME_LENGTH] = {0};
+
+	// RETAIL: Object 0x10163e9f: the override file sets the distance too.
+	m_fVectorHalfDamageDist = Max( 1.0f, (float)m_buteMgr.GetInt( "Global", "VectorHalfDamageDist", 1000 ));
 
 
 	// Read in the properties for each mod...

@@ -20,6 +20,7 @@
 	#include "Spawner.h"
 	#include "GadgetTargetTypes.h"
 	#include "Bombable.h"
+	#include "ServerMissionMgr.h"
 	#include "ParsedMsg.h"
 	#include "FXButeMgr.h"
 	#include "ServerSpecialFX.h"
@@ -359,7 +360,13 @@ void Bombable::SetupDisabledState( LTBOOL bDestroyed )
 	theStruct.m_Pos = vPos;
 	theStruct.m_Rotation = rRot;
 
-	AMMO const *pAmmo = g_pWeaponMgr->GetAmmo( TIME_BOMB_AMMO_NAME );
+	// RETAIL: Object 0x1009c88b: the bomb is the gadget target's ammo.
+
+	GADGETTARGET* pGadgetTarget = g_pGadgetTargetMgr->GetGadgetTarget( m_nGTID );
+	if( !pGadgetTarget || !pGadgetTarget->szAmmoType )
+		return;
+
+	AMMO const *pAmmo = g_pWeaponMgr->GetAmmo( pGadgetTarget->szAmmoType );
 	if( !pAmmo || !pAmmo->pProjectileFX )
 		return;
 
@@ -582,7 +589,7 @@ void Bombable::SetupDefusedState( )
         const char* szCmd = g_pLTServer->GetStringData( m_hstrDefusedCmd );
 		if( szCmd )
 		{
-			g_pCmdMgr->Process( szCmd, m_hObject, m_hObject );
+			g_pCmdMgr->Process( szCmd, g_pLTServer->HandleToObject( m_hObject ), g_pLTServer->HandleToObject( m_hObject ));
 		}
 	}
 
@@ -591,9 +598,20 @@ void Bombable::SetupDefusedState( )
 	m_Timer.Stop();
 	SetNextUpdate( UPDATE_NEVER );
 
-	// Create the TimeBomb ammo powerup...
+	// Create the TimeBomb ammo powerup...  RETAIL: Object 0x1009ccab:
+	// not where weapons stay, and the ammo is the gadget target's.
 
-	AMMO const *pAmmo = g_pWeaponMgr->GetAmmo( TIME_BOMB_AMMO_NAME );
+	if( IsMultiplayerGame( ) && g_pServerMissionMgr->GetServerSettings( ).m_bWeaponsStay )
+	{
+		m_hBombPickup = LTNULL;
+	}
+	else
+	{
+	GADGETTARGET* pGadgetTarget = g_pGadgetTargetMgr->GetGadgetTarget( m_nGTID );
+	if( !pGadgetTarget || !pGadgetTarget->szAmmoType )
+		return;
+
+	AMMO const *pAmmo = g_pWeaponMgr->GetAmmo( pGadgetTarget->szAmmoType );
 	if( !pAmmo || !m_hTimeBombModel || !pAmmo->pProjectileFX )
 		return;
 
@@ -626,6 +644,7 @@ void Bombable::SetupDefusedState( )
 
 		m_hBombPickup = pClass->m_hObject;
 	}
+	}
 
 
 	// Remove the Time Bomb model...
@@ -650,6 +669,10 @@ void Bombable::SetupDefusedState( )
 	}
 	else
 	{
+		// RETAIL: Object 0x1009cf2f: the target can be planted on again.
+		g_pCommonLT->SetObjectFlags( m_hObject, OFT_User, m_dwGadgetUsrFlgs, m_dwGadgetUsrFlgs | USRFLG_CAN_ACTIVATE );
+		UpdateSFXMsg(m_pGTInfo->m_eTargetType, true);
+
 		//show target 'cause there is no pick up and no attachment
 		g_pCommonLT->SetObjectFlags( m_hObject, OFT_Flags, FLAG_VISIBLE, FLAG_VISIBLE | FLAG_FORCECLIENTUPDATE );
 	}
