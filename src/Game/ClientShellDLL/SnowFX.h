@@ -30,6 +30,7 @@ struct CSnowFXParticle
 {
 	LTVector pos;			// initial particle position relative to airspace origin
 	uint32 id;				// random value used for indexing into various tables
+	bool active;			// RETAIL: +0x10, set by FillVertexBuffer (CShell 0x100ef1e0); 0x14-byte particles
 };
 
 

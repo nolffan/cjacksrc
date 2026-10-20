@@ -82,3 +82,5 @@ addr,reason
 0x00549461,NOT A FUNCTION: zero fill at the end of .text, 1053 bytes of 00 in the shipped and the demo's images
 0x005429d8,NOT A FUNCTION: interior block of the static initializer at 0x005429d0 (an operand byte of its fmuls)
 0x00401000,NOT GAME CODE: ??_H the vector constructor iterator the compiler emits for arrays of constructed objects (a COMDAT in every object that needs it; ours is byte-identical at 0x401000)
+0x0045098b,NOT A FUNCTION: interior block of CPlayerMover::Collide (0x004505d0): its loop's back edge and epilogue, split from it at the jump target
+0x004090eb,NOT A FUNCTION: interior block of ci_GetGameMode (0x004090d0): its `*pMode = GAMEMODE_NONE` branch; input_GetManager matched it only through the masked relocation

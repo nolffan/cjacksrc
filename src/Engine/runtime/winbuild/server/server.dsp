@@ -48,7 +48,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /Ox /GF /I "..\..\client\src" /I "..\..\shared\src" /I "..\..\kernel\src" /I "..\..\kernel\mem\src" /I "..\..\world\src" /I "..\..\kernel\io\src" /I "..\..\kernel\net\src" /I "..\..\model\src" /I "..\..\sound\src" /I "..\..\shared\src\sys\win" /I "..\..\lithtemplate" /I "..\..\physics\src" /I "..\..\render_b\src" /I "..\..\ui\src" /I "..\..\controlfilemgr" /I "..\..\server\src" /I "..\..\kernel\src\sys\win" /I "..\..\kernel\io\src\sys\win" /I "..\..\kernel\mem\src\sys\win" /I "..\..\kernel\net\src\sys\win" /I "..\..\client\src\sys\win" /I "..\..\render_a\src\sys\d3d" /I "..\..\..\sdk\inc" /I "..\..\..\sdk\inc\physics" /I "..\..\..\..\libs\stdlith" /I "..\..\..\..\libs\lith" /I "..\..\..\libs\rezmgr" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_FINAL" /D "__D3D" /D "__D3DREND" /D "_USRDLL" /D "DE_SERVER_COMPILE" /D "DIRECTENGINE_COMPILE" /D "STDLITH_ALLOC_OVERRIDE" /D "LT15_COMPAT" /D "NO_PRAGMA_LIBS" /FD /c
+# ADD CPP /nologo /MD /W3 /Ox /GF /I "..\..\client\src" /I "..\..\shared\src" /I "..\..\kernel\src" /I "..\..\kernel\mem\src" /I "..\..\world\src" /I "..\..\kernel\io\src" /I "..\..\kernel\net\src" /I "..\..\model\src" /I "..\..\sound\src" /I "..\..\shared\src\sys\win" /I "..\..\lithtemplate" /I "..\..\physics\src" /I "..\..\render_b\src" /I "..\..\ui\src" /I "..\..\controlfilemgr" /I "..\..\server\src" /I "..\..\kernel\src\sys\win" /I "..\..\kernel\io\src\sys\win" /I "..\..\kernel\mem\src\sys\win" /I "..\..\kernel\net\src\sys\win" /I "..\..\client\src\sys\win" /I "..\..\render_a\src\sys\d3d" /I "..\..\..\sdk\inc" /I "..\..\..\sdk\inc\physics" /I "..\..\..\..\libs\stdlith" /I "..\..\..\..\libs\lith" /I "..\..\..\libs\rezmgr" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_FINAL" /D "__D3D" /D "__D3DREND" /D "_USRDLL" /D "DE_SERVER_COMPILE" /D "DIRECTENGINE_COMPILE" /D "STDLITH_ALLOC_OVERRIDE" /D "LT15_COMPAT" /D "NO_PRAGMA_LIBS" /Yu"bdefs.h" /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
@@ -74,6 +74,7 @@ SOURCE=..\..\model\src\animtracker.cpp
 # Begin Source File
 
 SOURCE=..\..\shared\src\bdefs.cpp
+# ADD CPP /Yc"bdefs.h"
 # End Source File
 # Begin Source File
 
@@ -106,6 +107,7 @@ SOURCE=..\..\shared\src\conparse.cpp
 # Begin Source File
 
 SOURCE=..\..\kernel\src\sys\win\counter.cpp
+# SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # Begin Source File
 
@@ -194,6 +196,7 @@ SOURCE=..\..\shared\src\impl_common.cpp
 # Begin Source File
 
 SOURCE=..\..\shared\src\interface_linkage.cpp
+# SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # Begin Source File
 
@@ -242,14 +245,17 @@ SOURCE=..\..\server\src\ltmessage_server.cpp
 # Begin Source File
 
 SOURCE=..\..\..\sdk\inc\ltmodule.cpp
+# SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\..\sdk\inc\ltobjref.cpp
+# SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\..\sdk\inc\ltquatbase.cpp
+# SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # Begin Source File
 
@@ -401,27 +407,36 @@ SOURCE=..\..\shared\src\strtools.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\kernel\src\sys\win\systeminfo.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\kernel\src\sys\win\timemgr.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\model\src\transformmaker.cpp
+# SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\kernel\net\src\sys\win\udpdriver.cpp
+# SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\sound\src\wave.cpp
+# SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\world\src\world_blind_object_data.cpp
+# SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\world\src\world_blocker_data.cpp
+# SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # Begin Source File
 
@@ -442,38 +457,47 @@ SOURCE=..\..\world\src\world_shared_bsp.cpp
 # Begin Source File
 
 SOURCE=..\..\world\src\world_tree.cpp
+# SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\shared\src\modellt_impl.cpp
+# SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\server\src\server_iltmodel.cpp
+# SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\server\src\server_iltcommon.cpp
+# SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\shared\src\shared_iltcommon.cpp
+# SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\server\src\server_iltphysics.cpp
+# SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\shared\src\shared_iltphysics.cpp
+# SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\shared\src\transformlt_impl.cpp
+# SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\server\src\server_iltsoundmgr.cpp
+# SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # Begin Source File
 
