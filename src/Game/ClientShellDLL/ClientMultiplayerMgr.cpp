@@ -21,6 +21,7 @@
 #include "MissionButeMgr.h"
 #include "InterfaceMgr.h"
 #include "ProfileMgr.h"
+#include "ProfileUtils.h"
 #include "WeaponMgr.h"
 #include "CRC32.h"
 #include "IGameSpy.h"
@@ -1279,9 +1280,12 @@ bool ClientMultiplayerMgr::StartServerAsSinglePlayer( )
 	m_StartGameRequest.m_pGameInfo = &pServerGameOptions;
 	m_StartGameRequest.m_GameInfoLen = sizeof( pServerGameOptions );
 
+	// RETAIL: 0x1001efa9. No browsing and no join in a single player game.
+	DeleteGameSpyBrowsers( );
 
 	// Start with clean slate
 	m_StartGameRequest.m_Type = STARTGAME_NORMAL;
+	m_eJoinState = eJoinState_Joined;
 
     m_nLastConnectionResult = g_pLTClient->StartGame(&m_StartGameRequest);
 	return ( m_nLastConnectionResult == LT_OK );
@@ -1355,19 +1359,16 @@ bool ClientMultiplayerMgr::UpdateNetClientData( )
 		return false;
 	}
 
-// Don't allow this in the final version because of invalid characters
-
-#ifndef _FINAL
-
 	// Check if the user overrode the player name on the command line.
+	// RETAIL: 0x1001f089. Contract J.A.C.K. allows it, with the name fixed
+	// up, and then clears the console variable.
 	char szPlayerNameOverride[MAX_PLAYER_NAME] = "";
-	LTStrCpy( szPlayerNameOverride, GetConsoleTempString( "playername", "" ), ARRAY_LEN( szPlayerNameOverride ));
+	LTStrCpy( szPlayerNameOverride, FixPlayerName( GetConsoleTempString( "playername", "" )), ARRAY_LEN( szPlayerNameOverride ));
 	if( szPlayerNameOverride[0] )
 	{
+		WriteConsoleString( "playername", " " );
 		pProfile->m_sPlayerName = szPlayerNameOverride;
 	}
-
-#endif
 
 	LTStrCpy(m_NetClientData.m_szName,pProfile->m_sPlayerName.c_str(), ARRAY_LEN( m_NetClientData.m_szName ));
 

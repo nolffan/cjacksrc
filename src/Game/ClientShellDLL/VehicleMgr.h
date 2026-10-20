@@ -64,6 +64,7 @@ class CVehicleMgr
 
 	// cjacksrc: RETAIL: CShell 0x101055b0: the vehicle's own weapon.
 	bool		HasVehicleWeapon() const { return m_bHasVehicleWeapon; }
+	CVehicleWeapon*	GetVehicleWeapon() { return &m_VehicleWeapon; }
 	WeaponState	UpdateVehicleWeapon( LTRotation const &rRot, LTVector const &vPos, bool bFire, FireType eFireType );
 	LTBOOL		CanDismount();
 	LTBOOL      IsTurning()				const { return (m_bVehicleTurning && !m_bVehicleStopped); }
