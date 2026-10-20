@@ -289,17 +289,15 @@ bool CServerMissionMgr::HandleStartGame( HCLIENT hSender, ILTMessage_Read& msg )
 {
 	// Initialize the bute file the client wants.
 	ServerGameOptions const& serverGameOptions = g_pGameServerShell->GetServerGameOptions( );
-	m_sCampaignFile = serverGameOptions.GetCampaignName();
+	// RETAIL: Object 0x1013eba1: the campaign's file, not its name.
+	m_sCampaignFile = GetCampaignFile( serverGameOptions );
 
 	ServerMissionSettings ss = m_ServerSettings;
 	ss.m_nMPDifficulty = (uint8)g_pGameServerShell->GetDifficulty();
 	SetServerSettings(ss);
 
 	// Start the game.
-	if( !StartGame( msg ))
-		return false;
-
-	return true;
+	return StartGame( msg ) ? true : false;
 }
 
 // --------------------------------------------------------------------------- //

@@ -354,7 +354,9 @@ bool DisplayTimer::OnTrigger(HOBJECT hSender, const CParsedMsg &cMsg)
 		{
 			// RETAIL: Object 0x100c7160
 			uint32 nType = atoi( cMsg.GetArg( 1 ));
-			m_nTeamId = ( uint8 )( nType < s_nNumTimerTypes ? nType : 0 );
+			if( nType >= s_nNumTimerTypes )
+				nType = 0;
+			m_nTeamId = ( uint8 )nType;
 
 			UpdateClients( );
 		}

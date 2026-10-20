@@ -4260,8 +4260,9 @@ void CAIHumanStrategyShoot::Fire()
 
 	AIASSERT( GetAI()->GetCurrentWeapon() && GetAI()->GetCurrentWeapon()->GetWeaponData(), GetAI()->m_hObject, "CAIHumanStrategyShoot::Fire: No weapon or weapon data.");
 
+	// RETAIL: Object 0x10053ce4: without a weapon, nothing to push with.
 	CWeapon* pWeapon = GetAI()->GetCurrentWeapon();
-	if ( pWeapon->GetWeaponData()->nAIWeaponType == kAIWeap_Melee )
+	if ( pWeapon && pWeapon->GetWeaponData()->nAIWeaponType == kAIWeap_Melee )
 	{
 		GetAI()->GetTarget()->SetPushSpeed(800.f);
 		GetAI()->GetTarget()->SetPushMinDist( GetAI()->GetBrain()->GetAIData( kAIData_MeleeKnockBackDist ) );

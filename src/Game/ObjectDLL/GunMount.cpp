@@ -419,7 +419,7 @@ void GunMount::SetVisible( bool bVisible )
 	if( !pWeapon ) return;
 
 	g_pCommonLT->SetObjectFlags( pWeapon->GetModelObject( ), OFT_Flags,
-		( m_bVisible ? FLAG_VISIBLE : 0 ) | FLAG_FORCECLIENTUPDATE, FLAG_VISIBLE | FLAG_FORCECLIENTUPDATE );
+		( m_bVisible ? FLAG_VISIBLE : 0 ) + FLAG_FORCECLIENTUPDATE, FLAG_VISIBLE | FLAG_FORCECLIENTUPDATE );	// RETAIL: Object 0x100e4d59 adds
 }
 
 // ----------------------------------------------------------------------- //
