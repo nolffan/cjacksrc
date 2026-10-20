@@ -866,10 +866,11 @@ void CVehicleMgr::UpdateVehicleMotion()
 	bool bBrake = false;
 	if (g_pMoveMgr->CanDoFootstep() && !m_bVehicleStopped)
 	{
-		bBrake = (bMovingForward ? bReverse : bForward);
+		if (bMovingForward ? bReverse : bForward)
+			bBrake = true;
 	}
 
-	if (!m_pVehicleButes || !m_pVehicleButes->bHasReverse)
+	if (!m_pVehicleButes->bHasReverse)
 	{
 		bReverse = false;
 	}
@@ -3764,10 +3765,7 @@ void CVehicleMgr::CalculateVehicleContourRotation( LTVector &vPlayerPYR, LTVecto
 
 	// Save the roll we are applying so the canting can use it...
 	// RETAIL: 0x101089f4: only some vehicles roll with the ground.
-	if (m_pVehicleButes && m_pVehicleButes->bContourAffectsRoll)
-		m_fContourRoll = fAmount * fRollPercent;
-	else
-		m_fContourRoll = 0.0f;
+	m_fContourRoll = m_pVehicleButes->bContourAffectsRoll ? fAmount * fRollPercent : 0.0f;
 
 	vPlayerPYR.x += fAmount * fPitchPercent;
 	vPlayerPYR.z += m_fContourRoll;
@@ -3785,7 +3783,12 @@ void CVehicleMgr::CalculateVehicleContourRotation( LTVector &vPlayerPYR, LTVecto
 
 	if (m_bSetLastAngles)
 	{
-		float fInterpolationTime = g_vtVehicleContourRate.GetFloat();
+		// RETAIL: 0x10108ab7: the rate is the time to reach the new angles.
+		float fInterpolationTime = g_pGameClientShell->GetFrameTime() / g_vtVehicleContourRate.GetFloat();
+		if( fInterpolationTime < 0.0f )
+			fInterpolationTime = 0.0f;
+		else if( fInterpolationTime > 1.0f )
+			fInterpolationTime = 1.0f;
 		float fCameraYSave = vPYR.y;
 		float fPlayerYSave = vPlayerPYR.y;
 		float fVehicleYSave = m_vVehiclePYR.y;

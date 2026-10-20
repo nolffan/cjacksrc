@@ -2771,25 +2771,7 @@ LTBOOL CInterfaceMgr::OnCommandOn(int command)
 	switch (command)
 	{
 
-		case COMMAND_ID_HOLSTER :
-		{
-			CClientWeaponMgr const *pClientWeaponMgr = g_pPlayerMgr->GetClientWeaponMgr();
-			IClientWeaponBase const *pClientWeapon = g_pPlayerMgr->GetCurrentClientWeapon();
-			if (pClientWeapon && !pClientWeaponMgr->WeaponsEnabled()) return LTTRUE;
-
-			if (m_AmmoChooser.IsOpen())
-			{
-				m_AmmoChooser.Close();
-			}
-			if (m_WeaponChooser.IsOpen())
-			{
-				m_WeaponChooser.Close();
-			}
-
-            return LTTRUE;
-
-		}
-		break;
+		// RETAIL: 0x10065d73 has no holster case.
 
 		case COMMAND_ID_LASTWEAPON :
 		{
@@ -2828,6 +2810,9 @@ LTBOOL CInterfaceMgr::OnCommandOn(int command)
 			{
 				m_WeaponChooser.PrevWeapon();
 			}
+
+			// RETAIL: 0x10065e1e: the previous weapon comes up at once.
+			g_pPlayerMgr->ChangeWeapon(m_WeaponChooser.GetCurrentSelection());
 
             return LTTRUE;
 
@@ -2870,18 +2855,23 @@ LTBOOL CInterfaceMgr::OnCommandOn(int command)
 			if (m_AmmoChooser.Open())
 			{
 				m_AmmoChooser.NextAmmo();
+
+				// RETAIL: 0x10065eb9: the next ammo loads at once.
+				uint8 nAmmo = m_AmmoChooser.GetCurrentSelection();
+				IClientWeaponBase *pWeapon = g_pPlayerMgr->GetCurrentClientWeapon();
+				if (pWeapon)
+				{
+					pWeapon->ChangeAmmoWithReload(nAmmo, true);
+				}
 			}
             return LTTRUE;
 		}
 		break;
 
+		// RETAIL: 0x10065eec: firing closes the choosers.
 		case COMMAND_ID_FIRING :
 		{
-
-			if (IsChoosingWeapon() || IsChoosingAmmo())
-			{
-                return LTTRUE;
-			}
+			CloseChoosers();
 		}
 		break;
 
@@ -2946,9 +2936,13 @@ LTBOOL CInterfaceMgr::OnCommandOff(int command)
 		return LTTRUE;
 
 
-	// RETAIL: 0x10063ee0 has no activate, fire or holster cases.
+	// RETAIL: 0x10063ee0 has no fire or holster cases, and an empty
+	// activate case.
 	switch (command)
 	{
+		case COMMAND_ID_ACTIVATE :
+			return LTFALSE;
+
 		case COMMAND_ID_LASTWEAPON :
 		{
 			ASSERT( 0 != g_pPlayerMgr );
@@ -3051,9 +3045,12 @@ LTBOOL CInterfaceMgr::OnKeyDown(int key, int rep)
 
 		case GS_MOVIE :
 		{
-			// They pressed a key - end splash screen...
-
-			NextMovie();
+			// They pressed a key - next movie
+			// RETAIL: 0x1006a7ec: end them all once the game has run before.
+			bool bEndMovies = false;
+			if( g_pVersionMgr && g_pVersionMgr->GetRegMgr( )->Get( "GameRuns", 0 ) > 1 )
+				bEndMovies = true;
+			NextMovie( bEndMovies );
             return LTTRUE;
 		}
 		break;

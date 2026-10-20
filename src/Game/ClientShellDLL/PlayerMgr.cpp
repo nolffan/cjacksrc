@@ -1618,7 +1618,8 @@ void CPlayerMgr::HandleMsgObjectivesData( ILTMessage_Read *pMsg )
 void CPlayerMgr::UpdateCamera()
 {
 	//handle updating the camera, as long as we aren't paused
-	if(!g_pGameClientShell->IsGamePaused() || !m_bCameraPosInited)
+	// RETAIL: 0x100a051b: only the server's pause stops the camera.
+	if(!g_pGameClientShell->IsServerPaused() || !m_bCameraPosInited)
 	{
 		// Update the sway...
 
@@ -1685,9 +1686,16 @@ void CPlayerMgr::UpdateCamera()
 		{
 			UpdatePlayerInfo(true);
 		}
+
+		// RETAIL: 0x100a0632: the camera is the sound listener.
+		LTVector vPos;
+		g_pLTClient->GetObjectPos(m_hCamera, &vPos);
+		LTRotation rRot;
+		g_pLTClient->GetObjectRotation(m_hCamera, &rRot);
+		((ILTClientSoundMgr*)g_pLTClient->SoundMgr())->SetListener(false, &vPos, &rRot, true);
 	}
 	// Remember to continue updating the server if we're in multiplayer
-	else if (IsMultiplayerGame() && g_pGameClientShell->IsGamePaused())
+	else if (IsMultiplayerGame() && g_pGameClientShell->IsServerPaused())
 	{
 		UpdatePlayerInfo(false);
 	}

@@ -426,6 +426,19 @@ void CScreenHostMission::UpdateCampaignName()
 	}
 }
 
+// RETAIL: 0x100c5ac0: defined before its callers below, which inline it.
+void CScreenHostMission::SetCampaignName(const char* newName)
+{
+	if (stricmp(m_pProfile->m_ServerGameOptions.GetCampaignName(),newName) == 0)
+		return;
+
+	m_pProfile->m_ServerGameOptions.SetCampaignName(newName);
+
+	UpdateCampaignName();
+
+};
+
+
 void CScreenHostMission::OnFocus(LTBOOL bFocus)
 {
 	if (bFocus)
@@ -577,17 +590,25 @@ void CScreenHostMission::NewCampaign(const std::string& campaignName)
 			_splitpath( pMission->aLevels[0].szLevel, NULL, NULL, szWorldTitle, NULL );
 
 			bAdd = false;
+			// RETAIL: 0x100c69d4: the deathmatch games take the Demolition
+			// levels too.
 			switch (g_pGameClientShell->GetGameType())
 			{
 			case eGameTypeDeathmatch:
 			case eGameTypeTeamDeathmatch:
-				if (strnicmp(szWorldTitle,"DM_",3) == 0)
+				if (strnicmp(szWorldTitle,"DM_",3) == 0 || strnicmp(szWorldTitle,"DE_",3) == 0)
 				{
 					bAdd = true;
 				}
 				break;
 			case eGameTypeDoomsDay:
 				if (strnicmp(szWorldTitle,"DD_",3) == 0)
+				{
+					bAdd = true;
+				}
+				break;
+			case eGameTypeDemolition:
+				if (strnicmp(szWorldTitle,"DE_",3) == 0)
 				{
 					bAdd = true;
 				}
@@ -657,14 +678,3 @@ void CScreenHostMission::RenameCampaign(const std::string& oldName,const std::st
 
 }
 
-
-void CScreenHostMission::SetCampaignName(const char* newName)
-{
-	if (stricmp(m_pProfile->m_ServerGameOptions.GetCampaignName(),newName) == 0)
-		return;
-
-	m_pProfile->m_ServerGameOptions.SetCampaignName(newName);
-
-	UpdateCampaignName();
-
-};

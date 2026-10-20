@@ -26,7 +26,7 @@ namespace
 	const int kLastAmmo = 1;
 	const int kCurrWeapon = 1;
 	const int kCurrAmmo = 0;
-	const float kfDelayTime	= 15.0f;
+	const float kfDelayTime	= 1.5f;		// RETAIL: CShell 0x1010d971, 0x1010da81, 0x1010dfaf
 	const float kfAmmoDelayTime = 1.5f;	// RETAIL: CShell 0x1010dcd8, 0x1010dd8f
 	VarTrack	g_vtChooserAutoSwitchTime;
 	VarTrack	g_vtChooserAutoSwitchFreq;
@@ -73,8 +73,15 @@ bool CWeaponChooser::Open(uint8 nClass)
 	if (!m_bIsOpen)
 		m_nWeapon = pClientWeapon->GetWeaponId();
 
+	// RETAIL: 0x1010df14: skip the weapons that don't show in the chooser.
 	uint8 nWeapon = pClientWeaponMgr->GetNextWeaponId( m_nWeapon, nClass );
-	if (!g_pWeaponMgr->IsValidWeaponId(nWeapon) && g_pWeaponMgr->GetWeaponClass(m_nWeapon) != nClass )
+	WEAPON const *pWeapon = g_pWeaponMgr->GetWeapon( nWeapon );
+	while( pWeapon && !pWeapon->bShowChooser )
+	{
+		nWeapon = pClientWeaponMgr->GetNextWeaponId( nWeapon, nClass );
+		pWeapon = g_pWeaponMgr->GetWeapon( nWeapon );
+	}
+	if (!pWeapon && g_pWeaponMgr->GetWeaponClass(m_nWeapon) != nClass )
 	{
 		if (!m_bIsOpen)
 			m_nWeapon = -1;
@@ -111,10 +118,18 @@ void CWeaponChooser::NextWeapon(uint8 nClass)
 	if (nClass > g_pWeaponMgr->GetNumWeaponClasses())
 		nClass = m_nClass;
 
-	// get the next avail weapon
-	uint8 nWeapon = g_pPlayerMgr->GetClientWeaponMgr()->GetNextWeaponId( m_nWeapon, nClass );
-	if (g_pWeaponMgr->IsValidWeaponId(nWeapon) )
-		m_nWeapon = nWeapon;
+	// RETAIL: 0x1010d8cf: get the next weapon that shows in the chooser.
+	uint8 nWeapon = m_nWeapon;
+	for( ;; )
+	{
+		nWeapon = g_pPlayerMgr->GetClientWeaponMgr()->GetNextWeaponId( nWeapon, nClass );
+		WEAPON const *pWeapon = g_pWeaponMgr->GetWeapon( nWeapon );
+		if( !pWeapon || nWeapon == m_nWeapon )
+			return;
+		if( pWeapon->bShowChooser )
+			break;
+	}
+	m_nWeapon = nWeapon;
 
     g_pClientSoundMgr->PlayInterfaceSound((char*)g_pInterfaceResMgr->GetSoundSelect());
 
@@ -126,10 +141,19 @@ void CWeaponChooser::NextWeapon(uint8 nClass)
 
 void CWeaponChooser::PrevWeapon()
 {
-	// get the prev avail weapon
-	uint8 nWeapon = g_pPlayerMgr->GetClientWeaponMgr()->GetPrevWeaponId( m_nWeapon, m_nClass );
-	if (g_pWeaponMgr->IsValidWeaponId(nWeapon) )
-		m_nWeapon = nWeapon;
+	// RETAIL: 0x1010d9e5: get the previous weapon that shows in the
+	// chooser, from any class.
+	uint8 nWeapon = m_nWeapon;
+	for( ;; )
+	{
+		nWeapon = g_pPlayerMgr->GetClientWeaponMgr()->GetPrevWeaponId( nWeapon, 0 );
+		WEAPON const *pWeapon = g_pWeaponMgr->GetWeapon( nWeapon );
+		if( !pWeapon || nWeapon == m_nWeapon )
+			return;
+		if( pWeapon->bShowChooser )
+			break;
+	}
+	m_nWeapon = nWeapon;
 
     g_pClientSoundMgr->PlayInterfaceSound((char*)g_pInterfaceResMgr->GetSoundSelect());
 

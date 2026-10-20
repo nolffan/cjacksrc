@@ -630,7 +630,8 @@ void CTO2PlayerStats::UpdateAmmo(uint8 nWeaponId, uint8 nAmmoId,
 					{
 						WEAPON const *pWeapon = g_pWeaponMgr->GetWeapon(nWeapon);
 
-						if ( !pWeapon->bInfiniteAmmo )
+						// RETAIL: 0x100fbe61: only the chooser's weapons count.
+						if ( !pWeapon->bInfiniteAmmo && pWeapon->bShowChooser )
 						{
 							for ( int32 iAmmo = 0 ; iAmmo < pWeapon->nNumAmmoIds ; iAmmo++ )
 							{
@@ -665,17 +666,19 @@ void CTO2PlayerStats::UpdateAmmo(uint8 nWeaponId, uint8 nAmmoId,
 				{
 					//g_pLTClient->CPrint("Out of ammo!");
 
-					if ( nWeaponId == WMGR_INVALID_ID )
+					// RETAIL: 0x100fbef0
+					if ( pWeapon && nWeaponId != WMGR_INVALID_ID )
+					{
+						// Picked up a gun -- equip that gun, if the chooser shows it
+
+						if ( pWeapon->bShowChooser )
+							nEquipWeapon = nWeaponId;
+					}
+					else
 					{
 						// Picked up ammo -- equip the best gun for that can use the ammo
 
 						nEquipWeapon = nWeaponBest;
-					}
-					else
-					{
-						// Picked up a gun -- equip that gun
-
-						nEquipWeapon = nWeaponId;
 					}
 				}
 				else
@@ -723,7 +726,12 @@ void CTO2PlayerStats::UpdateAmmo(uint8 nWeaponId, uint8 nAmmoId,
 		}
 	}
 
-	if ( nEquipWeapon != WMGR_INVALID_ID )  /*** BL 12/08/2000 Added to change equip weapon when you are out of ammo and pick up a weapon ******/
+	// RETAIL: 0x100fbfb4: the switch honours AutoWeaponSwitch, unless the
+	// player is empty-handed and this is the default weapon.
+	bool bEmptyHanded = ( !g_pPlayerMgr->GetCurrentClientWeapon() &&
+		g_pPlayerMgr->GetClientWeaponMgr()->GetDefaultWeaponId() == nEquipWeapon );
+	if ( nEquipWeapon != WMGR_INVALID_ID &&
+		( bEmptyHanded || GetConsoleBool( "AutoWeaponSwitch", true )))  /*** BL 12/08/2000 Added to change equip weapon when you are out of ammo and pick up a weapon ******/
 	{
 		g_pPlayerMgr->ChangeWeapon( nEquipWeapon, nAmmoId );
 	}  /*** BL 12/08/2000 End changes ******/
