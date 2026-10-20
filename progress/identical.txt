@@ -5261,12 +5261,14 @@ CShell.dll	sub_100f6b00
 CShell.dll	sub_100f6b30
 CShell.dll	sub_100f6c10
 CShell.dll	sub_100f6c30
+CShell.dll	sub_100f6cf0
 CShell.dll	sub_100f72f0
 CShell.dll	sub_100f7440
 CShell.dll	sub_100f7560
 CShell.dll	sub_100f7610
 CShell.dll	sub_100f76d0
 CShell.dll	sub_100f7730
+CShell.dll	sub_100f7d00
 CShell.dll	sub_100f87d0
 CShell.dll	sub_100f8830
 CShell.dll	sub_100f8860
