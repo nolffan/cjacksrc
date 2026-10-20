@@ -202,3 +202,5 @@ Lithtech.exe,0x00473cc0,shelltransfer.obj's second stub (xor al,al; ret 8): afte
 Lithtech.exe,0x00473cd0,shelltransfer.obj's third stub (ret 0x10): after the second at 0x473cc0
 Lithtech.exe,0x0049bc70,the second string getter (mov eax,0x569300; ret): after the one at 0x49bc60 (mov eax,"CLTSoundMgrServer"; ret); enumerated as one row with it
 Lithtech.exe,0x0041ab50,CounterFinal::StartMicro (push ecx; call QueryPerformanceCounter; ret): uncalled; enumerated inside CountMS 0x41ab40 (jmp EndMS)
+Lithtech.exe,0x00512fc0,CUIWidgetManager::GetScreenHeight (mov ax,[ecx+6]; ret): after GetScreenWidth 0x512fb0; enumerated as one row with it
+Lithtech.exe,0x00513200,CUIWidgetManager::~CUIWidgetManager (the vtable store; ret): after the empty function at 0x5131f0; enumerated as one row with it
