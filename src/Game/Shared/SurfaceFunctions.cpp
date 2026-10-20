@@ -322,16 +322,16 @@ SurfaceType GetSurfaceType(CollisionInfo & iInfo)
 	// there are many more cases where this is the right thing
 	// to do)
 
-	if (iInfo.m_hPoly != INVALID_HPOLY)
-	{
-		eType = GetSurfaceType(iInfo.m_hPoly);
-	}
+	// RETAIL: Object 0x10150945: the object first, then the poly.
 
-	// Try the object...
-
-	if (eType == ST_UNKNOWN && iInfo.m_hObject)
+	if (iInfo.m_hObject)
 	{
 		eType = GetSurfaceType(iInfo.m_hObject);
+	}
+
+	if (iInfo.m_hPoly != INVALID_HPOLY && eType == ST_UNKNOWN)
+	{
+		eType = GetSurfaceType(iInfo.m_hPoly);
 	}
 
 	return eType;

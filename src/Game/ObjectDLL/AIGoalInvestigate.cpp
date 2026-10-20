@@ -548,7 +548,7 @@ void CAIGoalInvestigate::HandleStateInvestigate()
 					return;
 				}
 
-				if( m_pAI->GetState()->GetStateType() == kState_HumanUseObject )
+				if( m_pAI->GetState() && ( m_pAI->GetState()->GetStateType() == kState_HumanUseObject ))	// RETAIL: Object 0x1002aa84
 				{
 					m_pAI->FaceDir( -m_pAI->GetForwardVector() );
 				}
@@ -825,7 +825,7 @@ void CAIGoalInvestigate::SearchOrAware(LTBOOL bOnlyAware)
 		// Turn away from whatever was being investigated.
 		// (e.g. so that AI won't be standing there facing file cabinet.)
 
-		if( m_pAI->GetState()->GetStateType() == kState_HumanUseObject )
+		if( m_pAI->GetState() && ( m_pAI->GetState()->GetStateType() == kState_HumanUseObject ))	// RETAIL: Object 0x10029a98
 		{
 			m_pAI->FaceDir( -m_pAI->GetForwardVector() );
 		}
