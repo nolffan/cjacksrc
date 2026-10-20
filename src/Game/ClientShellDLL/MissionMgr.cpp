@@ -166,10 +166,12 @@ bool CMissionMgr::StartGameFromLevel( char const* pszFilename )
 	m_bRestoringLevel = false;
 	m_bServerWaiting = true;
 	ClearMissionInfo( );
+	m_sCurrentWorldName = "";	// RETAIL: a new game forgets the world
 
 	m_eStartGameState = eStartGameFromLevel;
 	// Set our new level name.
-	if( !SetNewLevel( pszFilename ) || !SetLoadingLevel( ))
+	// RETAIL: 0x1008892d tests the name again.
+	if( !pszFilename[0] || !SetNewLevel( pszFilename ) || !SetLoadingLevel( ))
 		return false;
 
 	return true;
@@ -189,6 +191,7 @@ bool CMissionMgr::StartPerformanceLevel()
 	m_bRestoringLevel = false;
 	m_bServerWaiting = true;
 	ClearMissionInfo( );
+	m_sCurrentWorldName = "";	// RETAIL: a new game forgets the world
 
 	// Starting new game.
 	g_pInterfaceMgr->StartingNewGame( );
@@ -257,6 +260,7 @@ bool CMissionMgr::StartGameFromQuickSave( )
 	m_bRestoringLevel = false;
 	m_bServerWaiting = true;
 	ClearMissionInfo( );
+	m_sCurrentWorldName = "";	// RETAIL: a new game forgets the world
 
 	bool bOk = true;
 
@@ -327,6 +331,7 @@ bool CMissionMgr::StartGameFromSaveSlot( int nSlot )
 	m_bRestoringLevel = false;
 	m_bServerWaiting = true;
 	ClearMissionInfo( );
+	m_sCurrentWorldName = "";	// RETAIL: a new game forgets the world
 
 	bool bOk = true;
 
@@ -397,6 +402,7 @@ bool CMissionMgr::StartGameFromReload( )
 	m_bRestoringLevel = false;
 	m_bServerWaiting = true;
 	ClearMissionInfo( );
+	m_sCurrentWorldName = "";	// RETAIL: a new game forgets the world
 
 	bool bOk = true;
 
@@ -466,6 +472,7 @@ bool CMissionMgr::StartGameFromCheckpoint( )
 	m_bRestoringLevel = false;
 	m_bServerWaiting = true;
 	ClearMissionInfo( );
+	m_sCurrentWorldName = "";	// RETAIL: a new game forgets the world
 
 	bool bOk = true;
 
@@ -540,6 +547,7 @@ bool CMissionMgr::StartGameFromContinue( )
 	m_bRestoringLevel = false;
 	m_bServerWaiting = true;
 	ClearMissionInfo( );
+	m_sCurrentWorldName = "";	// RETAIL: a new game forgets the world
 
 	bool bOk = true;
 
@@ -594,6 +602,7 @@ bool CMissionMgr::StartGameAsClient( )
 	m_bRestoringLevel = false;
 	m_bServerWaiting = true;
 	ClearMissionInfo( );
+	m_sCurrentWorldName = "";	// RETAIL: a new game forgets the world
 
 	// Starting new game.
 	g_pInterfaceMgr->StartingNewGame( );

@@ -233,7 +233,8 @@ LTBOOL CBaseScaleFX::Update()
 
 	m_fElapsedTime += fFrameTime;
 
-	if (m_fElapsedTime > m_fEndTime)
+	// RETAIL: 0x10007372: a lifetime of 10000 or more never ends.
+	if (m_fElapsedTime > m_fEndTime && m_fLifeTime < 10000.0f)
 	{
         return LTFALSE;
 	}

@@ -657,6 +657,7 @@ CShell.dll	sub_10006e50
 CShell.dll	sub_10006ff0
 CShell.dll	sub_10007130
 CShell.dll	sub_10007190
+CShell.dll	sub_10007320
 CShell.dll	sub_100074b0
 CShell.dll	sub_100075a0
 CShell.dll	sub_10007610
@@ -2005,6 +2006,7 @@ CShell.dll	sub_1004e2c0
 CShell.dll	sub_1004e340
 CShell.dll	sub_1004e360
 CShell.dll	sub_1004e3a0
+CShell.dll	sub_1004e6a0
 CShell.dll	sub_1004e760
 CShell.dll	sub_1004e780
 CShell.dll	sub_1004e7b0
@@ -3278,7 +3280,13 @@ CShell.dll	sub_10088350
 CShell.dll	sub_100883e0
 CShell.dll	sub_10088400
 CShell.dll	sub_10088710
+CShell.dll	sub_10088750
 CShell.dll	sub_100887d0
+CShell.dll	sub_100888d0
+CShell.dll	sub_10088ae0
+CShell.dll	sub_10088be0
+CShell.dll	sub_10088cb0
+CShell.dll	sub_10088d80
 CShell.dll	sub_10088ee0
 CShell.dll	sub_10088f70
 CShell.dll	sub_100890d0
@@ -4179,6 +4187,7 @@ CShell.dll	sub_100bb760
 CShell.dll	sub_100bb830
 CShell.dll	sub_100bb870
 CShell.dll	sub_100bb980
+CShell.dll	sub_100bba30
 CShell.dll	sub_100bbb30
 CShell.dll	sub_100bbb60
 CShell.dll	sub_100bbb90
@@ -4196,6 +4205,7 @@ CShell.dll	sub_100bbda0
 CShell.dll	sub_100bbea0
 CShell.dll	sub_100bc3a0
 CShell.dll	sub_100bc3d0
+CShell.dll	sub_100bc4a0
 CShell.dll	sub_100bc630
 CShell.dll	sub_100bc9f0
 CShell.dll	sub_100bca20
@@ -4677,12 +4687,14 @@ CShell.dll	sub_100dba20
 CShell.dll	sub_100dba50
 CShell.dll	sub_100dbab0
 CShell.dll	sub_100dbe00
+CShell.dll	sub_100dbe30
 CShell.dll	sub_100dc030
 CShell.dll	sub_100dc0a0
 CShell.dll	sub_100dc260
 CShell.dll	sub_100dc2b0
 CShell.dll	sub_100dc670
 CShell.dll	sub_100dc710
+CShell.dll	sub_100dc7f0
 CShell.dll	sub_100dc930
 CShell.dll	sub_100dcc50
 CShell.dll	sub_100dcd50

@@ -337,10 +337,11 @@ void CScreenSingle::OnFocus(LTBOOL bFocus)
 	if (bFocus)
 	{
 		// We should not be connected to a server at this point.
+		// RETAIL: 0x100dc800: leave the server on purpose.
 		if(g_pLTClient->IsConnected())
 		{
-			_ASSERT(!"ERROR: ClientMultiplayerMgr::StartClient( ) : Already connected!");
-			g_pLTClient->Disconnect();
+			g_pInterfaceMgr->SetIntentionalDisconnect( true );
+			g_pClientMultiplayerMgr->ForceDisconnect();
 		}
 
 		// Initialize to the sp mission bute.
@@ -350,7 +351,8 @@ void CScreenSingle::OnFocus(LTBOOL bFocus)
 			return;
   		}
 
-		m_pLoadCtrl->Enable( g_pClientSaveLoadMgr->ReloadSaveExists() );
+		// RETAIL: 0x100dc869: "load" continues the last game.
+		m_pLoadCtrl->Enable( g_pClientSaveLoadMgr->CanContinueGame() );
 		m_pDiff->Show(LTFALSE);
 		m_pDiffFrame->Show(LTFALSE);
 
