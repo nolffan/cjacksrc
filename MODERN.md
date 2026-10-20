@@ -13,6 +13,9 @@ change next, and what was looked at and left alone, and why. It follows
 nolf2src's `MODERN.md` (NOLF2's modern build) in its rules; the items are
 Contract J.A.C.K.'s own.
 
+Each item's id is a series and a number (GS-1, GAME-3, EN-1, APPS-4, CL-1,
+LAY-1); an id is never reused.
+
 ## Rules for this work
 
 * **Reimplement, never copy.** Fan fixes and patches are a fine source for
@@ -49,7 +52,7 @@ modes at any size; our Bink player on FFmpeg in place of RAD's
   each server it finds under a lock of its own, and the screen files the
   queue on its render, so neither thread waits for a lock the other holds
   (`RETAIL_BUGS.md`; src/Game/ClientShellDLL/ScreenJoin.cpp, .h).
-* **GAME-4: the message queue's lost message.** With no active message
+* **GAME-5: the message queue's lost message.** With no active message
   to reuse, CHUDMessageQueue::AddMessage keeps the one it allocates
   instead of writing through NULL (`RETAIL_BUGS.md`;
   src/Game/ClientShellDLL/HUDMessageQueue.cpp).

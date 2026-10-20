@@ -680,8 +680,12 @@ bool CMissionMgr::HandleMissionFailed()
 
 bool CMissionMgr::HandleExitLevel( ILTMessage_Read& msg  )
 {
-	char szNewWorldName[MAX_PATH];
-	msg.ReadString( szNewWorldName, MAX_PATH );
+	// RETAIL: 0x10088459: a dead player in single player has failed.
+	if( !IsMultiplayerGame( ) && g_pPlayerMgr->IsPlayerDead( ))
+		return HandleMissionFailed( );
+
+	char szNewWorldName[MAX_PATH*2];	// RETAIL: 0x100884a3
+	msg.ReadString( szNewWorldName, ARRAY_LEN( szNewWorldName ));
 	m_sNewWorldName = szNewWorldName;
 	m_bExitingMission = msg.Readbool( );
 	m_bRestoringLevel = msg.Readbool( );

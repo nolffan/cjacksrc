@@ -3279,6 +3279,7 @@ CShell.dll	sub_10088320
 CShell.dll	sub_10088350
 CShell.dll	sub_100883e0
 CShell.dll	sub_10088400
+CShell.dll	sub_10088450
 CShell.dll	sub_10088710
 CShell.dll	sub_10088750
 CShell.dll	sub_100887d0

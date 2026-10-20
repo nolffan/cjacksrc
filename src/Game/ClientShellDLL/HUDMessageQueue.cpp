@@ -241,7 +241,7 @@ void CHUDMessageQueue::AddMessage(MsgCreate &fmt, bool bHistoryOnly)
 		else
 		{
 #ifdef CJACK_MODERN
-			// MODERN.md GAME-4: use the new message.
+			// MODERN.md GAME-5: use the new message.
 			pMsg = debug_new(CHUDMessage);
 #else
 			debug_new(CHUDMessage);
