@@ -56,6 +56,10 @@ void CHUDScores::Term()
 
 void CHUDScores::Show(bool bDraw, bool bScreen) 
 {	
+	// RETAIL: 0x1006035b: the end screen fills its scores when it comes up.
+	if (!m_nDraw && bDraw && bScreen && !m_bScreen)
+		m_bRefreshScreen = bScreen;
+
 	if (bDraw)
 		m_nDraw++;
 	else if (m_nDraw > 0)
@@ -81,7 +85,7 @@ void CHUDScores::Show(bool bDraw, bool bScreen)
 
 	}
 	
-	m_bScreen = bScreen; 
+	m_bScreen = bScreen && bDraw;
 	Update();
 }
 
@@ -144,6 +148,11 @@ void CHUDScores::Update()
 		}
 
 	}
+
+	// RETAIL: 0x100607e5: the end screen keeps the scores it came up with.
+	if (m_bScreen && !m_bRefreshScreen)
+		return;
+	m_bRefreshScreen = false;
 
 	if (IsTeamGameType())
 	{

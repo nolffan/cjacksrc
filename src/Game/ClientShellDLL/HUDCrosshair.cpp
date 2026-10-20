@@ -136,7 +136,7 @@ void CHUDCrosshair::Render()
 		if (!m_bEnabled)
 			return;
 
-		if (g_pPlayerMgr->GetPlayerState() == PS_DEAD || g_pPlayerMgr->GetPlayerState() == PS_DYING)
+		if (g_pPlayerMgr->IsPlayerDead())
 		{
 			g_pDrawPrim->SetTexture(LTNULL);
 			g_pDrawPrim->SetRGBA(&m_Poly[2],argbWhite);
@@ -150,33 +150,38 @@ void CHUDCrosshair::Render()
 		}
 		else
 		{
-			LTVector vPos;
+			// RETAIL: 0x1005571d: each branch places the crosshair itself.
 			if (CAutoTargetMgr::Instance().IsLockedOn())
 			{
 				// A dot where the view points...
 				g_pDrawPrim->SetTexture(LTNULL);
 				g_pDrawPrim->SetRGBA(&m_Poly[2],argbWhite);
 
-				float w = 2.0f * g_pInterfaceResMgr->GetXRatio();
+				float fSz = 2.0f * g_pInterfaceResMgr->GetXRatio();
 				float x = (float)g_pInterfaceResMgr->GetScreenWidth() * 0.5f;
 				float y = (float)g_pInterfaceResMgr->GetScreenHeight() * 0.5f;
 
-				g_pDrawPrim->SetXYWH(&m_Poly[2],x,y,w,w);
+				g_pDrawPrim->SetXYWH(&m_Poly[2],x,y,fSz,fSz);
 				g_pDrawPrim->DrawPrim(&m_Poly[2],1);
 
 				// ...and the crosshair on the target
-				vPos = CAutoTargetMgr::Instance().GetCrosshairPos();
+				LTVector vPos = CAutoTargetMgr::Instance().GetCrosshairPos();
+
+				fSz = m_fAccurateSz;
+				g_pDrawPrim->SetXYWH(&m_Poly[0],vPos.x - fSz * 0.5f,vPos.y - fSz * 0.5f,fSz,fSz);
+				fSz = m_fInaccurateSz;
+				g_pDrawPrim->SetXYWH(&m_Poly[1],vPos.x - fSz * 0.5f,vPos.y - fSz * 0.5f,fSz,fSz);
 			}
 			else
 			{
-				vPos.x = (float)g_pInterfaceResMgr->GetScreenWidth() * 0.5f;
-				vPos.y = (float)g_pInterfaceResMgr->GetScreenHeight() * 0.5f;
-			}
+				float x = (float)g_pInterfaceResMgr->GetScreenWidth() * 0.5f;
+				float y = (float)g_pInterfaceResMgr->GetScreenHeight() * 0.5f;
 
-			float fHalf = m_fAccurateSz * 0.5f;
-			g_pDrawPrim->SetXYWH(&m_Poly[0],vPos.x - fHalf,vPos.y - fHalf,m_fAccurateSz,m_fAccurateSz);
-			fHalf = m_fInaccurateSz * 0.5f;
-			g_pDrawPrim->SetXYWH(&m_Poly[1],vPos.x - fHalf,vPos.y - fHalf,m_fInaccurateSz,m_fInaccurateSz);
+				float fSz = m_fAccurateSz;
+				g_pDrawPrim->SetXYWH(&m_Poly[0],x - fSz * 0.5f,y - fSz * 0.5f,fSz,fSz);
+				fSz = m_fInaccurateSz;
+				g_pDrawPrim->SetXYWH(&m_Poly[1],x - fSz * 0.5f,y - fSz * 0.5f,fSz,fSz);
+			}
 
 			g_pDrawPrim->SetTexture(m_hAccurate);
 			g_pDrawPrim->DrawPrim(&m_Poly[0],1);

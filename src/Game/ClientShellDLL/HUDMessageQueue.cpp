@@ -228,9 +228,20 @@ void CHUDMessageQueue::AddMessage(MsgCreate &fmt, bool bHistoryOnly)
 	if (!bHistoryOnly)
 	{
 		//take the oldest active message out of the list
-		MessageArray::iterator iter = m_ActiveMsgs.begin();
-		CHUDMessage *pMsg = (*iter);
-		m_ActiveMsgs.erase(iter);
+		// RETAIL: 0x1005a834: with no active messages retail creates one
+		// and loses it, then writes through NULL. Init() never leaves the
+		// list empty.
+		CHUDMessage *pMsg = LTNULL;
+		if (!m_ActiveMsgs.empty())
+		{
+			MessageArray::iterator iter = m_ActiveMsgs.begin();
+			pMsg = (*iter);
+			m_ActiveMsgs.erase(iter);
+		}
+		else
+		{
+			debug_new(CHUDMessage);
+		}
 
 		//overwrite the data
 		pMsg->Create(fmt);

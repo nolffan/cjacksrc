@@ -17,6 +17,7 @@
 #include "SurfaceFunctions.h"
 #include "SurfaceMgr.h"
 #include "CMoveMgr.h"
+#include "VehicleMgr.h"
 #include "PlayerMgr.h"
 #include "ClientWeaponMgr.h"
 #include "ClientButeMgr.h"
@@ -565,9 +566,11 @@ void CAutoTargetMgr::Update()
 	IClientWeaponBase* pClientWeapon = g_pPlayerMgr->GetClientWeaponMgr()->GetCurrentClientWeapon();
 	if (!pClientWeapon) return;
 
-	// cjacksrc: retail aims a vehicle's weapon when the player drives one
-	// (CVehicleMgr's, 0x10004682); ours aims the player's.
+	// RETAIL: 0x10004677: a vehicle's own weapon aims when the player
+	// drives one.
 	WEAPON const* pWeaponData = pClientWeapon->GetWeapon();
+	if( g_pMoveMgr->GetVehicleMgr( )->IsVehiclePhysics( ) && g_pMoveMgr->GetVehicleMgr( )->HasVehicleWeapon( ))
+		pWeaponData = g_pMoveMgr->GetVehicleMgr( )->GetVehicleWeapon( )->GetWeapon( );
 
 	if (pWeaponData->nAutoTarget == 0 || (pWeaponData->nAutoTarget == 1 && g_pGameClientShell->GetDifficulty() != GD_EASY) )
 		return;
@@ -580,11 +583,11 @@ void CAutoTargetMgr::Update()
 	m_fRangeSqr = pWeaponData->fAutoTargetRange * pWeaponData->fAutoTargetRange;
 	
 	// Get the camera position and set up the vectors
+	LTRotation rRot;
 	HOBJECT hCamera = g_pPlayerMgr->GetCamera();
 	if (!hCamera)
 		return;
 
-	LTRotation rRot;
 	g_pLTClient->GetObjectPos(hCamera, &m_vFirePos);
 	g_pLTClient->GetObjectRotation(hCamera, &rRot);
 

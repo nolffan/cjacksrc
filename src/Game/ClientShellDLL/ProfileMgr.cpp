@@ -476,7 +476,10 @@ void CUserProfile::LoadMultiplayer()
 
 	char szStr[64];
 	m_buteMgr.GetString(s_aTagName, "PlayerName",m_sName.c_str(),szStr,sizeof(szStr));
-	m_sPlayerName = szStr;
+	// RETAIL: 0x100ac191: the name is cleaned, and an empty one is "Player".
+	m_sPlayerName = FixPlayerName(szStr);
+	if (m_sPlayerName.empty())
+		m_sPlayerName = LoadTempString(IDS_PLAYER);
 
 	m_buteMgr.GetString( s_aTagName, "Guid", "", szStr, sizeof( szStr ));
 	// If they didn't have a guid, create one.
