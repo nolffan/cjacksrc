@@ -223,7 +223,7 @@ void Body::RemovePowerupObjects()
 	// before it's removed.  The spears' loop clears it on
 	// m_ahWeapons[iWeapon] -- the for's variable outlives its loop
 	// (no /Zc:forScope), so that's the handle past the end of
-	// m_ahWeapons, read from the members after it.
+	// m_ahWeapons, read from the members after it (RETAIL_BUGS.md).
 	uint32 iWeapon;
 	for (iWeapon = 0; iWeapon < kMaxWeapons; iWeapon++)
 	{
@@ -252,7 +252,12 @@ void Body::RemovePowerupObjects()
 				g_pLTServer->RemoveAttachment(hAttachment);
 			}
 
+#ifdef CJACK_MODERN
+			// MODERN.md GAME-4: the spear's own touch notify.
+			g_pCommonLT->SetObjectFlags(m_ahSpears[iSpear], OFT_Flags, 0, FLAG_TOUCH_NOTIFY);
+#else
 			g_pCommonLT->SetObjectFlags(m_ahWeapons[iWeapon], OFT_Flags, 0, FLAG_TOUCH_NOTIFY);
+#endif
 			g_pLTServer->RemoveObject(m_ahSpears[iSpear]);
 
 			m_ahSpears[iSpear] = NULL;
@@ -586,8 +591,6 @@ bool Body::OnTrigger(HOBJECT hSender, const CParsedMsg &cMsg)
 			{
 				// Bring the player back from the dead and get rid of the body...
 
-				pDeadPlayer->Revive();
-
 				CPlayerObj *pReviver = dynamic_cast<CPlayerObj*>( g_pLTServer->HandleToObject( hSender ));
 				if (pReviver)
 				{
@@ -597,6 +600,10 @@ bool Body::OnTrigger(HOBJECT hSender, const CParsedMsg &cMsg)
 				// Get rid of any weapons or other poerups we had...
 
 				RemovePowerupObjects();
+
+				// RETAIL: Object 0x1009453a: revived after the body's
+				// attachments are gone.
+				pDeadPlayer->Revive();
 
 				// Remove the body...
 				

@@ -404,22 +404,22 @@ void Explosion::AreaDamageObject(HOBJECT hObj)
 {
 	if (!hObj) return;
 
-	HOBJECT hDamager = m_hFiredFrom ? m_hFiredFrom : m_hObject;
-
     LTVector vObjPos;
 	g_pLTServer->GetObjectPos(hObj, &vObjPos);
 
     LTVector vDir = vObjPos - m_vPos;
     LTFLOAT fDist = vDir.Mag();
 
-	if (fDist > m_fDamageRadius) return;
+	if (!(fDist <= m_fDamageRadius)) return;	// RETAIL: Object 0x100cc865, 0x100cc9e1: written as !(<=)
 
 	// RETAIL: Object 0x100cc7f0.  Only players can be shielded by walls...
 
 	if (IsBlocked(hObj)) return;
 
 	DamageStruct damage;
-	damage.hDamager = hDamager;
+	// RETAIL: Object 0x100cc884: the damager is chosen here, as an
+	// LTObjRef.
+	damage.hDamager = m_hFiredFrom ? m_hFiredFrom : LTObjRef(m_hObject);
 	damage.vDir		= vDir;
 
 	// Full damage inside the kill zone, falling off to nothing at the
@@ -453,22 +453,22 @@ void Explosion::ProgDamageObject(HOBJECT hObj)
 {
 	if (!hObj) return;
 
-	HOBJECT hDamager = m_hFiredFrom ? m_hFiredFrom : m_hObject;
-
     LTVector vObjPos;
 	g_pLTServer->GetObjectPos(hObj, &vObjPos);
 
     LTVector vDir = vObjPos - m_vPos;
     LTFLOAT fDist = vDir.Mag();
 
-	if (fDist > m_fProgDamageRadius) return;
+	if (!(fDist <= m_fProgDamageRadius)) return;	// RETAIL: Object 0x100cc865, 0x100cc9e1: written as !(<=)
 
 	// RETAIL: Object 0x100cc970
 
 	if (IsBlocked(hObj)) return;
 
 	DamageStruct damage;
-	damage.hDamager		= hDamager;
+	// RETAIL: Object 0x100cc884: the damager is chosen here, as an
+	// LTObjRef.
+	damage.hDamager = m_hFiredFrom ? m_hFiredFrom : LTObjRef(m_hObject);
 	damage.vDir			= vDir;
 	damage.eType		= m_eProgDamageType;
 	damage.fDuration	= m_fProgDamageDuration;
