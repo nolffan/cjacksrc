@@ -73,7 +73,7 @@ LINK32=link.exe
 # Begin Source File
 
 SOURCE=..\..\controlfilemgr\controlfilemgr.cpp
-# SUBTRACT CPP /YX /Yc /Yu
+# ADD CPP /FI"bdefs.h"
 # End Source File
 # Begin Source File
 
@@ -104,12 +104,12 @@ SOURCE=..\..\server\src\classmgr.cpp
 # Begin Source File
 
 SOURCE=..\..\kernel\src\sys\win\client.cpp
-# SUBTRACT CPP /YX /Yc /Yu
+# ADD CPP /FI"bdefs.h"
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\client\src\client_formatmgr.cpp
-# SUBTRACT CPP /YX /Yc /Yu
+# ADD CPP /FI"bdefs.h"
 # End Source File
 # Begin Source File
 
@@ -127,7 +127,7 @@ SOURCE=..\..\client\src\clientde_impl.cpp
 # Begin Source File
 
 SOURCE=..\..\client\src\clientmgr.cpp
-# SUBTRACT CPP /YX /Yc /Yu
+# ADD CPP /FI"bdefs.h"
 # End Source File
 # Begin Source File
 
@@ -172,7 +172,7 @@ SOURCE=..\..\client\src\consolecommands.cpp
 # Begin Source File
 
 SOURCE=..\..\kernel\src\sys\win\counter.cpp
-# SUBTRACT CPP /YX /Yc /Yu
+# ADD CPP /FI"bdefs.h"
 # End Source File
 # Begin Source File
 
@@ -305,7 +305,7 @@ SOURCE=..\..\kernel\src\sys\win\interface_helpers.cpp
 # Begin Source File
 
 SOURCE=..\..\shared\src\interface_linkage.cpp
-# SUBTRACT CPP /YX /Yc /Yu
+# ADD CPP /FI"bdefs.h"
 # End Source File
 # Begin Source File
 
@@ -367,7 +367,7 @@ SOURCE=..\..\kernel\src\sys\win\ltdirectmusicloader.cpp
 # Begin Source File
 
 SOURCE=..\..\..\sdk\inc\lterror.cpp
-# SUBTRACT CPP /YX /Yc /Yu
+# ADD CPP /FI"bdefs.h"
 # End Source File
 # Begin Source File
 
@@ -400,17 +400,17 @@ SOURCE=..\..\server\src\ltmessage_server.cpp
 # Begin Source File
 
 SOURCE=..\..\..\sdk\inc\ltmodule.cpp
-# SUBTRACT CPP /YX /Yc /Yu
+# ADD CPP /FI"bdefs.h"
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\..\sdk\inc\ltobjref.cpp
-# SUBTRACT CPP /YX /Yc /Yu
+# ADD CPP /FI"bdefs.h"
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\..\sdk\inc\ltquatbase.cpp
-# SUBTRACT CPP /YX /Yc /Yu
+# ADD CPP /FI"bdefs.h"
 # End Source File
 # Begin Source File
 
@@ -690,7 +690,7 @@ SOURCE=..\..\world\src\world_tree.cpp
 # Begin Source File
 
 SOURCE=..\..\kernel\src\icommandlineargs.cpp
-# SUBTRACT CPP /YX /Yc /Yu
+# ADD CPP /FI"bdefs.h"
 # End Source File
 # Begin Source File
 
