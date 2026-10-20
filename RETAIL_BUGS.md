@@ -28,9 +28,10 @@ too, since Contract J.A.C.K. was built from the same code: check each
 against the retail binary before listing it. Those Contract J.A.C.K. no
 longer has go at the end, so nobody looks again.
 
-**Fixed so far** (in the modern build): seventeen -- the two GameSpy handle
+**Fixed so far** (in the modern build): eighteen -- the two GameSpy handle
 bugs (MODERN.md GS-1), GetCommandName (GAME-1), the chassis's update
-(GAME-2), the join screen's deadlock (GAME-3), the world shaders' section order (EN-1), ShowVersionInfo (EN-3),
+(GAME-2), the join screen's deadlock (GAME-3), a body's spears
+(GAME-4), the world shaders' section order (EN-1), ShowVersionInfo (EN-3),
 the music thread's handle (EN-4), a failed transition segment (EN-5),
 batched screen quads' colours (EN-6), SoundSys's null Term (EN-7),
 SetCamera's unset viewport (EN-8), the launcher's path overrun (APPS-1),
@@ -181,6 +182,20 @@ reading it.
 
 Fixed in the modern build: src/Game/ClientShellDLL/ScreenJoin.cpp,
 MODERN.md GAME-3.
+
+### A body's spears are removed with the wrong object's touch notify cleared
+
+Object.lto 0x10093180 (Body::RemovePowerupObjects,
+src/Game/ObjectDLL/Body.cpp). Before it removes each weapon and spear
+attached to a body, the function clears the object's FLAG_TOUCH_NOTIFY.
+The spears' loop clears it on `m_ahWeapons[iWeapon]` instead of the
+spear: the weapons' loop counter, still in scope after its loop, is
+kMaxWeapons, so it reads the handle one past the end of m_ahWeapons
+(whatever member follows the array, at 0x8dc) and changes that object's
+flags, or none. The spears keep their touch notify until they're
+removed, so nothing shows in the game.
+
+Fixed in the modern build: src/Game/ObjectDLL/Body.cpp, MODERN.md GAME-4.
 ### The ShowVersionInfo console command calls a null function
 
 Lithtech.exe 0x41a360 (con_ShowVersionInfo, src/Engine/runtime/client/src/

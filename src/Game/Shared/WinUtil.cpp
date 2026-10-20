@@ -134,7 +134,8 @@ BOOL CWinUtil::CopyDir( char const* pSrc, char const* pDest )
 		do
 		{
 			sprintf( szFiles, "%s\\%s", pSrc, file.name );
-			if( FileExist( szFiles ))
+			// RETAIL: Object 0x101683b8: files only, not directories.
+			if( FileExist( szFiles ) && !( file.attrib & _A_SUBDIR ))
 				fileList.insert(file.name);
 		}
 		while(_findnext(hFile, &file) == 0);

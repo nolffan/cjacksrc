@@ -288,8 +288,8 @@ bool GunMount::CreateWeapon( )
 	WEAPON const *pWeapon = g_pWeaponMgr->GetWeapon( nWeaponId );
 	if( !pWeapon ) return false;
 
+	// RETAIL: Object 0x100e520e: the constructor's clear only.
 	ObjectCreateStruct theStruct;
-	INIT_OBJECTCREATESTRUCT( theStruct );
 
 	theStruct.m_Flags = FLAG_VISIBLE | FLAG_GOTHRUWORLD;
 	theStruct.m_Flags2 |= FLAG2_DYNAMICDIRLIGHT;
@@ -306,29 +306,26 @@ bool GunMount::CreateWeapon( )
 	LTRotation rRot( 0.0f, MATH_PI, 0.0f );
 	LTVector vOffset( 0.0f, 0.0f, 0.0f );
 	HATTACHMENT hAttachment;
-	if( g_pLTServer->CreateAttachment( m_hObject, pModel->m_hObject, LTNULL, &vOffset, &rRot, &hAttachment ) != LT_OK )
-	{
-		g_pLTServer->RemoveObject( pModel->m_hObject );
-		return false;
-	}
 
-	if( !m_Weapons.Init( m_hObject, pModel->m_hObject ))
+	// RETAIL: Object 0x100e52f9: both failures share the removal.
+	if( g_pLTServer->CreateAttachment( m_hObject, pModel->m_hObject, LTNULL, &vOffset, &rRot, &hAttachment ) == LT_OK )
 	{
+		if( m_Weapons.Init( m_hObject, pModel->m_hObject ))
+		{
+			m_Weapons.ObtainWeapon( nWeaponId, nAmmoId, 10000 );
+			m_Weapons.ChangeWeapon( nWeaponId );
+
+			// RETAIL: Object 0x100e5374: the weapon just obtained is current.
+			m_Weapons.GetCurWeapon( )->SetAmmoId( nAmmoId );
+
+			return true;
+		}
+
 		g_pLTServer->RemoveAttachment( hAttachment );
-		g_pLTServer->RemoveObject( pModel->m_hObject );
-		return false;
 	}
 
-	m_Weapons.ObtainWeapon( nWeaponId, nAmmoId, 10000 );
-	m_Weapons.ChangeWeapon( nWeaponId );
-
-	CWeapon *pCurWeapon = m_Weapons.GetCurWeapon( );
-	if( pCurWeapon )
-	{
-		pCurWeapon->SetAmmoId( nAmmoId );
-	}
-
-	return true;
+	g_pLTServer->RemoveObject( pModel->m_hObject );
+	return false;
 }
 
 // ----------------------------------------------------------------------- //

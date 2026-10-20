@@ -539,9 +539,7 @@ void Bombable::HandleStoppedMsg( const CParsedMsg &cMsg )
 
 		g_pCommonLT->SetObjectFlags( m_hObject, OFT_User, USRFLG_CAN_ACTIVATE, USRFLG_CAN_ACTIVATE );
 
-		// Allow this object to deactivate within Prop::Update()
-
-		m_bCanDeactivate = true;
+		// RETAIL: Object 0x1009d12d: the deactivation flag isn't touched.
 	}
 	else
 	{

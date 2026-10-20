@@ -212,7 +212,8 @@ void CGrenade::HandleImpact(HOBJECT hObj)
 	// [KLS 7/28/02] - If we hit a character detonate. 
 	// (i.e., only act like a timed grenade if we don't hit someone)
 
-	if ( IsCharacter(hObj) || IsCharacterHitBox(hObj) || IsBody(hObj))
+	// RETAIL: Object 0x10123d2d: hitting a body does not detonate it.
+	if ( IsCharacter(hObj) || IsCharacterHitBox(hObj) )
 	{
 		if( g_vtNetFriendlyFire.GetFloat() > 0.0f || !IsMyTeam( hObj ))
 		{

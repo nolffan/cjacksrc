@@ -1319,8 +1319,11 @@ void CAIPathMgr::BuildDoorPath(CAI* pAI, CAIPath* pPath, LTFLOAT fRadius, AIVolu
 	vToDoor.y = 0.f;
 	if( vToDoor.MagSqr() > fRadius * fRadius )
 	{
-		LTVector vLastPos = pLastWaypt->GetArgumentVector1();
-		vLastPos += vDir * fRadius;
+		// RETAIL: Object 0x1006a100: twice the radius back from the
+		// door's own position.
+		Door* pDoor = (Door*)g_pLTServer->HandleToObject( pVolume->GetDoor(0) );
+		LTVector vLastPos = pDoor->GetOriginalPos();
+		vLastPos += vDir * ( fRadius * 2.f );
 		pLastWaypt->SetArgumentVector1( vLastPos );
 	}
 

@@ -564,7 +564,8 @@ dedicated server (package 7).
     it's done (the bool at 0xc24).
   - Decided: Body::RemovePowerupObjects (0x10093180) clears the spears'
     touch notify on `m_ahWeapons[iWeapon]` after the weapons' loop, the
-    handle one past the array; ours keeps that read.
+    handle one past the array; the legacy build keeps that read, the
+    modern build fixes it (RETAIL_BUGS.md, MODERN.md GAME-4).
   - Names ours: ScatterVolume::SetSFXMessage (0x10135b60, uncalled,
     `UpdateSFX(false)`).
   - Pairs by size had swapped HandleTransmissionMessage/HandleOverlayMessage,

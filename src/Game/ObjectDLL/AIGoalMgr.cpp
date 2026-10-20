@@ -996,8 +996,9 @@ void CAIGoalMgr::UpdateGoals()
 			pGoal = (*it);
 			if( pGoal->GetDeleteGoalNextUpdate() )
 			{
+				// RETAIL: Object 0x1002f557: the goals after it move up into
+				// its place, so the iterator stays.
 				RemoveGoal( pGoal->GetGoalType() );
-				it = m_lstGoals.begin();
 			}
 			else {
 				++it;
