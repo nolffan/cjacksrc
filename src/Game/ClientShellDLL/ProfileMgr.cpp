@@ -16,6 +16,7 @@
 #include "interfacemgr.h"
 #include "winutil.h"
 #include "ClientResShared.h"
+#include "clientres.h"
 #include "GameClientShell.h"
 #include "GameSettings.h"
 #include "MenuMgr.h"
@@ -1949,6 +1950,10 @@ bool GetDefaultSessionName( GameType eGameType, char* pszSessionName, uint32 nSe
 			break;
 		case eGameTypeDeathmatch:
 			nStringId = IDS_HOST_NAME_DM_DEFAULT;
+			break;
+		// RETAIL: 0x100aa86f: "CJ Demolition"
+		case eGameTypeDemolition:
+			nStringId = IDS_CJ_1433;
 			break;
 		case eGameTypeTeamDeathmatch:
 			nStringId = IDS_HOST_NAME_TDM_DEFAULT;

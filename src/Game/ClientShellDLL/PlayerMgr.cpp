@@ -45,6 +45,7 @@
 #include "PolyGridFX.h"
 #include "PlayerViewAttachmentMgr.h"
 #include "LTEulerAngles.h"
+#include "TO2HUDMgr.h"
 
 CPlayerMgr* g_pPlayerMgr = NULL;
 
@@ -682,6 +683,7 @@ void CPlayerMgr::OnEnterWorld()
 
 	m_fDistanceIndicatorPercent = -1.0f;
 	g_pHUDMgr->QueueUpdate( kHUDDistance );
+	g_pHUDDistance->Reset();	// RETAIL: 0x1009c712
 
 	m_pClientWeaponMgr->OnEnterWorld();
 }
@@ -3324,10 +3326,13 @@ void CPlayerMgr::HandleMsgPlayerStateChange (ILTMessage_Read *pMsg)
 		{
 //			g_pScores->Show(false);
 			g_pHUDMgr->QueueUpdate(kHUDRespawn);
+			g_pPickupMsgs->ClearHistory();				// RETAIL: 0x1009d498
 			g_pDamageFXMgr->Clear();					// Remove all the damage sfx
 			ClearDamageSectors();
 
 			g_pInterfaceMgr->ForceScreenFadeIn(g_vtScreenFadeInTime.GetFloat());
+
+			AttachCameraToHead(LTFALSE);	// RETAIL: 0x1009d4f4, first
 
 			// RETAIL: 0x1009d527, back facing the way the server last set.
 			if( m_bRespawnRequested )
@@ -3336,8 +3341,6 @@ void CPlayerMgr::HandleMsgPlayerStateChange (ILTMessage_Read *pMsg)
 				m_fYaw = m_vLastOrientation.y;
 				m_fRoll = m_vLastOrientation.z;
 			}
-
-			AttachCameraToHead(LTFALSE);
 
 			g_pInterfaceMgr->SetHUDRenderLevel(kHUDRenderFull);
 

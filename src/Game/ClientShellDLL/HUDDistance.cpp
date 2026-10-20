@@ -86,6 +86,14 @@ void CHUDDistance::Term()
 	m_bFirstUpdate = true;
 }
 
+// RETAIL: 0x10057610: hidden again when the player enters a world.
+void CHUDDistance::Reset()
+{
+	m_fAlpha = 0.0f;
+	m_nFadeDir = 1;
+	m_bDraw = false;
+}
+
 // ----------------------------------------------------------------------- //
 //
 //  ROUTINE:	CHUDDistance::Render

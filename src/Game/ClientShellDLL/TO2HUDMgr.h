@@ -70,5 +70,6 @@ extern CHUDCrosshair*		g_pCrosshair;
 extern CHUDCompass*			g_pCompass;
 extern CHUDObjectives*		g_pObjectives;
 extern CHUDRadio*			g_pRadio;
+extern CHUDDistance*		g_pHUDDistance;
 
 #endif

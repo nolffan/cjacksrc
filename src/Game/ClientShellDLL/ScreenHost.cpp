@@ -660,6 +660,13 @@ uint32 CScreenHost::OnCommand(uint32 dwCommand, uint32 dwParam1, uint32 dwParam2
 	}
 	switch(dwCommand)
 	{
+	case CMD_GAME:
+		{
+			// RETAIL: the game type cycle changed (0x100c3146, first)
+			UpdateData();
+			SaveOptions();
+			UpdateGameType();
+		} break;
 	case CMD_EDIT_NAME:
 		{
 			//show edit box here	
@@ -722,11 +729,6 @@ uint32 CScreenHost::OnCommand(uint32 dwCommand, uint32 dwParam1, uint32 dwParam2
 			m_pPassToggle->UpdateData();
 			m_pPassword->Enable(m_bUsePassword);
 		} break;
-	case CMD_TOGGLE_SCMDPASS:
-		{
-			m_pScmdPassToggle->UpdateData();
-			m_pScmdPassword->Enable(m_bAllowScmdCommands);
-		} break;
 	case CMD_TOGGLE_LAN:
 		{
 			// RETAIL: a LAN game has no bandwidth to choose
@@ -735,12 +737,10 @@ uint32 CScreenHost::OnCommand(uint32 dwCommand, uint32 dwParam1, uint32 dwParam2
 			m_pBandwidth->Enable(!m_bLAN);
 			g_bLAN = !!m_bLAN;
 		} break;
-	case CMD_GAME:
+	case CMD_TOGGLE_SCMDPASS:
 		{
-			// RETAIL: the game type cycle changed
-			UpdateData();
-			SaveOptions();
-			UpdateGameType();
+			m_pScmdPassToggle->UpdateData();
+			m_pScmdPassword->Enable(m_bAllowScmdCommands);
 		} break;
 	case CMD_OPTIONS:
 		{
