@@ -526,7 +526,7 @@ void DisplayTimer::UpdateClients()
 		cMsg.Writeuint8(SFX_DISPLAYTIMER_ID);
 		cMsg.WriteObject(m_hObject);
 		cMsg.Writefloat(fGameTimeEnd);
-		cMsg.Writeuint8((uint8)m_Timer.Paused());
+		cMsg.Writebool(!!m_Timer.Paused());	// RETAIL: a bool (Object 0x100c6d0b)
 		cMsg.Writeuint8( m_nTeamId );
 
 		// Send the message to all connected clients
@@ -537,7 +537,7 @@ void DisplayTimer::UpdateClients()
 		CAutoMessage cMsg;
 		cMsg.Writeuint8(SFX_DISPLAYTIMER_ID);
 		cMsg.Writefloat( fGameTimeEnd );
-		cMsg.Writeuint8((uint8)m_Timer.Paused());
+		cMsg.Writebool(!!m_Timer.Paused());	// RETAIL: a bool (Object 0x100c6d0b)
 		cMsg.Writeuint8( m_nTeamId );
 
 		// Make sure new clients will get the message

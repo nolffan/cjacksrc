@@ -200,6 +200,9 @@ private:
 	float		m_fNatWaitTime;
 	float		m_fNatWaitNow;		// a fixed time instead of the engine's, when above 0
 	bool		m_bNatNegotiated;
+	// RETAIL: m_bUsePublicAddress is at 0x16a8, three bytes after the
+	// negotiated flag (CShell 0x1001f325); nothing retail uses them.
+	uint8		m_aUnused16a5[3];
 	bool		m_bUsePublicAddress;
 	std::string	m_sPublicAddress;
 	std::string	m_sPrivateAddress;

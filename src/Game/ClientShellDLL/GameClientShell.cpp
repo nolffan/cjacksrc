@@ -2542,9 +2542,13 @@ void CGameClientShell::HandleMsgMultiplayerOptions( ILTMessage_Read* pMsg )
 	uint8 nTimeLimit = pMsg->Readuint8( );
 	uint8 nRounds = pMsg->Readuint8();
 	bool bFriendlyFire = pMsg->Readbool( );
+	// RETAIL: CShell 0x10046736: weapons stay follows friendly fire (the
+	// server's writer, Object 0x10136d98).
+	bool bWeaponsStay = pMsg->Readbool( );
 	uint8 nDifficulty = pMsg->Readuint8( );
 	float fPlayerDiffFactor = pMsg->Readfloat( );
 
+	// RETAIL: CShell 0x10046763: each game type takes its own options.
 	switch (m_eGameType)
 	{
 	case eGameTypeCooperative:
@@ -2556,6 +2560,7 @@ void CGameClientShell::HandleMsgMultiplayerOptions( ILTMessage_Read* pMsg )
 		pProfile->m_ServerGameOptions.GetDeathmatch().m_nScoreLimit = nScoreLimit;
 		pProfile->m_ServerGameOptions.GetDeathmatch().m_nTimeLimit = nTimeLimit;
 		pProfile->m_ServerGameOptions.GetDeathmatch().m_nRounds = nRounds;
+		pProfile->m_ServerGameOptions.GetDeathmatch().m_bWeaponsStay = bWeaponsStay;
 		break;
 	case eGameTypeTeamDeathmatch:
 		pProfile->m_ServerGameOptions.GetTeamDeathmatch().m_nRunSpeed = nRunSpeed;
@@ -2563,12 +2568,20 @@ void CGameClientShell::HandleMsgMultiplayerOptions( ILTMessage_Read* pMsg )
 		pProfile->m_ServerGameOptions.GetTeamDeathmatch().m_nTimeLimit = nTimeLimit;
 		pProfile->m_ServerGameOptions.GetTeamDeathmatch().m_nRounds = nRounds;
 		pProfile->m_ServerGameOptions.GetTeamDeathmatch().m_bFriendlyFire = bFriendlyFire;
+		pProfile->m_ServerGameOptions.GetTeamDeathmatch().m_bWeaponsStay = bWeaponsStay;
 		break;
 	case eGameTypeDoomsDay:
 		pProfile->m_ServerGameOptions.GetDoomsday().m_nRunSpeed = nRunSpeed;
 		pProfile->m_ServerGameOptions.GetDoomsday().m_nTimeLimit = nTimeLimit;
 		pProfile->m_ServerGameOptions.GetDoomsday().m_nRounds = nRounds;
 		pProfile->m_ServerGameOptions.GetDoomsday().m_bFriendlyFire = bFriendlyFire;
+		pProfile->m_ServerGameOptions.GetDoomsday().m_bWeaponsStay = bWeaponsStay;
+		break;
+	case eGameTypeDemolition:
+		pProfile->m_ServerGameOptions.GetDemolition().m_nRunSpeed = nRunSpeed;
+		pProfile->m_ServerGameOptions.GetDemolition().m_nRounds = nRounds;
+		pProfile->m_ServerGameOptions.GetDemolition().m_bFriendlyFire = bFriendlyFire;
+		pProfile->m_ServerGameOptions.GetDemolition().m_bWeaponsStay = bWeaponsStay;
 		break;
 	}
 

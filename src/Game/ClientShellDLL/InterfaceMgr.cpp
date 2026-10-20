@@ -150,6 +150,16 @@ void CInterfaceMgr::HideLoadScreen()
 	m_LoadingScreen.Hide();
 }
 
+// RETAIL: 0x10062ec0: a chassis piece's id by name, 0xff for none.
+static uint8 GetChassisPieceId( char const* pszName )
+{
+	CHASSISPIECE const* pPiece = ChassisButeMgr::Instance( ).GetPiece( pszName );
+	if( !pPiece )
+		return ( uint8 )-1;
+
+	return pPiece->m_nId;
+}
+
 static LTMatrix GetCameraTransform(HOBJECT hCamera)
 {
     LTVector vPos, vRight, vUp, vForward;
@@ -220,9 +230,9 @@ namespace
 
 static DDPieceType GetDoomsDayPieceType( uint8 nPieceId )
 {
-	static uint8 s_nTransmitterId = ChassisButeMgr::Instance( ).GetPieceId( "Doomsday_transmitter" );
-	static uint8 s_nBatteriesId = ChassisButeMgr::Instance( ).GetPieceId( "Doomsday_batteries" );
-	static uint8 s_nCoreId = ChassisButeMgr::Instance( ).GetPieceId( "Doomsday_core" );
+	static uint8 s_nTransmitterId = GetChassisPieceId( "Doomsday_transmitter" );
+	static uint8 s_nBatteriesId = GetChassisPieceId( "Doomsday_batteries" );
+	static uint8 s_nCoreId = GetChassisPieceId( "Doomsday_core" );
 
 	if( nPieceId == s_nTransmitterId )
 		return kDoomsDay_transmitter;
@@ -6322,7 +6332,7 @@ bool CInterfaceMgr::IsInGame( )
 bool CInterfaceMgr::HandleDisplayTimerMsg( ILTMessage_Read& msg )
 {
     float fGameTimeEnd = msg.Readfloat();
-	bool bPaused = !!msg.Readuint8();
+	bool bPaused = msg.Readbool();	// RETAIL: a bool (CShell 0x100653e8)
 	uint8 nTeamId = msg.Readuint8( );
 
 	// Calculate time to the end.

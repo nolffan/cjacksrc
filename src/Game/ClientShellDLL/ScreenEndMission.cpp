@@ -38,6 +38,7 @@ CScreenEndMission::CScreenEndMission()
 	m_pMarksmanship = NULL;
 	m_pNonInjury = NULL;
 	m_pTimesHit = NULL;
+	m_pSecrets = NULL;
 	m_pList = NULL;
 }
 
@@ -75,6 +76,11 @@ LTBOOL CScreenEndMission::Build()
 	m_pTimesHit = CreateTextItem(" ",LTNULL,LTNULL,kDefaultPos,LTTRUE);
 	m_pTimesHit->SetFont(NULL,statSize);
 	m_pList->AddControl(m_pTimesHit);
+
+	// RETAIL: CShell 0x100c0893: the secrets found.
+	m_pSecrets = CreateTextItem(" ",LTNULL,LTNULL,kDefaultPos,LTTRUE);
+	m_pSecrets->SetFont(NULL,statSize);
+	m_pList->AddControl(m_pSecrets);
 
 
 	LTIntPt pos(GetPageLeft(),GetPageBottom());
@@ -136,6 +142,17 @@ void CScreenEndMission::OnFocus(LTBOOL bFocus)
 			m_pNonInjury->Show(g_pPlayerStats->GetMissionDamage() == 0);
 
 			m_pTimesHit->SetString(FormatTempString(IDS_M_STAT_TIMES_HIT,pStats->dwNumTimesHit));
+
+			// RETAIL: CShell 0x100c0afc: only for a mission with secrets.
+			if( pMission && pMission->nNumSecrets )
+			{
+				m_pSecrets->SetString(FormatTempString(IDS_TITLE_SKILLS,pStats->dwNumSecrets,pMission->nNumSecrets));
+				m_pSecrets->Show(LTTRUE);
+			}
+			else
+			{
+				m_pSecrets->Show(LTFALSE);
+			}
 
 			m_pList->SetStartIndex(0);
 				

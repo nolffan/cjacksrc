@@ -84,6 +84,10 @@ class PickupItem : public GameBase
 
 		uint8		m_nTeamId;					// Team the pickup item belongs to.
 
+		// RETAIL: 0xbd: no touch pickups until every object is created
+		// (Object 0x1010532f, 0x1010517c).
+		bool		m_bAllObjectsCreated;
+
 		void SetPlayerObj(HOBJECT hObj);
 
 	private :
