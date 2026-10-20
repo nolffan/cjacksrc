@@ -144,7 +144,10 @@ TARGETS = [
          # __ftol2 (0x10064030), the .text$x funclets, and from 0x10064900
          # the dynamic initializers and atexit destructors (the lowest
          # entry of the __xc_a table, .data 0x10073000) to 0x10069f9b
-         app=[(0x10001000, 0x10064024), (0x10064900, 0x10069f9b)]),
+         app=[(0x10001000, 0x10064024), (0x10064900, 0x10069f9b)],
+         # .text$x: the exception funclets (`mov eax, <FuncInfo>; jmp
+         # ___CxxFrameHandler`), after the import thunks
+         compiler_output=[(0x100646f0, 0x10064900)]),
     dict(label="SndDrv.dll", what="the sound driver", kind="image",
          shipped=REFERENCE + "/SndDrv.dll", stem="SndDrv",
          built="src/Engine/built/Final/snddrv/SndDrv.dll", optional=True,
