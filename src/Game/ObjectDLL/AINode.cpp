@@ -728,7 +728,12 @@ EnumNodeStatus AINodeCover::GetStatus(CAI* pAI, const LTVector& vPos, HOBJECT hT
 	if ( VEC_DISTSQR(vPos, vThreatPos) < g_pAIButeMgr->GetSenses()->fThreatTooCloseDistanceSqr )
 	{
 		LTVector vToThreat = vThreatPos - vPos;
-		LTVector vToNode = ( pAI && pAI->GetAIMovement()->IsSet() ) ? pAI->GetAIMovement()->GetDest() - vPos : m_vPos - vPos;
+		// RETAIL: no null AI here.
+		LTVector vToNode = m_vPos - vPos;
+		if( pAI->GetAIMovement()->IsSet() )
+		{
+			vToNode = pAI->GetAIMovement()->GetDest() - vPos;
+		}
 	
 		if( vToThreat.Dot( vToNode ) > 0.f )
 		{
@@ -894,7 +899,12 @@ EnumNodeStatus AINodeVantage::GetStatus(CAI* pAI, const LTVector& vPos, HOBJECT 
 	if ( VEC_DISTSQR(vPos, vThreatPos) < g_pAIButeMgr->GetSenses()->fThreatTooCloseDistanceSqr )
 	{
 		LTVector vToThreat = vThreatPos - vPos;
-		LTVector vToNode = ( pAI && pAI->GetAIMovement()->IsSet() ) ? pAI->GetAIMovement()->GetDest() - vPos : m_vPos - vPos;
+		// RETAIL: no null AI here.
+		LTVector vToNode = m_vPos - vPos;
+		if( pAI->GetAIMovement()->IsSet() )
+		{
+			vToNode = pAI->GetAIMovement()->GetDest() - vPos;
+		}
 	
 		if( vToThreat.Dot( vToNode ) > 0.f )
 		{
@@ -1548,7 +1558,12 @@ EnumNodeStatus AINodeUseObject::GetStatus(CAI* pAI, const LTVector& vPos, HOBJEC
 	if ( VEC_DISTSQR(vPos, vThreatPos) < g_pAIButeMgr->GetSenses()->fThreatTooCloseDistanceSqr )
 	{
 		LTVector vToThreat = vThreatPos - vPos;
-		LTVector vToNode = ( pAI && pAI->GetAIMovement()->IsSet() ) ? pAI->GetAIMovement()->GetDest() - vPos : m_vPos - vPos;
+		// RETAIL: no null AI here.
+		LTVector vToNode = m_vPos - vPos;
+		if( pAI->GetAIMovement()->IsSet() )
+		{
+			vToNode = pAI->GetAIMovement()->GetDest() - vPos;
+		}
 	
 		if( vToThreat.Dot( vToNode ) > c_fFOV60 )
 		{
@@ -1830,7 +1845,12 @@ EnumNodeStatus AINodeBackup::GetStatus(CAI* pAI, const LTVector& vPos, HOBJECT h
 	if ( VEC_DISTSQR(vPos, vThreatPos) < g_pAIButeMgr->GetSenses()->fThreatTooCloseDistanceSqr )
 	{
 		LTVector vToThreat = vThreatPos - vPos;
-		LTVector vToNode = ( pAI && pAI->GetAIMovement()->IsSet() ) ? pAI->GetAIMovement()->GetDest() - vPos : m_vPos - vPos;
+		// RETAIL: no null AI here.
+		LTVector vToNode = m_vPos - vPos;
+		if( pAI->GetAIMovement()->IsSet() )
+		{
+			vToNode = pAI->GetAIMovement()->GetDest() - vPos;
+		}
 	
 		if( vToThreat.Dot( vToNode ) > c_fFOV60 )
 		{

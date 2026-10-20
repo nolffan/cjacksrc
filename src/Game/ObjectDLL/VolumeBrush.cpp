@@ -485,23 +485,15 @@ void VolumeBrush::UpdatePhysics(ContainerPhysics* pCPStruct)
 
 	// Update damage...
 
-	// Make damage relative to update delta...
+	// RETAIL: Object 0x1015d6dd: the progressive damage takes the volume's
+	// rate as it is, not scaled by the frame time.
 
-    LTFLOAT fDamage = 0.0f;
 	if (m_fDamage > 0.0f)
-	{
-		fDamage = m_fDamage * fUpdateDelta;
-	}
-
-	// Damage using progressive damage.  This insures that the correct
-	// damage effect is shown on the client...
-
-	if (fDamage)
 	{
 		DamageStruct damage;
 
 		damage.eType	  = m_eDamageType;
-		damage.fDamage	  = fDamage;
+		damage.fDamage	  = m_fDamage;
 		damage.hDamager   = m_hObject;
 
 		// Use progressive damage...

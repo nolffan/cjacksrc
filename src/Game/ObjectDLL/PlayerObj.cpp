@@ -2449,7 +2449,8 @@ void CPlayerObj::UpdateCommands()
 {
 	if (!GetClient( ) ) return;
 
-	if ( m_bAllowInput && !m_bChatting )
+	// RETAIL: Object 0x1010af81: a chatting player still animates.
+	if ( m_bAllowInput )
 	{
 		// Posture
 		if (IsCarryingHeavyObject())
@@ -2546,7 +2547,13 @@ void CPlayerObj::UpdateCommands()
 
 		if ( m_ePPhysicsModel == PPM_SNOWMOBILE )
 		{
-			m_Animator.SetMain(CAnimatorPlayer::eSnowmobile);
+			// RETAIL: Object 0x1010b16a: the vehicle says whether the player
+			// rides a snowmobile or a motorcycle.
+			VEHICLEBUTES* pVehicle = g_pVehicleButeMgr->GetVehicle( m_nVehicleId );
+			if( pVehicle )
+			{
+				m_Animator.SetMain( (CAnimatorPlayer::Main)( CAnimatorPlayer::eSnowmobile + ( pVehicle->bMotorcycle ? 1 : 0 )));
+			}
 		}
 		else if ( m_nMotionStatus != MS_NONE && ((GetControlFlags() & BC_CFLG_DUCK) == 0) )
 		{
