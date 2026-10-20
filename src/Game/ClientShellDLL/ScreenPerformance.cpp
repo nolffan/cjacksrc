@@ -123,6 +123,9 @@ LTBOOL CScreenPerformance::Build()
 
 	pCtrl = AddTextItem(IDS_SFX, CMD_SFX, IDS_HELP_SFX);
 
+	// RETAIL: 0x100d50d1: a gap before the options.
+	m_nextPos.y += (uint8)g_pLayoutMgr->GetScreenItemSpacing((eScreenID)m_nScreenID);
+
 	// RETAIL: no performance test item (CShell.dll 0x100d4d20)
 
 	char szOn[32] = "";

@@ -988,6 +988,9 @@ void CTargetMgr::SetGadgetTarget( bool bDisabling )
 	case eBombable:
 		m_bCanActivate = bDisabling || (g_pPlayerMgr->GetGadgetFromDamageType(DT_GADGET_TIME_BOMB) != WMGR_INVALID_ID);
 		SetTargetStringID( bDisabling ? IDS_TARGET_BOMBING : IDS_TARGET_BOMB );
+		// RETAIL: 0x100f717f: a debug line while defusing.
+		if( bDisabling && m_bCanActivate )
+			g_pLTClient->CPrint( "disable text" );
 		break;
 	case eInvisibleInk:
 		m_bCanActivate = (g_pPlayerMgr->GetGadgetFromDamageType(DT_GADGET_INK_REAGENT) != WMGR_INVALID_ID);

@@ -811,8 +811,14 @@ void CGameClientShell::InitSound()
 	soundInfo.m_nBitsPerSample	= 16;
 	soundInfo.m_nVolume			= (unsigned short)pSettings->SoundVolume();
 
-	if ( !pSettings->Sound16Bit( ) )
+	// RETAIL: 0x1004884e: the choice is reported at debug level 1.
+	if ( pSettings->Sound16Bit( ) )
 	{
+		DebugCPrint( 1, "CGameClientShell::InitSound() - 16 bit sound" );
+	}
+	else
+	{
+		DebugCPrint( 1, "CGameClientShell::InitSound() - 8 bit sound" );
 		soundInfo.m_dwFlags |= INITSOUNDINFOFLAG_CONVERT16TO8;
 	}
 

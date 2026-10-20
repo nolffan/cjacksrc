@@ -80,6 +80,7 @@ public:
 	bool FillVertexBuffer( void* pVertexBufferData, void* pLightingData, uint32 nVBNumVerts, uint32 nPrevFilledVerts, uint32& nNumFilledVerts );
 
 private:
+	bool m_bAllActive;						// RETAIL: +0: every particle has fallen in from the top
 	bool m_Active;							// true if this airspace is currently active (visible and containing particles)
 	uint32 m_NumParticles;					// number of particles in this airspace (based on density and volume)
 	float m_LOD;							// level of detail for this airspace (0 is invisible, 1 is fully visible)
@@ -94,6 +95,7 @@ private:
 	CSnowFXParticle* m_Particles;			// array of particles
 	float* m_MinY;							// matching array of minimum elevations for each particle
 	HOBJECT m_Effect;						// volume effect object for this airspace
+	bool m_bFromTop;						// RETAIL: +0x5c: the snow was falling in from the top when activated
 
 	static bool tableInit;
 	static float sinTable[SNOWFX_TABLESIZE+SNOWFX_COSOFFSET];

@@ -479,26 +479,30 @@ LTBOOL CScreenConfigure::HandleKeyDown(int key, int rep)
 	case VK_DELETE:
 		{
 			// Unassign the key
-			if (!m_bWaitingForKey && !m_fInputPauseTimeLeft)
+			// RETAIL: 0x100bc4b6: only with an item selected, and a control
+			// under it.
+			if (GetSelection() != kNoSelection && !m_bWaitingForKey && !m_fInputPauseTimeLeft)
 			{
-
 				CLTGUICtrl *pCtrl = m_pList[m_nType]->GetSelectedControl();
-				int nCommand = pCtrl->GetParam1();
-				CBindingData* pData = m_pProfile->FindBinding(nCommand);
+				if (pCtrl)
+				{
+					int nCommand = pCtrl->GetParam1();
+					CBindingData* pData = m_pProfile->FindBinding(nCommand);
 
-				UnBind( pData->nDeviceObjectId[0], NULL, DEVICETYPE_KEYBOARD);
-				UnBind( 0, pData->strTriggerName[1], DEVICETYPE_MOUSE);
+					UnBind( pData->nDeviceObjectId[0], NULL, DEVICETYPE_KEYBOARD);
+					UnBind( 0, pData->strTriggerName[1], DEVICETYPE_MOUSE);
 
-				if (g_pGameClientShell->HasGamepad())
-					UnBind( 0, pData->strTriggerName[2], DEVICETYPE_GAMEPAD);
-				else if (g_pGameClientShell->HasJoystick())
-					UnBind(0, pData->strTriggerName[2], DEVICETYPE_JOYSTICK);
-				else
-					UnBind(0, pData->strTriggerName[2], DEVICETYPE_UNKNOWN);
+					if (g_pGameClientShell->HasGamepad())
+						UnBind( 0, pData->strTriggerName[2], DEVICETYPE_GAMEPAD);
+					else if (g_pGameClientShell->HasJoystick())
+						UnBind(0, pData->strTriggerName[2], DEVICETYPE_JOYSTICK);
+					else
+						UnBind(0, pData->strTriggerName[2], DEVICETYPE_UNKNOWN);
 
-				SetControlText(pCtrl);
+					SetControlText(pCtrl);
 
-				handled = LTTRUE;
+					handled = LTTRUE;
+				}
 			}
 			break;
 		}
@@ -691,6 +695,12 @@ LTBOOL CScreenConfigure::KeyRemappable (DeviceInput* pInput)
 	if (nDIK >= DIK_F1 && nDIK <= DIK_F10)
         return LTFALSE;
 	if (nDIK >= DIK_F11 && nDIK <= DIK_F15)
+        return LTFALSE;
+	// RETAIL: 0x100bba6e: nor the media keys, nor the Windows keys and
+	// those after them.
+	if (nDIK >= DIK_MUTE && nDIK <= DIK_WEBHOME)
+        return LTFALSE;
+	if (nDIK >= DIK_LWIN)
         return LTFALSE;
 
 

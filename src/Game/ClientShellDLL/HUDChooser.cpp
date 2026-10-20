@@ -53,7 +53,8 @@ LTBOOL CHUDWpnChooser::Init()
 	{
 		uint8 nWpn = g_pWeaponMgr->GetWeaponId( nWpnCommandId );
 
-		if (g_pWeaponMgr->IsPlayerWeapon(nWpn))
+		// RETAIL: 0x100548ed: only the weapons the chooser shows.
+		if (g_pWeaponMgr->GetWeapon(nWpn)->bShowChooser && g_pWeaponMgr->IsPlayerWeapon(nWpn))
 		{
 			// get the weapon data struct
 			uint8 nClass = g_pWeaponMgr->GetWeaponClass( nWpn ) - 1;

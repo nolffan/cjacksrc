@@ -13,6 +13,9 @@ change next, and what was looked at and left alone, and why. It follows
 nolf2src's `MODERN.md` (NOLF2's modern build) in its rules; the items are
 Contract J.A.C.K.'s own.
 
+Each item's id is a series and a number (GS-1, GAME-3, EN-1, APPS-4, CL-1,
+LAY-1); an id is never reused.
+
 ## Rules for this work
 
 * **Reimplement, never copy.** Fan fixes and patches are a fine source for
@@ -52,6 +55,10 @@ modes at any size; our Bink player on FFmpeg in place of RAD's
 * **GAME-4: a body's spears.** RemovePowerupObjects clears each spear's
   own touch notify, not the handle past the end of the weapons' array
   (`RETAIL_BUGS.md`; src/Game/ObjectDLL/Body.cpp).
+* **GAME-5: the message queue's lost message.** With no active message
+  to reuse, CHUDMessageQueue::AddMessage keeps the one it allocates
+  instead of writing through NULL (`RETAIL_BUGS.md`;
+  src/Game/ClientShellDLL/HUDMessageQueue.cpp).
 * **APPS-1: the launcher's own path.** The game's path is written into
   `sExe` with a bound (`RETAIL_BUGS.md`; src/Game/Launcher/Launcher.cpp).
 * **APPS-2: the launcher's find handles.** ExistRezFile, ExistRezDir and

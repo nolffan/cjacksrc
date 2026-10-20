@@ -344,8 +344,13 @@ void CScreenSave::NameSaveGame(uint32 slot, int index)
 				LoadString(pLevel->nNameId,szLevel,sizeof(szLevel));
 			}
 
-			if(strlen(szLevel))
-				sprintf(m_szSaveName,"%s",szLevel);
+			// RETAIL: 0x100dbef7: without the level name's leading blanks.
+			char* pszLevel = szLevel;
+			while (*pszLevel == ' ' || *pszLevel == '\t')
+				pszLevel++;
+
+			if(strlen(pszLevel))
+				sprintf(m_szSaveName,"%s",pszLevel);
 			else
 				sprintf(m_szSaveName,"%s",szMission);
 		}
@@ -367,9 +372,9 @@ void CScreenSave::NameSaveGame(uint32 slot, int index)
 	MBCreate mb;
 	mb.eType = LTMB_EDIT;
 	mb.pFn = EditCallBack;
+	mb.pEditFilter = SaveNameFilter;
 	mb.pString = m_szSaveName;
 	mb.nMaxChars = 40;
-	mb.pEditFilter = SaveNameFilter;
 	g_pInterfaceMgr->ShowMessageBox(IDS_ENTER_NAME,&mb);
 
 }

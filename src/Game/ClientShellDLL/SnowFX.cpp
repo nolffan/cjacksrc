@@ -316,10 +316,11 @@ bool CSnowFX::UpdateAirspaces( void )
 	// (RETAIL: 0x100efd80, or the server has turned it off)
 	if( !m_bEnabled || !m_bOn )
 	{
+		// RETAIL: 0x100efed0: step past the airspace before it leaves the set.
 		std::set<CSnowFXAirspace*>::iterator it = activeAirspaces.begin();
-		for( ; it != activeAirspaces.end(); it++ )
+		while( it != activeAirspaces.end() )
 		{
-			(*it)->Deactivate();
+			(*it++)->Deactivate();
 		}
 
 		return true;
@@ -337,10 +338,13 @@ bool CSnowFX::UpdateAirspaces( void )
 	if( cameraDistSq > m_fMaxDrawDistSq )
 	{
 		// camera is farther away than the max draw distance for this volume, so kill all the airspaces
+		// RETAIL: 0x100efddd: step past the airspace before it leaves the set.
 		std::set<CSnowFXAirspace*>::iterator it = activeAirspaces.begin();
-		for( ; it != activeAirspaces.end(); it++ )
+		while( it != activeAirspaces.end() )
 		{
-			(*it)->Deactivate();
+			CSnowFXAirspace* pAirspace = *it;
+			it++;
+			pAirspace->Deactivate();
 		}
 
 		// don't test any of the airspaces directly
@@ -356,7 +360,17 @@ bool CSnowFX::UpdateAirspaces( void )
 			m_pAirspaces[i].Activate( curLOD );
 		else if( m_pAirspaces[i].IsActive() )
 			m_pAirspaces[i].Deactivate();
+
+		// RETAIL: 0x100efe72: the snow has stopped falling in from the top
+		// once an airspace is full.
+		m_bFromTop &= !m_pAirspaces[i].m_bAllActive;
 	}
+
+	// RETAIL: 0x100efe96: or once the front has reached the bottom.
+	LTVector vPos;
+	m_pClientDE->GetObjectPos( m_hServerObject, &vPos );
+	if( vPos.y - m_vDims.y >= m_fTopY )
+		m_bFromTop = false;
 
 	return true;
 }
@@ -369,18 +383,22 @@ LTBOOL CSnowFX::OnServerMessage( ILTMessage_Read* pMsg )
 		return LTFALSE;
 
 	uint8 nMsgId = pMsg->Readuint8( );
-	if( nMsgId == 1 )
+	switch( nMsgId )
 	{
-		// On or off: the airspaces start over, from the top.
-		m_bOn = ( pMsg->ReadBits( 1 ) != 0 );
-		m_bFromTop = true;
+		case 1:
+		{
+			// On or off: the airspaces start over, from the top.
+			m_bOn = ( pMsg->ReadBits( 1 ) != 0 );
+			m_bFromTop = true;
 
-		for( uint32 i = 0; i < m_nNumAirspaces; i++ )
-			m_pAirspaces[i].m_Active = false;
+			for( uint32 i = 0; i < m_nNumAirspaces; i++ )
+				m_pAirspaces[i].m_bAllActive = false;
 
-		LTVector vPos;
-		g_pLTClient->GetObjectPos( m_hServerObject, &vPos );
-		m_fTopY = vPos.y + m_vDims.y;
+			LTVector vPos;
+			g_pLTClient->GetObjectPos( m_hServerObject, &vPos );
+			m_fTopY = vPos.y + m_vDims.y;
+		}
+		break;
 	}
 
 	return LTTRUE;
@@ -413,22 +431,25 @@ bool CSnowFXParticleMgr::AllocateParticles( uint32 numParticles, CSnowFXParticle
 	{
 		m_NumParticles = SNOWFX_PARTICLEPOOLSIZE;
 
-		m_Particles = debug_newa( CSnowFXParticle, m_NumParticles );
+		m_Particles = debug_newa( CSnowFXParticle, SNOWFX_PARTICLEPOOLSIZE );
 
 		if( !m_Particles )
 		{
 			ASSERT(0);
 			m_NumParticles = 0;
 		}
+	}
 
-		srand( 101374 );
-		for( uint32 i = 0; i < m_NumParticles; i++ )
-		{
-			m_Particles[i].id = (uint32)(((float)rand() / (float)RAND_MAX) * (SNOWFX_TABLESIZE - 1));
-			m_Particles[i].pos.x = ((float)rand() / (float)RAND_MAX) * 2.0f - 1.0f;
-			m_Particles[i].pos.y = ((float)rand() / (float)RAND_MAX) * 2.0f - 1.0f;
-			m_Particles[i].pos.z = ((float)rand() / (float)RAND_MAX) * 2.0f - 1.0f;
-		}
+	// RETAIL: 0x100ef63e: every allocation starts the pool over, with no
+	// particle fallen in yet.
+	srand( 101374 );
+	for( uint32 i = 0; i < m_NumParticles; i++ )
+	{
+		m_Particles[i].active = false;
+		m_Particles[i].id = (uint32)(((float)rand() / (float)RAND_MAX) * (SNOWFX_TABLESIZE - 1));
+		m_Particles[i].pos.x = ((float)rand() / (float)RAND_MAX) * 2.0f - 1.0f;
+		m_Particles[i].pos.y = ((float)rand() / (float)RAND_MAX) * 2.0f - 1.0f;
+		m_Particles[i].pos.z = ((float)rand() / (float)RAND_MAX) * 2.0f - 1.0f;
 	}
 
 	if( !m_Particles || (numParticles > m_NumParticles) )
@@ -459,7 +480,7 @@ bool CSnowFXParticleMgr::FreeParticles( CSnowFXParticle* particles )
 //-----------------------
 
 CSnowFXAirspace::CSnowFXAirspace() :
-		m_Parent(NULL), m_Active(false), m_NumParticles(0), m_Particles(NULL), m_MinY(NULL), m_Effect(NULL)
+		m_Parent(NULL), m_bAllActive(false), m_Active(false), m_NumParticles(0), m_Particles(NULL), m_MinY(NULL), m_Effect(NULL), m_bFromTop(false)
 {
 	if( !tableInit )
 	{
@@ -520,6 +541,7 @@ void CSnowFXAirspace::Init( CSnowFX* parent, const LTVector& pos, const LTVector
 	if( nNumBlockers )
 		m_Parent->m_pClientDE->GetParticleBlockersInAABB( pos, dims, &m_Blockers[0], nNumBlockers );
 
+	m_bFromTop = false;	// RETAIL: 0x100f0220
 	UpdateDensity();
 }
 
@@ -704,6 +726,11 @@ bool CSnowFXAirspace::Activate( float detail )
 
 	m_Parent->m_pClientDE->SetupVolumeEffect( m_Effect, vei );
 
+	// RETAIL: 0x100efbb0: the particles fall in from the top while the
+	// snow is starting.
+	m_bFromTop = m_Parent->m_bFromTop;
+	m_bAllActive = false;
+
 	m_Parent->activeAirspaces.insert( this );
 
 #ifdef SNOWFX_PROFILE_ACTIVATION
@@ -768,6 +795,8 @@ bool CSnowFXAirspace::FillVertexBuffer( void* pVertexBufferData, void* pLighting
 
 	uint32 curTri = 0;
 
+	m_bAllActive = true;	// RETAIL: 0x100ef125
+
 	// two different loops, first for lit particles, second for unlit (be sure to update both when changing behavior!)
 	if( m_Parent->m_bUseLighting )
 	{
@@ -784,11 +813,36 @@ bool CSnowFXAirspace::FillVertexBuffer( void* pVertexBufferData, void* pLighting
 			pos.y = m_Pos.y + curY * m_Dims.y;
 
 			// fade in the first 20% of the particles life
+			// RETAIL: 0x100ef1b9: while the snow starts, a particle shows only
+			// once it has fallen in from the top.
 			alpha = (1.0f - curY) * 2.5f;
 			if( alpha < 1.0f )
+			{
 				color = initialColor | ((uint32)(alpha*baseAlpha)<<24);
-			else
+				m_Particles[i].active = true;
+			}
+			else if( !m_bFromTop )
+			{
 				color = initialColor | baseAlphaShifted;
+			}
+			else if( m_Particles[i].active )
+			{
+				color = initialColor | baseAlphaShifted;
+				if( pos.y < m_Parent->m_fTopY )
+					m_Parent->m_fTopY = pos.y;
+				m_bAllActive &= m_Particles[i].active;
+			}
+			else if( pos.y < m_Parent->m_fTopY )
+			{
+				color = initialColor;
+				m_bAllActive &= m_Particles[i].active;
+			}
+			else
+			{
+				color = initialColor | baseAlphaShifted;
+				m_Particles[i].active = true;
+				m_bAllActive &= m_Particles[i].active;
+			}
 
 			//TEMP: need to kill particle rather than alpha it out
 			if( pos.y < m_MinY[i] )
@@ -849,11 +903,36 @@ bool CSnowFXAirspace::FillVertexBuffer( void* pVertexBufferData, void* pLighting
 			pos.y = m_Pos.y + curY * m_Dims.y;
 
 			// fade in the first 20% of the particles life
+			// RETAIL: 0x100ef1b9: while the snow starts, a particle shows only
+			// once it has fallen in from the top.
 			alpha = (1.0f - curY) * 2.5f;
 			if( alpha < 1.0f )
+			{
 				color = initialColor | ((uint32)(alpha*baseAlpha)<<24);
-			else
+				m_Particles[i].active = true;
+			}
+			else if( !m_bFromTop )
+			{
 				color = initialColor | baseAlphaShifted;
+			}
+			else if( m_Particles[i].active )
+			{
+				color = initialColor | baseAlphaShifted;
+				if( pos.y < m_Parent->m_fTopY )
+					m_Parent->m_fTopY = pos.y;
+				m_bAllActive &= m_Particles[i].active;
+			}
+			else if( pos.y < m_Parent->m_fTopY )
+			{
+				color = initialColor;
+				m_bAllActive &= m_Particles[i].active;
+			}
+			else
+			{
+				color = initialColor | baseAlphaShifted;
+				m_Particles[i].active = true;
+				m_bAllActive &= m_Particles[i].active;
+			}
 
 			//TEMP: need to kill particle rather than alpha it out
 			if( pos.y < m_MinY[i] )
