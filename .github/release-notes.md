@@ -34,8 +34,10 @@ There's no native Linux build; the game is a Windows program, run under Wine or 
 tar xzf cjacksrc-{{ARCHIVE}}.tar.gz
 cd cjacksrc-{{ARCHIVE}}
 ./linux-install.sh /path/to/disc1.zip /path/to/disc2.zip /path/to/contractjack_update_en_10_11.exe
-wine ContractJack.exe
+./linux-run.sh
 ```
+
+`./linux-run.sh --help` lists its options (a Wine prefix of its own, `~/.wine-cjack`; a window or full screen); `./linux-server.sh` runs a dedicated server, headless under `xvfb-run` when there is no display.
 
 ### Mac
 

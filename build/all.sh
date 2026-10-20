@@ -84,6 +84,19 @@ python3 tools/retailextract.py resources "$RETAIL" "$OUT"
 mkdir -p "$OUT/Save" "$OUT/custom" "$OUT/Profiles"
 [ -f "$OUT/Profiles/Default.prf" ] || cp "$OUT/Default.prf.retail" "$OUT/Profiles/Default.prf"
 bash build/cjackcmds.sh > "$OUT/cjackcmds.txt"
+# linux-run.sh: start the game with the host's Wine, through our
+# ContractJack.exe; linux-server.sh: a dedicated server,
+# ContractJackServer.exe, headless under xvfb-run (build/game-scripts/;
+# usage in their headers). On Windows, ContractJack.exe is the way in. The
+# legacy build's launcher and server read the retail installer's registry
+# values, which the Linux scripts write; the modern build's need none
+# (MODERN.md APPS-5, APPS-7), so its copies are marked modern.
+MODERN=
+case " ${CJACKSRC_CFLAGS:-} " in *" CJACK_MODERN "*|*"/D CJACK_MODERN"*) MODERN=1 ;; esac
+for s in linux-run.sh linux-server.sh; do
+    sed "s/^MODERN=\$/MODERN=$MODERN/" "build/game-scripts/$s" > "$OUT/$s"
+    chmod +x "$OUT/$s"
+done
 
 step "2. THIRD-PARTY RUNTIME: Bink and the Microsoft runtime from $RETAIL"
 python3 tools/retailextract.py thirdparty "$RETAIL" "$OUT"

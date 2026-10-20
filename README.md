@@ -95,6 +95,13 @@ On Windows, drop the three files onto `windows-install.bat`. Each script
 also finds them in the game directory or the one above it by itself
 (double-click `mac-install.command` in Finder), and can be run again.
 
+Both archives also carry the scripts that start the game
+(`build/game-scripts/`): `linux-run.sh` (the launcher under Wine, in a
+prefix of its own; the legacy build's launcher gets the registry values
+the retail installer wrote) and `linux-server.sh` (a dedicated server,
+headless under `xvfb-run` without a display); each prints its usage with
+`--help`. On Windows, start `ContractJack.exe`.
+
 ## Releases
 
 GitHub Actions (`.github/workflows/public-archives.yml`) builds the four

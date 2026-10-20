@@ -81,7 +81,7 @@ Every one is Visual C++ .NET 2003 (13.10.3077): `progress/COMPILERS.md`.
 | 8 | `boot`: the built binaries in the game under Wine, to the menu, a level, saving and loading (`make test`, tools/playtest.sh) | 3-7 | single player boots to the menu, plays M01S01, quicksaves and quickloads; the dedicated server hosts a deathmatch world; our client and retail's join it as far as the loading screen (below) |
 | 9 | `match`: byte-matching, module by module, ratcheted by `make progress` | 3-7 | |
 | 10 | `modern`: the modern build (`CJACK_MODERN`): fixes (`RETAIL_BUGS.md`), widescreen, our Bink player on FFmpeg, as nolf2src's | 8 | |
-| 11 | `release`: `-private`/`-public` archives, install scripts from the player's own discs and 1.1 update (`tools/mkinstall.py`), and the GitHub Actions workflow building the four public archives with `make progress` on the legacy release | 8, 10 | the machinery is done (below); the run scripts (`linux-run.sh`) wait for the game to run |
+| 11 | `release`: `-private`/`-public` archives, install scripts from the player's own discs and 1.1 update (`tools/mkinstall.py`), and the GitHub Actions workflow building the four public archives with `make progress` on the legacy release | 8, 10 | the machinery and the run scripts are done (below) |
 
 ## Notes per package
 
@@ -1612,5 +1612,8 @@ another pairing) or not, then the exclusion file for the compiler's own.
   from the European `.iso`s, from the USA `.zip`s found beside the folder,
   and from a USA `.cue`/`.bin` with the other disc's `.iso`; not yet run on
   a Mac.
-- To do: `linux-run.sh` (and a launcher script) in the game directory once
-  the engine runs, and the Windows install script tested under PowerShell.
+- `linux-run.sh` and `linux-server.sh` (`build/game-scripts/`, as nolfsrc's;
+  `build/all.sh` installs them, marking the modern
+  build's copies, whose launcher and server need no registry values).
+- To do: the Windows install script tested under PowerShell; the run
+  scripts tried on a real Linux desktop.
