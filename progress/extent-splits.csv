@@ -189,6 +189,7 @@ Object.lto,0x10059ef0,AimMagnet::AimMagnet (push 0; call GameBase::GameBase): af
 CShell.dll,0x1002a730,CClientWeaponMgr::ToggleHolster: two bytes of int3 after CClientWeaponMgr::ChangeWeapon (0x1002a520); CPlayerMgr::ToggleHolster (0x10098d30) jumps to it
 CShell.dll,0x10034de0,DamageFlagToType: uncalled, kept by DamageTypes.obj (/Ox, no /Gy); enumerated with the empty function at 0x10034dd0
 Object.lto,0x10152770,CTeamMgr::IsAttackingTeam (a team lookup and its attacking flag, ret 4): after the padding that ends CTeamMgr::SetAttackingTeam at 0x10152700; nothing calls it
+Object.lto,0x10135b60,ScatterVolume::SetSFXMessage (push 0; call UpdateSFX 0x10135a10; ret): after the padding that ends UpdateSFX; nothing calls it
 server.dll,0x10012ab0,gr_InterpolateRotation (jmp quat_Slerp): geomroutines.obj's thunk after gr_GetRotationVectors (jmp quat_GetVectors) 0x10012aa0; enumerated as one row with it
 server.dll,0x10016f00,LThread::Resume (call CSysThread::Wakeup; xor eax,eax; ret): after LThread::Pause (call Sleep) 0x10016ef0; enumerated as one row with it
 server.dll,0x1005dc00,LTMemTerm (ret): ltmem.obj's second function, after LTMemInit (ret) 0x1005dbf0; enumerated as one row with it
@@ -201,4 +202,3 @@ Lithtech.exe,0x00473cc0,shelltransfer.obj's second stub (xor al,al; ret 8): afte
 Lithtech.exe,0x00473cd0,shelltransfer.obj's third stub (ret 0x10): after the second at 0x473cc0
 Lithtech.exe,0x0049bc70,the second string getter (mov eax,0x569300; ret): after the one at 0x49bc60 (mov eax,"CLTSoundMgrServer"; ret); enumerated as one row with it
 Lithtech.exe,0x0041ab50,CounterFinal::StartMicro (push ecx; call QueryPerformanceCounter; ret): uncalled; enumerated inside CountMS 0x41ab40 (jmp EndMS)
-Object.lto,0x10135b60,ScatterVolume::SetSFXMessage (push 0; call UpdateSFX 0x10135a10; ret): after the padding that ends UpdateSFX; nothing calls it
