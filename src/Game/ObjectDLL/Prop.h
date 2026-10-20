@@ -56,9 +56,9 @@ class Prop : public GameBase
 	public :
 
 		// RETAIL: the body states read and set it (Object 0x1009879b,
-		// 0x100995c1, 0x1009964f).
+		// 0x100995c1, 0x1009964f), attachments set it (0x1008d8c0).
 		LTBOOL	GetMoveToFloor() const { return m_bMoveToFloor; }
-		void	SetMoveToFloor( LTBOOL bMoveToFloor ) { m_bMoveToFloor = bMoveToFloor; }
+		void	SetMoveToFloor( bool bMoveToFloor ) { m_bMoveToFloor = bMoveToFloor; }
 
  		Prop();
 		virtual ~Prop();

@@ -223,7 +223,7 @@ void Body::RemovePowerupObjects()
 	// before it's removed.  The spears' loop clears it on
 	// m_ahWeapons[iWeapon] -- the for's variable outlives its loop
 	// (no /Zc:forScope), so that's the handle past the end of
-	// m_ahWeapons, read from the members after it.
+	// m_ahWeapons, read from the members after it (RETAIL_BUGS.md).
 	uint32 iWeapon;
 	for (iWeapon = 0; iWeapon < kMaxWeapons; iWeapon++)
 	{
@@ -252,7 +252,12 @@ void Body::RemovePowerupObjects()
 				g_pLTServer->RemoveAttachment(hAttachment);
 			}
 
+#ifdef CJACK_MODERN
+			// MODERN.md GAME-4: the spear's own touch notify.
+			g_pCommonLT->SetObjectFlags(m_ahSpears[iSpear], OFT_Flags, 0, FLAG_TOUCH_NOTIFY);
+#else
 			g_pCommonLT->SetObjectFlags(m_ahWeapons[iWeapon], OFT_Flags, 0, FLAG_TOUCH_NOTIFY);
+#endif
 			g_pLTServer->RemoveObject(m_ahSpears[iSpear]);
 
 			m_ahSpears[iSpear] = NULL;

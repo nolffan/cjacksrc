@@ -663,6 +663,8 @@ void CAttachments::CreatePropAttachment(CAttachmentPosition *pAttachmentPosition
     Prop* pModel = (Prop*)g_pLTServer->CreateObjectProps(hClass, &theStruct, szStr);
 	if ( !pModel ) return;
 
+	// RETAIL: Object 0x10091506: an attachment stays where it's put.
+	pModel->SetMoveToFloor( false );
 	pModel->GetDestructible()->SetNeverDestroy(LTTRUE);
 
 	LTRotation rRot;
@@ -1490,7 +1492,7 @@ void CPlayerAttachments::SetWeaponAttachmentHiddenState( CAttachment& Attachment
 	// shows it (and keeps it updating on the clients) otherwise.
 
 	CWeapon *pWeapon = GetWeapon();
-	bool bHide = m_bHidden || ( pWeapon && pWeapon->IsHidden() );
+	bool bHide = m_bHidden || ( pWeapon ? pWeapon->IsHidden() : false );
 
 	g_pCommonLT->SetObjectFlags( AttachmentWeapon.GetModel( ), OFT_Flags, bHide ? FLAG_FORCECLIENTUPDATE : ( FLAG_VISIBLE | FLAG_FORCECLIENTUPDATE ), FLAG_FORCECLIENTUPDATE | FLAG_VISIBLE );
 }
@@ -1683,6 +1685,9 @@ LTBOOL CAttachmentProp::HandleProjectileImpact(CProjectile* pProjectile, CAttach
 		{
 			g_pLTServer->SetObjectPos( m_hModel, &transAttach.m_Pos );
 			g_pCommonLT->SetObjectFlags( m_hModel, OFT_Flags, FLAG_TOUCH_NOTIFY, FLAG_TOUCH_NOTIFY | FLAG_FORCEOPTIMIZEOBJECT );
+
+			// RETAIL: Object 0x10090419: its moves need not be guaranteed.
+			g_pLTServer->SetNetFlags( m_hModel, NETFLAG_POSUNGUARANTEED | NETFLAG_ROTUNGUARANTEED );
 		
 			// Let the prop get setup for being shot off...
 			

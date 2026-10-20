@@ -5851,6 +5851,7 @@ CShell.dll	sub_10116ea0
 CShell.dll	sub_10116f90
 CShell.dll	sub_10117050
 CShell.dll	sub_10117190
+CShell.dll	sub_10117310
 CShell.dll	sub_10117530
 CShell.dll	sub_101176a0
 CShell.dll	sub_101176e0
@@ -17379,6 +17380,7 @@ Object.lto	sub_100693f0
 Object.lto	sub_100694a0
 Object.lto	sub_100698b0
 Object.lto	sub_10069b20
+Object.lto	sub_1006a0b0
 Object.lto	sub_1006a310
 Object.lto	sub_1006a5b0
 Object.lto	sub_1006a7c0
@@ -17831,6 +17833,7 @@ Object.lto	sub_1007de30
 Object.lto	sub_1007de60
 Object.lto	sub_1007dfa0
 Object.lto	sub_1007e030
+Object.lto	sub_1007e160
 Object.lto	sub_1007e390
 Object.lto	sub_1007e3b0
 Object.lto	sub_1007e3d0
@@ -18131,6 +18134,7 @@ Object.lto	sub_1008d820
 Object.lto	sub_1008d830
 Object.lto	sub_1008d840
 Object.lto	sub_1008d880
+Object.lto	sub_1008d8c0
 Object.lto	sub_1008d8d0
 Object.lto	sub_1008d900
 Object.lto	sub_1008d940
@@ -18174,6 +18178,7 @@ Object.lto	sub_1008f140
 Object.lto	sub_1008f230
 Object.lto	sub_1008f2f0
 Object.lto	sub_1008f7f0
+Object.lto	sub_1008f870
 Object.lto	sub_1008f900
 Object.lto	sub_1008f940
 Object.lto	sub_1008f9b0
@@ -18190,12 +18195,14 @@ Object.lto	sub_1008ff70
 Object.lto	sub_10090000
 Object.lto	sub_100900e0
 Object.lto	sub_10090170
+Object.lto	sub_100901f0
 Object.lto	sub_10090480
 Object.lto	sub_10090700
 Object.lto	sub_100907c0
 Object.lto	sub_10090b80
 Object.lto	sub_10090c60
 Object.lto	sub_10091000
+Object.lto	sub_100912d0
 Object.lto	sub_100916c0
 Object.lto	sub_10091960
 Object.lto	sub_10091a70
@@ -19563,6 +19570,8 @@ Object.lto	sub_100cc1c0
 Object.lto	sub_100cc1d0
 Object.lto	sub_100cc5c0
 Object.lto	sub_100cc6c0
+Object.lto	sub_100cc7f0
+Object.lto	sub_100cc970
 Object.lto	sub_100ccad0
 Object.lto	sub_100ccb20
 Object.lto	sub_100ccb70
@@ -21254,6 +21263,7 @@ Object.lto	sub_1011cb70
 Object.lto	sub_1011cc10
 Object.lto	sub_1011ce60
 Object.lto	sub_1011ceb0
+Object.lto	sub_1011d070
 Object.lto	sub_1011d0e0
 Object.lto	sub_1011d2e0
 Object.lto	sub_1011d5c0
@@ -21353,6 +21363,7 @@ Object.lto	sub_10123c70
 Object.lto	sub_10123c90
 Object.lto	sub_10123ca0
 Object.lto	sub_10123cb0
+Object.lto	sub_10123cd0
 Object.lto	sub_101242f0
 Object.lto	sub_10124430
 Object.lto	sub_101244b0
@@ -22919,6 +22930,7 @@ Object.lto	sub_10167e20
 Object.lto	sub_10167f10
 Object.lto	sub_10167fd0
 Object.lto	sub_10168110
+Object.lto	sub_10168290
 Object.lto	sub_101684b0
 Object.lto	sub_10168620
 Object.lto	sub_10168660

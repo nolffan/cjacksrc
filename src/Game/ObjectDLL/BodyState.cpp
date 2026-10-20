@@ -739,7 +739,7 @@ void CBodyStateLadder::Init(Body* pBody)
     m_fTimer = (LTFLOAT)dwLength/1000.0f;
 
 	// RETAIL: Object 0x100995c1: not to the floor while it falls.
-	m_pBody->SetMoveToFloor( LTFALSE );
+	m_pBody->SetMoveToFloor( false );
 
 	// Move away from the ladder.
 
@@ -780,7 +780,7 @@ void CBodyStateLadder::Update()
 		if ( hAni == m_hAniStop )
 		{
 			// RETAIL: Object 0x1009964c: landed, to the floor again.
-			m_pBody->SetMoveToFloor( LTTRUE );
+			m_pBody->SetMoveToFloor( true );
 
 			// If the land ani is done, we're done with the whole state...
 

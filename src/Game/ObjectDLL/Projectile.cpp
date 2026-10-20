@@ -658,11 +658,13 @@ static bool HeatSeekingFilterFn(HOBJECT hObj, void *pUserData)
 	g_pCommonLT->GetObjectFlags(hObj, OFT_Flags, dwFlags);
 	if (!(dwFlags & FLAG_SOLID)) return false;
 
-	if (IsMainWorld(hObj)) return true;
+	// RETAIL: Object 0x1011d094: as WorldOnlyFilterFn.
+	if (IsMainWorld(hObj) || GetObjectType(hObj) == OT_WORLDMODEL)
+	{
+		return true;
+	}
 
-	uint32 dwType;
-	g_pCommonLT->GetObjectType(hObj, &dwType);
-	return (dwType == OT_WORLDMODEL);
+	return false;
 }
 
 namespace

@@ -100,6 +100,9 @@ class ActiveWorldModel : public WorldModel
 		ActiveWorldModel( );
 		virtual ~ActiveWorldModel( );
 
+		// RETAIL: CAIPathMgr::BuildDoorPath reads it (Object 0x1006a11c).
+		const LTVector& GetOriginalPos( ) const { return m_vOriginalPos; }
+
 
 	protected: // Members...
 
