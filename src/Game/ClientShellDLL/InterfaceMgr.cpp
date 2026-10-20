@@ -6349,7 +6349,10 @@ bool CInterfaceMgr::HandleDisplayTimerMsg( ILTMessage_Read& msg )
 		case 2:
 			m_RedInterfaceTimer.SetTime( fGameTimeEnd, bPaused );
 			break;
-		default:
+		// RETAIL: 0x100654cc: three bombs; other ids are ignored.
+		case 3:
+		case 4:
+		case 5:
 			g_pHUDBombTarget->SetTimer( nTeamId - 3, fGameTimeEnd, bPaused );
 			break;
 	}

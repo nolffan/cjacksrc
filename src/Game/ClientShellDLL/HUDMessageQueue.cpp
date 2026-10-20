@@ -229,8 +229,8 @@ void CHUDMessageQueue::AddMessage(MsgCreate &fmt, bool bHistoryOnly)
 	{
 		//take the oldest active message out of the list
 		// RETAIL: 0x1005a834: with no active messages retail creates one
-		// and loses it, then writes through NULL. Init() never leaves the
-		// list empty.
+		// and loses it, then writes through NULL (RETAIL_BUGS.md). Init()
+		// leaves the list empty only if every message failed to create.
 		CHUDMessage *pMsg = LTNULL;
 		if (!m_ActiveMsgs.empty())
 		{
@@ -240,7 +240,12 @@ void CHUDMessageQueue::AddMessage(MsgCreate &fmt, bool bHistoryOnly)
 		}
 		else
 		{
+#ifdef CJACK_MODERN
+			// MODERN.md GAME-4: use the new message.
+			pMsg = debug_new(CHUDMessage);
+#else
 			debug_new(CHUDMessage);
+#endif
 		}
 
 		//overwrite the data

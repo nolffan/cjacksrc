@@ -49,6 +49,10 @@ modes at any size; our Bink player on FFmpeg in place of RAD's
   each server it finds under a lock of its own, and the screen files the
   queue on its render, so neither thread waits for a lock the other holds
   (`RETAIL_BUGS.md`; src/Game/ClientShellDLL/ScreenJoin.cpp, .h).
+* **GAME-4: the message queue's lost message.** With no active message
+  to reuse, CHUDMessageQueue::AddMessage keeps the one it allocates
+  instead of writing through NULL (`RETAIL_BUGS.md`;
+  src/Game/ClientShellDLL/HUDMessageQueue.cpp).
 * **APPS-1: the launcher's own path.** The game's path is written into
   `sExe` with a bound (`RETAIL_BUGS.md`; src/Game/Launcher/Launcher.cpp).
 * **APPS-2: the launcher's find handles.** ExistRezFile, ExistRezDir and
