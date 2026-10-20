@@ -1681,6 +1681,7 @@ void CPlayerObj::PreCreateSpecialFX(CHARCREATESTRUCT& cs)
 	cs.nTrackers	= m_Animator.GetNumTrackers();
 	cs.nDimsTracker = m_Animator.GetDimsTracker();
 	cs.nClientID	= (uint8) g_pLTServer->GetClientID(GetClient( ));
+	cs.nPhysicsModel = m_ePPhysicsModel;	// RETAIL: Object 0x10106fe4
 
 	cs.SetChatting(m_bChatting);
 }
@@ -4051,7 +4052,9 @@ void CPlayerObj::Respawn(uint8 nServerLoadGameFlags /*=LOAD_NEW_LEVEL*/, bool bG
 	// Update our special fx message...(and tell the client about it as
 	// well ;).  We need to do this before aquiring our default weapon...
 
-	CreateSpecialFX(LTTRUE);
+	// RETAIL: Object 0x10112640: single player only.
+	if (!IsMultiplayerGame( ))
+		CreateSpecialFX(LTTRUE);
 
 
 	ResetPlayer();

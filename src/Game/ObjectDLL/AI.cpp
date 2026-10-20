@@ -5623,7 +5623,8 @@ void CAI::SetPosition(const LTVector& vPos, LTBOOL bFindFloorHeight)
 	// characters.
 	LTVector vPathingPos = m_vPos;
 	float flHeight;
-	if ( bFindFloorHeight && ( LTTRUE == FindFloorHeight( m_vPos, &flHeight ) ) )
+	// RETAIL: Object 0x1000aa2e: only for an AI that moves to the floor.
+	if ( bFindFloorHeight && m_bMoveToFloor && ( LTTRUE == FindFloorHeight( m_vPos, &flHeight ) ) )
 	{
 		vPathingPos.y = flHeight;
 	}

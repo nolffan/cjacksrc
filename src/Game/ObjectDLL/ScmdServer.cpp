@@ -1043,6 +1043,14 @@ bool ScmdServer_Impl::HandleListGameOptions( HCLIENT hClient, ILTMessage_Read& m
 		}
 		break;
 
+		case eGameTypeCooperative:
+		{
+			cMsg.Writebool( sms.m_bFriendlyFire) ;
+			cMsg.Writeuint8( sms.m_nMPDifficulty );
+			cMsg.Writefloat( sms.m_fPlayerDiffFactor );
+		}
+		break;
+
 		// Contract J.A.C.K.'s, as ScmdConsole reads them.
 		case eGameTypeDemolition:
 		{
@@ -1050,14 +1058,6 @@ bool ScmdServer_Impl::HandleListGameOptions( HCLIENT hClient, ILTMessage_Read& m
 			cMsg.Writeuint8( sms.m_nRounds );
 			cMsg.Writebool( sms.m_bFriendlyFire );
 			cMsg.Writebool( sms.m_bWeaponsStay );
-		}
-		break;
-
-		case eGameTypeCooperative:
-		{
-			cMsg.Writebool( sms.m_bFriendlyFire) ;
-			cMsg.Writeuint8( sms.m_nMPDifficulty );
-			cMsg.Writefloat( sms.m_fPlayerDiffFactor );
 		}
 		break;
 
@@ -1118,6 +1118,7 @@ bool ScmdServer_Impl::HandleSetGameOption( HCLIENT hClient, ILTMessage_Read& msg
 	{
 		case eGameTypeDeathmatch:
 		{
+			// RETAIL: Object 0x10136a54: weapons stay is option 4.
 			switch( nGameOption )
 			{
 				// Runspeed.
@@ -1144,6 +1145,12 @@ bool ScmdServer_Impl::HandleSetGameOption( HCLIENT hClient, ILTMessage_Read& msg
 					SetGameOption( sms.m_nRounds, atoi( szVal ), 1, 255 );
 				}
 				break;
+				// Weapons stay.
+				case 4:
+				{
+					SetGameOption( sms.m_bWeaponsStay, ( bool )( !!atoi( szVal )), false, true );
+				}
+				break;
 				default:
 				{
 					bOk = false;
@@ -1155,6 +1162,7 @@ bool ScmdServer_Impl::HandleSetGameOption( HCLIENT hClient, ILTMessage_Read& msg
 
 		case eGameTypeTeamDeathmatch:
 		{
+			// RETAIL: Object 0x10136b0c: weapons stay is option 5.
 			switch( nGameOption )
 			{
 				// Runspeed.
@@ -1187,6 +1195,12 @@ bool ScmdServer_Impl::HandleSetGameOption( HCLIENT hClient, ILTMessage_Read& msg
 					SetGameOption( sms.m_bFriendlyFire, ( bool )( !!atoi( szVal )), false, true );
 				}
 				break;
+				// Weapons stay.
+				case 5:
+				{
+					SetGameOption( sms.m_bWeaponsStay, ( bool )( !!atoi( szVal )), false, true );
+				}
+				break;
 				default:
 				{
 					bOk = false;
@@ -1198,6 +1212,7 @@ bool ScmdServer_Impl::HandleSetGameOption( HCLIENT hClient, ILTMessage_Read& msg
 
 		case eGameTypeDoomsDay:
 		{
+			// RETAIL: Object 0x10136bbe: weapons stay is option 4.
 			switch( nGameOption )
 			{
 				// Runspeed.
@@ -1224,35 +1239,10 @@ bool ScmdServer_Impl::HandleSetGameOption( HCLIENT hClient, ILTMessage_Read& msg
 					SetGameOption( sms.m_bFriendlyFire, ( bool )( !!atoi( szVal )), false, true );
 				}
 				break;
-				default:
+				// Weapons stay.
+				case 4:
 				{
-					bOk = false;
-				}
-				break;
-			}
-		}
-		break;
-
-		case eGameTypeDemolition:
-		{
-			switch( nGameOption )
-			{
-				// Runspeed.
-				case 0:
-				{
-					SetGameOption( sms.m_nRunSpeed, atoi( szVal ), 100, 150 );
-				}
-				break;
-				// Rounds.
-				case 1:
-				{
-					SetGameOption( sms.m_nRounds, atoi( szVal ), 2, 254 );
-				}
-				break;
-				// Friendly fire.
-				case 2:
-				{
-					SetGameOption( sms.m_bFriendlyFire, ( bool )( !!atoi( szVal )), false, true );
+					SetGameOption( sms.m_bWeaponsStay, ( bool )( !!atoi( szVal )), false, true );
 				}
 				break;
 				default:
@@ -1289,6 +1279,44 @@ bool ScmdServer_Impl::HandleSetGameOption( HCLIENT hClient, ILTMessage_Read& msg
 				}
 				break;
 
+				default:
+				{
+					bOk = false;
+				}
+				break;
+			}
+		}
+		break;
+
+		case eGameTypeDemolition:
+		{
+			// RETAIL: Object 0x10136c83: rounds from 1 to 255, weapons stay is option 3.
+			switch( nGameOption )
+			{
+				// Runspeed.
+				case 0:
+				{
+					SetGameOption( sms.m_nRunSpeed, atoi( szVal ), 100, 150 );
+				}
+				break;
+				// Rounds.
+				case 1:
+				{
+					SetGameOption( sms.m_nRounds, atoi( szVal ), 1, 255 );
+				}
+				break;
+				// Friendly fire.
+				case 2:
+				{
+					SetGameOption( sms.m_bFriendlyFire, ( bool )( !!atoi( szVal )), false, true );
+				}
+				break;
+				// Weapons stay.
+				case 3:
+				{
+					SetGameOption( sms.m_bWeaponsStay, ( bool )( !!atoi( szVal )), false, true );
+				}
+				break;
 				default:
 				{
 					bOk = false;

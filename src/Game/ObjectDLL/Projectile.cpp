@@ -360,8 +360,7 @@ LTBOOL CProjectile::Setup(CWeapon const* pWeapon, WeaponFireInfo const & info)
 
 	m_hFiredFrom		= info.hFiredFrom;
 	m_nWeaponId			= pWeapon->GetId();
-	m_nAmmoId			= pWeapon->GetAmmoId();
-	m_fLifeTime			= pWeapon->GetLifeTime();
+	m_nAmmoId			= pWeapon->GetAmmoId();	// RETAIL: Object 0x1012040a: the lifetime once
 	
 	m_pWeaponData		= pWeapon->GetWeaponData();
 	if (!m_pWeaponData) return LTFALSE;
@@ -447,7 +446,8 @@ LTBOOL CProjectile::Setup(CWeapon const* pWeapon, WeaponFireInfo const & info)
 		}
 	}
 
-	if( fWeaponFireNoiseDistance > 0.f )
+	// RETAIL: Object 0x10120599: only a character's fire is heard.
+	if( fWeaponFireNoiseDistance > 0.f && IsCharacter( m_hFiredFrom ))
 	{
 		g_pAIStimulusMgr->RegisterStimulus(kStim_EnemyWeaponFireSound, m_hFiredFrom, m_vFirePos, fWeaponFireNoiseDistance, 1.f);
 		g_pAIStimulusMgr->RegisterStimulus(kStim_AllyWeaponFireSound,  m_hFiredFrom, m_vFirePos, fWeaponFireNoiseDistance, 1.f);
@@ -658,11 +658,13 @@ static bool HeatSeekingFilterFn(HOBJECT hObj, void *pUserData)
 	g_pCommonLT->GetObjectFlags(hObj, OFT_Flags, dwFlags);
 	if (!(dwFlags & FLAG_SOLID)) return false;
 
-	if (IsMainWorld(hObj)) return true;
+	// RETAIL: Object 0x1011d094: as WorldOnlyFilterFn.
+	if (IsMainWorld(hObj) || GetObjectType(hObj) == OT_WORLDMODEL)
+	{
+		return true;
+	}
 
-	uint32 dwType;
-	g_pCommonLT->GetObjectType(hObj, &dwType);
-	return (dwType == OT_WORLDMODEL);
+	return false;
 }
 
 namespace
@@ -1596,8 +1598,7 @@ void CProjectile::AddSpecialFX()
 		ASSERT( LT_OK == ltResult );
 
 	// RETAIL: Object 0x1011ee15: Contract J.A.C.K. plays the fire sound
-	// where the projectile was fired.
-	{
+	// where the projectile was fired.  Both messages live to the end.
 		CAutoMessage cSoundMsg;
 		cSoundMsg.Writeuint8(SFX_PLAYERSOUND_ID);
 		cSoundMsg.Writeuint8(PSI_FIRE);
@@ -1605,7 +1606,6 @@ void CProjectile::AddSpecialFX()
 		cSoundMsg.Writeuint8(nShooterId);
 		cSoundMsg.WriteCompPos(m_vFirePos);
 		g_pLTServer->SendSFXMessage(cSoundMsg.Read(), m_vFirePos, 0);
-	}
 
 }
 

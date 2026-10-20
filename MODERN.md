@@ -52,6 +52,9 @@ modes at any size; our Bink player on FFmpeg in place of RAD's
   each server it finds under a lock of its own, and the screen files the
   queue on its render, so neither thread waits for a lock the other holds
   (`RETAIL_BUGS.md`; src/Game/ClientShellDLL/ScreenJoin.cpp, .h).
+* **GAME-4: a body's spears.** RemovePowerupObjects clears each spear's
+  own touch notify, not the handle past the end of the weapons' array
+  (`RETAIL_BUGS.md`; src/Game/ObjectDLL/Body.cpp).
 * **GAME-5: the message queue's lost message.** With no active message
   to reuse, CHUDMessageQueue::AddMessage keeps the one it allocates
   instead of writing through NULL (`RETAIL_BUGS.md`;

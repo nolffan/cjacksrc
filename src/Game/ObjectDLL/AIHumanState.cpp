@@ -4227,8 +4227,10 @@ void CAIHumanStateChase::Update()
 
 				m_pStrategyShoot->Update();
 			}
+			// RETAIL: Object 0x1004bd4d: also while a door's animation
+			// holds the AI.
 			else if ( ( eRangeStatus != eRangeStatusTooFar ) &&
-					  ( pTarget->IsVisibleFromWeapon() ) )
+					  ( pTarget->IsVisibleFromWeapon() || m_pStrategyFollowPath->IsDoorAnimationLocked() ) )
 			{
 				m_pStrategyShoot->Update();
 			}

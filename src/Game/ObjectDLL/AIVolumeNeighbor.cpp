@@ -304,7 +304,8 @@ VolumeGate AISpatialNeighbor::AllocateGate(const LTVector& vPoint, LTBOOL* pbGot
 
 	for ( int32 iGate = 0 ; iGate < (int32)m_cGates ; iGate++ )
 	{
-		LTFLOAT fGate = m_vecfGateOccupancy[iGate] + (LTFLOAT)fabs((float)(iGate - iGateNearest));
+		// RETAIL: Object 0x1007e1e2: the gates' distance is an int's abs.
+		LTFLOAT fGate = m_vecfGateOccupancy[iGate] + (LTFLOAT)abs(iGate - iGateNearest);
 		if ( fGate < fGateBest )
 		{
 			fGateBest = fGate;
