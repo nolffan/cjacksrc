@@ -2928,18 +2928,58 @@ LTBOOL CPlayerMgr::OnCommandOn(int command)
 					else
 					{
 						//jrg 1/23/03 - if you're not allowed weapons, you can't activate stuff either
-						if (g_pDamageFXMgr->AllowWeapons( ))
-							DoActivate();
+						if (g_pDamageFXMgr->AllowWeapons( ) && GetTargetMgr()->GetTargetObject() && DoActivate())
+							return LTTRUE;
+
+						// RETAIL: 0x100a08a7. Contract J.A.C.K. drops what it carries,
+						// or picks up what it points at, else reloads.
+						if (GetCarryingObject() && CanDropCarriedObject())
+						{
+							CActivationData data = GetTargetMgr()->GetActivationData();
+							data.m_nType = MID_ACTIVATE_MOVE;
+							CAutoMessage cMsg;
+							cMsg.Writeuint8(MID_PLAYER_ACTIVATE);
+							data.Write(cMsg);
+							g_pLTClient->SendToServer(cMsg.Read(), MESSAGE_GUARANTEED);
+						}
+						else if (CanCarryObject())
+						{
+							CActivationData data = GetTargetMgr()->GetActivationData();
+							data.m_nType = MID_ACTIVATE_MOVE;
+							CAutoMessage cMsg;
+							cMsg.Writeuint8(MID_PLAYER_ACTIVATE);
+							data.Write(cMsg);
+							g_pLTClient->SendToServer(cMsg.Read(), MESSAGE_GUARANTEED);
+						}
+						else
+						{
+							IClientWeaponBase *pClientWeapon = g_pPlayerMgr->GetCurrentClientWeapon();
+							if ( pClientWeapon )
+								pClientWeapon->ReloadClip( true, -1, false, true );
+						}
 					}
 				}
 				else 
 				{
-					//we're not pointed at anything, so reload
-					IClientWeaponBase *pClientWeapon = g_pPlayerMgr->GetCurrentClientWeapon();
-					if ( pClientWeapon )
+					// RETAIL: 0x100a09c2. A heavy object is dropped where it can be.
+					if (GetCarryingObject() && CanDropCarriedObject() && g_pPlayerMgr->IsCarryingHeavyObject())
 					{
-						// Reload the clip and let the server know...
-						pClientWeapon->ReloadClip( true, -1, false, true );
+						CActivationData data = GetTargetMgr()->GetActivationData();
+						data.m_nType = MID_ACTIVATE_MOVE;
+						CAutoMessage cMsg;
+						cMsg.Writeuint8(MID_PLAYER_ACTIVATE);
+						data.Write(cMsg);
+						g_pLTClient->SendToServer(cMsg.Read(), MESSAGE_GUARANTEED);
+					}
+					else
+					{
+						//we're not pointed at anything, so reload
+						IClientWeaponBase *pClientWeapon = g_pPlayerMgr->GetCurrentClientWeapon();
+						if ( pClientWeapon )
+						{
+							// Reload the clip and let the server know...
+							pClientWeapon->ReloadClip( true, -1, false, true );
+						}
 					}
 				}
 			}
@@ -2967,8 +3007,10 @@ LTBOOL CPlayerMgr::OnCommandOn(int command)
 				}
 
 			}
-			else if( CanCarryObject( ))
+			// RETAIL: 0x100a0adc. Only something in range can be picked up.
+			else if( GetTargetMgr()->IsTargetInRange() && CanCarryObject( ))
 			{				
+				CActivationData data = GetTargetMgr()->GetActivationData();
 				data.m_nType = MID_ACTIVATE_MOVE;
 				CAutoMessage cMsg;
 				cMsg.Writeuint8(MID_PLAYER_ACTIVATE);
@@ -4602,25 +4644,28 @@ void CPlayerMgr::GetPlayerHeadPosRot(LTVector & vPos, LTRotation & rRot)
 //
 // --------------------------------------------------------------------------- //
 
-void CPlayerMgr::DoActivate()
+// RETAIL: 0x1009fc40. Whether it activated something.
+bool CPlayerMgr::DoActivate()
 {
 	char const* pActivateOverride = g_vtActivateOverride.GetStr();
 	if (pActivateOverride && pActivateOverride[0] != ' ')
 	{
         g_pLTClient->RunConsoleString(( char* )pActivateOverride);
-		return;
+		return true;
 	}
 
 	CActivationData data = GetTargetMgr()->GetActivationData();
 
 	//don't revive if we are too close
 	if (data.m_nType == MID_ACTIVATE_REVIVE && !GetTargetMgr()->CanActivateTarget() )
-		return;
+		return false;
 
 	CAutoMessage cMsg;
 	cMsg.Writeuint8(MID_PLAYER_ACTIVATE);
 	data.Write(cMsg);
     g_pLTClient->SendToServer(cMsg.Read(), MESSAGE_GUARANTEED);
+
+	return true;
 }
 
 // --------------------------------------------------------------------------- //

@@ -1385,6 +1385,7 @@ CShell.dll	sub_1002c370
 CShell.dll	sub_1002c4e0
 CShell.dll	sub_1002c610
 CShell.dll	sub_1002c870
+CShell.dll	sub_1002c8c0
 CShell.dll	sub_1002cc30
 CShell.dll	sub_1002cc90
 CShell.dll	sub_1002ce70
@@ -3613,6 +3614,7 @@ CShell.dll	sub_1009ea80
 CShell.dll	sub_1009ef80
 CShell.dll	sub_1009efe0
 CShell.dll	sub_1009f220
+CShell.dll	sub_1009fc40
 CShell.dll	sub_100a02c0
 CShell.dll	sub_100a0370
 CShell.dll	sub_100a0500
