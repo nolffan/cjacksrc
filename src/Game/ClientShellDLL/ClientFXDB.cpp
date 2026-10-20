@@ -112,7 +112,12 @@ static void SetupKey(FX_KEY* pKey, FX_PROP* pPropList, uint32 nNumProps)
 		}
 		else if( !_stricmp( fxProp.m_sName, FXPROP_ISGORE ))
 		{
-			pKey->m_bGore = fxProp.GetComboVal() ? true : false;
+			switch( fxProp.GetComboVal() )
+			{
+				case 1: pKey->m_nGore = 1; break;
+				case 2: pKey->m_nGore = 2; break;
+				default: pKey->m_nGore = 0; break;
+			}
 		}
 	}
 }

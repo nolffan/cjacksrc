@@ -7416,7 +7416,10 @@ void CPlayerObj::TransferWeapons(Body *pBody, bool bRemove )
 		CWeapon* pWeapon = m_pPlayerAttachments->GetWeapon( );
 		if( pWeapon && pWeapon->Have( ))
 		{
-			WEAPON const *pWeaponStruct = g_pWeaponMgr->GetWeapon( pWeapon->GetId( ));
+			// RETAIL: the id is narrowed to a byte here (movzbl from CWeapon+0x40);
+			// the field itself is an int (ctor, Init, Save and Load store all four bytes).
+			uint8 nWeaponId = pWeapon->GetId( );
+			WEAPON const *pWeaponStruct = g_pWeaponMgr->GetWeapon( nWeaponId );
 			AMMO const *pAmmo = pWeapon->GetAmmoData( );
 
 			if( pAmmo && !pAmmo->bServerRestricted && pWeaponStruct && !pWeaponStruct->bServerRestricted &&

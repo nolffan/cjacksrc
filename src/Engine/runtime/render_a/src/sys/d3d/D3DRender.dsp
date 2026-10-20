@@ -105,6 +105,7 @@ SOURCE=.\pixelshadermgr.cpp
 # Begin Source File
 
 SOURCE=.\screenglowmgr.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
@@ -113,6 +114,7 @@ SOURCE=.\d3dmeshrendobj_rigid.cpp
 # Begin Source File
 
 SOURCE=.\rendershadowlist.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
@@ -121,6 +123,7 @@ SOURCE=.\drawobjects.cpp
 # Begin Source File
 
 SOURCE=.\tagnodes.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
@@ -149,6 +152,7 @@ SOURCE=.\d3d_renderworld_occluder.cpp
 # Begin Source File
 
 SOURCE=.\texturescriptmgr.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
@@ -285,42 +289,52 @@ SOURCE=.\rendererconsolevars.cpp
 # Begin Source File
 
 SOURCE=.\renderlight.cpp
+# ADD CPP /Yc"precompile.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\rendermodelinfolist.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\rendermodelpiecelist.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\renderstylelookuptables.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\renderstylemap.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\setupmodel.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\setuptouchinglights.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\texturescriptinstance.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\texturescriptinterpreter.cpp
+# ADD CPP /FI"precompile.h" /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\texturescriptvarmgr.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 

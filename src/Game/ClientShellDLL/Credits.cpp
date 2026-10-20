@@ -104,6 +104,9 @@ LTBOOL CCredit::Init(char* sBuf)
 	sString[i] = '\0';
 	if (strlen(sString) > 0) AddString(sString);
 
+	m_nColor = argbWhite;
+	m_nShadowColor = argbBlack;
+
 	// All done...
 	FormatStrings();
 
@@ -284,11 +287,11 @@ void CCredit::Draw()
 
 		//drop shadow
 		pStr->SetPosition(x+2.0f,y+2.0f);
-		pStr->SetColor(argbBlack);
+		pStr->SetColor(m_nShadowColor);
 		pStr->Render();
 
 		pStr->SetPosition(x,y);
-		pStr->SetColor(argbWhite);
+		pStr->SetColor(m_nColor);
 		pStr->Render();
 		iter++;
 	}
@@ -457,14 +460,9 @@ LTBOOL CCredit::UpdateFadeIn()
 
 	uint8 a = (uint8)( 255.0f * m_fAlpha );
 
-	uint32 color = SET_ARGB(a,0xFF,0xFF,0xFF);
-
-	FPStringArray::iterator iter = m_Strings.begin();
-	while (iter != m_Strings.end())
-	{
-		(*iter)->SetColor(argbWhite);
-		iter++;
-	}
+	// RETAIL: the credit and its shadow fade together.
+	m_nColor = SET_ARGB(a,0xFF,0xFF,0xFF);
+	m_nShadowColor = SET_ARGB(a,0,0,0);
 	
 
 	// Draw the credit...
@@ -549,14 +547,9 @@ LTBOOL CCredit::UpdateFadeOut()
 
 	uint8 a = (uint8)( 255.0f * m_fAlpha );
 
-	uint32 color = SET_ARGB(a,0xFF,0xFF,0xFF);
-
-	FPStringArray::iterator iter = m_Strings.begin();
-	while (iter != m_Strings.end())
-	{
-		(*iter)->SetColor(argbWhite);
-		iter++;
-	}
+	// RETAIL: the credit and its shadow fade together.
+	m_nColor = SET_ARGB(a,0xFF,0xFF,0xFF);
+	m_nShadowColor = SET_ARGB(a,0,0,0);
 
 	// Draw the credit...
 

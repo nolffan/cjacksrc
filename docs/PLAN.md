@@ -698,6 +698,32 @@ Class layouts and save/load against retail, in both game DLLs (branch
     (inside the SecuROM pages, not comparable); the remaining ICF-folded
     dtors and small helpers (both images).
   - HUDScores' new bool (cshell's) is at retail's 0x1cf5.
+- Round 4 (stopped here):
+  - Engine PCH, continued: Lib_UI precompiles cui.h (cuibase.cpp makes
+    it, every file force-includes it), and twelve more D3DRender files
+    precompile precompile.h (renderlight.cpp makes it). Lithtech.exe
+    592 -> 334 unplaced. Its unwritten count is 2: retail's out-of-line
+    vector::resize(n) copies at 0x4ddbc0 and 0x50c600 (accepted).
+  - FX_KEY's gore field is a uint32 at +0x50 with three values: 0 always,
+    1 only with gore on, 2 only with gore off (SetupKey, CreateClientFX).
+  - CCredit keeps its text and shadow colours at +0x3c and +0x40. The
+    fades set them and Draw reads them. This cost CMenuMgr::Init a
+    register swap from the header change alone (accepted).
+  - CWeapon's weapon id stays an int: the ctor, Init, Save and Load are
+    identical with four-byte stores. CPlayerObj::TransferWeapons narrows
+    it to a uint8 local, which is the movzbl. Returning uint8 from GetId
+    loses 18 identicals.
+  - The CLiteObjectMgr/CSoundButeMgr comparator byte is left in both.
+    Both ways of reproducing it cost identicals elsewhere.
+  - Not started:
+    - callcheck over the engine images (first pass: 31 WRONG in
+      Lithtech, most of them template families; real ones include
+      dsi_ClientSleep from clientmgr, at 0x4275a0 in retail, and
+      d3d_DrawGlowModels' FlushShadows);
+    - the engine nears (Lithtech 65, server 15);
+    - the remaining engine unplaced (Lib_UI's leftovers, ltmem, RezMgr,
+      Lib_ILTSound, bdefs.obj's set, folded dtors);
+    - CSnowFXAirspace's 0x60 check.
 
 ### 5. gamespy
 
