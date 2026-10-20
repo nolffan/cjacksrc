@@ -292,7 +292,10 @@ LTRESULT CActivateTypeMgrPlugin::PreHook_EditStringList( const char* szRezPath,
 		CActivateTypeMgr& ActivateType = CActivateTypeMgr::Instance( );
         
 		ActivateType.SetInRezFile( LTFALSE );
-        ActivateType.Init( szFile );
+
+		// RETAIL: Object 0x100020ee: no list without the file.
+        if( !ActivateType.Init( szFile ))
+			return LT_ERROR;
         
 		sm_bInitted = true;
 
@@ -633,6 +636,11 @@ void CActivateTypeHandler::OnLinkBroken( LTObjRefNotifier *pRef, HOBJECT hObj )
 				cMsg.Writebool( true );
 				cMsg.Writeuint8( ACTIVATETYPE::eOff );
 				g_pLTServer->SetObjectSFXMessage( (*iter), cMsg.Read() );
+
+				// RETAIL: Object 0x10001c0d: removed while the message
+				// is still in scope.
+				m_lstInheritedObjs.erase( iter );
+				return;
 			}
 
 			// Remove it 

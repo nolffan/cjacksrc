@@ -107,21 +107,24 @@ void CLiteObjectMgr::AddObject(GameBaseLite *pObject)
 	SetDirty(eDirty_SerializeIDs);
 }
 
-void CLiteObjectMgr::RemoveObject(GameBaseLite *pObject)
+void CLiteObjectMgr::RemoveObject(GameBaseLite *pObject, bool bImmediate)
 {
+	// RETAIL: Object 0x100f2610: only a registered object, and the engine
+	// removes it now or at the end of the next update.
+	if (!pObject->IsRegistered())
+		return;
+
 	// Remove it from our list
 	bool bRemoveResult;
 	if (pObject->IsActive())
 	{
 		bRemoveResult = RemoveObjectFromList(m_aActiveObjects, pObject);
 		--m_nNumActiveObjects;
-		ASSERT(!IsObjectInList(m_aInactiveObjects, pObject));
 	}
 	else
 	{
 		bRemoveResult = RemoveObjectFromList(m_aInactiveObjects, pObject);
 		--m_nNumInactiveObjects;
-		ASSERT(!IsObjectInList(m_aActiveObjects, pObject));
 	}
 
 	// Remove it from the map
@@ -130,23 +133,37 @@ void CLiteObjectMgr::RemoveObject(GameBaseLite *pObject)
 		m_aNameMap.erase(iObjectNamePos);
 
 	// Make sure it's not in the initialupdate list
-	RemoveObjectFromList(m_aInitialUpdateObjects, pObject);
-	RemoveObjectFromList(m_aInitialUpdateObjectsLoad, pObject);
+	TObjectList::iterator iInitial = std::find(m_aInitialUpdateObjects.begin(), m_aInitialUpdateObjects.end(), pObject);
+	if (iInitial != m_aInitialUpdateObjects.end())
+		*iInitial = 0;
+	iInitial = std::find(m_aInitialUpdateObjectsLoad.begin(), m_aInitialUpdateObjectsLoad.end(), pObject);
+	if (iInitial != m_aInitialUpdateObjectsLoad.end())
+		*iInitial = 0;
+
+	if (!bRemoveResult)
+		return;
 
 	// Clean it up in the engine
-	if (bRemoveResult)
+	if (bImmediate)
 	{
 		g_pLTServer->RemoveObject(pObject->GetClass(), pObject);
 	}
 	else
 	{
-		ASSERT(!"Invalid lite object removal encountered");
-		return;
+		pObject->SetRegistered(false);
+		m_aDeleteObjects.push_back(pObject);
 	}
 
 	// You're dirty...
 	SetDirty(eDirty_ObjectLists);
 }
+
+void CLiteObjectMgr::RemoveObject(GameBaseLite *pObject)
+{
+	// RETAIL: Object 0x100f2730.
+	RemoveObject(pObject, true);
+}
+
 
 void CLiteObjectMgr::RenameObject(GameBaseLite *pObject, const char *pName)
 {
@@ -366,6 +383,9 @@ void CLiteObjectMgr::Update()
 
 	// Clean up, if we need to
 	CleanObjectLists();
+
+	// RETAIL: Object 0x100f3123: what the updates removed goes now.
+	HandlePendingDeletes();
 
 	uint32 nUpdateTime = g_pLTServer->EndCounter(&cUpdateTime);
 

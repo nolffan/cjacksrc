@@ -219,7 +219,13 @@ Body::~Body()
 
 void Body::RemovePowerupObjects()
 {
-	for (uint32 iWeapon = 0; iWeapon < kMaxWeapons; iWeapon++)
+	// RETAIL: Object 0x10093180: each object loses its touch notify
+	// before it's removed.  The spears' loop clears it on
+	// m_ahWeapons[iWeapon] -- the for's variable outlives its loop
+	// (no /Zc:forScope), so that's the handle past the end of
+	// m_ahWeapons, read from the members after it.
+	uint32 iWeapon;
+	for (iWeapon = 0; iWeapon < kMaxWeapons; iWeapon++)
 	{
 		if ( m_ahWeapons[iWeapon] )
 		{
@@ -229,6 +235,7 @@ void Body::RemovePowerupObjects()
 				g_pLTServer->RemoveAttachment(hAttachment);
 			}
 
+			g_pCommonLT->SetObjectFlags(m_ahWeapons[iWeapon], OFT_Flags, 0, FLAG_TOUCH_NOTIFY);
 			g_pLTServer->RemoveObject(m_ahWeapons[iWeapon]);
 
 			m_ahWeapons[iWeapon] = NULL;
@@ -245,6 +252,7 @@ void Body::RemovePowerupObjects()
 				g_pLTServer->RemoveAttachment(hAttachment);
 			}
 
+			g_pCommonLT->SetObjectFlags(m_ahWeapons[iWeapon], OFT_Flags, 0, FLAG_TOUCH_NOTIFY);
 			g_pLTServer->RemoveObject(m_ahSpears[iSpear]);
 
 			m_ahSpears[iSpear] = NULL;
@@ -274,11 +282,8 @@ uint32 Body::EngineMessageFn(uint32 messageID, void *pData, LTFLOAT fData)
 
 		case MID_UPDATE:
 		{
-			uint32 dwRet = Prop::EngineMessageFn(messageID, pData, fData);
-
-			Update();
-
-			return dwRet;
+			// RETAIL: Object 0x100957e7: Update runs Prop's update itself.
+			return Update(pData, fData);
 		}
 		break;
 
@@ -291,7 +296,6 @@ uint32 Body::EngineMessageFn(uint32 messageID, void *pData, LTFLOAT fData)
 
 		case MID_INITIALUPDATE:
 		{
-			m_bCanDeactivate = false;	// RETAIL: Object 0x10094e7c
 			uint32 dwRet = Prop::EngineMessageFn(messageID, pData, fData);
 
             SetNextUpdate(s_fUpdateDelta);
@@ -1250,9 +1254,14 @@ void Body::CreateHitBox(const BODYINITSTRUCT& bi)
 //
 // ----------------------------------------------------------------------- //
 
-void Body::Update()
+uint32 Body::Update(void *pData, LTFLOAT fData)
 {
-	if ( !m_hObject ) return;
+	// RETAIL: Object 0x10094e50: Prop's update runs here, and the body
+	// can't be deactivated until this update is done.
+	if ( !m_hObject ) return 0;
+
+	m_bCanDeactivate = false;
+	uint32 dwRet = Prop::EngineMessageFn(MID_UPDATE, pData, fData);
 
     LTVector vPos, vMin, vMax;
     g_pLTServer->GetWorldBox(vMin, vMax);
@@ -1359,13 +1368,13 @@ void Body::Update()
 		// set prior to this point, and therefore we will never make it into this section
 		if( !IsCoopMultiplayerGameType( ) && !GetCanRevive( ))
 		{
-			if (m_pSearch->HasItem())
-				m_fLifetime = kfDMPlayerBodyLifetime;
-			else
-				m_fLifetime = 0.1f;
+			// RETAIL: Object 0x1009518c: every body stays for the
+			// deathmatch lifetime.
+			m_fLifetime = kfDMPlayerBodyLifetime;
 		}
 
 
+		m_bCanDeactivate = true;
 		SetNextUpdate(UPDATE_NEVER);
 
 
@@ -1387,6 +1396,9 @@ void Body::Update()
 	{
 	    SetNextUpdate(s_fUpdateDelta);
 	}
+
+	m_bCanDeactivate = true;
+	return dwRet;
 }
 
 // ----------------------------------------------------------------------- //
@@ -2118,10 +2130,12 @@ void Body::CapNumberOfBodies( )
 
 void Body::SetCanCarry( bool bCarry )
 {
-	if( m_bCanCarry != bCarry )
+	// RETAIL: Object 0x10095bf0: no body can be carried, so this only
+	// ever turns carrying off.
+	if( m_bCanCarry )
 	{
-		m_bCanCarry = (bCarry && m_bCanBeCarried);
-		m_BCS.bCanBeCarried = m_bCanCarry;
+		m_bCanCarry = false;
+		m_BCS.bCanBeCarried = false;
 
 		CAutoMessage cMsg;
 		cMsg.Writeuint8(MID_SFX_MESSAGE);

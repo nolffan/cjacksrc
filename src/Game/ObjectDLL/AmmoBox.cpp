@@ -468,10 +468,13 @@ void AmmoBox::Respawn( )
 
 	ObjectCreateStruct ocs;
 
-	// RETAIL: the box's own model and skin, if it has them.
-	LTStrCpy( ocs.m_Filename, m_sFilename.empty() ? s_szDefaultModel : m_sFilename.c_str(), ARRAY_LEN( ocs.m_Filename ));
-	LTStrCpy( ocs.m_SkinName, m_sSkin.empty() ? s_szDefaultSkin : m_sSkin.c_str(), ARRAY_LEN( ocs.m_SkinName ));	
-	LTStrCpy( ocs.m_RenderStyleName, s_szDefaultRS, ARRAY_LEN( s_szDefaultRS ));
+	// RETAIL: Object 0x100813db: the box's own model and skin, which
+	// an override model can replace.
+	LTStrCpy( ocs.m_Filename, m_sFilename.c_str(), ARRAY_LEN( ocs.m_Filename ));
+	LTStrCpy( ocs.m_SkinName, m_sSkin.c_str(), ARRAY_LEN( ocs.m_SkinName ));	
+	LTStrCpy( ocs.m_RenderStyleName, s_szDefaultRS, ARRAY_LEN( ocs.m_RenderStyleName ));
+
+	CheckForOverrideModel( &ocs );
 
 	g_pCommonLT->SetObjectFilenames( m_hObject, &ocs );
 

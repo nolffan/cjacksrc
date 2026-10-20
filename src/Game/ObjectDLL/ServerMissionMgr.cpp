@@ -1181,7 +1181,7 @@ void CServerMissionMgr::SetServerSettings(ServerMissionSettings& ServerSettings)
 	if (IsDifficultyGameType())
 	{
 		g_pGameServerShell->SetDifficulty((GameDifficulty)ServerSettings.m_nMPDifficulty);
-		g_pLTServer->CPrint("CServerMissionMgr::StartGame() setting difficulty to %d",ServerSettings.m_nMPDifficulty);
+		// RETAIL: Object 0x1013ea40: no "setting difficulty" print.
 	}
 	else
 		g_pGameServerShell->SetDifficulty(GD_NORMAL);
