@@ -97,6 +97,14 @@ void CAIHumanStateAttackProne::Update()
 {
 	super::Update();
 
+	// RETAIL: Object 0x1004ebcb: once the transition is over the AI is
+	// lying down.
+
+	if( !GetAI()->IsLyingDown() && !GetAnimationContext()->IsTransitioning() )
+	{
+		GetAI()->SetLyingDown( true );
+	}
+
 	// Make sure we have a target
 
 	if ( !GetAI()->HasTarget() )

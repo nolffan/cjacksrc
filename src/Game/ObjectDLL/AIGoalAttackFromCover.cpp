@@ -373,6 +373,10 @@ void CAIGoalAttackFromCover::CoverOrCharge()
 	m_bForceSearch = LTTRUE;
 
 	m_pAI->SetState( kState_HumanCharge );
+
+	// RETAIL: Object 0x1001dd7c: a charge from cover stays near it.
+	((CAIHumanStateCharge*)m_pAI->GetState())->SetLimitDistance( LTTRUE );
+
 	if( HandleGoalAttractors() )
 	{
 		SetStateAttack();

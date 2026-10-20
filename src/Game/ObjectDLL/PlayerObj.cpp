@@ -4437,6 +4437,13 @@ void CPlayerObj::AcquireDefaultWeapon()
 	cClientMsg.Writeuint8(0);
 	cClientMsg.Writefloat(0.0f);
 	g_pLTServer->SendToClient(cClientMsg.Read( ), GetClient( ), MESSAGE_GUARANTEED);
+
+	// RETAIL: Object 0x1011020a: the player gets the holster weapon too.
+	WEAPON const* pHolster = g_pWeaponMgr->GetHolsterWeapon( );
+	if( pHolster )
+	{
+		m_pPlayerAttachments->ObtainWeapon( pHolster->nId, AMMO_DEFAULT_ID, -1, LTTRUE );
+	}
 }
 
 // ----------------------------------------------------------------------- //

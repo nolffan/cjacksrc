@@ -1252,6 +1252,14 @@ LTBOOL CAIGoalSpecialDamage::HandleNameValuePair(const char *szName, const char 
 		return LTTRUE;
 	}
 
+	// RETAIL: Object 0x100371a5: KILL ends the special damage.
+	if ( !_stricmp(szName, "KILL") )
+	{
+		m_pGoalMgr->UnlockGoal(this);
+		m_fCurImportance = 0.f;
+		return LTTRUE;
+	}
+
 	if ( !_stricmp(szName, "SLEEPFOREVER") )
 	{
 		if( IsTrueChar( szValue[0] ) )

@@ -745,6 +745,13 @@ void CGameServerShell::OnRemoveClient(HCLIENT hClient)
 	// Tell the scmd about it.
 	ScmdServer::Instance( ).OnRemoveClient( hClient );
 
+	// RETAIL: Object 0x100de035: GameSpy releases the client's CD key.
+	if( m_pGameSpyServer )
+	{
+		uint32 nClientId = g_pLTServer->GetClientID( hClient );
+		m_pGameSpyServer->ReleaseCDKey( nClientId );
+	}
+
 	// Remove this client from our list of clients.
 	ClientDataList::iterator iter = m_ClientDataList.begin( );
 	for( ; iter != m_ClientDataList.end( ); iter++ )
@@ -3260,7 +3267,7 @@ GameStartPoint* CGameServerShell::FindStartPoint(CPlayerObj* pPlayer)
 
 				if( !bSafe )
 				{
-					g_pLTServer->CPrint( "No Team start point for team (%i)!", pPlayer ? pPlayer->GetTeamID() : INVALID_TEAM );
+					DebugCPrint( 1, "No Team start point for team (%i)!", pPlayer ? pPlayer->GetTeamID() : INVALID_TEAM );
 					
 					nIndex = GetRandom(0,1);
 					bool bSafe = false;

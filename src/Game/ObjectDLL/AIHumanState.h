@@ -1328,6 +1328,7 @@ class CAIHumanStateCharge : public CAIHumanState
 		void SetAttackDistSqr(LTFLOAT fDist) { m_fAttackDistanceSqr = fDist; }
 		void SetYellDistSqr(LTFLOAT fDist) { m_fYellDistanceSqr = fDist; }
 		void SetStopDistSqr(LTFLOAT fDist) { m_fStopDistanceSqr = fDist; }
+		void SetLimitDistance(LTBOOL bLimit) { m_bLimitDistance = bLimit; }	// RETAIL: Object 0x1001dd85
 
 	protected :
 

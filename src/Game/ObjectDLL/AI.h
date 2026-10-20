@@ -439,6 +439,7 @@ class CAI : public CCharacter, public IAISensing
 		// 0x10009ad0): the hit box laid down or stood up, as SetUnconscious does
 		// it. Named here; the name is lost.
 		virtual void SetLyingDown(bool bLyingDown);
+		bool IsLyingDown() const { return m_bLyingDown; }
 		bool IsUnconscious() {return m_bUnconscious;}
 
 		// defense
