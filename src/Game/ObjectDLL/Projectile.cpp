@@ -2020,7 +2020,7 @@ void CProjectile::DoVector()
 				else
 				{
 					// Hit too many objects...
-					g_pLTServer->CPrint("ERROR in CProjectile::DoVector() - Tried to filter too many objects!!!");
+					DebugCPrint(1,"ERROR in CProjectile::DoVector() - Tried to filter too many objects!!!");	// RETAIL: DebugCPrint
 					bDone = LTTRUE;
 				}
 			}
@@ -2043,7 +2043,7 @@ void CProjectile::DoVector()
 
 		if (++nLoopCount > MAX_VECTOR_LOOP)
 		{
-            g_pLTServer->CPrint("ERROR in CProjectile::DoVector() - Infinite loop encountered!!!");
+            DebugCPrint(1,"ERROR in CProjectile::DoVector() - Infinite loop encountered!!!");	// RETAIL: DebugCPrint
             bDone = LTTRUE;
 		}
 	}
