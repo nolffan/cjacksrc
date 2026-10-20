@@ -21,7 +21,7 @@
 #endif // _MSC_VER > 1000
 
 #include "BaseScreen.h"
-#include <map>
+#include <hash_map>
 
 class IGameSpyBrowser;
 
@@ -57,6 +57,39 @@ struct CServerEntry
 	bool		m_bUsePublicAddress;
 	CLTGUIColumnCtrl*	m_pCtrl;		// its row of the server list
 };
+
+// Orders the servers' keys without regard to case.
+struct CServerKeyLess
+{
+	CServerKeyLess( ) { }
+
+	bool operator()( std::string const& sKey1, std::string const& sKey2 ) const
+	{
+		return ( _stricmp( sKey1.c_str( ), sKey2.c_str( )) < 0 );
+	}
+};
+
+// Hashes the servers' keys without regard to case (RETAIL: 0x100cc620).
+class CServerKeyHashCompare : public stdext::hash_compare< std::string, CServerKeyLess >
+{
+	public:
+
+		size_t operator()( std::string const& sKey ) const
+		{
+			size_t nHash = 0;
+			for( char const* pszKey = sKey.c_str( ); *pszKey; pszKey++ )
+				nHash = nHash * 5 + tolower( *pszKey );
+			return nHash;
+		}
+
+		bool operator()( std::string const& sKey1, std::string const& sKey2 ) const
+		{
+			return comp( sKey1, sKey2 );
+		}
+};
+
+// The servers found, by their private address ("ip:port").
+typedef stdext::hash_map< std::string, CServerEntry, CServerKeyHashCompare > TServerMap;
 
 class CScreenJoin : public CBaseScreen
 {
@@ -95,29 +128,22 @@ protected:
 	CLTGUITextCtrl*	m_pMission;
 	CLTGUIColumnCtrl*	m_pPort;
 
-	typedef std::map<std::string, CServerEntry> TServerMap;
+	// RETAIL: 0x7b0, the servers by their private address.
 	TServerMap	m_cServers;
 
 	// The server whose details are asked for or shown.
 	std::string	m_sSelectedServer;
 
-	// The browsers' thread hands its servers over to the screen's.
+	// The browsers find their servers on their own thread (RETAIL: 0x100cb500).
 	static void OnServerInfo( IGameSpyBrowser& gameSpyBrowser, void* hGameServer, void* pUserData );
-	bool ReadServerInfo( IGameSpyBrowser& gameSpyBrowser, void* hGameServer, std::string& sKey, CServerEntry& cServer );
-	void AddPendingServers();
-
-	typedef std::vector< std::pair<std::string, CServerEntry> > TPendingServers;
-	TPendingServers		m_cPendingServers;
-	CRITICAL_SECTION	m_csPendingServers;
-
-	// A server's row of the list.
-	void SetupServerCtrl( CServerEntry& cServer, const char* pszKey );
 	// Dump the server list into the display
 	void DisplayCurServerList();
 
 	// Read the peer details
 	void ShowDetails();
 	void SetDetailErrorMessage(const char *szError);
+	// NOLF2's: nothing calls it (RETAIL: 0x100c9fd0).
+	void ReadCoopDetails(std::string& sOptions,CLTMsgRef_Read& cRead);
 
 	bool IsCurrentGame(const char *pAddr);
 	void JoinCurGame();
@@ -134,7 +160,6 @@ protected:
 		eState_Transition,
 		eState_Error
 	};
-	EState m_eCurState;
 
 	// Called when entering a state
 	bool PreState(EState eNewState);
@@ -150,11 +175,23 @@ protected:
 	bool PreState_QueryDetails();
 	bool PreState_Waiting();
 
+	// Post-state handling for each state
+	bool PostState_UpdateDir(EState eNewState);
+	bool PostState_QueryDetails(EState eNewState);
+	bool PostState_Waiting(EState eNewState);
+
+	// Look for servers again, unless a browser is still looking
+	void FindServers();
+
+	void Update_State_Startup();
+
 	// Update handling for each state
 	void Update_State_UpdateDir();
 	void Update_State_QueryDetails();
 
 	void SortServers(uint32 nSortField);
+
+	EState m_eCurState;
 
 	uint8	m_nVersionFilter;
 	uint8	m_nPlayersFilter;
@@ -171,8 +208,26 @@ protected:
 
 	// Which list request comes next (Update_State_UpdateDir).
 	int		m_nSearchStep;
+
+	// Held by the screen's update and render, and by the browsers' thread
+	// to add a server's row.
+	CRITICAL_SECTION	m_csServers;
+
 	// The Internet answers.
 	bool	m_bInternetOk;
+
+#ifdef CJACK_MODERN
+	// MODERN.md GAME-3: the browsers' thread hands its servers to the
+	// screen's render through this queue, under its own lock, instead of
+	// taking the screen's lock while it holds the browser's.
+	typedef std::vector< std::pair<std::string, CServerEntry> > TPendingServers;
+	TPendingServers		m_cPendingServers;
+	CRITICAL_SECTION	m_csPendingServers;
+
+	void AddServer( std::string const& sKey, CServerEntry& cServer );
+	void AddPendingServers();
+#endif
+
 };
 
 #endif // _SCREEN_JOIN_H_
