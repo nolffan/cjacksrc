@@ -17048,7 +17048,9 @@ Object.lto	sub_1005ede0
 Object.lto	sub_1005f1b0
 Object.lto	sub_1005f3a0
 Object.lto	sub_1005f3c0
+Object.lto	sub_1005f3f0
 Object.lto	sub_1005f5c0
+Object.lto	sub_1005f5f0
 Object.lto	sub_1005f7c0
 Object.lto	sub_1005f7e0
 Object.lto	sub_1005f820
@@ -17056,8 +17058,10 @@ Object.lto	sub_1005f860
 Object.lto	sub_1005f880
 Object.lto	sub_1005f8c0
 Object.lto	sub_1005f8e0
+Object.lto	sub_1005f8f0
 Object.lto	sub_1005fa30
 Object.lto	sub_1005fa50
+Object.lto	sub_1005fa60
 Object.lto	sub_1005fba0
 Object.lto	sub_1005fbd0
 Object.lto	sub_1005fc00
@@ -20904,6 +20908,7 @@ Object.lto	sub_1010aa00
 Object.lto	sub_1010ab40
 Object.lto	sub_1010ac30
 Object.lto	sub_1010acb0
+Object.lto	sub_1010af70
 Object.lto	sub_1010b4e0
 Object.lto	sub_1010b920
 Object.lto	sub_1010b9e0
@@ -22593,6 +22598,7 @@ Object.lto	sub_1015d0e0
 Object.lto	sub_1015d110
 Object.lto	sub_1015d120
 Object.lto	sub_1015d3b0
+Object.lto	sub_1015d4e0
 Object.lto	sub_1015d760
 Object.lto	sub_1015d840
 Object.lto	sub_1015d960
