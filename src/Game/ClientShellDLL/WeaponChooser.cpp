@@ -27,6 +27,7 @@ namespace
 	const int kCurrWeapon = 1;
 	const int kCurrAmmo = 0;
 	const float kfDelayTime	= 15.0f;
+	const float kfAmmoDelayTime = 1.5f;	// RETAIL: CShell 0x1010dcd8, 0x1010dd8f
 	VarTrack	g_vtChooserAutoSwitchTime;
 	VarTrack	g_vtChooserAutoSwitchFreq;
 }
@@ -245,7 +246,7 @@ bool CAmmoChooser::Open()
 	}
     m_bIsOpen = true;
 
-	m_AutoCloseTimer.Start(kfDelayTime);
+	m_AutoCloseTimer.Start(kfAmmoDelayTime);
 	g_pHUDMgr->QueueUpdate(kHUDChooser);
     return true;
 }
@@ -275,7 +276,7 @@ void CAmmoChooser::NextAmmo()
 
     g_pClientSoundMgr->PlayInterfaceSound((char*)g_pInterfaceResMgr->GetSoundSelect());
 
-	m_AutoCloseTimer.Start(kfDelayTime);
+	m_AutoCloseTimer.Start(kfAmmoDelayTime);
 	m_NextAmmoKeyDownTimer.Start(g_vtChooserAutoSwitchTime.GetFloat());
 	g_pHUDMgr->QueueUpdate(kHUDChooser);
 }

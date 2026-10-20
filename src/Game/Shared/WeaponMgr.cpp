@@ -805,9 +805,15 @@ LTBOOL CWeaponMgr::LoadOverrideButes( const char *szAttributeFile /*=WEAPON_DEFA
 
 	// RETAIL: CShell 0x1011434e: Contract J.A.C.K. remembers the override
 	// file, which GetFileCRC sums in, unless it is the attribute file itself.
-	m_sOverrideFile = _stricmp( s_AttributeFile, szAttributeFile ) ? szAttributeFile : "";
+	if( _stricmp( s_AttributeFile, szAttributeFile ))
+		m_sOverrideFile = szAttributeFile;
+	else
+		m_sOverrideFile = "";
 
 	char szName[WMGR_MAX_NAME_LENGTH] = {0};
+
+	// RETAIL: Object 0x10163e9f: the override file sets the distance too.
+	m_fVectorHalfDamageDist = Max( 1.0f, (float)m_buteMgr.GetInt( "Global", "VectorHalfDamageDist", 1000 ));
 
 
 	// Read in the properties for each mod...
@@ -1428,13 +1434,13 @@ WEAPON::WEAPON()
 	szSelectSound		= LTNULL;
 	szDeselectSound		= LTNULL;
 	szPVMuzzleFxName	= LTNULL;
+	szHeatPVOverheatFxName = LTNULL;
 	szHHMuzzleFxName	= LTNULL;
 	szHolsterAttachment	= LTNULL;
 	szPrimitiveType		= LTNULL;
 	szSubroutineNeeded	= LTNULL;
 	szPowerupFX			= LTNULL;
 	szRespawnWaitFX		= LTNULL;
-	szHeatPVOverheatFxName = LTNULL;
 
 	for( i = 0; i < WMGR_MAX_RELOAD_SNDS; ++i )
 	{
@@ -1553,13 +1559,13 @@ WEAPON::~WEAPON()
 	debug_deletea( szSelectSound );
 	debug_deletea( szDeselectSound );
 	debug_deletea( szPVMuzzleFxName );
+	debug_deletea( szHeatPVOverheatFxName );
 	debug_deletea( szHHMuzzleFxName );
 	debug_deletea( szHolsterAttachment );
 	debug_deletea( szPrimitiveType );
 	debug_deletea( szSubroutineNeeded );
 	debug_deletea( szPowerupFX );
 	debug_deletea( szRespawnWaitFX );
-	debug_deletea( szHeatPVOverheatFxName );
 
 	for( i = 0; i < WMGR_MAX_RELOAD_SNDS; ++i )
 	{

@@ -4373,9 +4373,21 @@ LTBOOL CAIHumanStateChase::CalculatePath()
 
 	// Do not diverge paths if the enemy is in view.
 
-	if( GetAI()->HasTarget() && GetAI()->GetTarget()->IsVisibleFromEye() )
+	if( GetAI()->HasTarget() )
 	{
-		bDivergePaths = LTFALSE;
+		if( GetAI()->GetTarget()->IsVisibleFromEye() )
+		{
+			bDivergePaths = LTFALSE;
+		}
+
+		// RETAIL: Object 0x10047c77: no offset to a target outside the
+		// volumes.
+
+		if( !GetAI()->GetTarget()->GetCharacter()->HasCurrentVolume() )
+		{
+			vOffset.x = 0.f;
+			vOffset.z = 0.f;
+		}
 	}
 
 

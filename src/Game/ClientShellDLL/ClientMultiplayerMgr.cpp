@@ -73,7 +73,7 @@ ClientMultiplayerMgr::ClientMultiplayerMgr( )
 	m_fNatWaitTime = 0.0f;
 	m_fNatWaitNow = 0.0f;
 	m_bNatNegotiated = false;
-	m_bUsePublicAddress = false;
+	m_bUsePublicAddress = true;	// RETAIL: CShell 0x10020328
 }
 
 // --------------------------------------------------------------------------- //

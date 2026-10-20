@@ -743,6 +743,19 @@ bool CServerMissionMgr::ExitLevel( char const* pszNewLevel, bool bTransitionToLe
 	if( m_bExitingLevel )
 		return true;
 
+	// RETAIL: Object 0x1013f29b: a single player can't leave the level
+	// while dead or dying.
+	if( !IsMultiplayerGame( ))
+	{
+		CPlayerObj::PlayerObjList const& lstPlayers = CPlayerObj::GetPlayerObjList( );
+		if( lstPlayers.begin( ) != lstPlayers.end( ))
+		{
+			CPlayerObj* pPlayer = *lstPlayers.begin( );
+			if( pPlayer && ( pPlayer->GetState( ) == PS_DEAD || pPlayer->GetState( ) == PS_DYING ))
+				return false;
+		}
+	}
+
 	// Make sure there is a worldproperties object.
 	if (!g_pWorldProperties)
 	{

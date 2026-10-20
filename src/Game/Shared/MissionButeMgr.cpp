@@ -204,6 +204,7 @@ MISSION::MISSION()
 
 	nNameId				= -1;
 	nDescId				= 0;
+	nNumSecrets			= 0;
 	bResetPlayer		= true;
 
 	szLayout[0]			= '\0';
@@ -272,6 +273,8 @@ LTBOOL MISSION::Init(CButeMgr & buteMgr, char* aTagName)
 
 	buteMgr.GetString(aTagName, MMGR_MISSION_PHOTO,szStr,sizeof(szStr));
 	sPhoto = szStr;
+
+	nNumSecrets = (uint8)buteMgr.GetInt(aTagName, "NumSecrets", 0);
 
 
 	nNumLevels = 0;

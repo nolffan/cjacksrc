@@ -3588,6 +3588,14 @@ void CAIHumanStrategyGrenadeThrow::Update()
 		LTVector vTargetPos;
 		g_pLTServer->GetObjectPos(hTarget, &vTargetPos);
 
+		// RETAIL: Object 0x10055fb0: aim short of the target, by the brain's
+		// AttackGrenadeThrowOffset towards the AI.
+
+		LTVector const& vAIPos = GetAI()->GetPosition();
+		LTVector vToAI( vAIPos.x - vTargetPos.x, 0.f, vAIPos.z - vTargetPos.z );
+		vToAI /= vToAI.Mag();
+		vTargetPos += vToAI * GetAI()->GetBrain()->GetAttackGrenadeThrowOffset();
+
 		CWeapon* pWeapon = GetAI()->GetWeapon( kAIWeap_Thrown );
 		if ( !pWeapon ) return;
 

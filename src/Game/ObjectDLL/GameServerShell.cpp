@@ -189,6 +189,9 @@ LTRESULT CGameServerShell::OnServerInitialized()
 
 	g_pPhysicsLT->SetStairHeight( g_StairStepHeight.GetFloat() );
 
+	// RETAIL: Object 0x100df5fd: gravity is set here.
+	g_pPhysicsLT->SetGlobalForce( LTVector( 0.0f, -2000.0f, 0.0f ));
+
 
 	//////////////////////////////////////////////////////////////////////////////
 	// Do all the stuff that used to be in the ctor for the server
@@ -199,7 +202,7 @@ LTRESULT CGameServerShell::OnServerInitialized()
 	m_SunVec[0] = m_SunVec[1] = m_SunVec[2] = 0;
 
 	// RETAIL: Object 0x100df6bb: the host's options are passed in.
-	ServerGameOptions** ppServerGameOptions = NULL;
+	ServerGameOptions** ppServerGameOptions;
 	uint32 dwLen = sizeof( ServerGameOptions* );
 	g_pLTServer->GetGameInfo((void**)&ppServerGameOptions, &dwLen);
 	if( !ppServerGameOptions || !*ppServerGameOptions )
@@ -207,6 +210,9 @@ LTRESULT CGameServerShell::OnServerInitialized()
 
 	if( !InitGameType( **ppServerGameOptions ))
 		return LT_ERROR;
+
+	// RETAIL: Object 0x100df6ea: the host hears the server is starting.
+	(*ppServerGameOptions)->m_nServerStatus = 3;
 
 	// Create the AI class factory.
 	if ( 0 == m_pAIClassFactory )
@@ -308,18 +314,10 @@ LTRESULT CGameServerShell::OnServerInitialized()
 	if( !BanIPMgr::Instance( ).Init( ))
 		return LT_ERROR;
 
-	// Do any game specific initialization.
+	// Do any game specific initialization.  RETAIL: Object 0x100df970:
+	// single player and coop keep the weapons as loaded.
 	switch( m_ServerGameOptions.m_eGameType )
 	{
-		// Single player and coop use the same weapon files...
-
-		case eGameTypeSingle:
-		case eGameTypeCooperative:
-		{
-			g_pWeaponMgr->LoadOverrideButes( WEAPON_DEFAULT_FILE );
-		}
-		break;
-
 		case eGameTypeDeathmatch:
 		case eGameTypeTeamDeathmatch:
 		case eGameTypeDoomsDay:
@@ -331,6 +329,9 @@ LTRESULT CGameServerShell::OnServerInitialized()
 		break;
 	}
 
+	// RETAIL: Object 0x100df99d sets the stair height again.
+	g_pPhysicsLT->SetStairHeight( g_StairStepHeight.GetFloat() );
+
 	// Seed the random number generator so GetRandom() isn't the same each game.
 	// IMPORTANT: reseeding the random number generator should not happen all the time
 	// as it can lead to GetRandom() not acting as random as you might think.
@@ -341,11 +342,9 @@ LTRESULT CGameServerShell::OnServerInitialized()
 	// (through the game options it was given) how its start went, and a
 	// multiplayer server publishes itself through GameSpy (Object.lto
 	// 0x100df9cd..0x100dfd4b).
-	ServerGameOptions* pHostOptions = ( ppServerGameOptions && *ppServerGameOptions ) ? *ppServerGameOptions : &m_ServerGameOptions;
-
 	if( !IsMultiplayerGame( ))
 	{
-		pHostOptions->m_nServerStatus = 1;
+		(*ppServerGameOptions)->m_nServerStatus = 1;
 		return LT_OK;
 	}
 
@@ -353,31 +352,31 @@ LTRESULT CGameServerShell::OnServerInitialized()
 	uint16 nPort = 0;
 	if( g_pLTServer->GetTcpIpAddress( szIP, sizeof( szIP ), nPort ) != LT_OK )
 	{
-		pHostOptions->m_nServerStatus = 2;
+		(*ppServerGameOptions)->m_nServerStatus = 2;
 		return LT_ERROR;
 	}
 
 	// RETAIL: Object 0x100dfa33: GameSpy shares the game's own socket.
-	uint32 hSocket = 0;
+	uint32 hSocket;
 	if( g_pLTServer->GetUDPSocket( &hSocket ) != LT_OK )
 	{
-		pHostOptions->m_nServerStatus = 2;
+		(*ppServerGameOptions)->m_nServerStatus = 2;
 		return LT_ERROR;
 	}
 
 	IGameSpyServer::StartupInfo startupInfo;
-	startupInfo.m_nGameType = eGameSpyGameType_Retail;
-	startupInfo.m_sIP = szIP;
 	startupInfo.m_nPort = nPort;
-	startupInfo.m_hSocket = hSocket;
+	startupInfo.m_nGameType = eGameSpyGameType_Retail;
 	startupInfo.m_bPublic = !m_ServerGameOptions.m_bLANOnly;
+	startupInfo.m_sIP = szIP;
+	startupInfo.m_hSocket = hSocket;
 	startupInfo.m_sUnused = g_pVersionMgr->GetNetRegion( );
 	startupInfo.m_sVersion = g_pVersionMgr->GetVersion( );
 
 	m_pGameSpyServer = IGameSpyServer::Create( startupInfo );
 	if( !m_pGameSpyServer )
 	{
-		pHostOptions->m_nServerStatus = 2;
+		(*ppServerGameOptions)->m_nServerStatus = 2;
 		return LT_ERROR;
 	}
 
@@ -410,11 +409,11 @@ LTRESULT CGameServerShell::OnServerInitialized()
 
 	if( !m_pGameSpyServer->Publish( ))
 	{
-		pHostOptions->m_nServerStatus = 2;
+		(*ppServerGameOptions)->m_nServerStatus = 2;
 		return LT_ERROR;
 	}
 
-	pHostOptions->m_nServerStatus = 1;
+	(*ppServerGameOptions)->m_nServerStatus = 1;
 	return LT_OK;
 }
 
@@ -2446,7 +2445,7 @@ void CGameServerShell::HandleDifficulty (HCLIENT hSender, ILTMessage_Read *pMsg)
 
 
 	m_eDifficulty = (GameDifficulty)pMsg->Readuint8();
-	g_pLTServer->CPrint("Difficulty:%d",(int)m_eDifficulty);
+	DebugCPrint(1,"Difficulty:%d",(int)m_eDifficulty);	// RETAIL: as Object 0x100db6d0
 }
 
 // ----------------------------------------------------------------------- //
@@ -4945,7 +4944,7 @@ void CGameServerShell::Load(ILTMessage_Read *pMsg, uint32 dwLoadFlags)
 
 	//load difficulty
 	m_eDifficulty = (GameDifficulty)pMsg->Readuint8();
-	g_pLTServer->CPrint("Difficulty:%d",(int)m_eDifficulty);
+	DebugCPrint(1,"Difficulty:%d",(int)m_eDifficulty);	// RETAIL: as Object 0x100db6d0
 
 	//load min music mood.
 	LOAD_DWORD_CAST(m_eMinMusicMood, CMusicMgr::Mood);
