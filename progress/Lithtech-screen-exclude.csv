@@ -84,3 +84,4 @@ addr,reason
 0x00401000,NOT GAME CODE: ??_H the vector constructor iterator the compiler emits for arrays of constructed objects (a COMDAT in every object that needs it; ours is byte-identical at 0x401000)
 0x0045098b,NOT A FUNCTION: interior block of CPlayerMover::Collide (0x004505d0): its loop's back edge and epilogue, split from it at the jump target
 0x004090eb,NOT A FUNCTION: interior block of ci_GetGameMode (0x004090d0): its `*pMode = GAMEMODE_NONE` branch; input_GetManager matched it only through the masked relocation
+0x0054128b,NOT A FUNCTION: mid-instruction inside the initializer at 0x541280 (flds; fdivs 0x593e44 at 0x541286; fstps; ret): a stray value in SecuROM's .obfzv section (at 0x657684) points at it and split its extent
