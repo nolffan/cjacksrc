@@ -1598,8 +1598,7 @@ void CProjectile::AddSpecialFX()
 		ASSERT( LT_OK == ltResult );
 
 	// RETAIL: Object 0x1011ee15: Contract J.A.C.K. plays the fire sound
-	// where the projectile was fired.
-	{
+	// where the projectile was fired.  Both messages live to the end.
 		CAutoMessage cSoundMsg;
 		cSoundMsg.Writeuint8(SFX_PLAYERSOUND_ID);
 		cSoundMsg.Writeuint8(PSI_FIRE);
@@ -1607,7 +1606,6 @@ void CProjectile::AddSpecialFX()
 		cSoundMsg.Writeuint8(nShooterId);
 		cSoundMsg.WriteCompPos(m_vFirePos);
 		g_pLTServer->SendSFXMessage(cSoundMsg.Read(), m_vFirePos, 0);
-	}
 
 }
 

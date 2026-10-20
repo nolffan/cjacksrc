@@ -3478,24 +3478,29 @@ LTBOOL CCharacter::SetDims(LTVector* pvDims, LTBOOL bSetLargest)
 	//				  collisions here so this block of code is exactly the same as MoveObjectToFloor() with 
 	//				  the exception of calling MoveObject() rather than SetObjectPos().
 
+	// RETAIL: Object 0x100a0536: only a character that moves to the floor.
+
 	LTVector vPos, vDims;
-	g_pLTServer->GetObjectPos( m_hObject, &vPos );
-	g_pPhysicsLT->GetObjectDims( m_hObject, &vDims );
-
-	IntersectQuery IQuery;
-	IntersectInfo IInfo;
-
-	IQuery.m_From	= vPos;
-	IQuery.m_To		= vPos + LTVector(0.0f, -10000.0f, 0.0f);
-	IQuery.m_Flags	= IGNORE_NONSOLID | INTERSECT_OBJECTS | INTERSECT_HPOLY;
-	
-    if( g_pLTServer->IntersectSegment( &IQuery, &IInfo ))
+	if( m_bMoveToFloor )
 	{
-        float fDist = vPos.y - IInfo.m_Point.y;
-		if( fDist > vDims.y )
+		g_pLTServer->GetObjectPos( m_hObject, &vPos );
+		g_pPhysicsLT->GetObjectDims( m_hObject, &vDims );
+
+		IntersectQuery IQuery;
+		IntersectInfo IInfo;
+
+		IQuery.m_From	= vPos;
+		IQuery.m_To		= vPos + LTVector(0.0f, -10000.0f, 0.0f);
+		IQuery.m_Flags	= IGNORE_NONSOLID | INTERSECT_OBJECTS | INTERSECT_HPOLY;
+	
+		if( g_pLTServer->IntersectSegment( &IQuery, &IInfo ))
 		{
-			vPos.y -= (fDist - (vDims.y + 0.1f));
-			g_pLTServer->MoveObject( m_hObject, &vPos );
+			float fDist = vPos.y - IInfo.m_Point.y;
+			if( fDist > vDims.y )
+			{
+				vPos.y -= (fDist - (vDims.y + 0.1f));
+				g_pLTServer->MoveObject( m_hObject, &vPos );
+			}
 		}
 	}
 

@@ -198,6 +198,8 @@ class CAIHumanStrategyFollowPath : public CAIHumanStrategy
 		LTBOOL IsDone() { return m_eState == eStateDone; }
 
 		const LTVector& GetDest() const { return m_vDest; }
+		// RETAIL: chasing AI read it (Object 0x1004bd57).
+		LTBOOL IsDoorAnimationLocked() const { return m_bDoorAnimationLocked; }
 	
 		void GetInitialDir(LTVector* pvDir);
 		void GetFinalDir(LTVector* pvDir);
