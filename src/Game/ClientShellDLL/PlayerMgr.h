@@ -193,7 +193,7 @@ public:
 
     // RETAIL: not virtual in Contract J.A.C.K. (CPlayerMgr's vtable, CShell.dll,
     // ends with InitTargetMgr)
-    void DoActivate();
+    bool DoActivate();
 
 	void		Teleport(const LTVector & vPos);
 
