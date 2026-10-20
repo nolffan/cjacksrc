@@ -1615,5 +1615,12 @@ another pairing) or not, then the exclusion file for the compiler's own.
 - `linux-run.sh` and `linux-server.sh` (`build/game-scripts/`, as nolfsrc's;
   `build/all.sh` installs them, marking the modern
   build's copies, whose launcher and server need no registry values).
+- The speech is MP3 (661 of `Sound.rez`'s 686 `VOICE/` files, format 0x55),
+  decoded through Windows' ACM codec; Wine's `winemp3.acm` drones on the
+  streamed lines (the first chunk replayed), so `linux-run.sh` installs
+  `winetricks l3codecx` once per prefix. The sound path's code is retail's
+  (every placed function of soundmgr, soundbuffer, soundinstance and
+  SndDrv's s_dx8 identical). For the modern build: an MP3 decoder in
+  SndDrv.dll itself, so no codec is needed.
 - To do: the Windows install script tested under PowerShell; the run
   scripts tried on a real Linux desktop.

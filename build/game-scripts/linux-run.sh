@@ -45,6 +45,14 @@
 # On the first run autoexec.cfg -- the game's settings, rewritten on every
 # exit -- starts as a copy of the shipped one (autoexec.cfg.retail).
 #
+# Speech: the characters' lines are MP3 (in WAV files), which SndDrv.dll
+# decodes through Windows' MP3 codec. Wine's own (winemp3.acm) fails on the
+# streamed lines -- they play as a drone of their first few samples -- so on
+# its first run in a prefix this script installs Fraunhofer's MP3 codec,
+# the one Windows ships, with winetricks (`winetricks -q l3codecx`; it
+# downloads it). Without winetricks it says so and starts the game anyway;
+# CJACK_WINETRICKS=0 skips the step.
+#
 # Sound: the engine's SndDrv.dll plays through DirectSound, so it needs
 # Wine's audio working on this machine (winecfg > Audio); +DisableSound 1
 # runs without it. The music is DirectMusic, which Wine only partly
@@ -71,6 +79,20 @@ mkdir -p Save
 
 # a prefix to set up: make it now if it does not exist yet
 [ -d "$WINEPREFIX/dosdevices" ] || "$WINE" wineboot -i >/dev/null 2>&1 || true
+
+# The speech's MP3 codec, once per prefix (winetricks logs what it installed)
+if [ "${CJACK_WINETRICKS:-1}" != 0 ] && ! grep -qx l3codecx "$WINEPREFIX/winetricks.log" 2>/dev/null; then
+    if command -v winetricks >/dev/null 2>&1; then
+        echo "linux-run.sh: installing the MP3 codec the speech needs (winetricks l3codecx), once" >&2
+        winetricks -q l3codecx >/dev/null 2>&1 ||
+            echo "linux-run.sh: winetricks l3codecx failed -- the characters' speech may drone" >&2
+    else
+        echo "linux-run.sh: no winetricks -- install it and run" >&2
+        echo "                WINEPREFIX=$WINEPREFIX winetricks l3codecx" >&2
+        echo "              or the characters' speech drones (Wine's own MP3 codec fails on it)" >&2
+    fi
+fi
+
 if [ -z "$MODERN" ]; then
     DIR="$("$WINE" winepath -w "$(pwd)" 2>/dev/null)"
     KEY='HKLM\Software\Monolith Productions\Contract Jack\1.0'

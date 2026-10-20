@@ -102,6 +102,13 @@ the retail installer wrote) and `linux-server.sh` (a dedicated server,
 headless under `xvfb-run` without a display); each prints its usage with
 `--help`. On Windows, start `ContractJack.exe`.
 
+Under Wine the characters' speech needs Fraunhofer's MP3 codec: the voice
+files are MP3, and Wine's own codec (`winemp3.acm`) plays the streamed
+lines as a drone of their first samples. `linux-run.sh` installs it into its
+prefix the first time (`winetricks l3codecx`); with another Wine prefix or a
+CrossOver bottle, run `WINEPREFIX=<its folder> winetricks l3codecx` once.
+Windows has it already.
+
 ## Releases
 
 GitHub Actions (`.github/workflows/public-archives.yml`) builds the four
