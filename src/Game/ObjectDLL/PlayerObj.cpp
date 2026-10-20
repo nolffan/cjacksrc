@@ -8885,7 +8885,7 @@ void CPlayerObj::SetupBody( Body* pBody )
 
 	// See if this body is revivable or if it's the respawn body.
 	bool bRevivableBody = IsRevivePlayerGameType( ) && m_bCanBeRevived;
-	float fLifetime = m_fBodyLifetime;
+	float fLifetime = 15.0f;	// RETAIL: Object 0x10107fef: not m_fBodyLifetime
 
 	// If it's revivable, we'll need to reference it for later removal.
 	if( bRevivableBody )
@@ -8894,6 +8894,7 @@ void CPlayerObj::SetupBody( Body* pBody )
 			g_pLTServer->RemoveObject( m_hDeadBody );
 
 		m_hDeadBody = pBody->m_hObject;
+
 		fLifetime = -1;
 
 	}

@@ -662,7 +662,7 @@ void CAIHuman::HandleTeleport(TeleportPoint* pTeleportPoint)
 	{
 		// [KLS 8/8/02] Make sure we get moved to the floor right now...
 		m_bPosDirty = LTTRUE;
-		m_bForceGround = LTTRUE;
+		m_bForceGround = m_bMoveToFloor;	// RETAIL: Object 0x10038bc5
 		UpdateMovement();
 	}
 }

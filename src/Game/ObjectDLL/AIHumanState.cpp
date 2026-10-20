@@ -2633,10 +2633,8 @@ void CAIHumanStateUseObject::HandleVolumeEnter(AIVolume* pVolume)
 
 void CAIHumanStateUseObject::Drive( float fHeight )
 {
-	if( m_pUseNode )
-	{
-		GetAI()->FaceDir( m_pUseNode->GetForward( ));
-	}
+	// RETAIL: Object 0x1003ea96: the use node is there while driving.
+	GetAI()->FaceDir( m_pUseNode->GetForward( ));
 	GetAI()->FaceTargetRotImmediately( );
 
 	LTVector vPos = GetAI()->GetPosition( );

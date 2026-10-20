@@ -68,7 +68,9 @@ LTRESULT GunMountPlugin::PreHook_EditStringList(
 
 	if( _stricmp( "Weapon", szPropName ) == 0 )
 	{
-		strcpy( aszStrings[(*pcStrings)++], "<none>" );
+		// RETAIL: Object 0x100e4ee2: counted after the copy.
+		strcpy( aszStrings[*pcStrings], "<none>" );
+		(*pcStrings)++;
 		s_WeaponMgrPlugin.PopulateStringList( aszStrings, pcStrings, cMaxStrings, cMaxStringLength );
 		return LT_OK;
 	}
@@ -179,12 +181,6 @@ uint32 GunMount::EngineMessageFn( uint32 messageID, void *pData, LTFLOAT fData )
 		}
 		break;
 
-		case MID_UPDATE:
-		{
-			Update( );
-		}
-		break;
-
 		case MID_SAVEOBJECT:
 		{
 			Save( (ILTMessage_Write*)pData, (uint32)fData );
@@ -194,6 +190,13 @@ uint32 GunMount::EngineMessageFn( uint32 messageID, void *pData, LTFLOAT fData )
 		case MID_LOADOBJECT:
 		{
 			Load( (ILTMessage_Read*)pData, (uint32)fData );
+		}
+		break;
+
+		// RETAIL: Object 0x100e5cf7: the update case last.
+		case MID_UPDATE:
+		{
+			Update( );
 		}
 		break;
 
@@ -226,7 +229,7 @@ uint32 GunMount::ObjectMessageFn( HOBJECT hSender, ILTMessage_Read *pMsg )
 //
 // ----------------------------------------------------------------------- //
 
-LTBOOL GunMount::ReadProp( ObjectCreateStruct *pStruct )
+bool GunMount::ReadProp( ObjectCreateStruct *pStruct )
 {
 	GenericProp genProp;
 
