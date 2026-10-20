@@ -51,7 +51,7 @@ RSC=rc.exe
 # PROP Intermediate_Dir "..\..\..\built\Final\Lithtech"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /Ox /GF /I "..\..\client\src" /I "..\..\shared\src" /I "..\..\kernel\src" /I "..\..\kernel\mem\src" /I "..\..\world\src" /I "..\..\kernel\io\src" /I "..\..\kernel\net\src" /I "..\..\model\src" /I "..\..\sound\src" /I "..\..\shared\src\sys\win" /I "..\..\lithtemplate" /I "..\..\physics\src" /I "..\..\render_b\src" /I "..\..\ui\src" /I "..\..\controlfilemgr" /I "..\..\server\src" /I "..\..\kernel\src\sys\win" /I "..\..\kernel\io\src\sys\win" /I "..\..\kernel\mem\src\sys\win" /I "..\..\kernel\net\src\sys\win" /I "..\..\client\src\sys\win" /I "..\..\render_a\src\sys\d3d" /I "..\..\..\sdk\inc" /I "..\..\..\sdk\inc\physics" /I "..\..\..\..\libs\stdlith" /I "..\..\..\..\libs\lith" /I "..\..\..\libs\rezmgr" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_FINAL" /D "__D3D" /D "__D3DREND" /D "DE_CLIENT_COMPILE" /D "DE_LOCAL_SERVERBIND" /D "DIRECTENGINE_COMPILE" /D "DSNDMGR_NO_MFC" /D "MODEL_SUPPORT_ABC" /FD /c
+# ADD CPP /nologo /MD /W3 /Ox /GF /I "..\..\client\src" /I "..\..\shared\src" /I "..\..\kernel\src" /I "..\..\kernel\mem\src" /I "..\..\world\src" /I "..\..\kernel\io\src" /I "..\..\kernel\net\src" /I "..\..\model\src" /I "..\..\sound\src" /I "..\..\shared\src\sys\win" /I "..\..\lithtemplate" /I "..\..\physics\src" /I "..\..\render_b\src" /I "..\..\ui\src" /I "..\..\controlfilemgr" /I "..\..\server\src" /I "..\..\kernel\src\sys\win" /I "..\..\kernel\io\src\sys\win" /I "..\..\kernel\mem\src\sys\win" /I "..\..\kernel\net\src\sys\win" /I "..\..\client\src\sys\win" /I "..\..\render_a\src\sys\d3d" /I "..\..\..\sdk\inc" /I "..\..\..\sdk\inc\physics" /I "..\..\..\..\libs\stdlith" /I "..\..\..\..\libs\lith" /I "..\..\..\libs\rezmgr" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_FINAL" /D "__D3D" /D "__D3DREND" /D "DE_CLIENT_COMPILE" /D "DE_LOCAL_SERVERBIND" /D "DIRECTENGINE_COMPILE" /D "DSNDMGR_NO_MFC" /D "MODEL_SUPPORT_ABC" /Yu"bdefs.h" /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
@@ -73,6 +73,7 @@ LINK32=link.exe
 # Begin Source File
 
 SOURCE=..\..\controlfilemgr\controlfilemgr.cpp
+# ADD CPP /FI"bdefs.h"
 # End Source File
 # Begin Source File
 
@@ -81,6 +82,7 @@ SOURCE=..\..\model\src\animtracker.cpp
 # Begin Source File
 
 SOURCE=..\..\shared\src\bdefs.cpp
+# ADD CPP /Yc"bdefs.h"
 # End Source File
 # Begin Source File
 
@@ -102,10 +104,12 @@ SOURCE=..\..\server\src\classmgr.cpp
 # Begin Source File
 
 SOURCE=..\..\kernel\src\sys\win\client.cpp
+# ADD CPP /FI"bdefs.h"
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\client\src\client_formatmgr.cpp
+# ADD CPP /FI"bdefs.h"
 # End Source File
 # Begin Source File
 
@@ -123,6 +127,7 @@ SOURCE=..\..\client\src\clientde_impl.cpp
 # Begin Source File
 
 SOURCE=..\..\client\src\clientmgr.cpp
+# ADD CPP /FI"bdefs.h"
 # End Source File
 # Begin Source File
 
@@ -167,6 +172,7 @@ SOURCE=..\..\client\src\consolecommands.cpp
 # Begin Source File
 
 SOURCE=..\..\kernel\src\sys\win\counter.cpp
+# ADD CPP /FI"bdefs.h"
 # End Source File
 # Begin Source File
 
@@ -299,6 +305,7 @@ SOURCE=..\..\kernel\src\sys\win\interface_helpers.cpp
 # Begin Source File
 
 SOURCE=..\..\shared\src\interface_linkage.cpp
+# ADD CPP /FI"bdefs.h"
 # End Source File
 # Begin Source File
 
@@ -355,10 +362,12 @@ SOURCE=..\..\kernel\src\sys\win\ltdirectmusiccontrolfile.cpp
 # Begin Source File
 
 SOURCE=..\..\kernel\src\sys\win\ltdirectmusicloader.cpp
+# SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\..\sdk\inc\lterror.cpp
+# ADD CPP /FI"bdefs.h"
 # End Source File
 # Begin Source File
 
@@ -391,14 +400,17 @@ SOURCE=..\..\server\src\ltmessage_server.cpp
 # Begin Source File
 
 SOURCE=..\..\..\sdk\inc\ltmodule.cpp
+# ADD CPP /FI"bdefs.h"
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\..\sdk\inc\ltobjref.cpp
+# ADD CPP /FI"bdefs.h"
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\..\sdk\inc\ltquatbase.cpp
+# ADD CPP /FI"bdefs.h"
 # End Source File
 # Begin Source File
 
@@ -594,6 +606,10 @@ SOURCE=..\..\shared\src\strtools.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\kernel\src\sys\win\systeminfo.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\kernel\src\sys\win\text_mgr.cpp
 # End Source File
 # Begin Source File
@@ -603,6 +619,7 @@ SOURCE=..\..\kernel\src\sys\win\timemgr.cpp
 # Begin Source File
 
 SOURCE=..\..\model\src\transformmaker.cpp
+# SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # Begin Source File
 
@@ -673,6 +690,7 @@ SOURCE=..\..\world\src\world_tree.cpp
 # Begin Source File
 
 SOURCE=..\..\kernel\src\icommandlineargs.cpp
+# ADD CPP /FI"bdefs.h"
 # End Source File
 # Begin Source File
 
