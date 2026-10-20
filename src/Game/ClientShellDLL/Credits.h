@@ -97,6 +97,11 @@ private:
 
 	LTBOOL				m_bBig;
 
+	// RETAIL: +0x3c, +0x40: the text's and its drop shadow's colours, faded
+	// with the credit (CShell Init 0x10030f04, UpdateFadeIn 0x10030738,
+	// Draw 0x10030648)
+	uint32				m_nColor;
+	uint32				m_nShadowColor;
 };
 
 class CCredits

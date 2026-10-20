@@ -1295,7 +1295,11 @@ CLIENTFX_INSTANCE* CClientFXMgr::CreateClientFX(const CLIENTFX_CREATESTRUCT &fxI
 		}
 
 		//make sure that if it is gore, we can show gore
-		if(!m_bGoreEnabled && pRef->m_pKeys[nCurrKey].m_bGore)
+		if(!m_bGoreEnabled && pRef->m_pKeys[nCurrKey].m_nGore == 1)
+		{
+			continue;
+		}
+		if(m_bGoreEnabled && pRef->m_pKeys[nCurrKey].m_nGore == 2)
 		{
 			continue;
 		}

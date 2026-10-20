@@ -29,7 +29,7 @@ struct FX_KEY
 		m_fStartOffsetInterval(0.0f),
 		m_bSmoothShutdown(true),
 		m_nDetailLevel(0),
-		m_bGore(false)
+		m_nGore(0)
 	{
 	}
 
@@ -69,7 +69,9 @@ struct FX_KEY
 
 	//determines whether or not this effect is related to gore so that it can be disabled
 	//on low violence settings
-	bool								m_bGore;
+	// RETAIL: a three-way value (CShell SetupKey 0x1001ae6e): 0 always, 1
+	// only with gore on, 2 only with gore off (CreateClientFX 0x1001d312)
+	uint32								m_nGore;
 
 	//boolean indicating whether or not this effect should be frozen when
 	//it falls outside of some predetermined radius (used to optimize
