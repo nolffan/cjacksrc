@@ -381,6 +381,11 @@ class DeviceDef
 
 	// Useful for remembering current device when enumerating device objects
 	static DeviceDef		*g_pCurrentEnumDevice=LTNULL;
+#ifdef CJACK_MODERN
+// MODERN.md EN-20: ##gamepad, the XInput controller as a DirectInput gamepad
+// (src/cjacksrc/xinput/)
+#include "xinput/gamepad_device.h"
+#endif
 
 
 
@@ -985,6 +990,16 @@ static BOOL CALLBACK DeviceEnumCallback( LPCDIDEVICEINSTANCE pDevice, LPVOID pvR
 {
 	DeviceDef *pDef;
 
+#ifdef CJACK_MODERN
+	// MODERN.md EN-21: the controller is ##gamepad, read through XInput;
+	// DirectInput's game controllers (joysticks, gamepads, wheels, flight
+	// sticks) are left out -- under Wine one of them is the same pad
+	if( !PadDevice_IsPad( pDevice->guidInstance ) &&
+		LOBYTE(pDevice->dwDevType) >= DI8DEVTYPE_JOYSTICK && LOBYTE(pDevice->dwDevType) <= DI8DEVTYPE_1STPERSON )
+	{
+		return DIENUM_CONTINUE;
+	}
+#endif
 	LT_MEM_TRACK_ALLOC(pDef = new DeviceDef,LT_MEM_TYPE_INPUT);
 	memset( pDef, 0, sizeof(DeviceDef) );
 	LTStrCpy( pDef->m_InstanceName, pDevice->tszInstanceName, INPUTNAME_LEN );
@@ -1197,8 +1212,49 @@ bool input_Init(InputMgr *pMgr, ConsoleState *pState)
 		return false;
 	}
 
+#ifdef CJACK_MODERN
+	// MODERN.md EN-20: ##gamepad, whenever XInput loads (a pad can be
+	// plugged in later); recorded first, so the keyboard and the mouse go
+	// in front of it in the list
+	if( PadDevice_Available() )
+	{
+		DIDEVICEINSTANCEA instance;
+
+		PadDevice_GetInstance( &instance );
+		DeviceEnumCallback( &instance, LTNULL );
+	}
+
+	// MODERN.md EN-22: the keyboard and the mouse are the only other
+	// devices, each described by its own GetDeviceInfo, not EnumDevices.
+	// That walks every HID device on the machine looking for game
+	// controllers, which are left out (EN-21), and on some Windows 11 PCs
+	// the same engine code crashed doing so (an access violation in
+	// RtlAllocateHeap, inside dinput.dll, at startup). The descriptions are
+	// the ones EnumDevices gave, so bindings saved by name or by ##keyboard
+	// / ##mouse still match.
+	{
+		static const GUID* s_pGuids[] = { &GUID_SysKeyboard, &GUID_SysMouse };
+		int i;
+
+		for( i = 0; i < 2; i++ )
+		{
+			LPDIRECTINPUTDEVICE8	pDev = LTNULL;
+			DIDEVICEINSTANCEA		instance;
+
+			if( g_pDirectInput->CreateDevice( *s_pGuids[i], &pDev, LTNULL ) != DI_OK || !pDev )
+				continue;
+
+			memset( &instance, 0, sizeof(instance) );
+			instance.dwSize = sizeof(instance);
+			if( pDev->GetDeviceInfo( &instance ) == DI_OK )
+				DeviceEnumCallback( &instance, LTNULL );
+			pDev->Release();
+		}
+	}
+#else
 	// Enumerate devices so we know what's there.
 	g_pDirectInput->EnumDevices( 0, DeviceEnumCallback, LTNULL, DIEDFL_ATTACHEDONLY );
+#endif
 
 	return true;
 }
@@ -1333,7 +1389,12 @@ bool input_EnableDevice( InputMgr *pMgr, const char *pDeviceName )
 			theGuid = GUID_SysKeyboard;
 		}
 
+#ifdef CJACK_MODERN
+		// MODERN.md EN-20: ##gamepad is ours, not DirectInput's
+		hResult = PadDevice_CreateDevice( g_pDirectInput, theGuid, &pDevice->m_pDevice );
+#else
 		hResult = g_pDirectInput->CreateDevice( theGuid, &pDevice->m_pDevice, LTNULL );
+#endif
 		if( hResult != DI_OK )
 			return false;
 
@@ -1430,6 +1491,15 @@ void input_ReadInput( InputMgr *pMgr, BYTE *pActionsOn, float axisOffsets[3] )
 
 	// clear the axis array
 	axisOffsets[0] = axisOffsets[1] = axisOffsets[2] = 0.0f;
+#ifdef CJACK_MODERN
+	// MODERN.md EN-20: the controller's buttons the game reads itself for
+	// now (PadHoldButtons, XInput's bits; set by the client) are held back
+	// from the bindings
+	{
+		LTCommandVar *pHold = g_pInputConsoleState ? cc_FindConsoleVar( g_pInputConsoleState, "PadHoldButtons" ) : LTNULL;
+		PadDevice_SetHold( pHold ? (WORD)(int)pHold->floatVal : 0 );
+	}
+#endif
 
 	// clear all of the axis console variables 
 	pTrigConVar = g_lstTriggerActionConsoleVariables;

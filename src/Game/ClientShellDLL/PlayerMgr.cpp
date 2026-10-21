@@ -46,6 +46,10 @@
 #include "PlayerViewAttachmentMgr.h"
 #include "LTEulerAngles.h"
 #include "TO2HUDMgr.h"
+#ifdef CJACK_MODERN
+// MODERN.md CL-20: the controller's right stick
+#include "xinput/clientpad.h"
+#endif
 
 CPlayerMgr* g_pPlayerMgr = NULL;
 
@@ -3770,6 +3774,15 @@ void CPlayerMgr::CalculateCameraRotation()
 		// Clear yaw and pitch offsets if we're using mouse strafing...
 		offsets[0] = offsets[1] = 0.0f;
 	}
+#ifdef CJACK_MODERN
+	// MODERN.md CL-20: the controller's right stick turns with the mouse
+	// (and slows with the zoom as it does); its look up and down is added
+	// below, apart from the mouse's look and invert settings
+	float fPadYaw, fPadPitch;
+	Pad_GetLook(&fPadYaw, &fPadPitch);
+	offsets[0] += fPadYaw;
+	fPadPitch /= fVal;
+#endif
 
 	// RETAIL: 0x1009d7cc. The zoom scales the offsets.
     float fYawDelta    = offsets[0] * (1.0f / fVal);
@@ -3855,6 +3868,14 @@ void CPlayerMgr::CalculateCameraRotation()
 			fPitch += Min(fAutoDelta, fNegPitch);
 		}
 	}
+#ifdef CJACK_MODERN
+	// CL-20: the stick's look up and down (first person only, as the
+	// third person's view is held near level above)
+	if (m_pPlayerCamera->IsFirstPerson())
+	{
+		fPitch += fPadPitch;
+	}
+#endif
 
     float fMinY = MATH_HALFPI - 0.1f;
 

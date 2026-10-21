@@ -47,6 +47,12 @@ public:
 
 	HOBJECT GetObject() { return m_hObject; }
 	float	GetRadius() { return m_fRadius; }
+#ifdef CJACK_MODERN
+	// MODERN.md CL-22: the controller's highlight over the choices: moved
+	// by nDelta (0: put on the first if there is none yet), and taken
+	void	PadMove(int nDelta);
+	void	PadChoose();
+#endif
 
 protected:
 
@@ -67,6 +73,9 @@ protected:
 
 	CLTGUIWindow	    m_Dlg;
 	CLTGUIColumnCtrl*	m_pText[MAX_DECISION_CHOICES];
+#ifdef CJACK_MODERN
+	int					m_nPadChoice;		// CL-22: the highlighted choice, -1: none
+#endif
 
 };
 

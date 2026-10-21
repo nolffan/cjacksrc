@@ -30,6 +30,10 @@
 #include "PlayerViewAttachmentMgr.h"
 #include "VehicleButeMgr.h"
 #include "HUDMgr.h"
+#ifdef CJACK_MODERN
+// MODERN.md CL-20: the controller's left stick on the snowmobile
+#include "xinput/clientpad.h"
+#endif
 
 #define ROUNDFLOAT(f) ((int)((f) + ((f) > 0 ? 0.5 : -0.5)))
 
@@ -536,6 +540,11 @@ void CVehicleMgr::UpdateSnowmobileControlFlags()
 		m_dwControlFlags |= BC_CFLG_ALT_FIRING;
 	}
 
+#ifdef CJACK_MODERN
+	// MODERN.md CL-20: the controller's left stick: throttle, brake and
+	// steering
+	Pad_VehicleFlags(&m_dwControlFlags);
+#endif
 	// Check for strafe left and strafe right.
 	if ((m_dwControlFlags & BC_CFLG_RIGHT) && (m_dwControlFlags & BC_CFLG_STRAFE))
 	{
