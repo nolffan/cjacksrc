@@ -1620,7 +1620,9 @@ another pairing) or not, then the exclusion file for the compiler's own.
   streamed lines (the first chunk replayed), so `linux-run.sh` installs
   `winetricks l3codecx` once per prefix. The sound path's code is retail's
   (every placed function of soundmgr, soundbuffer, soundinstance and
-  SndDrv's s_dx8 identical). For the modern build: an MP3 decoder in
-  SndDrv.dll itself, so no codec is needed.
+  SndDrv's s_dx8 identical). The modern build decodes MP3 in SndDrv.dll
+  itself, with minimp3 (MODERN.md EN-50), so `linux-run.sh` skips the
+  winetricks step for it; and it plays the intro movies with our Bink on
+  FFmpeg (X-1), so it leaves them on (APPS-50).
 - To do: the Windows install script tested under PowerShell; the run
   scripts tried on a real Linux desktop.

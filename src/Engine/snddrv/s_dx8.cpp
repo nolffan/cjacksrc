@@ -17,6 +17,11 @@
 #include <vector>
 
 #include "counter.h"
+#ifdef CJACK_MODERN
+// MODERN.md EN-50: MP3 decoded here, with minimp3 (mp3decode.cpp is
+// #included at the end of this file)
+#include "mp3/mp3decode.h"
+#endif
 
 CDx8SoundSys* g_pSoundSys = NULL;
 
@@ -92,6 +97,9 @@ static sint32 g_iCurrentEAXDirectSetting;
 WaveFile::WaveFile (void)
 {
     DOUT ("WaveFile::WaveFile\n\r");
+#ifdef CJACK_MODERN
+	m_pMp3Stream = NULL;
+#endif
 	Clear();
 }
 
@@ -153,6 +161,13 @@ void WaveFile::Close()
 		acmStreamClose( m_hAcmStream, 0 );
 		m_hAcmStream = NULL;
 	}
+#ifdef CJACK_MODERN
+	if ( m_pMp3Stream )
+	{
+		Mp3Stream_Destroy( m_pMp3Stream );
+		m_pMp3Stream = NULL;
+	}
+#endif
 
 	Clear( );
 }
@@ -314,6 +329,10 @@ BOOL WaveFile::Cue (void)
 
 	m_nRemainderBytes = 0;
 	m_nRemainderOffset = 0;
+#ifdef CJACK_MODERN
+	if ( m_pMp3Stream )
+		Mp3Stream_Reset( m_pMp3Stream );
+#endif
 	m_nBytesRead = 0;
 	m_nBytesCopied = 0;
 
@@ -422,6 +441,88 @@ UINT WaveFile::SeekFromStart( uint32 nBytes )
 	return Read( NULL, nBytes );
 }
 
+#ifdef CJACK_MODERN
+// MODERN.md EN-50: cbSize bytes of the stream's PCM, decoded by its
+// CJackMp3Stream (StartMp3) from the compressed bytes read as they are
+// needed -- in place of ACM, which converted a fixed number of compressed
+// bytes at a time and kept what did not fit in m_RemainderBuffer; the
+// decoder holds that itself. The two buffers (CDx8SoundSys's) are not used.
+// Returns the bytes given: fewer than cbSize only at the end of the data.
+UINT WaveFile::ReadCompressed( BYTE* pbDest, UINT cbSize, BYTE* pCompressedBuffer, BYTE* pDecompressedBuffer )
+{
+	UINT uiOut = 0;
+    MMIOINFO mmioinfo;
+
+	if( m_pMp3Stream == NULL )
+		return 0;
+
+    if (m_mmr = mmioGetInfo (m_hmmio, &mmioinfo, 0))
+		return 0;
+
+	while( uiOut < cbSize )
+	{
+		UINT uiDecoded = 0;
+		UINT uiGot;
+
+		// top the decoder's input up from the data chunk
+		UINT uiRead = Mp3Stream_InputRoom( m_pMp3Stream );
+		if( uiRead > m_mmckiData.cksize )
+			uiRead = m_mmckiData.cksize;
+		if( uiRead )
+		{
+			BYTE* pIn = Mp3Stream_InputEnd( m_pMp3Stream );
+			UINT cb = 0;
+			while( cb < uiRead )
+			{
+				if (mmioinfo.pchNext == mmioinfo.pchEndRead)
+				{
+					if (m_mmr = mmioAdvance (m_hmmio, &mmioinfo, MMIO_READ))
+						break;
+					if (mmioinfo.pchNext == mmioinfo.pchEndRead)
+					{
+						m_mmr = MMIOERR_CANNOTREAD;
+						break;
+					}
+				}
+				UINT nCopy = uiRead - cb;
+				UINT nBufferLeft = mmioinfo.pchEndRead - mmioinfo.pchNext;
+				if( nCopy > nBufferLeft )
+					nCopy = nBufferLeft;
+				memcpy( pIn + cb, mmioinfo.pchNext, nCopy );
+				cb += nCopy;
+				mmioinfo.pchNext += nCopy;
+			}
+			Mp3Stream_InputAdded( m_pMp3Stream, cb );
+			m_nBytesRead += cb;
+			m_nMaxBytesRead = Max( m_nMaxBytesRead, m_nBytesRead );
+			// (a read error ends the data here)
+			m_mmckiData.cksize = ( cb < uiRead ) ? 0 : m_mmckiData.cksize - cb;
+		}
+
+		uiGot = Mp3Stream_Read( m_pMp3Stream, pbDest ? pbDest + uiOut : NULL, cbSize - uiOut,
+			m_mmckiData.cksize == 0, &uiDecoded );
+		uiOut += uiGot;
+		m_nBytesCopied += uiDecoded;
+		m_nMaxBytesCopied = Max( m_nMaxBytesCopied, m_nBytesCopied );
+
+		if( uiGot == 0 && m_mmckiData.cksize == 0 )
+			break;
+	}
+
+	m_mmr = mmioSetInfo (m_hmmio, &mmioinfo, 0);
+	return uiOut;
+}
+
+// MODERN.md EN-50: the stream's decoder, for the file's channels.
+BOOL WaveFile::StartMp3( )
+{
+	if( m_pMp3Stream == NULL )
+		m_pMp3Stream = Mp3Stream_Create( m_pwfmt->nChannels );
+	else
+		Mp3Stream_Reset( m_pMp3Stream );
+	return m_pMp3Stream != NULL;
+}
+#else
 UINT WaveFile::ReadCompressed( BYTE* pbDest, UINT cbSize, BYTE* pCompressedBuffer, BYTE* pDecompressedBuffer )
 {
 	BYTE *pCurOutputPtr, *pCurDecompressedPtr;
@@ -586,6 +687,7 @@ READ_ERROR:
 READ_DONE:
     return (uiDecompressedBytesOutput);
 }
+#endif
 
 UINT WaveFile::SeekFromStartCompressed( uint32 nBytes )
 {
@@ -2627,6 +2729,27 @@ S32	CDx8SoundSys::Startup( void )
 
 	SDriverEnumInfo sEnumResults;
 
+#ifdef CJACK_MODERN
+	// MODERN.md EN-50: MP3 is decoded here (mp3decode.cpp), so the sound
+	// starts without an MP3 codec; only IMA ADPCM and PCM go through ACM.
+	if( m_hAcmADPCMDriverId == NULL ||
+		m_hAcmPCMDriverId == NULL )
+	{
+		mmResult = acmDriverEnum( AcmDriverEnumProc, ( uint32 )&sEnumResults, 0 );
+		if( mmResult != 0 )
+			return LS_ERROR;
+
+		SelectDrivers(sEnumResults, this);
+	}
+
+	if( m_hAcmADPCMDriverId == NULL ||
+		m_hAcmPCMDriverId == NULL )
+		return LS_ERROR;
+
+	mmResult = acmDriverOpen( &m_hAcmADPCMDriver, m_hAcmADPCMDriverId, 0 );
+	if( mmResult != 0 )
+		return LS_ERROR;
+#else
 	if( m_hAcmADPCMDriverId == NULL ||
 		m_hAcmMP3DriverId == NULL ||
 		m_hAcmPCMDriverId == NULL )
@@ -2650,6 +2773,7 @@ S32	CDx8SoundSys::Startup( void )
 	mmResult = acmDriverOpen( &m_hAcmMP3Driver, m_hAcmMP3DriverId, 0 );
 	if ( mmResult != 0 )
 		return LS_ERROR;
+#endif
 
 	mmResult = acmDriverOpen( &m_hAcmPCMDriver, m_hAcmPCMDriverId, 0 );
 	if ( mmResult != 0 )
@@ -3436,6 +3560,28 @@ S32	CDx8SoundSys::Init3DSampleFromFile( LH3DSAMPLE hS, void* pFile_image, S32 si
 	if ( pWaveFormatEx->nChannels > 1 )
 		return LTFALSE;
 
+#ifdef CJACK_MODERN
+	// MODERN.md EN-50: MP3 decoded here (mp3decode.cpp), not through ACM
+	if( pWaveFormatEx->wFormatTag == WAVE_FORMAT_MPEGLAYER3 )
+	{
+		WAVEFORMATEX pcmWaveFormat;
+		uint8* pucUncompressedSampleData;
+
+		if( !Mp3_DecodeAll( pWaveFormatEx, pSampleData, uiSampleDataSize, &pcmWaveFormat,
+				&pucUncompressedSampleData, &uiSampleDataSize ))
+			return LTFALSE;
+
+		pSampleData = pucUncompressedSampleData;
+
+		if ( !Init3DSampleFromAddress( hS, pSampleData, uiSampleDataSize, &pcmWaveFormat, siPlaybackRate, pFilterData ) )
+		{
+			delete[] pucUncompressedSampleData;
+			return LTFALSE;
+		}
+		pSample->m_bAllocatedSoundData = true;
+	}
+	else
+#endif
 	if( pWaveFormatEx->wFormatTag != WAVE_FORMAT_PCM )
 	{
 		MMRESULT mmResult = 0;
@@ -4029,6 +4175,34 @@ S32	CDx8SoundSys::InitSampleFromFile( LHSAMPLE hS, void* pFile_image, S32 siBloc
 
 	WAVEFORMATEX const* pWaveFormatEx = ( WAVEFORMATEX* )pWaveFormat;
 
+#ifdef CJACK_MODERN
+	// MODERN.md EN-50: MP3 decoded here (mp3decode.cpp), not through ACM
+	if( pWaveFormatEx->wFormatTag == WAVE_FORMAT_MPEGLAYER3 )
+	{
+		WAVEFORMATEX pcmWaveFormat;
+		uint8* pucUncompressedSampleData;
+
+		if( !Mp3_DecodeAll( pWaveFormatEx, pSampleData, uiSampleDataSize, &pcmWaveFormat,
+				&pucUncompressedSampleData, &uiSampleDataSize ))
+			return LTFALSE;
+
+		if( !pSample->Init( m_hResult, m_pDirectSound, uiSampleDataSize, false, &pcmWaveFormat ) )
+		{
+			delete[] pucUncompressedSampleData;
+			return LTFALSE;
+		}
+
+		pSampleData = pucUncompressedSampleData;
+		pSample->m_bAllocatedSoundData = true;
+
+		if( !InitSampleFromAddress( hS, pSampleData, uiSampleDataSize, &pcmWaveFormat, siPlaybackRate, pFilterData ))
+		{
+			delete[] pucUncompressedSampleData;
+			return LTFALSE;
+		}
+	}
+	else
+#endif
 	if( pWaveFormatEx->wFormatTag != WAVE_FORMAT_PCM )
 	{
 		MMRESULT mmResult = 0;
@@ -4256,6 +4430,14 @@ LHSTREAM CDx8SoundSys::OpenStream( char* sFilename, uint32 nFilePos, LHDIGDRIVER
 	streamBufferParams.m_siParams[SBP_CHANNELS_PER_SAMPLE] = pWaveFile->m_pwfmt->nChannels;
 	streamBufferParams.m_siParams[SBP_SAMPLES_PER_SEC] = pWaveFile->m_pwfmt->nSamplesPerSec;
 
+#ifdef CJACK_MODERN
+	// MODERN.md EN-50: the stream's MP3 decoder, in place of an ACM stream
+	if ( pWaveFile->IsMP3() && !pWaveFile->StartMp3( ) )
+	{
+		pWaveFile->Close();
+		return NULL;
+	}
+#else
 	if ( pWaveFile->IsMP3() )
 	{
 		unsigned long ulSrcBufferSize;
@@ -4302,6 +4484,7 @@ LHSTREAM CDx8SoundSys::OpenStream( char* sFilename, uint32 nFilePos, LHDIGDRIVER
 			return NULL;
 		}
 	}
+#endif
 
 	LHSTREAM hStream = OpenStream(&streamBufferParams, pWaveFile, i);
 
@@ -4625,6 +4808,22 @@ S32	CDx8SoundSys::DecompressASI( void* pInData, U32 uiInSize, char* sFilename_ex
 
 	if ( pWaveFormatEx->wFormatTag == WAVE_FORMAT_MPEGLAYER3 )
 	{
+#ifdef CJACK_MODERN
+		// MODERN.md EN-50: MP3 decoded here (mp3decode.cpp), not through
+		// ACM; its length goes where the code below reads ACM's
+		ACMSTREAMHEADER acmStreamHeader;
+		memset( &acmStreamHeader, 0, sizeof( ACMSTREAMHEADER ) );
+
+		uint8* pucUncompressedSampleData;
+		uint32 uiPCMSize;
+		if( !Mp3_DecodeAll( pWaveFormatEx, pSampleData, uiSampleDataSize, &pcmWaveFormat,
+				&pucUncompressedSampleData, &uiPCMSize ))
+			return LTFALSE;
+		acmStreamHeader.cbDstLengthUsed = uiPCMSize;
+		(void)uiNumSampleBytes;
+		(void)mmResult;
+		(void)nSuggestFlags;
+#else
 		mmResult = acmFormatSuggest( m_hAcmMP3Driver, const_cast< WAVEFORMATEX* >( pWaveFormatEx ),
 			&pcmWaveFormat,	sizeof( WAVEFORMATEX ), nSuggestFlags );
 
@@ -4671,6 +4870,7 @@ S32	CDx8SoundSys::DecompressASI( void* pInData, U32 uiInSize, char* sFilename_ex
 		}
 
 		mmResult = acmStreamClose( hAcmStream, 0 );
+#endif
 
 		uint32 uiWaveFmtSize = sizeof( WAVEFORMATEX ) - sizeof( pcmWaveFormat.cbSize );
 		uint32 uiFileSize =
@@ -4785,3 +4985,7 @@ bool APIENTRY DllMain( HANDLE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
     return true;
 }
 
+#ifdef CJACK_MODERN
+// MODERN.md EN-50: the MP3 decoder, minimp3 with it (mp3decode.h)
+#include "mp3/mp3decode.cpp"
+#endif
