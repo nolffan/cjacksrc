@@ -26,6 +26,10 @@
 #include "CMoveMgr.h"
 #include "MsgIds.h"
 #include "VersionMgr.h"
+#ifdef CJACK_MODERN
+// MODERN.md CL-21: the controller's default layout
+#include "xinput/clientpad.h"
+#endif
 
 extern CGameClientShell* g_pGameClientShell;
 
@@ -468,6 +472,16 @@ void CUserProfile::LoadControls()
 		
 	}
 
+#ifdef CJACK_MODERN
+	// MODERN.md CL-21: the controller's default layout, once per profile:
+	// a new one, one from before the modern build, or the defaults
+	// restored (default.prf has no controller bindings)
+	if (m_buteMgr.GetInt("Controls","PadLayout",0) < 1)
+	{
+		Pad_DefaultBindings(this, false);
+		m_buteMgr.SetInt("Controls","PadLayout",1);
+	}
+#endif
 	ApplyControls();
 	ApplyBindings();
 	ApplyMouse();
@@ -1184,6 +1198,12 @@ void CUserProfile::ApplyJoystick()
 
     g_pLTClient->FreeDeviceBindings (pBindings);
 
+#ifdef CJACK_MODERN
+	// MODERN.md CL-23: the controller's sticks are read by the client
+	// (CL-20), so none of its axes is bound, whatever the profile says
+	WriteConsoleInt("UseJoystick",0);
+	return;
+#endif
 	if (!m_bUseJoystick)
 	{
 		WriteConsoleInt("UseJoystick",0);
