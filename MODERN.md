@@ -35,6 +35,33 @@ without the retail input's repeated last event; a frame limiter; windowed
 modes at any size; our Bink player on FFmpeg in place of RAD's
 `binkw32.dll`; Internet play without the dead master servers.
 
+Controller follow-ups (nolf2src's M-G64, M-G65; nolfsrc's M-P7-07, M-P7-08):
+
+* **Rumble.** Vibration on firing, damage and explosions near by, through
+  XInput's `XInputSetState`. Nothing in the game asks for it
+  (`PlayJoystickEffect` is commented out in the engine), so it needs its
+  own calls from the client; the ##gamepad device (EN-20) answers
+  DirectInput's force-feedback calls with "unsupported".
+* **Button prompts.** Hints that name a key ("Press [key]") would name the
+  controller's button when the controller was used last.
+
+## New console variables
+
+Client-side console variables the modern build adds. Creating one does not
+save it: `autoexec.cfg` keeps those set with a `+` (as the options screens
+set theirs) and those set as `+Name value` on the command line. The modern
+build's strings are IDs 31100 and up (`ClientResShared.h`, the English
+`ClientResShared.rc`).
+
+| Variable | Type | Default | Meaning | Item |
+|---|---|---|---|---|
+| `PadLookSpeed` | float | 1 | the controller's right stick: its turn rate, times 180 degrees a second across and 120 up and down; Controller's "Look speed" (25-300%) | CL-20, CL-23 |
+| `PadInvertY` | int | 0 | the right stick's up looks down; Controller's "Invert look" | CL-20, CL-23 |
+| `PadLookCurve` | float | 2 | the right stick's response: its deflection past the dead zone, raised to this (1 = linear; less than 1 is taken as 1) | CL-20 |
+| `PadLookDeadZone` | float | 0.15 | the right stick's radial dead zone (0..0.9 of its travel); Controller's "Look dead zone" (0-50%) | CL-20, CL-23 |
+| `PadMoveDeadZone` | float | 0.2 | the left stick's radial dead zone (0..0.9); Controller's "Move dead zone" (0-50%) | CL-20, CL-23 |
+| `PadHoldButtons` | int | 0 | the controller's buttons (XInput's bits) the client reads itself for now and the bindings do not see; set by the game every time it changes, never saved; not a setting | EN-20, CL-22 |
+
 ## Done
 
 * **GS-1: GameSpy.dll's handles.** Each request thread's start event no
@@ -187,3 +214,136 @@ modes at any size; our Bink player on FFmpeg in place of RAD's
   takes the screen's aspect rather than the PVModelAspect console variable
   (1 by default), so the weapon model is not stretched on a wide screen
   (src/Engine/runtime/render_a/src/sys/d3d/3d_ops.cpp).
+* **EN-20: the ##gamepad device.** The engine read DirectInput joysticks
+  and gamepads: no dead zone, no hot-plug, an Xbox pad's two triggers on
+  one axis, and under Wine a pad shows up as more than one device. The
+  modern build adds the controller as a device of its own, `##gamepad`,
+  read through XInput (`xinput1_4`, `1_3` or `9_1_0`, loaded at run time;
+  the DirectX 8.1 SDK predates XInput, so its two types are declared by
+  hand): an object behind `IDirectInputDevice8A` that answers the calls the
+  engine makes of a gamepad from XInput's state -- the first connected pad
+  of four. Six absolute axes (`Left Stick X`/`Y`, `Right Stick X`/`Y`
+  -1000..1000, y down positive; `Left`/`Right Trigger Axis` 0..1000) and
+  sixteen buttons (`A`/`B`/`X`/`Y Button`, `Left`/`Right Bumper`, `Back`,
+  `Start`, `Left`/`Right Stick Click`, `D-Pad Up`/`Down`/`Left`/`Right`,
+  `Left`/`Right Trigger` past XInput's threshold), buffered in whatever data
+  format the engine sets; acquired only while the game has the foreground.
+  It is a DirectInput gamepad (`DI8DEVTYPE_GAMEPAD`), so the game's own
+  gamepad support takes it as the third device of the bindings
+  (`HasGamepad`, `CProfileMgr::SetDeviceData`, Configure controls'
+  capture), and it exists whenever XInput loads, so a pad can be plugged
+  in later. Empty slots are looked through once a second by a thread of
+  the engine's own, never in the frame (asking XInput about an empty slot
+  can take milliseconds on Windows: nolf2src's M-E59). `PadHoldButtons`
+  lets the client keep buttons from the bindings while it reads them itself
+  (a decision, CL-22): a button pressed then stays released for the engine
+  until it is let go. With `CJACK_PADTEST` naming a file, the pad is that
+  file's one line of state (`padread.h`), for a scripted test. No force
+  feedback (Planned). As nolf2src's M-E20 and M-E59, nolfsrc's M-P7-01
+  (src/cjacksrc/xinput/gamepad_device.h, padread.h;
+  src/Engine/runtime/kernel/src/sys/win/input.cpp input_Init,
+  DeviceEnumCallback, input_EnableDevice, input_ReadInput).
+* **EN-21: no DirectInput joysticks.** DirectInput's game controllers
+  (joysticks, gamepads, wheels, flight sticks: `DI8DEVTYPE_JOYSTICK` ..
+  `1STPERSON`) are left out of the engine's device list: the controller is
+  `##gamepad` (EN-20), and under Wine an XInput pad is one of them too,
+  which would bind and read it twice. Keyboard and mouse are DirectInput
+  as before; `JoystickDisable` (the launcher's "Disable joysticks") has
+  nothing left to disable. As nolf2src's M-E21 (input.cpp
+  DeviceEnumCallback).
+* **EN-22: no DirectInput device enumeration.** `input_Init` asked
+  DirectInput to enumerate every attached device (`EnumDevices`), which
+  walks every HID device on the machine; a Windows 11 crash report against
+  the same engine code (nolfsrc's) shows an access violation in
+  `RtlAllocateHeap` inside `dinput.dll` there, at startup. With EN-21 only
+  the keyboard and the mouse are kept from it, so the modern build creates
+  `GUID_SysKeyboard` and `GUID_SysMouse` directly and describes each with
+  its own `GetDeviceInfo`: the same name, GUID and type the enumeration
+  gave them. Everything that finds a device finds it by type (`##keyboard`,
+  `##mouse`, `GetDeviceName`, `GetDeviceObjects`, `GetDeviceBindings`) or by
+  that name, so `autoexec.cfg`'s bindings, the profiles and Configure
+  controls are unchanged. The console's `ListInputDevices` still
+  enumerates, but only when typed. As nolf2src's M-E33, nolfsrc's M-P7-09
+  (input.cpp input_Init).
+* **CL-20: the controller's sticks.** The client reads the sticks itself,
+  so they do not depend on bindings (`ApplyJoystick` binds no axis in the
+  modern build, CL-23). **Look**: the right stick past a radial dead zone
+  (`PadLookDeadZone`), the rest of its travel rescaled to 0..1 and raised
+  to `PadLookCurve`, is a turn rate -- 180 degrees a second across, 120 up
+  and down, times `PadLookSpeed` and the frame time -- added to the mouse's
+  turn (so it slows with the zoom); its up and down is the stick's own
+  (`PadInvertY`), apart from the mouse's look and invert settings, and in
+  first person only (the third person's view is held near level).
+  **Movement**: the left stick past `PadMoveDeadZone` accelerates the way
+  it points and sets the movement flags by octant (what the animations and
+  the server see); past three-quarters of its travel it runs, below that it
+  walks at that share of the walking speed (at least a third); Speed held
+  turns that over, as Shift does the keyboard's run (RunLock is not used
+  with the stick); not while ducking or leaning, as the keys. On the
+  snowmobile (the vehicle code Contract J.A.C.K. keeps from NOLF2) the stick
+  is the throttle and brake (up, down) and the steering (left, right); the
+  right stick steers too, as the mouse does. The pad is read once a frame,
+  in the menus too, while the game's window is the foreground one, from a
+  slot a thread of CShell.dll's own finds (EN-20's reader; the thread stops
+  in `OnEngineTerm`, before the DLL is unloaded). As nolf2src's M-G47,
+  nolfsrc's M-P7-03 and M-P7-04 (src/cjacksrc/xinput/clientpad.cpp, .h,
+  compiled as part of GameClientShell.cpp; src/Game/ClientShellDLL/
+  GameClientShell.cpp Update, OnEngineTerm; PlayerMgr.cpp
+  CalculateCameraRotation; CMoveMgr.cpp UpdateNormalControlFlags,
+  UpdateNormalMotion, GetMaxVelMag; VehicleMgr.cpp
+  UpdateSnowmobileControlFlags).
+* **CL-21: the controller's default layout.** The profiles
+  (`Profiles/*.prf`, from the shipped `Default.prf`) have no gamepad
+  bindings. Once per profile (`[Controls] PadLayout`), the controller's
+  column gets: right trigger Fire, left trigger Zoom, A Jump, B Duck, X
+  Activate, Y Reload, right and left bumper next and previous weapon (the
+  chooser; Fire takes the weapon, Start puts it away), Back Mission (the
+  in-game menus), left stick click Speed (run), right stick click Center
+  view, d-pad up Next ammo, down Last weapon, left Manual aim, right Move
+  body; Start is the menu (CL-22). Contract J.A.C.K. has no holster or
+  flashlight command (nolf2src's d-pad down and left) and adds Last weapon
+  and Manual aim, which take their places. A command the player has bound
+  on the controller, and a button already bound, are left alone. A new
+  profile and Restore defaults get the layout too (`Default.prf` has no
+  `PadLayout`). As nolf2src's M-G60 (clientpad.cpp Pad_DefaultBindings;
+  ProfileMgr.cpp LoadControls).
+* **CL-22: menus, cut-scenes and decisions with the controller.** Outside
+  play -- the menus and screens, a message box, a popup, the in-game menus,
+  a paused game, the splash screens and movies -- the d-pad or the left
+  stick is the arrow keys (repeating after 0.4 s, every 0.12 s), A Enter, B
+  and Start Escape; in play Start is Escape (the menu, or the chooser put
+  away). A, in a cut-scene, skips it, and once dead goes on to the
+  mission-failure screen (both want Space, or any key; A's binding is a
+  command, not a key). While a dialogue decision is up the d-pad moves a
+  highlight (red) over its choices, A takes it and B declines, and those
+  buttons are kept from the bindings meanwhile (EN-20's
+  `PadHoldButtons`), so choosing does not jump. The keys go through the
+  client shell's own `OnKeyDown`/`OnKeyUp`, as the engine delivers a key;
+  not while Configure controls waits for a control to bind. As nolf2src's
+  M-G61 (clientpad.cpp Pad_Update; HUDDecision.cpp, .h PadMove,
+  PadChoose; ScreenConfigure.cpp, the capture).
+* **CL-23: the Controller screen.** Controls loses the retail "Use
+  joystick" toggle and "Configure joystick/gamepad", whose axis set-up
+  would bind the controller's sticks a second time, for "Controller": the
+  joystick screen, rebuilt with Look speed (25-300%), Invert look, the look
+  and move dead zones (0-50%) and Restore controller defaults (the
+  controller's column of the bindings only, after a yes/no box). The
+  controller's buttons are bound in Configure controls like keys, and
+  named there "Controller A Button" and so on. Strings 31100-31114. As
+  nolf2src's M-G62, nolfsrc's M-P7-06 (src/Game/ClientShellDLL/
+  ScreenControls.cpp, ScreenJoystick.cpp, .h, ScreenConfigure.cpp (the
+  device's name), ProfileMgr.cpp ApplyJoystick; src/Game/ClientRes/Shared/
+  ClientResShared.h, Lang/EN/ClientResShared.rc).
+* **CL-24: a gamepad's buttons bound by name.** Configure controls bound a
+  gamepad's button by its instance number (`##1`), which the engine takes
+  for the first object of that number -- an axis (`RETAIL_BUGS.md`). The
+  modern build names a joystick's and a gamepad's controls by name, as
+  retail meant to. As nolf2src's M-G63 (src/Game/ClientShellDLL/
+  ScreenConfigure.cpp Bind).
+
+Not tested: EN-20 .. EN-22 and CL-20 .. CL-24 are built (`make modern`),
+but no controller was at hand and the game was not run with them: neither
+a pad (nor the test pad, `CJACK_PADTEST`), nor the keyboard and mouse
+found by GUID (EN-22), nor the Controller screen's layout in Contract
+J.A.C.K.'s menus. nolf2src tested the same design under Wine with its
+test pad.
