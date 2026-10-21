@@ -270,6 +270,21 @@ void CMusicMgr::DoMood(Mood eMood)
 {
 	m_afMoods[eMood] = Min<LTFLOAT>(m_afMoods[eMood] + g_pLTServer->GetFrameTime(), s_fMax);
 }
+#ifdef CJACK_MODERN
+
+// MODERN.md GAME-40: music moods at high frame rates. Update() takes one
+// server frame's time off every mood each server frame; DoMood() puts one
+// frame's time back each time a caller asks for the mood. The AIs ask from
+// their own update, which runs at most every c_fUpdateDelta (100 times a
+// second), so with server frames shorter than that the moods drained
+// faster than the AIs could keep them up, and the warning and combat music
+// never stayed. An AI's update now keeps its mood up for the time it
+// covers. As nolf2src's M-G30.
+void CMusicMgr::DoMoodFor(Mood eMood, LTFLOAT fTime)
+{
+	m_afMoods[eMood] = Min<LTFLOAT>(m_afMoods[eMood] + fTime, s_fMax);
+}
+#endif
 
 // ----------------------------------------------------------------------- //
 

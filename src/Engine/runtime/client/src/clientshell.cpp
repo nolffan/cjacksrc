@@ -376,11 +376,17 @@ LTRESULT CClientShell::Update()
     
     {
         CountAdder cntAdd(&g_Ticks_NetUpdate);
+#ifdef CJACK_MODERN
+        CModernFrameSection cSection(MFL_NET);	// MODERN.md EN-42
+#endif
         g_pClientMgr->m_NetMgr.Update("Client: ", g_pClientMgr->m_CurTime);
     }
 
     {
 		CountAdder cntAdd(&g_Ticks_ServerUpdate);
+#ifdef CJACK_MODERN
+        CModernFrameSection cSection(MFL_SERVER);	// MODERN.md EN-42
+#endif
 
         // Update our local server manager if it's there.
         // (If the update fails an error will be returned.)
@@ -414,6 +420,9 @@ LTRESULT CClientShell::Update()
 	{
         // Process all packets.
         CountAdder cntAdd2(&g_Ticks_NetUpdate);
+#ifdef CJACK_MODERN
+        CModernFrameSection cSection(MFL_NET);	// MODERN.md EN-42
+#endif
 
         dResult = ProcessPackets();
     }

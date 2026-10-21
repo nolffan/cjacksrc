@@ -32,10 +32,11 @@ reused.
 
 To bring over once the game runs (each to be checked against Contract
 J.A.C.K.'s code first): mouse look without the retail input's repeated last
-event; a frame limiter; Internet play without the dead master servers.
+event; Internet play without the dead master servers.
 (Widescreen menus, HUD and field of view and the window modes are done:
 EN-30 to EN-34, CL-30 to CL-35, APPS-30 to APPS-32; our Bink player on
-FFmpeg is X-1.)
+FFmpeg is X-1; the frame limiter and the frame-rate faults are EN-40 to
+EN-42, CL-40 to CL-46 and GAME-40.)
 
 Controller follow-ups (nolf2src's M-G64, M-G65; nolfsrc's M-P7-07, M-P7-08):
 
@@ -71,7 +72,7 @@ set theirs) and those set as `+Name value` on the command line;
 `display.cfg` (written by the game at every start, read by the launcher)
 keeps the display's. The modern build's strings are IDs 31000 and up
 (`ClientResShared.h`, the English `ClientResShared.rc`): the Display
-screen's 31000-31011 and 31200-31202, the controller's 31100-31114; the
+screen's 31000-31011 (the frame rate limit's 31006-31008) and 31200-31202, the controller's 31100-31114; the
 launcher's are in its own `resource.h`.
 
 | Variable | Type | Default | Meaning | Item |
@@ -85,6 +86,9 @@ launcher's are in its own `resource.h`.
 | `Windowed` | int | (engine) | existing (0 full screen, 1 a window: what the renderer reads); now set by the Display screen's and the launcher's "Window mode", applied at once, and kept in `display.cfg`; a fresh install's is the launcher's default (a window; full screen on a Steam Deck) | CL-32, APPS-31, APPS-32 |
 | `WindowMode` | int | 0 | with `Windowed` 1: 1 a framed window, 2 a borderless window over the whole desktop at the desktop's resolution; 0 (a config from before it) borderless only when the mode is as large as the desktop | EN-32, CL-32, APPS-31 |
 | `Cinematics43` | int | 0 | on a wide screen, cutscenes in the centred 4:3 area; Display's "4:3 cinematics" | CL-35 |
+| `MaxFPS` | float | 240 (retail: 0, and ignored in the final build) | existing: the most frames a second; 0 is no limit; at most 1000; 60 at most in multiplayer, hosting or joining; Display's "Frame rate limit" (60, 120, 144, 240, none) | EN-40, CL-40 |
+| `FrameTimeLog` | float | 0 | write every frame of at least this many milliseconds, with what it was spent on, and a summary every ten seconds, to `frametime.log` (and the console); 0 is off | EN-42 |
+| `ShowFramerate` | int | 0 | existing (the engine's `ShowFrameRate`, which only a debug engine shows): the frame rate, averaged over 30 frames, at the top of the screen in play | CL-46 |
 
 ## Done
 
@@ -583,3 +587,169 @@ test pad.
   on the speech) for the legacy build only: the modern build plays the
   movies with its own Bink (X-1) and decodes the speech itself (EN-50)
   (build/game-scripts/linux-run.sh).
+* **EN-40: the frame limiter.** The engine's frame limiter, `MaxFPS`, only
+  works outside the final build (`cm_HandleMaxFPS` is in retail's
+  Lithtech.exe, 0x40e6b0, but `CClientMgr::Update` calls it only under
+  `#ifndef _FINAL`), so the game ran as fast as it could, and parts of it
+  go wrong faster (EN-41, GAME-40, CL-41 to CL-45). The modern build limits
+  the frame rate to `MaxFPS` in every build: 240 unless set (the fastest
+  common refresh rate; a config that has `MaxFPS` keeps it); 0 is no
+  limit; at most 1000; in multiplayer, hosting or joining (a shell not
+  started as a normal game), 60 at most, where faster is untried. Each
+  frame waits until 1/`MaxFPS` has passed since the last one ended,
+  sleeping while more than 2 ms are left (the timer runs at 1 ms) and
+  spinning for the rest, so a wait that overslept is not taken out of the
+  next frame (nolf2src's M-E60 looked at it and kept it). The limiter came
+  with nolf2src's engine at 60 frames a second, unlisted here; now its
+  default is 240 and multiplayer has its own cap. As nolf2src's M-E4,
+  nolfsrc's M-P1-25 (src/Engine/runtime/client/src/clientmgr.cpp
+  `cm_ModernFrameLimit`, src/Engine/runtime/shared/src/engine_vars.cpp).
+  Tested (EN-42's log): the menus at the default 233-238 frames a second,
+  `MaxFPS 60` 60, `300` 298-299, `100` 100; a deathmatch joined through
+  `make mptest` at 60.0 with `MaxFPS` unset (240).
+* **EN-41: a game tick at most every 10 ms.** In single player (and for a
+  host) the client runs the server once a frame, and each tick advances
+  the game by the time since the last. An AI asks to be updated every
+  10 ms (`c_fUpdateDelta`) and steps by the server's frame time, the time
+  since the last *tick*: above 100 frames a second it is updated on one
+  tick in two, three or more but steps one tick's time, so it walks, turns
+  and times everything slower (and the music's moods drain, GAME-40). A
+  tick now runs only once 10 ms have passed since the last one -- the 60 to
+  100 ticks a second of a retail machine; packets and the network still go
+  every call; time that runs backwards (a new world re-bases it), the
+  paused and the inactive updates tick at once (`RETAIL_BUGS.md`). The
+  dedicated server already runs at most 30 updates a second
+  (`MIN_SERVER_UPDATE`, as NOLF2's: nolf2src's M-G49), and a host is held
+  at 60 (EN-40), so nothing else changes in multiplayer. As nolf2src's
+  M-E4 (src/Engine/runtime/server/src/servermgr.cpp `CServerMgr::Update`).
+  Measured in M01S01 (below): the first AI's frame times summed to 1.00 of
+  the game time at 60 frames a second, 0.33 at 299 and 0.11 at 1160
+  before; 1.00 at 60, 298 and 750 after.
+* **EN-42: the frame-time log.** `FrameTimeLog <ms>` (0, off, unless set)
+  writes every frame that took at least that long, from the start of one
+  `CClientMgr::Update` to the next, to `frametime.log` in the game
+  directory and to the console: the seconds since the log started, the
+  frame's milliseconds, and its parts -- `input`, `net`, `server` (the
+  local server: single player and a host), `game` (the client shell's own
+  update, less the engine work it asks for), `objects`, `render`,
+  `present`, `sound`, `video`, `limit` (EN-40's wait) and `other` -- with
+  a summary line every ten seconds (frames, average rate, worst frame,
+  frames over the threshold, each part's average). The engine's own tick
+  counters are compiled out of the final build, so the parts are timed by
+  sections of their own (`CModernFrameSection`, on the main thread only;
+  off, a section is one test of a flag). nolf2src's M-E58 unchanged
+  (src/Engine/runtime/client/src/clientmgr.cpp `cm_ModernFrameLog` and the
+  sections in `Update`, `Render`, `ShowDrawSurface`, `UpdateObjects`;
+  clientmgr.h; clientshell.cpp; engine_vars.cpp). Tested under Xvfb: the
+  log and its summaries written, the parts adding up to the frame.
+* **CL-40: Frame rate limit on the Display screen.** A "Frame rate limit"
+  row under V Sync: 60, 120, 144, 240, None (`MaxFPS`, EN-40), 240 for a
+  config without `MaxFPS`. A limit not on offer (one set by hand) shows as
+  the next one up (None above 240) and is written only when the row is
+  changed, so it is kept otherwise (as nolfsrc's M-P1-25). Strings
+  31006-31008 (src/Game/ClientShellDLL/ScreenDisplay.cpp, .h; ClientRes
+  strings). The launcher's Display dialog has no such choice, nor do
+  nolf2src's or nolfsrc's launchers, so none was added. Tested under Xvfb:
+  the row shows 240 with `MaxFPS` unset and 120 for `MaxFPS 100`; set to
+  144 and left, the screen opened again on 144.
+* **CL-41: the player's movement at any frame rate.** The speed cap
+  (`GetMaxVelMag`) is applied at the start of each frame and the frame's
+  push then takes the speed past it (the engine's physics is exact for a
+  constant push): the shorter the frame, the slower the run. The cap is
+  now applied once a 60th of a second, which moves the player as a 60
+  frames a second frame did. A frame's move under 0.1 units was dropped
+  (`MoveLocalSolidObject`), 6 units a second at 60 frames a second but 100
+  at 1000, where a crouching walk barely moves; the threshold, the blocked
+  fall's, the "can't move" and spectator dampings and a pusher's push (an
+  explosion's, a vehicle's impact) are now per 60th of a second. A jump
+  peaked about half a frame's fall below v*v/2g (the engine takes each
+  frame's gravity off the speed before moving by it): higher the faster
+  the frame rate; above 60 frames a second the jump starts half the
+  difference of a frame's gravity slower, so it peaks as at 60
+  (`RETAIL_BUGS.md`). As nolf2src's M-E4, with the jump Contract J.A.C.K.'s
+  own (src/Game/ClientShellDLL/CMoveMgr.cpp `UpdateNormalMotion`,
+  `UpdateMotion`, `UpdatePushers`, `MoveLocalSolidObject`).
+* **CL-42: out of the water at high frame rates.** Swimming up, the rise
+  stopped the frame after the head broke the surface, so the faster the
+  frame rate the lower the player floated; it lasts two 60ths of a second
+  at any rate. A jump out of the water also took that frame's swim-up push;
+  it gets a 60th of a second's worth at any rate faster than 60
+  (`RETAIL_BUGS.md`). As nolf2src's M-E4 and nolfsrc's M-P1-23, whose
+  `CMoveMgr` code this is (CMoveMgr.cpp `UpdateInLiquid`,
+  `UpdateNormalMotion`). Not measured here: no scripted run reached water;
+  nolf2src measured the same code in NOLF2's pool.
+* **CL-43: a vehicle's top speed at any frame rate.** The snowmobile and
+  the motorcycles (`PPM_SNOWMOBILE`, `CVehicleMgr::UpdateVehicleMotion`)
+  cap their speed the way the player's walk does (CL-41), once a frame
+  before the frame's push; the cap is applied once a 60th of a second. The
+  rest of the vehicle code is timed (turn rates, friction, braking by the
+  frame time or the clock; collisions by ratios), and an impact's push is
+  CL-41's pusher. Not measured: no scripted run could reach a vehicle (no
+  developer console to teleport, and the `rosebud` cheat spawned none in
+  M01S01); `UpdateVehicleMotion` is not yet byte-identical, so it has no
+  `RETAIL_BUGS.md` entry (src/Game/ClientShellDLL/VehicleMgr.cpp).
+* **CL-44: particle and line systems keep emitting.** Each update added
+  `floor(rate * dt)` particles (lines) and restarted its clock, so where a
+  frame owes less than one, none was ever added (the weather's snow and
+  rain), and a camera-relative system added one a frame; an update that
+  owes none keeps its time until one is owed (`RETAIL_BUGS.md`). As
+  nolf2src's M-E4, nolfsrc's 9780977 (ParticleSystemFX.cpp,
+  LineSystemFX.cpp `Update`). Not measured (no weather in the test world).
+* **CL-45: aim, fire sparks and debris per 60th of a second.** The
+  weapon's inaccuracy from turning took the turn since the last frame (a
+  fifth as much at 300 as at 60); a fire made a spark with one chance in
+  ten a frame; bouncing debris came to rest below 15/sqrt(dt) units a
+  second (116 at 60, 260 at 300). Each is per 60th of a second now
+  (`RETAIL_BUGS.md`). As nolf2src's M-E4 (ClientWeapon.cpp
+  `UpdateMovementPerturb`, FireFX.cpp `Update`, client_physics.cpp
+  `BounceMovingObject`). Not measured.
+* **CL-46: the frame-rate counter.** `ShowFramerate 1` shows the frame
+  rate, averaged over 30 frames, at the top of the screen in play (the
+  engine's `ShowFrameRate` prints only in a debug engine). As nolf2src's
+  M-G44 (src/Game/ClientShellDLL/HUDMgr.cpp). Tested: shown in M01S01.
+* **GAME-40: music moods above 100 frames a second.** `CMusicMgr::Update`
+  takes one server frame's time off every mood each frame; the AIs put one
+  frame's time back on the mood they want, but from their own update, at
+  most every 10 ms. With server frames shorter than that the moods
+  drained faster than they were kept up, and the warning and combat music
+  dropped out. An AI's update now keeps its mood up for the time it
+  covers, at least 10 ms (`RETAIL_BUGS.md`). With EN-41 a tick is never
+  shorter than 10 ms, so this is the same as retail's there; it keeps the
+  moods right whatever the tick. As nolf2src's M-G30 (src/Game/ObjectDLL/
+  MusicMgr.cpp, .h `DoMoodFor`, AIState.cpp `UpdateMusic`). Not measured.
+
+How EN-40 to CL-46 were measured: a temporary per-frame log (the player's
+position, speed and control flags, the camera, the client and game times;
+the first AI's updates), not committed, and scripted runs of the modern
+build under Xvfb in M01S01 (`build/playtest.sh`; the world, models and
+effects not drawn, for the frame rate; the god and poltergeist cheats, for
+the gangsters' fight), at `MaxFPS` 60, 300 and 0 (no limit), before and
+after the fixes. Speeds are distances over time, the best one-second
+stretch of running (`RunLock` is on in the shipped config) and half-second
+of crouching in the room's free space; jumps are standing ones.
+
+| | 60 before | 300 before | none (1160) before | 60 after | 300 after | none (750) after |
+|---|--:|--:|--:|--:|--:|--:|
+| run, units a second | 197.0 | 184.1 | 181.6 | 197.2 | 197.5 | 199.3 |
+| crouching walk | 118.0 | 111.8 | 111.4 | 117.6 | 118.2 | 119.5 |
+| standing jump, units high | 68.9 | 74.0 | 72.4 | 69.3, 68.9 | 71.0, 70.7 | 69.2, 71.0 |
+| an AI's step time, share of game time | 1.00 | 0.33 | 0.11 | 1.00 | 1.00 | 1.00 |
+| game time, share of real time (30 s of play) | 1.000 | 0.9995 | 0.9995 | 1.000 | 1.000 | 1.0003 |
+| the opening camera, game seconds | 9.42 | 9.30 | 9.28 | 9.42 | 9.31 | 9.32 |
+
+(The uncapped rate fell from 1160 to 750 frames a second with the fixes:
+the AIs now update at their speed. The game time is real time at any rate
+in retail too: the engine's frame times are whole-millisecond differences
+of one clock, so no time is lost; the client's and server's animations
+advance by them, so nolfsrc's animation-fraction fix has nothing to do
+here. Cutscene cameras and keyframers are server objects updated every
+tick, so they keep real time; M01S01's opening camera is a still one, and
+no cutscene with cuts was measured.)
+
+Looked at and left alone: the loading screen's thread draws then sleeps
+100 ms (nolf2src's M-G3: the level loads on the main thread, so a shorter
+sleep would only take time from it); the dedicated server's 30 updates a
+second (nolf2src's M-G49); the launcher, which has no frame-rate setting
+in nolf2src or nolfsrc; Contract J.A.C.K.'s own client code -- the weapon's
+heat and the auto-aim turn by the clock and the frame time, the HUD's
+timers by the clock -- has nothing counted in frames.

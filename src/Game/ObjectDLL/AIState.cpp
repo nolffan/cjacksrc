@@ -146,7 +146,13 @@ void CAIState::UpdateMusic()
 		eMood = m_pAI->GetMusicMoodMax();
 	}
 
+#ifdef CJACK_MODERN
+	// MODERN.md GAME-40: this update covers at least c_fUpdateDelta, even
+	// when the server's frames are shorter
+	g_pMusicMgr->DoMoodFor( eMood, Max<LTFLOAT>( g_pLTServer->GetFrameTime(), c_fUpdateDelta ) );
+#else
 	g_pMusicMgr->DoMood( eMood );
+#endif
 }
 
 // ----------------------------------------------------------------------- //

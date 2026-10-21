@@ -28,7 +28,7 @@ too, since Contract J.A.C.K. was built from the same code: check each
 against the retail binary before listing it. Those Contract J.A.C.K. no
 longer has go at the end, so nobody looks again.
 
-**Fixed so far** (in the modern build): twenty -- the two GameSpy handle
+**Fixed so far** (in the modern build): the two GameSpy handle
 bugs (MODERN.md GS-1), GetCommandName (GAME-1), the chassis's update
 (GAME-2), the join screen's deadlock (GAME-3), a body's spears
 (GAME-4), the message queue's lost message (GAME-5), the world shaders' section order (EN-1), ShowVersionInfo (EN-3),
@@ -37,7 +37,11 @@ batched screen quads' colours (EN-6), SoundSys's null Term (EN-7),
 SetCamera's unset viewport (EN-8), the launcher's path overrun (APPS-1),
 find handles (APPS-2), "Contract J.A.C.K. 2" (APPS-4) and the registry
 opened for writing (APPS-7), the dedicated server's console formats
-(APPS-3), and a gamepad's buttons bound as axes (CL-24).
+(APPS-3), a gamepad's buttons bound as axes (CL-24), and six that come
+with high frame rates: the AIs slowed (EN-41), the player's run, crouch
+and jump (CL-41), the float and jump out of water (CL-42), particle and
+line systems gone dark (CL-44), aim, sparks and debris (CL-45) and the
+music's moods (GAME-40). Twenty-six in all.
 
 ## Format
 
@@ -366,6 +370,108 @@ axis. NOLF2's Bind has the same test.
 
 Fixed in the modern build: src/Game/ClientShellDLL/ScreenConfigure.cpp,
 MODERN.md CL-24.
+
+### Above 100 frames a second the AIs slow down
+
+server.dll 0x1003f620 (CServerMgr::Update,
+src/Engine/runtime/server/src/servermgr.cpp). In single player the client
+runs the server once a frame, and each tick advances the game by the time
+since the last, in whole milliseconds. An AI asks to be updated every 10
+ms (`c_fUpdateDelta`, src/Game/ObjectDLL/AIUtils.cpp) and moves, turns
+and counts down by the server's frame time: the time since the last
+*tick*, not since its own last update. Up to 100 frames a second each
+tick covers at least 10 ms and the AI is updated every tick; above that it
+is updated on one tick in two, three or more but steps by one tick's time.
+Measured (a temporary log of an AI's updates, M01S01): its frame times
+added up to 1.00 of the game time at 60 frames a second, 0.33 at 299 and
+0.11 at 1160 -- a third and a ninth of its speed. Any other object updated
+less often than every frame does the same. The game time itself runs at
+real speed at any rate. The retail game never limits its frame rate in
+the final build (`MaxFPS`: MODERN.md EN-40).
+
+Fixed in the modern build: src/Engine/runtime/server/src/servermgr.cpp,
+MODERN.md EN-41 (a tick at most every 10 ms).
+
+### The music's moods drop out above 100 frames a second
+
+Object.lto 0x100ff850 (CMusicMgr::Update), 0x100ff370 (CMusicMgr::DoMood,
+src/Game/ObjectDLL/MusicMgr.cpp) and 0x10072200 (CAIState::UpdateMusic,
+AIState.cpp). Every server frame takes one frame's time off every mood;
+an AI puts one frame's time back on the mood it wants, but from its own
+update, at most every 10 ms. With server frames shorter than that (above
+100 frames a second, the bug above) the moods drain faster than they are
+kept up, and the warning and combat music drop out. nolf2src's M-G30
+(NOLF2's code is the same).
+
+Fixed in the modern build: src/Game/ObjectDLL/MusicMgr.cpp, AIState.cpp,
+MODERN.md GAME-40 (and EN-41 keeps the server's frames at 10 ms or more).
+
+### The player runs and crouches slower, and jumps higher, at high frame rates
+
+CShell.dll 0x1002e4c0 (CMoveMgr::UpdateNormalMotion), 0x1002c8c0
+(MoveLocalSolidObject), 0x1002eea0 (UpdateMotion), 0x1002f000
+(UpdatePushers; src/Game/ClientShellDLL/CMoveMgr.cpp). The player's speed
+is cut back to the cap at the start of each frame and the frame's push
+then takes it past the cap until the next: the shorter the frame, the
+slower the run. A frame's move shorter than 0.1 units is dropped, which is
+6 units a second at 60 frames a second but 100 at 1000, near a crouching
+walk's speed. The "can't move" damping halves the speed every frame, the
+spectator's takes 0.9 of it every frame, and a pusher (an explosion's, a
+vehicle's impact) adds its whole push every frame it lasts. And a jump
+peaks about half a frame's fall below v*v/2g, since the engine takes each
+frame's gravity off the speed before moving by it: the faster the frame
+rate, the higher. Measured (a temporary per-frame log, M01S01): running
+197.0 units a second at 60 frames a second, 184.1 at 299, 181.6 at 1160;
+crouching 118.0, 111.8, 111.4; a standing jump 68.9 units high at 60,
+74.0 at 299, 72.4 at 1160. (CVehicleMgr::UpdateVehicleMotion caps a
+vehicle's speed the same way; it is not yet byte-identical, so it is not
+listed.)
+
+Fixed in the modern build: src/Game/ClientShellDLL/CMoveMgr.cpp, MODERN.md
+CL-41 (and the vehicles, CL-43).
+
+### Out of the water, the player floats lower and jumps lower at high frame rates
+
+CShell.dll 0x1002c370 (CMoveMgr::UpdateInLiquid) and 0x1002e4c0
+(UpdateNormalMotion, src/Game/ClientShellDLL/CMoveMgr.cpp). Swimming up,
+the rise stops the frame after the head (the camera, which lags a frame)
+breaks the surface, so the faster the frame rate the lower the player
+floats; and a jump out of the water also gets that frame's swim-up push,
+so its height depends on the frame's length. NOLF1's and NOLF2's bug
+(nolfsrc and nolf2src measured it: 3 units lower at 120 frames a second
+than at 60 in NOLF2's pool); not measured here.
+
+Fixed in the modern build: src/Game/ClientShellDLL/CMoveMgr.cpp, MODERN.md
+CL-42.
+
+### Particle and line systems stop emitting at high frame rates
+
+CShell.dll 0x10093430 (CParticleSystemFX::Update, src/Game/ClientShellDLL/
+ParticleSystemFX.cpp) and 0x1007db20 (CLineSystemFX::Update,
+LineSystemFX.cpp). Each update adds `floor(rate * dt)` particles (lines)
+and restarts the clock, so the fraction is lost every frame: where a frame
+is shorter than one particle's worth of time none is ever added (at 100
+frames a second, every emitter slower than 100 a second; the weather's
+snow and rain are such systems). And a system that thins out with the
+camera's distance turns any count, 0 too, into one, so it adds one every
+frame.
+
+Fixed in the modern build: ParticleSystemFX.cpp, LineSystemFX.cpp,
+MODERN.md CL-44.
+
+### Aim, fire sparks and debris change with the frame rate
+
+CShell.dll 0x10024400 (CClientWeapon::UpdateMovementPerturb,
+src/Game/ClientShellDLL/ClientWeapon.cpp), 0x1003a7c0 (CFireFX::Update,
+FireFX.cpp) and 0x10019dd0 (BounceMovingObject, client_physics.cpp).
+Three amounts are per frame where they mean per time: the weapon's
+inaccuracy from turning takes the turn since the last frame (a fifth as
+much at 300 frames a second as at 60); a fire makes a spark with one
+chance in ten every frame; bouncing debris comes to rest below 15/sqrt(dt)
+units a second (116 at 60, 260 at 300).
+
+Fixed in the modern build: ClientWeapon.cpp, FireFX.cpp,
+client_physics.cpp, MODERN.md CL-45.
 
 ## NOLF2's bugs Contract J.A.C.K. no longer has
 

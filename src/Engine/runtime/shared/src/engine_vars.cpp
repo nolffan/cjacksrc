@@ -46,7 +46,10 @@ int32	g_CV_UDPDebug = LTFALSE;
 
 float	g_CV_IPQueryTimeout = 30.0f;
 #ifdef CJACK_MODERN
-float	g_CV_MaxFPS = 60.0f;	// MODERN.md M-E4: limited by default
+float	g_CV_MaxFPS = 240.0f;	// MODERN.md EN-40: limited by default
+// MODERN.md EN-42: log every frame that took at least this many
+// milliseconds to frametime.log (0: off)
+float	g_CV_FrameTimeLog = 0.0f;
 #else
 float	g_CV_MaxFPS = 0.0f;
 #endif
@@ -308,6 +311,9 @@ static LTEngineVar g_LTEngineVars[] =
 
 	EV_FLOAT("DefaultDrawIndexedDist", &g_CV_DefaultDrawIndexedDist),
 	EV_FLOAT("MaxFPS", &g_CV_MaxFPS),
+#ifdef CJACK_MODERN
+	EV_FLOAT("FrameTimeLog", &g_CV_FrameTimeLog),	// MODERN.md EN-42
+#endif
 	EV_FLOAT("LatencySim", &g_CV_LatencySim),
 	EV_FLOAT("DropRate", &g_CV_DropRate),
 	EV_FLOAT("LODScale", &g_fLodScale),

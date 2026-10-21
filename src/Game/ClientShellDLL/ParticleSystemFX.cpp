@@ -236,6 +236,17 @@ LTBOOL CParticleSystemFX::Update()
 	fTimeDelta = fTimeDelta > 0.0666f ? 0.0666f : fTimeDelta;
 	int nToAdd = (int) floor(m_cs.fParticlesPerSecond * fTimeDelta);
     nToAdd = LTMIN(nToAdd, (int)(MAX_PARTICLES_PER_SECOND * fTimeDelta));
+#ifdef CJACK_MODERN
+	// MODERN.md CL-44: the count is rounded down and the clock restarted
+	// every update, so where a frame owes less than one particle none was
+	// ever added (and a camera-relative system, which GetNumParticles
+	// rounds up to one, added one a frame). An update that owes none
+	// keeps its time until one is owed; the rotation still turns
+	// (RETAIL_BUGS.md).
+	bool bModernOwed = nToAdd > 0;
+	if (bModernOwed)
+	{
+#endif
 
 	nToAdd = GetNumParticles(nToAdd);
 
@@ -256,6 +267,9 @@ LTBOOL CParticleSystemFX::Update()
 	{
 		m_fNextUpdate = 0.001f;
 	}
+#ifdef CJACK_MODERN
+	}
+#endif
 
 
 	// Rotate the particle system...
@@ -268,7 +282,12 @@ LTBOOL CParticleSystemFX::Update()
 		g_pLTClient->SetObjectRotation(m_hObject, &rRot);
 	}
 
+#ifdef CJACK_MODERN
+	if (bModernOwed)	// CL-44: see above
+		m_fLastTime = fTime;
+#else
 	m_fLastTime = fTime;
+#endif
 
     return LTTRUE;
 }

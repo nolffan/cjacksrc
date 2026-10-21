@@ -1074,9 +1074,32 @@ bool CServerMgr::Update(int32 updateFlags, uint32 nCurTimeMS)
 
 	float curTime = nOffsetTimeMS / 1000.0f;
 
+#ifdef CJACK_MODERN
+	// MODERN.md EN-41: in single player (and for a host) the client runs
+	// this every frame, and objects that ask to be updated every 10 ms
+	// (every AI: c_fUpdateDelta) are updated every few frames above 100
+	// frames a second but advance by one frame's time (GetFrameTime): at
+	// 300, AIs walked, turned and timed everything at a third of their
+	// speed, and the music moods drained faster than the AIs kept them up
+	// (GAME-40). So a game tick runs only once 10 ms have passed since the
+	// last one -- the 60 to 100 ticks a second of a retail machine; packets
+	// and the network still go every call. Time that runs backwards (a new
+	// world re-bases it) ticks at once, as do the paused and inactive
+	// updates, which retail lets drop their time. As nolf2src's M-E4.
+	int32 nModernElapsedMS = nOffsetTimeMS - (int32)m_nTrueLastTimeMS;
+	bool bModernTick = m_State != SERV_RUNNINGWORLD ||
+		(updateFlags & UPDATEFLAG_NONACTIVE) || (m_ServerFlags & SS_PAUSED) ||
+		nModernElapsedMS >= 10 || nModernElapsedMS < 0;
+	if (bModernTick)
+	{
+		m_nTrueFrameTimeMS = nOffsetTimeMS - m_nTrueLastTimeMS;
+		m_nTrueLastTimeMS = nOffsetTimeMS;
+	}
+#else
 	// Figure out the actual true frame time.
 	m_nTrueFrameTimeMS = nOffsetTimeMS - m_nTrueLastTimeMS;
 	m_nTrueLastTimeMS = nOffsetTimeMS;
+#endif
 
 
 	m_NetMgr.Update("Server: ", curTime);
@@ -1137,7 +1160,11 @@ bool CServerMgr::Update(int32 updateFlags, uint32 nCurTimeMS)
 
 #endif // if DE_SERVER_COMPILE
 
+#ifdef CJACK_MODERN
+	if (m_State == SERV_RUNNINGWORLD && bModernTick)	// EN-41: see above
+#else
 	if (m_State == SERV_RUNNINGWORLD)
+#endif
 	{
 		if (updateFlags & UPDATEFLAG_NONACTIVE || m_ServerFlags & SS_PAUSED)
 		{

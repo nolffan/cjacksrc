@@ -83,7 +83,8 @@ protected:
 	void	SetCurrentCtrlResolution(ScreenDisplayResolution resolution);
 
 #ifdef CJACK_MODERN
-	// MODERN.md CL-32, CL-35: the window mode and the 4:3 cinematics
+	// MODERN.md CL-32, CL-35, CL-40: the window mode, the 4:3 cinematics and
+	// the frame rate limit
 	void	ModernReadOptions();
 	bool	ModernPrepareWindowMode(CUserProfile *pProfile);
 	void	ModernApplyOptions(bool bNewWindow);
@@ -107,6 +108,8 @@ private:
 	CLTGUICycleCtrl					*m_pModernWindowMode;	// MODERN.md CL-32
 	uint8							m_nModernWindowMode;
 	LTBOOL							m_bModernCinematics43;	// CL-35
+	uint8							m_nModernFrameLimit;	// CL-40: index into kModernFrameLimits
+	uint8							m_nModernFrameLimitRead;	// what it was on entry
 #endif
 
 
