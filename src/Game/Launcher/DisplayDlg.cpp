@@ -36,7 +36,17 @@ static char THIS_FILE[] = __FILE__;
 #define DD_RESOLUTION_LIST_X		16
 #define DD_RESOLUTION_LIST_Y		73
 #define DD_RESOLUTION_LIST_WIDTH	133
+#ifdef CJACK_MODERN
+// MODERN.md APPS-31: the window mode's list under the resolutions, in the
+// bottom of their box
+#define DD_RESOLUTION_LIST_HEIGHT	188
+#define DD_WINDOWMODE_LIST_X		16
+#define DD_WINDOWMODE_LIST_Y		271
+#define DD_WINDOWMODE_LIST_WIDTH	133
+#define DD_WINDOWMODE_LIST_HEIGHT	50
+#else
 #define DD_RESOLUTION_LIST_HEIGHT	248
+#endif
 #define DD_RENDERER_LIST_X			181
 #define DD_RENDERER_LIST_Y			73
 #define DD_RENDERER_LIST_WIDTH		405
@@ -81,6 +91,9 @@ BEGIN_MESSAGE_MAP(CDisplayDlg, CMoveDialog)
 	ON_BN_CLICKED(IDC_DD_CANCEL, OnCancel)
 	ON_BN_CLICKED(IDC_DD_CLOSE, OnClose)
 	//}}AFX_MSG_MAP
+#ifdef CJACK_MODERN
+	ON_LBN_SELCHANGE(IDC_MODERN_WINDOWMODE_LIST, OnSelchangeModernWindowModeList)
+#endif
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -148,6 +161,24 @@ BOOL CDisplayDlg::OnInitDialog()
 	g_pDisplayMgr->FillListBoxes(GetDlgItem(IDC_RENDERER_LIST)->GetSafeHwnd(), GetDlgItem(IDC_DISPLAY_LIST)->GetSafeHwnd(), GetDlgItem(IDC_RESOLUTION_LIST)->GetSafeHwnd());
 	g_pDisplayMgr->UpdateListSelections(GetDlgItem(IDC_RENDERER_LIST)->GetSafeHwnd(), GetDlgItem(IDC_DISPLAY_LIST)->GetSafeHwnd(), GetDlgItem(IDC_RESOLUTION_LIST)->GetSafeHwnd());
 
+#ifdef CJACK_MODERN
+	// MODERN.md APPS-31: the window mode -- full screen, a window, or a
+	// borderless window, which is at the desktop's resolution (so the
+	// resolutions are greyed out for it)
+	CListBox* pModes = (CListBox*)GetDlgItem(IDC_MODERN_WINDOWMODE_LIST);
+	if (pModes)
+	{
+		pModes->SetWindowPos(NULL,DD_WINDOWMODE_LIST_X,DD_WINDOWMODE_LIST_Y,DD_WINDOWMODE_LIST_WIDTH,DD_WINDOWMODE_LIST_HEIGHT,SWP_NOZORDER);
+		UINT aModeNames[] = { IDS_MODERN_FULLSCREEN, IDS_MODERN_WINDOW, IDS_MODERN_BORDERLESS };
+		for (int i = 0; i < 3; i++)
+		{
+			CString sMode;
+			sMode.LoadString(aModeNames[i]);
+			pModes->AddString(sMode);
+		}
+		pModes->SetCurSel(g_pDisplayMgr->GetModernWindowMode());		ModernEnableResolutions();
+	}
+#endif
 	
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
@@ -162,6 +193,12 @@ HBRUSH CDisplayDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 		{
 			// Set color to green on black and return the background brush.
 			pDC->SetTextColor(crNormalText);
+#ifdef CJACK_MODERN
+			// MODERN.md APPS-31: the resolutions, greyed out for a borderless
+			// window
+			if (pWnd && !pWnd->IsWindowEnabled())
+				pDC->SetTextColor(RGB(128, 128, 128));
+#endif
 			pDC->SetBkColor(RGB(0, 0, 0));
 			return (HBRUSH)(theApp.m_BkBrush.GetSafeHandle());
 		}
@@ -184,6 +221,12 @@ void CDisplayDlg::OnOK()
 	if (g_pDisplayMgr)
 	{
 		g_pDisplayMgr->UpdateListSelections(GetDlgItem(IDC_RENDERER_LIST)->GetSafeHwnd(), GetDlgItem(IDC_DISPLAY_LIST)->GetSafeHwnd(), GetDlgItem(IDC_RESOLUTION_LIST)->GetSafeHwnd());
+#ifdef CJACK_MODERN
+		// MODERN.md APPS-31: the window mode, kept only with OK
+		CListBox* pModes = (CListBox*)GetDlgItem(IDC_MODERN_WINDOWMODE_LIST);
+		if (pModes && pModes->GetCurSel() != LB_ERR)
+			g_pDisplayMgr->SetModernWindowMode(pModes->GetCurSel());
+#endif
 	}
 	CMoveDialog::OnOK();
 }
@@ -210,3 +253,22 @@ void CDisplayDlg::OnSelchangeResolutionList()
 {
 	g_pDisplayMgr->UpdateListSelections(GetDlgItem(IDC_RENDERER_LIST)->GetSafeHwnd(), GetDlgItem(IDC_DISPLAY_LIST)->GetSafeHwnd(), GetDlgItem(IDC_RESOLUTION_LIST)->GetSafeHwnd());
 }
+#ifdef CJACK_MODERN
+// MODERN.md APPS-31: the window mode's list
+void CDisplayDlg::OnSelchangeModernWindowModeList()
+{
+	ModernEnableResolutions();
+}
+
+// a borderless window is at the desktop's resolution
+void CDisplayDlg::ModernEnableResolutions()
+{
+	CListBox* pModes = (CListBox*)GetDlgItem(IDC_MODERN_WINDOWMODE_LIST);
+	CWnd* pRes = GetDlgItem(IDC_RESOLUTION_LIST);
+	if (pModes && pRes)
+	{
+		pRes->EnableWindow(pModes->GetCurSel() != 2);
+		pRes->Invalidate();
+	}
+}
+#endif

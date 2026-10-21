@@ -109,6 +109,9 @@ void CHUDDamage::UpdateLayout()
 	int nCurrentLayout = GetConsoleInt("HUDLayout",0);
 
 	m_BasePos		= g_pLayoutMgr->GetDamageBasePos(nCurrentLayout);
+#ifdef CJACK_MODERN
+	m_BasePos.x += g_pInterfaceResMgr->GetHUDBaseShift(m_BasePos.x);	// MODERN.md CL-30
+#endif
 	m_nIconHt		= g_pLayoutMgr->GetDamageIconSize(nCurrentLayout);
 }
 

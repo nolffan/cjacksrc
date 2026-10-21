@@ -423,7 +423,20 @@ void CUIFormattedPolyString_Impl::Parse()
 		// need to also handle the case where there's a really long word that
 		// is wider than m_WrapWidth
 
+#ifdef CJACK_MODERN
+		// MODERN.md EN-33: a letter wider than the wrap width, at the start
+		// of its word, stays on its line. Retail broke the word before it,
+		// which ends the word before it starts (at the string's first
+		// letter, at index -1, 65535 in a uint16), and stepped back onto
+		// the same letter, again and again until the word table was full;
+		// the widths of those words then read 64K letters past the string.
+		// (nolf2src saw it crash NOLF2 at 3840x2160: a narrow HUD column
+		// given its letters' new height before its new width.)
+		if ( m_WrapWidth  && (line_width >= m_WrapWidth) &&
+			!(old_wordcount == m_WordCount && (int32)m_pWords[m_WordCount * 3] >= i) ) {
+#else
 		if ( m_WrapWidth  && (line_width >= m_WrapWidth) ) {
+#endif
 
  
             if (old_wordcount == m_WordCount) {

@@ -747,6 +747,17 @@
 #define IDS_NOMUSICCHANGE               1224
 #define IDS_ENDCURRENTGAME              1225
 #define IDS_REINITIALIZING_RENDERER     1226
+#ifdef CJACK_MODERN
+// MODERN.md CL-32, CL-35: the Display screen's modern strings (31000 and
+// up, as nolf2src's)
+#define IDS_MODERN_WINDOWMODE           31000
+#define IDS_HELP_MODERN_WINDOWMODE      31001
+#define IDS_MODERN_CINEMATICS43         31010
+#define IDS_HELP_MODERN_CINEMATICS43    31011
+#define IDS_MODERN_FULLSCREEN           31200
+#define IDS_MODERN_WINDOW               31201
+#define IDS_MODERN_BORDERLESS           31202
+#endif
 #define IDS_INVALID3DSOUNDPROVIDER      1227
 #define IDS_CONFIRMSAVE                 1228
 #define IDS_GAMESAVED                   1229

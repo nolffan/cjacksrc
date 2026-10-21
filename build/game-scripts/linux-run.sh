@@ -11,16 +11,25 @@
 # engine's options. Arguments are handed to the launcher, which passes them
 # on to the engine after its own (later ones win), e.g.
 #   ./linux-run.sh ++windowed 0                  full screen
+#   ./linux-run.sh ++windowed 1                  a window, whatever Display says
+#   ./linux-run.sh ++windowed 1 ++WindowMode 2   (modern build) a borderless
+#                                                window over the whole desktop
 #   ./linux-run.sh +DisableSound 1               no sound
 #   ./linux-run.sh +DisableMovies 0              the intro movies on
 #   ./linux-run.sh +JOIN <address>               join a multiplayer game
 #   ./linux-run.sh --help                        this text
 #
-# The game starts in a window (++windowed 1, before the arguments, so
-# ./linux-run.sh ++windowed 0 still asks for full screen): the launcher's
-# Display has no window mode. The intro movies are off (+DisableMovies 1,
-# likewise before the arguments): RAD's binkw32.dll plays them, and its
-# movies stall under some Wine setups.
+# The modern build starts as it was last left (Options > Display, or the
+# launcher's Display: full screen, a window or a borderless window, and the
+# resolution). A fresh install, where the game has never run, starts in a
+# window, the largest that fits the desktop (of the desktop's shape if one
+# does); on a Steam Deck (SteamDeck=1, which Steam sets) full screen at
+# 1280x800. The launcher chooses that, as it does on Windows (MODERN.md
+# APPS-31, APPS-32). The legacy build always starts in a window
+# (++windowed 1, before the arguments, so ./linux-run.sh ++windowed 0 still
+# asks for full screen): its Display has no window mode. The intro movies
+# are off (+DisableMovies 1, likewise before the arguments): RAD's
+# binkw32.dll plays them, and its movies stall under some Wine setups.
 #
 # Environment:
 #   WINEPREFIX   the Wine prefix to use (default: $HOME/.wine-cjack, created
@@ -108,4 +117,8 @@ if [ -z "$MODERN" ]; then
     reg "$KEY" /v UpdateCommandLine0 /t REG_SZ    /d '-rez Update_v1x1.rez -rez custom'
 fi
 
-exec "$WINE" ContractJack.exe ++windowed 1 +DisableMovies 1 "$@"
+# the legacy build's launcher has no window mode: a window unless asked
+WINDOWED="++windowed 1"
+[ -z "$MODERN" ] || WINDOWED=""
+
+exec "$WINE" ContractJack.exe $WINDOWED +DisableMovies 1 "$@"

@@ -245,6 +245,9 @@ void CLTGUIButton::ScalePoly()
 	g_pTexInterface->GetTextureDims(m_hNormal,w,h);
 	float x = (float)m_basePos.x * m_fScale;
 	float y = (float)m_basePos.y * m_fScale;
+#ifdef CJACK_MODERN
+	x += (float)s_nPageOffsetX;	// MODERN.md CL-30: the page's margin, as m_pos has it
+#endif
 	float fw = (float)w * m_fScale * m_fTextureScale;
 	float fh = (float)h * m_fScale * m_fTextureScale;
 

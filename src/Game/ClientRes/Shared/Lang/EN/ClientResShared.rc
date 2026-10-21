@@ -55,6 +55,24 @@ END
 
 IDC_POINTER             CURSOR  DISCARDABLE     "..\\..\\arrow.cur"
 
+#ifdef CJACK_MODERN
+/////////////////////////////////////////////////////////////////////////////
+//
+// MODERN.md CL-32, CL-35: the Display screen's modern strings
+//
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_MODERN_WINDOWMODE   "Window mode"
+    IDS_HELP_MODERN_WINDOWMODE "Full screen, a window, or a borderless window over the whole desktop."
+    IDS_MODERN_CINEMATICS43 "4:3 cinematics"
+    IDS_HELP_MODERN_CINEMATICS43 "On a wide screen, show the cutscenes in 4:3, as they were framed, with black bars at the sides."
+    IDS_MODERN_FULLSCREEN   "Full screen"
+    IDS_MODERN_WINDOW       "Window"
+    IDS_MODERN_BORDERLESS   "Borderless window"
+END
+#endif
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // String Table

@@ -1836,7 +1836,7 @@ void CClientMgr::RemoveClientObject(LTObject *pObj)
 }
 
 #ifdef CJACK_MODERN
-// MODERN.md M-E1: widescreen field of view (Hor+). The game sets one pair
+// MODERN.md EN-30: widescreen field of view (Hor+). The game sets one pair
 // of angles for every screen (FovX 90, FovY 78: a 4:3 view), so a wider
 // screen showed the same view stretched sideways. A view of the world
 // (RenderCamera, DRAWMODE_NORMAL) drawn over the whole screen wider than
@@ -1846,7 +1846,7 @@ void CClientMgr::RemoveClientObject(LTObject *pObj)
 // 3D objects (RenderObjects, DRAWMODE_OBJECTLIST: the menus' and
 // briefings' art) widen the same way: they are laid out with the 2D
 // interface, whose 640x480 page the modern game scales by the height and
-// centres (M-G2), so the art keeps its place beside the text. The
+// centres (CL-30), so the art keeps its place beside the text. The
 // camera's own angles (GetCameraFOV, which the game's zoom, underwater and
 // damage effects read back) are untouched: only what is drawn widens.
 static float cm_WidescreenFovX(float xFov, int drawMode, const LTRect &rect, uint32 width, uint32 height)
@@ -1913,7 +1913,7 @@ bool CClientMgr::Render(CameraInstance *pCamera, int drawMode, LTObject **pObjec
         pDesc->m_Rect.bottom = pCamera->m_Bottom;
     }
 #ifdef CJACK_MODERN
-    // M-E1: widescreen field of view (Hor+)
+    // EN-30: widescreen field of view (Hor+)
     pDesc->m_xFov = cm_WidescreenFovX(pDesc->m_xFov, drawMode, pDesc->m_Rect, width, height);
 #endif
 

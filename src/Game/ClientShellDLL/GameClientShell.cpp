@@ -1478,6 +1478,12 @@ void CGameClientShell::OnEvent(uint32 dwEventID, uint32 dwParam)
 				GetWindowRect(g_hMainWnd, g_prcClip);
 				ClipCursor(g_prcClip);
 			}
+#ifdef CJACK_MODERN
+			// MODERN.md CL-32: a window after full screen is not held to the
+			// full-screen mode's rectangle of the desktop
+			else
+				ClipCursor(NULL);
+#endif
 
 			if (g_pCursorMgr)
 				g_pCursorMgr->Init();
@@ -4705,11 +4711,20 @@ BOOL SetWindowSize(uint32 nWidth, uint32 nHeight)
 	}
 	else
 	{
+#ifdef CJACK_MODERN
+		// MODERN.md EN-32: the engine has placed the window for the mode
+		// (a framed window whose inside is the mode's size, or a borderless
+		// one over the desktop); retail resized it whole to the mode here,
+		// which cut the frame's width off the picture
+		ClipCursor(NULL);
+		ShowWindow(g_hMainWnd, SW_NORMAL);
+#else
 		SetWindowPos(g_hMainWnd,HWND_NOTOPMOST,
 					((screenRect.right - screenRect.left) - nWidth) / 2,
 					((screenRect.bottom - screenRect.top) - nHeight) / 2, 
 					nWidth, nHeight,SWP_FRAMECHANGED);
 		ShowWindow(g_hMainWnd, SW_NORMAL);
+#endif
 	}
 
 	return TRUE;

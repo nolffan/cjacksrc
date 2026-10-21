@@ -178,6 +178,9 @@ void CHUDHealth::UpdateLayout()
 	int nCurrentLayout = GetConsoleInt("HUDLayout",0);
 
 	m_HealthBasePos		= g_pLayoutMgr->GetHealthBasePos(nCurrentLayout);
+#ifdef CJACK_MODERN
+	m_HealthBasePos.x += g_pInterfaceResMgr->GetHUDBaseShift(m_HealthBasePos.x);	// MODERN.md CL-30
+#endif
 
 	m_bUseHealthBar		= g_pLayoutMgr->GetUseHealthBar(nCurrentLayout);
 	m_HealthBarOffset	= g_pLayoutMgr->GetHealthBarOffset(nCurrentLayout);

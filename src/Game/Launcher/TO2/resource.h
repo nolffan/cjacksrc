@@ -174,6 +174,13 @@
 #define IDC_CD_NEXT                     1083
 #define IDC_CD_MOD_11                   1084
 #define IDC_CD_MOD_12                   1085
+#ifdef CJACK_MODERN
+// MODERN.md APPS-31: the Display dialog's window mode
+#define IDC_MODERN_WINDOWMODE_LIST      1100
+#define IDS_MODERN_FULLSCREEN           31000
+#define IDS_MODERN_WINDOW               31001
+#define IDS_MODERN_BORDERLESS           31002
+#endif
 
 
 // Next default values for new objects

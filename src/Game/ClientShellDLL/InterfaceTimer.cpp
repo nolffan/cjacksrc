@@ -82,6 +82,9 @@ void CInterfaceTimer::Draw()
 
 	float x = (float)m_BasePos.x * g_pInterfaceResMgr->GetXRatio();
 	float y = (float)m_BasePos.y * g_pInterfaceResMgr->GetYRatio();
+#ifdef CJACK_MODERN
+	x += (float)g_pInterfaceResMgr->GetHUDXOffset(m_BasePos.x);	// MODERN.md CL-30
+#endif
 
 	m_pTimeStr->SetPosition( x+2.0f, y+2.0f);
 	m_pTimeStr->SetColor(argbBlack);

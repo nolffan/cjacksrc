@@ -141,6 +141,12 @@ void SaveDisplaySettings()
 									"GammaR",
 									"GammaG",
 									"GammaB"	
+#ifdef CJACK_MODERN
+									// MODERN.md CL-32: the window mode, which
+									// the launcher's Display dialog reads too
+									, "Windowed",
+									"WindowMode"
+#endif
 								};
 
 	uint32 nNumVals = sizeof(pszValsToSave) / sizeof(pszValsToSave[0]);

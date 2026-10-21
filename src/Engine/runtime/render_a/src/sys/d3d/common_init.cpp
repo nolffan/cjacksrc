@@ -222,22 +222,35 @@ int d3d_Init(RenderStructInit *pInit)
 	AddDebugMessage(0, "Using Direct3D Device %s", pDeviceInfo->strDesc);
 
 #ifdef CJACK_MODERN
-	// MODERN.md M-G42: the window. Retail sized a window for a framed
+	// MODERN.md EN-32: the window. Retail sized a window for a framed
 	// window's borders without ever giving it that frame (the engine makes
 	// it captioned only, the game later resizes it whole to the mode, so
 	// the picture lost the frame's width), and left a full-screen window's
-	// style as it was. Windowed at the desktop's size or larger, the game
-	// now gets a borderless window over the whole screen; smaller, a framed
-	// window whose inside is the mode's size, centred; full screen, a bare
-	// window on top. The style is set every time, so a change of mode never
-	// keeps the last one's (the Modernizer's known issue K9).
+	// style as it was. The style is now set with every mode, so a change of
+	// mode never keeps the last one's: full screen, a bare window on top;
+	// windowed, the window mode says which window: WindowMode 2 a
+	// borderless one over the whole desktop (the engine has made the mode
+	// the desktop's, render.cpp), 1 a framed one whose inside is the mode's
+	// size, centred; unset (0, a config from before it), a window as large
+	// as the desktop is borderless and a smaller one framed. The desktop is
+	// the primary monitor's: under Wine the desktop window spans every
+	// monitor, and a borderless window over all of them would stretch the
+	// picture across them.
 	if (g_bRunWindowed || d3d_IsNullRenderOn())
 	{
-		GetWindowRect(GetDesktopWindow(), &screenRect);
+		screenRect.left		= 0;
+		screenRect.top		= 0;
+		screenRect.right	= GetSystemMetrics(SM_CXSCREEN);
+		screenRect.bottom	= GetSystemMetrics(SM_CYSCREEN);
 		int nDesktopW = screenRect.right - screenRect.left;
 		int nDesktopH = screenRect.bottom - screenRect.top;
 
-		if ((int)pInit->m_Mode.m_Width >= nDesktopW && (int)pInit->m_Mode.m_Height >= nDesktopH)
+		HLTPARAM hWindowMode = g_pStruct->GetParameter("WindowMode");
+		int nWindowMode = hWindowMode ? (int)g_pStruct->GetParameterValueFloat(hWindowMode) : 0;
+		bool bBorderless = (nWindowMode == 2) || (nWindowMode != 1 &&
+			(int)pInit->m_Mode.m_Width >= nDesktopW && (int)pInit->m_Mode.m_Height >= nDesktopH);
+
+		if (bBorderless)
 		{
 			SetWindowLong(g_hWnd, GWL_STYLE, WS_POPUP | WS_VISIBLE);
 			SetWindowPos(g_hWnd, HWND_NOTOPMOST, screenRect.left, screenRect.top, nDesktopW, nDesktopH,

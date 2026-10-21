@@ -197,6 +197,11 @@ void CHUDMgr::QueueUpdate(uint32 nUpdateFlag)
 void CHUDMgr::ScreenDimsChanged()
 {
 	m_UpdateFlags = kHUDAll;
+#ifdef CJACK_MODERN
+	// MODERN.md CL-30: the items read their places again, for the new
+	// screen's margins (CInterfaceResMgr::GetHUDBaseShift)
+	UpdateLayout();
+#endif
 }
 
 void CHUDMgr::NextLayout()

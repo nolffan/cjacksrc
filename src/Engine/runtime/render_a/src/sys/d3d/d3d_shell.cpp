@@ -288,7 +288,7 @@ D3DModeInfo* CD3D_Shell::PickDefaultMode(D3DDeviceInfo* pDeviceInfo, uint32 nWid
 	}
 
 #ifdef CJACK_MODERN
-	// MODERN.md M-E2: a window of any size. Windowed, the back buffer only
+	// MODERN.md EN-31: a window of any size. Windowed, the back buffer only
 	// has to be in the desktop's format; its size need not be one the
 	// adapter could switch the screen to (retail refused every window size
 	// that is not a display mode: "Can't find an appropriate display
