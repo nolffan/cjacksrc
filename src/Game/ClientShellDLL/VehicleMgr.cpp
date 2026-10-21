@@ -963,6 +963,29 @@ void CVehicleMgr::UpdateVehicleMotion()
 
 	// Limit velocity...
 
+#ifdef CJACK_MODERN
+	// MODERN.md CL-43: as the player's walk (CL-41, CMoveMgr::
+	// UpdateNormalMotion): the cap is applied at the start of a frame and
+	// the acceleration takes the speed past it during the frame, so the
+	// faster the frame rate the lower the top speed. It is applied once a
+	// 60th of a second, which moves the vehicle as a 60 fps frame did.
+	const float kModernCapStep = 1.0f / 60.0f;
+	const float kModernCapSlack = 0.0015f;
+	static float s_fModernCapTime = 0.0f;
+	s_fModernCapTime += g_pGameClientShell->GetFrameTime();
+	bool bModernCapNow = s_fModernCapTime >= kModernCapStep - kModernCapSlack;
+	if (bModernCapNow)
+	{
+		s_fModernCapTime -= kModernCapStep;
+		s_fModernCapTime = LTCLAMP(s_fModernCapTime, -kModernCapSlack, kModernCapStep);
+	}
+
+	if (!bModernCapNow)
+	{
+		// not this frame: see above
+	}
+	else
+#endif
 	if (g_pMoveMgr->IsOnGround() && !g_pPlayerMgr->IsSpectatorMode())
 	{
 		float fCurLen = moveVel.Mag();

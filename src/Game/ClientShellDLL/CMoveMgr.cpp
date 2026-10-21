@@ -36,6 +36,17 @@
 #ifdef CJACK_MODERN
 // MODERN.md CL-20: the controller's left stick
 #include "xinput/clientpad.h"
+
+// MODERN.md CL-42: how long since the head broke the surface of the water
+// (UpdateInLiquid)
+static float s_fModernSurfaced = 0.0f;
+
+// MODERN.md CL-41: retail's per-frame amounts were tuned at 60 frames a
+// second; this frame's share of a 60th of a second
+static float ModernFrame60ths()
+{
+	return g_pGameClientShell->GetFrameTime() * 60.0f;
+}
 #endif
 
 #define SPECTATOR_ACCELERATION			100000.0f
@@ -264,6 +275,9 @@ void CMoveMgr::InitWorldData()
     m_bSwimmingOnSurface    = LTFALSE;
     m_bSwimmingJump         = LTFALSE;
     m_bCanSwimJump          = LTFALSE;
+#ifdef CJACK_MODERN
+	s_fModernSurfaced		= 0.0f;	// MODERN.md CL-42
+#endif
 	m_hStandingOnPoly		= INVALID_HPOLY;
 	m_bUsingPlayerModel		= LTFALSE;
 
@@ -709,7 +723,20 @@ void CMoveMgr::UpdateInLiquid(CContainerInfo *pInfo)
 
 		if (bMoving)  // Turn off y acceleration and velocity
 		{
+#ifdef CJACK_MODERN
+			// MODERN.md CL-42: the rise stopped here the frame after the
+			// head (the camera, a frame late) broke the surface, so the
+			// faster the frame rate the lower the player floated, and a
+			// jump out of the water started that much lower. The rise lasts
+			// two 60ths of a second at any rate (at 60 it stops here at
+			// once, as it did). As nolf2src's M-E4, nolfsrc's M-P1-23.
+			float fModernDt = g_pGameClientShell->GetFrameTime();
+			bool bModernRising = (s_fModernSurfaced + 2.0f * fModernDt < 2.0f / 60.0f - 0.0001f);
+			s_fModernSurfaced += fModernDt;
+			if (!bModernRising && (vVel.y > 0.0f || curAccel.y > 0.0f))
+#else
 			if (vVel.y > 0.0f || curAccel.y > 0.0f)
+#endif
 			{
 				vVel.y = 0.0f;
 				curAccel.y = 0.0f;
@@ -1125,8 +1152,16 @@ void CMoveMgr::UpdateMotion()
 
 		// Dampen velocity...
 		g_pPhysicsLT->GetVelocity(m_hObject, &vVec);
+#ifdef CJACK_MODERN
+		// MODERN.md CL-41: halved a 60th of a second, whatever the frame
+		// rate (retail: every frame)
+		float fModernDamp = (float)pow(0.5, (double)ModernFrame60ths());
+		vVec.x *= fModernDamp;
+		vVec.z *= fModernDamp;
+#else
 		vVec.x *= 0.5f;
 		vVec.z *= 0.5f;
+#endif
 		if (vVec.y > 0.0f) vVec.y = 0.0f;
 
 		g_pPhysicsLT->SetVelocity(m_hObject, &vVec);
@@ -1231,6 +1266,30 @@ void CMoveMgr::UpdateNormalMotion()
 
 	// Limit velocity...
 
+#ifdef CJACK_MODERN
+	// MODERN.md CL-41: the cap is applied at the start of a frame and the
+	// acceleration takes the speed past it during the frame, so the faster
+	// the frame rate the slower the walk. The cap is applied once a 60th
+	// of a second: the engine's physics between (exact for a constant
+	// push) then moves the player as one 60 fps frame did. (Frames are
+	// timed in whole milliseconds, so a 60th is 16 or 17: hence the slack.)
+	const float kModernCapStep = 1.0f / 60.0f;
+	const float kModernCapSlack = 0.0015f;
+	static float s_fModernCapTime = 0.0f;
+	s_fModernCapTime += g_pGameClientShell->GetFrameTime();
+	bool bModernCapNow = s_fModernCapTime >= kModernCapStep - kModernCapSlack;
+	if (bModernCapNow)
+	{
+		s_fModernCapTime -= kModernCapStep;
+		s_fModernCapTime = LTCLAMP(s_fModernCapTime, -kModernCapSlack, kModernCapStep);
+	}
+
+	if (!bModernCapNow)
+	{
+		// not this frame: see above
+	}
+	else
+#endif
 	if (m_bBodyInLiquid || m_bBodyOnLadder)
 	{
         LTBOOL bCapY = LTTRUE;
@@ -1298,6 +1357,9 @@ void CMoveMgr::UpdateNormalMotion()
 	if ((IsLiquid(m_eLastContainerCode) && !bHeadInLiquid) && !m_bOnGround && !m_bBodyOnLadder )
 	{
         m_bSwimmingOnSurface = LTTRUE;
+#ifdef CJACK_MODERN
+		s_fModernSurfaced = 0.0f;	// MODERN.md CL-42: see UpdateInLiquid
+#endif
 	}
 	else if (bHeadInLiquid)  // See if we went back under...
 	{
@@ -1505,6 +1567,32 @@ void CMoveMgr::UpdateNormalMotion()
 		if (bOkayToJump)
 		{
 			vel.y = fJumpVel;
+#ifdef CJACK_MODERN
+			// MODERN.md CL-41: the engine's physics takes each frame's
+			// gravity off the speed before it moves the player by it, so a
+			// jump peaks about half a frame's fall lower than v*v/2g: 69
+			// units at 60 frames a second, 74 at 300, 72 to 77 above 1000.
+			// The jump starts that half frame's gravity slower at a rate
+			// faster than 60, so it peaks as at 60 at any rate.
+			if (!m_bBodyInLiquid && !m_bBodyOnLadder)
+			{
+				float fModernDt = g_pGameClientShell->GetFrameTime();
+				float fModernG = (float)fabs(m_bGravityOverride ? m_fTotalContainerGravity : m_fGravity);
+				if (fModernDt < 1.0f / 60.0f)
+					vel.y -= fModernG * (1.0f / 60.0f - fModernDt) * 0.5f;
+			}
+			// MODERN.md CL-42: a jump out of the water also gets this
+			// frame's swim-up acceleration (vAccel.y, above), so the
+			// frame's length decided how high it went. Give it a 60th of a
+			// second's worth at any rate faster than 60. As nolf2src's
+			// M-E4, nolfsrc's M-P1-23.
+			if (m_bBodyInLiquid && vAccel.y > 0.0f)
+			{
+				float fModernDt = g_pGameClientShell->GetFrameTime();
+				if (fModernDt < 1.0f / 60.0f)
+					vel.y += vAccel.y * (1.0f / 60.0f - fModernDt);
+			}
+#endif
 
             m_bJumped            = LTTRUE;
             m_bSwimmingOnSurface = LTFALSE;
@@ -1517,7 +1605,12 @@ void CMoveMgr::UpdateNormalMotion()
 
 	if (g_pPlayerMgr->IsSpectatorMode())
 	{
+#ifdef CJACK_MODERN
+		// MODERN.md CL-41: 0.9 a 60th of a second, whatever the frame rate
+		vel *= (float)pow(0.9, (double)ModernFrame60ths());
+#else
 		vel *= 0.9f;
+#endif
 		if (vel.Length() < 0.1f)
 		{
 			vel.Init();
@@ -1810,6 +1903,13 @@ void CMoveMgr::UpdatePushers()
 						}
 
 						pushVec = myPos - pPusher->m_Pos;
+#ifdef CJACK_MODERN
+						// MODERN.md CL-41: a push is added every frame
+						// for as long as the pusher lasts (a vehicle's
+						// impact, an explosion's); the retail amount a
+						// 60th of a second
+						velocity *= ModernFrame60ths();
+#endif
 						pushVec *= velocity / pushVec.Length();
 
 						vel = GetVelocity();
@@ -2047,7 +2147,16 @@ void CMoveMgr::MoveLocalSolidObject()
 	info.m_dt = g_pGameClientShell->GetFrameTime();
 	pPhysics->UpdateMovement(&info);
 
+#ifdef CJACK_MODERN
+	// MODERN.md CL-41: a frame's move under 0.1 is dropped: under 6 units
+	// a second at 60 frames a second, under 30 at 300 (a crouching walk at
+	// 1000 is under it). The threshold is the 60 fps one's share of this
+	// frame (and so is the blocked-fall test's below).
+	float fModernMinMove = 0.1f * ModernFrame60ths();
+	if (info.m_Offset.MagSqr() > fModernMinMove * fModernMinMove)
+#else
 	if (info.m_Offset.MagSqr() > 0.01f)
+#endif
 	{
 		g_pLTClient->GetObjectPos(m_hObject, &curPos);
 		newPos = curPos + info.m_Offset;
@@ -2073,7 +2182,11 @@ void CMoveMgr::MoveLocalSolidObject()
 		// you should be sliding on, but you're blocked, so gravity keeps
 		// getting applied to the velocity.  Only do this if the UpdateMovement
 		// affected our y direction.
+#ifdef CJACK_MODERN
+		if ( fabsf( info.m_Offset.y ) > 0.01f * ModernFrame60ths() && fabsf(vDesiredPos.y - newPos.y) > vDims.y)
+#else
 		if ( fabsf( info.m_Offset.y ) > 0.01f && fabsf(vDesiredPos.y - newPos.y) > vDims.y)
+#endif
 		{
 			LTVector vObjVel;
 			pPhysics->GetVelocity(m_hObject, &vObjVel);

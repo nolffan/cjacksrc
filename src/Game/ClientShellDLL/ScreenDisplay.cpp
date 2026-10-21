@@ -126,6 +126,28 @@ namespace
 			return kModernBorderless;
 		return kModernWindow;
 	}
+
+	// MODERN.md CL-40: the frame rate limits on offer (MaxFPS; 0 is none,
+	// last), and the one shown for a config without MaxFPS: the engine's
+	// default (EN-40)
+	const int	kModernFrameLimits[] = { 60, 120, 144, 240, 0 };
+	const int	kNumModernFrameLimits = sizeof(kModernFrameLimits) / sizeof(kModernFrameLimits[0]);
+	const float	kModernDefaultMaxFPS = 240.0f;
+
+	// The choice for a MaxFPS: its own, or a limit not on offer (one set by
+	// hand) as the next higher one -- "none" above the highest
+	uint8 ModernFrameLimitIndex(float fMaxFPS)
+	{
+		int nMaxFPS = (int)(fMaxFPS + 0.5f);
+		if (nMaxFPS <= 0)
+			return (uint8)(kNumModernFrameLimits - 1);
+		for (int nLimit = 0; nLimit < kNumModernFrameLimits - 1; nLimit++)
+		{
+			if (nMaxFPS <= kModernFrameLimits[nLimit])
+				return (uint8)nLimit;
+		}
+		return (uint8)(kNumModernFrameLimits - 1);
+	}
 #endif
 }
 
@@ -188,6 +210,8 @@ CScreenDisplay::CScreenDisplay()
 	m_pModernWindowMode		= LTNULL;
 	m_nModernWindowMode		= kModernFullScreen;
 	m_bModernCinematics43	= LTFALSE;
+	m_nModernFrameLimit		= 0;
+	m_nModernFrameLimitRead	= 0;
 #endif
 }
 
@@ -243,6 +267,20 @@ LTBOOL CScreenDisplay::Build()
 	m_pHardwareCursor = AddToggle(IDS_HARDWARE_CURSOR,IDS_HELP_HARDWARE_CURSOR,kGap,&m_bHardwareCursor);
 
 	AddToggle(IDS_VSYNC,IDS_HELP_VSYNC,kGap,&m_bVSync);
+
+#ifdef CJACK_MODERN
+	// MODERN.md CL-40: the frame rate limit (MaxFPS: EN-40)
+	CLTGUICycleCtrl *pModernLimit = AddCycle(IDS_MODERN_FRAMELIMIT,IDS_HELP_MODERN_FRAMELIMIT,kGap,&m_nModernFrameLimit);
+	for (int nLimit = 0; nLimit < kNumModernFrameLimits; nLimit++)
+	{
+		char szLimit[32];
+		if (kModernFrameLimits[nLimit] > 0)
+			sprintf(szLimit,"%d",kModernFrameLimits[nLimit]);
+		else
+			SAFE_STRCPY(szLimit,LoadTempString(IDS_MODERN_UNLIMITED));
+		pModernLimit->AddString(szLimit);
+	}
+#endif
 
 
 	m_pGamma = AddSlider(IDS_GAMMA,IDS_HELP_GAMMA,kGap,kWidth,-1,&m_nGamma);
@@ -529,7 +567,7 @@ void CScreenDisplay::OnFocus(LTBOOL bFocus)
 
 		m_pHardwareCursor->Enable(GetConsoleInt("DisableHardwareCursor",0) == 0);
 #ifdef CJACK_MODERN
-		ModernReadOptions();	// MODERN.md CL-32, CL-35
+		ModernReadOptions();	// MODERN.md CL-32, CL-35, CL-40
 #endif
 
 		// The current render mode
@@ -592,7 +630,7 @@ void CScreenDisplay::OnFocus(LTBOOL bFocus)
 #endif
 			pProfile->ApplyDisplay();
 #ifdef CJACK_MODERN
-			ModernApplyOptions(bModernNewWindow);	// MODERN.md CL-32, CL-35
+			ModernApplyOptions(bModernNewWindow);	// MODERN.md CL-32, CL-35, CL-40
 #endif
 					
 			//display settings can affect performance sttings so update them here...
@@ -796,7 +834,7 @@ void CScreenDisplay::ConfirmHardwareCursor(LTBOOL bReturn)
 }
 
 #ifdef CJACK_MODERN
-// MODERN.md CL-32, CL-35: the modern options' current values
+// MODERN.md CL-32, CL-35, CL-40: the modern options' current values
 void CScreenDisplay::ModernReadOptions()
 {
 	m_nModernWindowMode = ModernGetWindowMode();
@@ -832,6 +870,8 @@ void CScreenDisplay::ModernReadOptions()
 	if (m_pResolutionCtrl)
 		m_pResolutionCtrl->Enable(m_nModernWindowMode != kModernBorderless);
 	m_bModernCinematics43 = (GetConsoleInt("Cinematics43",0) != 0);
+	m_nModernFrameLimit = ModernFrameLimitIndex(GetConsoleFloat("MaxFPS",kModernDefaultMaxFPS));
+	m_nModernFrameLimitRead = m_nModernFrameLimit;
 }
 
 // Before the profile applies the resolution. A borderless window keeps the
@@ -888,6 +928,14 @@ bool CScreenDisplay::ModernPrepareWindowMode(CUserProfile *pProfile)
 void CScreenDisplay::ModernApplyOptions(bool bNewWindow)
 {
 	WriteConsoleInt("Cinematics43",m_bModernCinematics43 ? 1 : 0);
+
+	// CL-40: written only when changed, so a limit set by hand that the
+	// screen shows as the next one up is kept
+	if (m_nModernFrameLimit != m_nModernFrameLimitRead && m_nModernFrameLimit < kNumModernFrameLimits)
+	{
+		WriteConsoleFloat("MaxFPS",(float)kModernFrameLimits[m_nModernFrameLimit]);
+		m_nModernFrameLimitRead = m_nModernFrameLimit;
+	}
 
 	// A change of window mode takes a new renderer.
 	if (!bNewWindow)
