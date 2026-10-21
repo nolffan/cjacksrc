@@ -15,7 +15,10 @@ code in substance either way.
 | `src/Game/Libs/GameSpy/GameSpySDK/` | **GameSpy Industries / IGN Entertainment**: the GameSpy SDK's C source as IGN released it in 2011 under a BSD licence, from the snapshot mirrored at github.com/nitrocaster/GameSpy (commit `d1deb2d1a951`; serverbrowsing 2.07.00, December 2007). Only the modules `GameSpy.dll` links are kept, each with its `changelog.txt`; they are rolled back toward the July-October 2003 versions the retail image was built from, and the 2007 `common/` layer is replaced by a 2003-style `nonport.h`/`nonport.c`, written for this project | the three-clause BSD licence in `GameSpySDK/LICENSE.txt` (copyright IGN Entertainment, 2011): keep the notice with the source and reproduce it with binaries |
 | `src/Game/Libs/WONAPI/` | the part of **WON**'s client library (WONAPI, as Monolith's tree had it in `Game\Libs\WONAPI`) that `GameSpy.dll` links for its CD key check (`WONAPI::CDKey`, `CRC16`, `ByteBuffer`), written for this project from the retail image; WONAPI's own source is not in this repository | written for this project; no licence is declared |
 | `src/Game/Launcher/`, `src/Game/ServerApp/` | **Monolith Productions**: NOLF2's launcher and dedicated server (its source release's `Launcher` and `ServerApp`), brought to Contract J.A.C.K.'s retail `ContractJack.exe` and `ContractJackServer.exe` (1.1); their resource scripts restate the retail images' dialogs, strings and version resources. Their art -- the launcher's bitmaps, sounds, icon and cursor, the server's icons and splash screen -- is not here: `build/appres.py` writes it out of the retail images when the game is built | as Monolith's code above |
-| `src/cjacksrc/`, `build/`, `docker/`, `Makefile`, the documentation, `progress/` | written for this project (much of it adapted from nolfsrc and nolf2src) | no licence is declared |
+| `src/cjacksrc/` (but `mp3/minimp3/`), `build/`, `docker/`, `Makefile`, the documentation, `progress/` | written for this project (much of it adapted from nolfsrc and nolf2src) | no licence is declared |
+| `src/modern/binkw32/` | written for this project: the modern build's Bink player (nolf2src's, itself adapted from nolfsrc's) | no licence is declared |
+| `src/cjacksrc/mp3/minimp3/` | **minimp3** (github.com/lieff/minimp3, commit `ea99364f61c1`), the modern build's MP3 decoder, compiled into its `SndDrv.dll`. One change: the `<stdint.h>` types defined for Visual C++ .NET 2003, which has no `<stdint.h>` (marked in the file) | CC0 1.0 (public domain dedication), `minimp3/LICENSE` |
+| `ext/ffmpeg` (submodule) | **FFmpeg**, upstream at github.com/FFmpeg/FFmpeg, pinned to n8.1.3 | LGPL-2.1-or-later as the modern build configures it (no GPL or non-free parts enabled); see its `LICENSE.md` |
 | `rez/` (submodule) | the disc images' installer; the images themselves are fetched from archive.org | see `rez/README.md` |
 | `toolchains/` (submodule) | the compilers, assembled from public copies of the original media | see `toolchains/README.md` |
 | `tools/` (submodule) | the reconstruction tools, written for these projects | see `tools/README.md` |
@@ -33,7 +36,14 @@ directory lists every file; `tools/retailextract.py audit` every binary):
 | everything built (`MANIFEST.txt`: `built`) | built here from the source above | `src/` |
 | the game data: `.rez` archives, movies, configs | Monolith Productions / Vivendi Universal Games | the retail game (the retail game DLLs inside the archives are zeroed) |
 | `binkw32.dll` (Bink), the Microsoft C++ and MFC 7.1 runtime DLLs | RAD Game Tools, Microsoft | the retail game |
+| `binkw32.dll` in the modern build | built here: our player (`src/modern/binkw32/`) statically linked with FFmpeg (LGPL-2.1-or-later) | `build/ext.sh`, from `ext/ffmpeg` |
+| `SndDrv.dll` in the modern build | built here as above, with minimp3 (CC0) compiled in | `src/Engine/snddrv/`, `src/cjacksrc/mp3/` |
 | the art inside the built `ContractJack.exe` and `ContractJackServer.exe` (their bitmap, wave, icon and cursor resources) | Monolith Productions / Vivendi Universal Games | the retail images of the two programs, at build time (`build/appres.py`) |
+
+The modern build's `binkw32.dll` is FFmpeg (LGPL-2.1-or-later), statically
+linked with our player. The LGPL asks that whoever receives it can rebuild
+it against a modified FFmpeg, which `build/ext.sh` and the source here
+allow.
 
 ## The archives
 
@@ -49,10 +59,12 @@ for handing out.
 
 **`<directory>-public.tar.gz`** holds only what the build made and the
 project's own files: the binaries built here (`.pdb` and `.map` too, for
-the debug builds), `linux-install.sh`, `windows-install.bat`,
-`cjackcmds.txt` and `MANIFEST.txt`. It has no `.rez` archive, movie,
-setting or profile of the retail game, no RAD Bink and no Microsoft runtime
-DLL. (The launcher and the dedicated server built here do carry the retail
+the debug builds; in the modern builds, our `binkw32.dll`, FFmpeg's code
+under the LGPL-2.1-or-later, whose source is `src/modern/binkw32/` and
+`ext/ffmpeg`, rebuilt by `build/ext.sh`, and `SndDrv.dll` with minimp3, CC0),
+`linux-install.sh`, `windows-install.bat`, `cjackcmds.txt` and
+`MANIFEST.txt`. It has no `.rez` archive, movie, setting or profile of the
+retail game, no RAD Bink and no Microsoft runtime DLL. (The launcher and the dedicated server built here do carry the retail
 game's art in their resources, compiled in from the retail images: an open
 question for the public archive, which ships them as built.) The install scripts copy those from the player's own disc images of
 Contract J.A.C.K. (the European or the USA release) and its English 1.1

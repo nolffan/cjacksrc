@@ -22,8 +22,10 @@
 #            CJACK_LOG lines go to cjacksrc.log in the game's directory.
 #   modern   CJACK_MODERN: the modern build's fixes and features
 #            (MODERN.md). Compile + /D CJACK_MODERN, resource scripts
-#            + /d CJACK_MODERN. (Later, as nolf2src's: open-source
-#            middleware in place of RAD's Bink.)
+#            + /d CJACK_MODERN. And open-source middleware in place of
+#            RAD's (CJACK_MIDDLEWARE=open, build/ext.sh): our Bink player
+#            on FFmpeg, built from src/modern/binkw32/ and the ext/ffmpeg
+#            submodule, as nolf2src's (MODERN.md X-1).
 #   modern-debug   both.
 #
 # The flags reach every compile and link through build/env.sh's
@@ -80,12 +82,16 @@ tar -C "$REPO" -cf - --exclude='__pycache__' --exclude=.git build tools | tar -C
 # the compilers, and the retail game where build/retail.sh looks for it
 [ -L "$TREE/toolchains" ] || ln -s ../../toolchains "$TREE/toolchains"
 [ -L "$TREE/rez" ] || ln -s ../../rez "$TREE/rez"
+# the modern build's open-source middleware (build/ext.sh), built once into
+# out/ext/ for every variant
+[ -L "$TREE/ext" ] || ln -s ../../ext "$TREE/ext"
 
 export CJACKSRC_CFLAGS="$CFLAGS"
 export CJACKSRC_LDFLAGS="$LDFLAGS"
 export CJACKSRC_RCFLAGS="$RCFLAGS"
 export CJACK_GAME_OUT="$REPO/out/$NAME"
 export CJACK_PACKAGE=0
+case "$VARIANT" in modern*) export CJACK_MIDDLEWARE=open CJACK_EXT_OUT="$REPO/out/ext" ;; esac
 bash "$TREE/build/all.sh"
 
 case "$VARIANT" in *debug)

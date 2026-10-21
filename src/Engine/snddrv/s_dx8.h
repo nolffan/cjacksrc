@@ -82,6 +82,11 @@ public:
 	void SetAcmStream( HACMSTREAM hAcmStream ) { m_hAcmStream = hAcmStream; }
 	ACMSTREAMHEADER* GetAcmStreamHeader() { return &m_acmStreamHeader; }
 	void SetSrcBufferSize( unsigned long ulSrcBufferSize ) { m_ulSrcBufferSize = ulSrcBufferSize; }
+#ifdef CJACK_MODERN
+	// MODERN.md EN-50: an MP3 stream's decoder (src/cjacksrc/mp3/), in place
+	// of the ACM stream; made by CDx8SoundSys::OpenStream, freed by Close.
+	BOOL StartMp3( );
+#endif
 
     WAVEFORMATEX* m_pwfmt;
 
@@ -111,6 +116,9 @@ public:
 	UINT m_nRemainderBytes;
 	UINT m_nRemainderOffset;
 	BYTE m_RemainderBuffer[STR_BUFFER_SIZE];
+#ifdef CJACK_MODERN
+	struct CJackMp3Stream* m_pMp3Stream;
+#endif
 };
 
 bool ParseWaveFile( void* pWaveFileBlock, void*& rpWaveFormat, uint32& ruiWaveFormatSize,

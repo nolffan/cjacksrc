@@ -14,7 +14,8 @@ nolf2src's `MODERN.md` (NOLF2's modern build) in its rules; the items are
 Contract J.A.C.K.'s own.
 
 Each item's id is a series and a number (GS-1, GAME-3, EN-1, APPS-4, CL-1,
-LAY-1); an id is never reused.
+LAY-1, and X-1 for the middleware, as nolf2src's M-X); an id is never
+reused.
 
 ## Rules for this work
 
@@ -31,10 +32,10 @@ LAY-1); an id is never reused.
 
 To bring over once the game runs (each to be checked against Contract
 J.A.C.K.'s code first): mouse look without the retail input's repeated last
-event; a frame limiter; our Bink player on FFmpeg in place of RAD's
-`binkw32.dll`; Internet play without the dead master servers. (Widescreen
-menus, HUD and field of view and the window modes are done: EN-30 to EN-34,
-CL-30 to CL-35, APPS-30 to APPS-32.)
+event; a frame limiter; Internet play without the dead master servers.
+(Widescreen menus, HUD and field of view and the window modes are done:
+EN-30 to EN-34, CL-30 to CL-35, APPS-30 to APPS-32; our Bink player on
+FFmpeg is X-1.)
 
 Controller follow-ups (nolf2src's M-G64, M-G65; nolfsrc's M-P7-07, M-P7-08):
 
@@ -45,6 +46,22 @@ Controller follow-ups (nolf2src's M-G64, M-G65; nolfsrc's M-P7-07, M-P7-08):
   DirectInput's force-feedback calls with "unsupported".
 * **Button prompts.** Hints that name a key ("Press [key]") would name the
   controller's button when the controller was used last.
+
+## Open middleware
+
+The modern build ships no RAD binary, and needs no codec from the system:
+
+| Retail | Modern | |
+|---|---|---|
+| `binkw32.dll`, Bink (RAD Game Tools) | our Bink player, `src/modern/binkw32/`, on FFmpeg's Bink demuxer and decoders (`ext/ffmpeg`, FFmpeg n8.1.3, a submodule; LGPL-2.1-or-later as configured), built by `build/ext.sh` into `out/ext/` (X-1) | the movies play (`linux-run.sh` leaves them on, APPS-50) |
+| the MP3 codec Windows' Audio Compression Manager has (on Windows, the Fraunhofer codec it ships; under Wine, `winemp3.acm`, which drones) | minimp3 (`src/cjacksrc/mp3/minimp3/`, CC0), compiled into `SndDrv.dll` (EN-50) | the speech plays with no codec installed (`linux-run.sh` no longer runs `winetricks l3codecx`, APPS-50) |
+| Miles Sound System | -- | Contract J.A.C.K. has none: the engine's sound driver `SndDrv.dll` (built here) plays through DirectSound, and no retail binary imports or loads `mss32.dll` |
+| `MFC71.dll`, `msvcp71.dll`, `msvcr71.dll` (Microsoft) | the same, from the retail game | the C/C++ runtime the compiler links against; kept in both builds |
+
+The Bink interface the engine uses is twelve entry points, looked up by name
+at run time (`binkvideomgrimpl.cpp`); no other retail binary imports or
+loads Bink. The engine's Bink code is NOLF2's, so the player is nolf2src's
+unchanged but for its header (nolf2src's M-X1, itself nolfsrc's player).
 
 ## New console variables
 
@@ -518,3 +535,51 @@ test pad.
   the dialog's choice stays (nolf2src's M-L8;
   src/Game/Launcher/DisplayMgr.cpp/.h `ModernIsFreshInstall`,
   `ModernSetDefault`, LauncherDlg.cpp `LaunchGame`).
+* **X-1: Bink on FFmpeg.** The modern build's `binkw32.dll` is ours (Open
+  middleware, above): `src/modern/binkw32/binkw32.c` on FFmpeg's Bink
+  demuxer and video and audio decoders, statically linked, with the twelve
+  entry points `Lithtech.exe` looks up (`_BinkOpen@8` to
+  `_BinkDX8SurfaceType@4`, `binkw32.def`) -- every Bink function the
+  retail game asks for: no retail binary imports `binkw32.dll`, and the
+  game DLLs name none. It plays the five logo movies at start
+  (`Movies/*.bik`, Bink 1). `build/ext.sh` builds FFmpeg (only the Bink
+  decoders, the Bink demuxer and the file protocol; no GPL or non-free
+  part) and the DLL with Zig's C compiler into `out/ext/`; build/all.sh's
+  step 2 installs it in place of RAD's when `CJACK_MIDDLEWARE=open`, which
+  build/variant.sh sets for the modern builds (MANIFEST.txt origin `EXT`).
+  The legacy build keeps the retail DLL. nolf2src's M-X1, ported: its
+  player, `build/ext.sh` and the submodule at the same commit (FFmpeg
+  n8.1.3). Tested under Wine (`build/playtest.sh` with `+DisableMovies 0`):
+  the Sierra logo movie plays after the legal screen, its frames moving.
+* **EN-50: MP3 in SndDrv.dll.** The characters' speech is MP3 in WAV
+  files (format 0x55: 661 of `Sound.rez`'s 686 `VOICE/` files, mono, 44.1
+  kHz, 64 kbit/s). Retail's `SndDrv.dll` decodes it through Windows' Audio
+  Compression Manager, and so with whatever MP3 codec the system has: under
+  Wine that is `winemp3.acm`, which plays the streamed lines as a drone of
+  their first samples (docs/PLAN.md), and the sound driver does not start
+  at all on a system with no MP3 codec. The modern build decodes MP3 itself
+  with minimp3 (`src/cjacksrc/mp3/`, compiled into `s_dx8.cpp`; minimp3
+  rather than FFmpeg's decoder: one header the 2003 compiler builds into
+  the driver, where FFmpeg's would be a second DLL built by another
+  compiler, with an interface of our own between them). Every place
+  `s_dx8.cpp` called `acmStream*` for 0x55 decodes with it: the sounds
+  loaded whole (`InitSampleFromFile`, `Init3DSampleFromFile`,
+  `DecompressASI`: `Mp3_DecodeAll`) and the streamed ones (`OpenStream`
+  makes the stream's decoder, `WaveFile::ReadCompressed` feeds it the file
+  as it reads, `Cue` resets it), to the PCM retail asked ACM for (16-bit,
+  the file's rate and channels). `Startup` no longer needs an MP3 codec;
+  IMA ADPCM still goes through ACM. Tested outside the game: a test linked
+  with the modern build's `s_dx8.obj` decoded all 661 voice files whole
+  (`DecompressASI`) and streamed (`WaveFile::Open`, `StartMp3`,
+  `ReadCompressed` in random request sizes, then again after `Cue`), the
+  two giving the same bytes for every file; the longest line, 10024.wav,
+  gave 35.06 s of PCM for its 35 s of MP3, with the envelope of speech and
+  no repeated chunk
+  (src/Engine/snddrv/s_dx8.cpp, s_dx8.h; src/cjacksrc/mp3/mp3decode.cpp,
+  mp3decode.h).
+* **APPS-50: the modern build's run script.** `linux-run.sh` passes
+  `+DisableMovies 1` (RAD's Bink stalls under some Wine setups) and
+  installs Fraunhofer's MP3 codec with `winetricks l3codecx` (Wine's drones
+  on the speech) for the legacy build only: the modern build plays the
+  movies with its own Bink (X-1) and decodes the speech itself (EN-50)
+  (build/game-scripts/linux-run.sh).

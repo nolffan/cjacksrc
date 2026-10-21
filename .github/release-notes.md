@@ -39,17 +39,15 @@ cd cjacksrc-{{ARCHIVE}}
 
 `./linux-run.sh --help` lists its options (a Wine prefix of its own, `~/.wine-cjack`; a window or full screen); `./linux-server.sh` runs a dedicated server, headless under `xvfb-run` when there is no display.
 
-The characters' speech is MP3, and Wine's own MP3 codec turns it into a buzzing drone: `linux-run.sh` installs Fraunhofer's codec into its prefix with [winetricks](https://github.com/Winetricks/winetricks) the first time (`winetricks l3codecx`), so have winetricks installed. With your own Wine prefix, run `WINEPREFIX=<prefix> winetricks l3codecx` once.
+No codec or winetricks step is needed: the game decodes the characters' speech (MP3) itself, and plays the intro movies with its own Bink player.
 
 ### Mac
 
 The game runs in CrossOver (or another Wine for macOS). Unpack the archive, put both disc images and `contractjack_update_en_10_11.exe` in its folder and double-click `mac-install.command`, then run `ContractJack.exe` in a CrossOver bottle with Run Command. If macOS will not open the script (it is downloaded and not signed), allow it in System Settings > Privacy & Security ("Open Anyway"), or run it in Terminal: `./mac-install.command disc1.zip disc2.zip contractjack_update_en_10_11.exe`.
 
-The speech needs Fraunhofer's MP3 codec in the bottle, as on Linux: run `winetricks l3codecx` with `WINEPREFIX` set to the bottle's folder; otherwise the characters' lines play as a buzzing drone.
-
 ## What the modern build changes
 
-Every change from the retail game, and what is planned, is in [`MODERN.md`](https://github.com/{{REPO}}/blob/{{TAG}}/MODERN.md); the retail game's own bugs it fixes are in [`RETAIL_BUGS.md`](https://github.com/{{REPO}}/blob/{{TAG}}/RETAIL_BUGS.md).
+Every change from the retail game, and what is planned, is in [`MODERN.md`](https://github.com/{{REPO}}/blob/{{TAG}}/MODERN.md); the retail game's own bugs it fixes are in [`RETAIL_BUGS.md`](https://github.com/{{REPO}}/blob/{{TAG}}/RETAIL_BUGS.md). Its `binkw32.dll` is our Bink player statically linked with [FFmpeg](https://ffmpeg.org) (LGPL-2.1-or-later), and its `SndDrv.dll` carries [minimp3](https://github.com/lieff/minimp3) (CC0); what is whose, and where the source is, is in [`LICENSE-NOTES.md`](https://github.com/{{REPO}}/blob/{{TAG}}/LICENSE-NOTES.md).
 
 ## Testing
 

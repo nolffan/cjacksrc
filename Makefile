@@ -11,7 +11,9 @@
 # which fetches the redump images of the European discs from archive.org
 # and installs the game from them with the English 1.1 update (rez/README.md;
 # `make retail`, which every build runs first, does it once); and tools/, the
-# reconstruction tools. Every step runs in a throwaway container of the image
+# reconstruction tools. `make modern` also needs the ext/ffmpeg submodule
+# (FFmpeg, pinned to a release), which its Bink player is built on
+# (build/ext.sh). Every step runs in a throwaway container of the image
 # docker/Dockerfile describes, with this checkout mounted at /repo, as you.
 
 IMAGE     ?= cjacksrc-build
@@ -33,7 +35,7 @@ DOCKER_RUN = docker run --rm --init --name $(CONTAINER) \
 
 TOOLCHAIN_FILES = toolchains/msvc-7.10-3077/bin/cl.exe toolchains/dxsdk-8.1/include/d3d8.h
 
-.PHONY: all game debug modern modern-debug image retail check-rez check-tools check-toolchain \
+.PHONY: all game debug modern modern-debug image retail check-rez check-tools check-ext check-toolchain \
 	test mptest campaign control reference progress progress-update shell clean distclean help
 
 all: game
@@ -72,7 +74,12 @@ help:
 game: check-toolchain retail
 	$(DOCKER_RUN) bash build/all.sh
 
-debug modern modern-debug: check-toolchain retail
+debug: check-toolchain retail
+	$(DOCKER_RUN) bash build/variant.sh $@
+
+# the modern build also builds its Bink player on FFmpeg from ext/
+# (build/ext.sh)
+modern modern-debug: check-toolchain check-ext retail
 	$(DOCKER_RUN) bash build/variant.sh $@
 
 # IMAGE_BUILD=0: use $(IMAGE) as it is (CI builds it with a layer cache
@@ -103,6 +110,9 @@ check-rez:
 
 check-tools:
 	@[ -f tools/progress.py ] || { echo "error: tools/ is empty -- the reconstruction tools are the tools/ submodule: run git submodule update --init" >&2; exit 1; }
+
+check-ext:
+	@[ -f ext/ffmpeg/LICENSE.md ] || { echo "error: ext/ffmpeg is empty -- the modern build's Bink player is built on the ext/ffmpeg submodule: run git submodule update --init ext/ffmpeg" >&2; exit 1; }
 
 check-toolchain:
 	@for f in $(TOOLCHAIN_FILES); do \

@@ -20,7 +20,13 @@
 #                         default profile. No binary.
 #   2. third-party runtime  Bink (binkw32.dll) and the Microsoft C++ and MFC
 #                         7.1 runtime DLLs, from the retail game: licensed
-#                         binaries with no source.
+#                         binaries with no source. The modern build
+#                         (CJACK_MIDDLEWARE=open, set by build/variant.sh)
+#                         takes only the Microsoft runtime from the retail
+#                         game, and our own binkw32.dll -- a Bink player on
+#                         FFmpeg, built from src/modern/binkw32/ and the
+#                         ext/ffmpeg submodule by build/ext.sh (MODERN.md
+#                         X-1).
 #   3. compile            every workspace build/build.mk knows of that is in
 #                         the tree, all at once (one job per CPU;
 #                         CJACKSRC_JOBS=<n> to change it) and only what
@@ -98,8 +104,15 @@ for s in linux-run.sh linux-server.sh; do
     chmod +x "$OUT/$s"
 done
 
-step "2. THIRD-PARTY RUNTIME: Bink and the Microsoft runtime from $RETAIL"
-python3 tools/retailextract.py thirdparty "$RETAIL" "$OUT"
+if [ "${CJACK_MIDDLEWARE:-retail}" = open ]; then
+    step "2. open runtime: our Bink player on FFmpeg (build/ext.sh); the Microsoft runtime from $RETAIL"
+    bash build/ext.sh
+    python3 tools/retailextract.py thirdparty "$RETAIL" "$OUT" open
+    python3 tools/retailextract.py openruntime "${CJACK_EXT_OUT:-out/ext}" "$OUT"
+else
+    step "2. THIRD-PARTY RUNTIME: Bink and the Microsoft runtime from $RETAIL"
+    python3 tools/retailextract.py thirdparty "$RETAIL" "$OUT"
+fi
 
 step "3. compile: the workspaces (build/compile.sh: build/build.mk, ${CJACKSRC_JOBS:-$(nproc)} jobs)"
 bash build/compile.sh all

@@ -15,7 +15,8 @@
 #   ./linux-run.sh ++windowed 1 ++WindowMode 2   (modern build) a borderless
 #                                                window over the whole desktop
 #   ./linux-run.sh +DisableSound 1               no sound
-#   ./linux-run.sh +DisableMovies 0              the intro movies on
+#   ./linux-run.sh +DisableMovies 1              (modern build) no intro movies
+#   ./linux-run.sh +DisableMovies 0              (legacy build) the intro movies on
 #   ./linux-run.sh +JOIN <address>               join a multiplayer game
 #   ./linux-run.sh --help                        this text
 #
@@ -27,9 +28,11 @@
 # 1280x800. The launcher chooses that, as it does on Windows (MODERN.md
 # APPS-31, APPS-32). The legacy build always starts in a window
 # (++windowed 1, before the arguments, so ./linux-run.sh ++windowed 0 still
-# asks for full screen): its Display has no window mode. The intro movies
-# are off (+DisableMovies 1, likewise before the arguments): RAD's
-# binkw32.dll plays them, and its movies stall under some Wine setups.
+# asks for full screen): its Display has no window mode. The legacy
+# build's intro movies are off (+DisableMovies 1, likewise before the
+# arguments): RAD's binkw32.dll plays them, and its movies stall under some
+# Wine setups. The modern build plays them, with its own binkw32.dll on
+# FFmpeg (MODERN.md X-1).
 #
 # Environment:
 #   WINEPREFIX   the Wine prefix to use (default: $HOME/.wine-cjack, created
@@ -54,12 +57,14 @@
 # On the first run autoexec.cfg -- the game's settings, rewritten on every
 # exit -- starts as a copy of the shipped one (autoexec.cfg.retail).
 #
-# Speech: the characters' lines are MP3 (in WAV files), which SndDrv.dll
-# decodes through Windows' MP3 codec. Wine's own (winemp3.acm) fails on the
-# streamed lines -- they play as a drone of their first few samples -- so on
-# its first run in a prefix this script installs Fraunhofer's MP3 codec,
-# the one Windows ships, with winetricks (`winetricks -q l3codecx`; it
-# downloads it). Without winetricks it says so and starts the game anyway;
+# Speech: the characters' lines are MP3 (in WAV files). The modern build's
+# SndDrv.dll decodes them itself (MODERN.md EN-50) and needs no codec. The
+# legacy build's, retail's, decodes them through Windows' MP3 codec, and
+# Wine's own (winemp3.acm) fails on the streamed lines -- they play as a
+# drone of their first few samples -- so for the legacy build, on its first
+# run in a prefix, this script installs Fraunhofer's MP3 codec, the one
+# Windows ships, with winetricks (`winetricks -q l3codecx`; it downloads
+# it). Without winetricks it says so and starts the game anyway;
 # CJACK_WINETRICKS=0 skips the step.
 #
 # Sound: the engine's SndDrv.dll plays through DirectSound, so it needs
@@ -89,8 +94,9 @@ mkdir -p Save
 # a prefix to set up: make it now if it does not exist yet
 [ -d "$WINEPREFIX/dosdevices" ] || "$WINE" wineboot -i >/dev/null 2>&1 || true
 
-# The speech's MP3 codec, once per prefix (winetricks logs what it installed)
-if [ "${CJACK_WINETRICKS:-1}" != 0 ] && ! grep -qx l3codecx "$WINEPREFIX/winetricks.log" 2>/dev/null; then
+# The speech's MP3 codec, once per prefix (winetricks logs what it
+# installed); the legacy build's only: the modern build decodes MP3 itself
+if [ -z "$MODERN" ] && [ "${CJACK_WINETRICKS:-1}" != 0 ] && ! grep -qx l3codecx "$WINEPREFIX/winetricks.log" 2>/dev/null; then
     if command -v winetricks >/dev/null 2>&1; then
         echo "linux-run.sh: installing the MP3 codec the speech needs (winetricks l3codecx), once" >&2
         winetricks -q l3codecx >/dev/null 2>&1 ||
@@ -117,8 +123,10 @@ if [ -z "$MODERN" ]; then
     reg "$KEY" /v UpdateCommandLine0 /t REG_SZ    /d '-rez Update_v1x1.rez -rez custom'
 fi
 
-# the legacy build's launcher has no window mode: a window unless asked
-WINDOWED="++windowed 1"
-[ -z "$MODERN" ] || WINDOWED=""
+# the legacy build's launcher has no window mode: a window unless asked;
+# and RAD's Bink, which it plays the movies with, stalls under some Wine
+# setups: no movies unless asked. The modern build has neither problem.
+LEGACY="++windowed 1 +DisableMovies 1"
+[ -z "$MODERN" ] || LEGACY=""
 
-exec "$WINE" ContractJack.exe $WINDOWED +DisableMovies 1 "$@"
+exec "$WINE" ContractJack.exe $LEGACY "$@"

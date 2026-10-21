@@ -66,10 +66,11 @@ the evidence, is `progress/COMPILERS.md`.
 
 ## Building
 
-Needs docker and the three submodules (`git submodule update --init`):
+Needs docker and the submodules (`git submodule update --init`):
 `toolchains/` (the compilers), `rez/` (which fetches the European discs from
 archive.org and installs the game with its 1.1 update) and `tools/` (the
-reconstruction tools).
+reconstruction tools); and, for `make modern`, `ext/ffmpeg` (FFmpeg n8.1.3,
+which the modern build's Bink player is built on, by `build/ext.sh`).
 
 ```sh
 make            # out/cjack-legacy-release/: what is built so far, with the retail data
@@ -102,11 +103,16 @@ the retail installer wrote) and `linux-server.sh` (a dedicated server,
 headless under `xvfb-run` without a display); each prints its usage with
 `--help`. On Windows, start `ContractJack.exe`.
 
-Under Wine the characters' speech needs Fraunhofer's MP3 codec: the voice
-files are MP3, and Wine's own codec (`winemp3.acm`) plays the streamed
-lines as a drone of their first samples. `linux-run.sh` installs it into its
-prefix the first time (`winetricks l3codecx`); with another Wine prefix or a
-CrossOver bottle, run `WINEPREFIX=<its folder> winetricks l3codecx` once.
+The modern build plays the intro movies with its own `binkw32.dll`, built
+on FFmpeg, and decodes the characters' speech (MP3) in its own
+`SndDrv.dll`, so it needs no codec (`MODERN.md` X-1, EN-50). The legacy
+build is the retail game's: it plays the movies with RAD's Bink, which
+stalls under some Wine setups, so `linux-run.sh` turns them off
+(`+DisableMovies 1`); and under Wine its speech needs Fraunhofer's MP3
+codec, since Wine's own (`winemp3.acm`) plays the streamed lines as a drone
+of their first samples. `linux-run.sh` installs it into the legacy build's
+prefix the first time (`winetricks l3codecx`); with another Wine prefix or
+a CrossOver bottle, run `WINEPREFIX=<its folder> winetricks l3codecx` once.
 Windows has it already.
 
 ## Releases

@@ -143,8 +143,8 @@ jobs:
       - uses: actions/checkout@v4
 
       # toolchains/ (the compilers, the DirectX 8.1 SDK), rez/ (the discs'
-      # installer and the 1.1 update) and tools/ (the reconstruction
-      # tools).
+      # installer and the 1.1 update), tools/ (the reconstruction tools)
+      # and ext/ffmpeg (the modern build's Bink player).
       - name: Submodules
         run: |
           git config --global url."https://github.com/".insteadOf "git@github.com:"

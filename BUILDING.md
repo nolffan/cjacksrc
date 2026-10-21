@@ -20,6 +20,10 @@ parts of it by hand, and how the game is packaged.
     archive's install scripts are made against too (below). `make` does it
     the first time (`make retail`); see `rez/README.md`.
   * `tools/`, the reconstruction tools, shared with nolfsrc and nolf2src.
+  * `ext/ffmpeg`, for the modern builds only: FFmpeg (n8.1.3, fetched at
+    depth 1), which `build/ext.sh` builds, with Zig's C compiler in the
+    build image, into the modern build's Bink player, `binkw32.dll`
+    (`out/ext/`, about 15 MB of libraries and 100 MB of Zig's cache).
 * About 10 GB of disk: 3.4 GB for the docker image, 3.5 GB in `rez/` (the
   disc images of both releases, zipped and unzipped, and the installed
   game), and a game directory in `out/` for each build (the retail files
@@ -43,7 +47,7 @@ parts of it by hand, and how the game is packaged.
 | Step | What | Output |
 |---|---|---|
 | 1. resources | the game data from the retail game: the `.rez` archives (the retail game DLLs inside them zeroed), the movies, the shipped `autoexec.cfg` and default profile (`build/retail.py` says which) | `out/cjack-legacy-release/` |
-| 2. third-party runtime | Bink (`binkw32.dll`) and the Microsoft C++ and MFC 7.1 runtime DLLs from the retail game: licensed binaries with no source | `out/cjack-legacy-release/` |
+| 2. third-party runtime | Bink (`binkw32.dll`) and the Microsoft C++ and MFC 7.1 runtime DLLs from the retail game: licensed binaries with no source. The modern builds take only the Microsoft runtime, and our `binkw32.dll` on FFmpeg, which `build/ext.sh` builds from `src/modern/binkw32/` and `ext/ffmpeg` (`MODERN.md` X-1) | `out/cjack-legacy-release/` |
 | 3. compile | `build/compile.sh`: every compile and link, by `build/build.mk`, of every workspace in the tree (`WORKSPACES`: `ltmsg`, `snddrv`, `GameSpy`, the game's `TO2.dsw` with the launcher and the dedicated server, the engine's `Engine.dsw`); first the launcher's and the server's art, which their resource scripts compile, out of the retail images (`build/appres.py`) | `src/*/built/` |
 | 4. assemble | the built binaries into the game directory; the game DLLs go in `custom/`, last in the rez stack (`cjackcmds.txt`). A binary whose source is not here yet is left out and named | `out/cjack-legacy-release/` |
 | 5. audit | every PE file in the game directory listed with its origin (`MANIFEST.txt`); the build fails if one is unaccounted for, or if a `.rez` archive still holds one | |
@@ -80,7 +84,8 @@ modern-debug` (both) build the same source with those defines into
 `out/cjack-modern-debug/`. Each is `build/variant.sh <variant>`: the source
 is copied into `out/build-<variant>/` and built there by the same
 `build/all.sh`, so the release build's outputs are never touched; its
-header has the details. The release build compiles the source with its
+header has the details. The modern builds also build and install our Bink
+player (`build/ext.sh`, once, into `out/ext/`). The release build compiles the source with its
 `CJACK_MODERN`/`CJACK_DEBUG` blocks resolved away (`tools/releasesrc.py`).
 
 ## Archives: private and public
