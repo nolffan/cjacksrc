@@ -175,10 +175,23 @@ public:
 	BOOL					FillListBoxes(HWND hRenList, HWND hDisList, HWND hResList);
 	BOOL					SelectCurrentListRenderer(HWND hList);
 	BOOL					UpdateListSelections(HWND hRenList, HWND hDisList, HWND hResList);
+#ifdef CJACK_MODERN
+	// MODERN.md APPS-31: the window mode -- 0 full screen, 1 a window, 2 a
+	// borderless window (the engine's Windowed and WindowMode)
+	int						GetModernWindowMode() { return(m_nModernWindowMode); }
+	void					SetModernWindowMode(int nMode) { m_nModernWindowMode = nMode; }
+	// MODERN.md APPS-32: a fresh install (the game has never run here), and
+	// the display it starts with
+	static BOOL				ModernIsFreshInstall();
+	void					ModernSetDefault();
+#endif
 
 private:
 	int						EnumerateRenderers(const char* sDir);
 	BOOL					ReadConfigFile(const char* sFile);
+#ifdef CJACK_MODERN
+	static void				ModernReadWindowMode(const char* sFile, int* pWindowed, int* pWindowMode, int* pWidth, int* pHeight);
+#endif
 
 
 	// Member variables...
@@ -188,6 +201,9 @@ private:
 	CPtrList				m_collRenderers;
 	CRenderer*				m_pCurRenderer;
 	POSITION				m_pos;
+#ifdef CJACK_MODERN
+	int						m_nModernWindowMode;	// APPS-31
+#endif
 };
 
 
@@ -219,6 +235,9 @@ inline void CDisplay::Clear()
 inline void CDisplayMgr::Clear()
 {
 	m_pCurRenderer = NULL;
+#ifdef CJACK_MODERN
+	m_nModernWindowMode = 0;
+#endif
 }
 
 inline CRenderer* CDisplayMgr::GetFirstRenderer()

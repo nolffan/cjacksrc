@@ -248,6 +248,11 @@ BEGIN
     LISTBOX         IDC_RESOLUTION_LIST,64,75,48,40,LBS_SORT |
                     LBS_NOINTEGRALHEIGHT | NOT WS_BORDER | WS_VSCROLL |
                     WS_TABSTOP
+#ifdef CJACK_MODERN
+    // MODERN.md APPS-31: the window mode (placed under the resolutions)
+    LISTBOX         IDC_MODERN_WINDOWMODE_LIST,64,120,48,20,
+                    LBS_NOINTEGRALHEIGHT | NOT WS_BORDER | WS_TABSTOP
+#endif
 END
 
 IDD_MESSAGEBOX DIALOGEX 0, 0, 276, 102
@@ -481,9 +486,18 @@ BEGIN
                             "ERROR - Unable to create the Contract J.A.C.K. registry key!"
 END
 
+#ifdef CJACK_MODERN
+// MODERN.md APPS-31: the Display dialog's window mode
+STRINGTABLE DISCARDABLE
+BEGIN
+    IDS_MODERN_FULLSCREEN   "Full screen"
+    IDS_MODERN_WINDOW       "Window"
+    IDS_MODERN_BORDERLESS   "Borderless window"
+END
+#endif
+
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
-
 
 
 #ifndef APSTUDIO_INVOKED

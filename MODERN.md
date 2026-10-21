@@ -30,10 +30,27 @@ LAY-1); an id is never reused.
 ## Planned, from nolf2src's modern build
 
 To bring over once the game runs (each to be checked against Contract
-J.A.C.K.'s code first): widescreen menus, HUD and field of view; mouse look
-without the retail input's repeated last event; a frame limiter; windowed
-modes at any size; our Bink player on FFmpeg in place of RAD's
-`binkw32.dll`; Internet play without the dead master servers.
+J.A.C.K.'s code first): mouse look without the retail input's repeated last
+event; a frame limiter; our Bink player on FFmpeg in place of RAD's
+`binkw32.dll`; Internet play without the dead master servers. (Widescreen
+menus, HUD and field of view and the window modes are done: EN-30 to EN-34,
+CL-30 to CL-35, APPS-30 to APPS-32.)
+
+## New console / config variables
+
+Console variables, client-side, as nolf2src documents them. Creating one
+does not save it: `autoexec.cfg` keeps those a menu sets, those that came
+from a config file and those set as `++Name value` on the command line;
+`display.cfg` (written by the game at every start, read by the launcher)
+keeps the display's. The modern build's strings are IDs 31000 and up
+(`ClientResShared.h`, the English `ClientResShared.rc`; the launcher's in
+its own `resource.h`).
+
+| Variable | Type | Default | Meaning | Item |
+|---|---|---|---|---|
+| `Windowed` | int | (engine) | existing (0 full screen, 1 a window: what the renderer reads); now set by the Display screen's and the launcher's "Window mode", applied at once, and kept in `display.cfg`; a fresh install's is the launcher's default (a window; full screen on a Steam Deck) | CL-32, APPS-31, APPS-32 |
+| `WindowMode` | int | 0 | with `Windowed` 1: 1 a framed window, 2 a borderless window over the whole desktop at the desktop's resolution; 0 (a config from before it) borderless only when the mode is as large as the desktop | EN-32, CL-32, APPS-31 |
+| `Cinematics43` | int | 0 | on a wide screen, cutscenes in the centred 4:3 area; Display's "4:3 cinematics" | CL-35 |
 
 ## Done
 
@@ -187,3 +204,167 @@ modes at any size; our Bink player on FFmpeg in place of RAD's
   takes the screen's aspect rather than the PVModelAspect console variable
   (1 by default), so the weapon model is not stretched on a wide screen
   (src/Engine/runtime/render_a/src/sys/d3d/3d_ops.cpp).
+* **EN-30: widescreen field of view (Hor+).** The game sets one pair of
+  view angles for every screen (`FovX` 90, `FovY` 78: a 4:3 view), so a
+  wider screen showed the same view stretched sideways. A view of the world
+  drawn over the whole screen (`RenderCamera`) wider than 4:3 now keeps the
+  vertical angle and widens the horizontal one to the screen's shape
+  (`tan(x/2)` scaled by the width over 4:3): more is seen at the sides,
+  nothing is stretched. The interface's 3D objects (`RenderObjects`: the
+  menus' art) widen the same way, to stay beside the centred 2D page
+  (CL-30). The camera's own angles, which the game reads back for zoom and
+  its screen effects, are not changed, only the scene the renderer is
+  given; at 4:3 nothing changes. The code came with nolf2src's engine
+  (its M-E1) and is documented and checked here (src/Engine/runtime/
+  client/src/clientmgr.cpp `CClientMgr::Render`, `cm_WidescreenFovX`).
+* **EN-31: a window at any size.** The renderer wanted a display mode of
+  the window's size in the adapter's list even in a window
+  (`PickDefaultMode`: "Can't find an appropriate display mode!"), so a
+  window could only be a size the screen could switch to. In a window any
+  size is taken: the first mode in the desktop's format, at the window's
+  size. From nolf2src's engine (M-E2) as EN-30 (src/Engine/runtime/
+  render_a/src/sys/d3d/d3d_shell.cpp).
+* **EN-32: the window mode.** Retail sized a window for a framed window's
+  borders without giving it that frame (the engine creates it captioned
+  only, and the game then resized it whole to the mode, `SetWindowSize`,
+  so the picture lost the frame's width), and a full-screen window kept
+  whatever style it had, so going from full screen to a window could
+  leave it without a frame. The engine now sets the window's style with
+  every mode, from `Windowed` and the new `WindowMode`: full screen, a bare
+  window on top; `WindowMode` 1, a framed window whose inside is the
+  mode's size, centred; `WindowMode` 2, a borderless window over the whole
+  desktop at the desktop's own resolution (the registry's mode, not the
+  screen's, which in full screen is the game's): `r_InitRender` makes the
+  mode asked for (the Display screen's, a command line's `++ScreenWidth`)
+  the desktop's before the renderer starts, and `ScreenWidth`/
+  `ScreenHeight` and the game's render mode are what it got, so the
+  interface lays itself out for it. Unset (0, a config from before it), a
+  window as large as the desktop is borderless and a smaller one framed.
+  The desktop is the primary monitor (`SM_CXSCREEN`/`SM_CYSCREEN`): under
+  Wine the desktop window spans every monitor. Both window modes are
+  windowed devices, so losing the focus keeps the renderer (EN-2). The
+  game no longer resizes the window (nolf2src's M-G42, M-E30, nolfsrc's
+  M-P1-22; src/Engine/runtime/kernel/src/sys/win/render.cpp
+  `r_InitRender`, render_a/src/sys/d3d/common_init.cpp `d3d_Init`,
+  src/Game/ClientShellDLL/GameClientShell.cpp `SetWindowSize`).
+* **EN-33: a letter wider than its line.** `CUIFormattedPolyString_Impl::
+  Parse` broke a word before a letter wider than the wrap width even when
+  the letter started the word: the word then ended at index -1 (65535),
+  the parse stepped back onto the same letter until the word table was
+  full, and the word widths read 64K letters past the string. A letter
+  that starts its word now stays on its line. nolf2src found it as a crash
+  at 3840x2160 (a HUD column given its letters' new height before its new
+  width); the parser is the same here (its M-E31; src/Engine/runtime/ui/
+  src/cuiformattedpolystring_impl.cpp).
+* **EN-34: player-view effects at wide resolutions.** The draw primitives
+  drawn in the weapon's space (the really-close transform) take their
+  aspect from `PVModelAspect`, the one they were made with at 4:3, and
+  would stretch on a wider screen; it is widened by the screen's shape
+  over 4:3, as the player-view models' own projection takes the screen's
+  shape (EN-9). From nolf2src's engine (M-E15) as EN-30 (src/Engine/
+  runtime/render_b/src/sys/d3d/d3ddrawprim.cpp).
+* **CL-30: menus and HUD at wide resolutions.** The interface is laid out
+  on a 640x480 page scaled by `width/640` and `height/480`
+  (`CInterfaceResMgr`); most controls scale both ways by the width's ratio,
+  so on a 16:9 screen the menus were stretched and ran off the bottom of
+  the screen, and the HUD was stretched. On a screen wider than 4:3 the
+  page is now scaled by the height alone and centred: the side margin is
+  one offset (`CInterfaceResMgr::GetXOffset`), which every control takes in
+  `CLTGUICtrl::SetScale` (and the list's, the button's image, the HUD
+  message's icon), `ConvertScreenPos`/`ConvertScreenRect` add, and the
+  places that place text from the ratios themselves add (help text, the
+  loading and post-load screens, credits, the chat prompt, the scope, the
+  dead player's dot). The interface camera widens to match (EN-30), so the
+  menus' 3D art stays beside its text. The HUD keeps to the screen's
+  edges: an item in the left third of the page stays at the left edge, one
+  in the right third moves with the right edge, one in the middle stays
+  centred (`GetHUDXOffset`, `GetHUDBaseShift`, read again in every item's
+  `UpdateLayout`, which now also runs when the screen changes). Contract
+  J.A.C.K.'s own items do the same: the weapon's heat bar, the bomb
+  timers' icons and every `CInterfaceTimer` (the mission and team timers,
+  the bomb timers' text). The in-game menu bar, which starts at the page's
+  left edge, reaches on to the screen's. At 4:3 and narrower nothing
+  changes. The positioning code is NOLF2's in every file that places
+  something (checked file by file against nolf2src's), so its M-G2 is
+  ported as it is, plus the two items NOLF2 does not have
+  (src/Game/ClientShellDLL/InterfaceResMgr.cpp/.h, BaseScreen.cpp/.h,
+  BaseMenu.cpp, LoadingScreen.cpp, ScreenPostload.cpp, Credits.cpp,
+  InterfaceTimer.cpp, HUDMgr.cpp and the HUD items: HUDAir, HUDAmmo,
+  HUDBombTarget, HUDCarrying, HUDChatInput, HUDCompass, HUDCrosshair,
+  HUDDamage, HUDDistance, HUDDoomsday, HUDHealth, HUDHiding, HUDMessage,
+  HUDMeter, HUDObjectives, HUDRadar, HUDRespawn, HUDWeaponHeat;
+  src/Game/Libs/LTGUIMgr/ltguictrl.cpp/.h, ltguibutton.cpp,
+  ltguilistctrl.cpp). `tools/playtest.sh` maps menu clicks for this layout
+  in a modern game directory (`PLAYTEST_MAP=modern`).
+* **CL-31: widescreen resolutions.** The Display screen listed only exact
+  4:3 modes; it now lists every mode at least as wide as 4:3 (5:4 stays
+  out: EN-30 only widens). With no mode listed at all (a display whose
+  only modes are narrower), leaving the screen read the empty list at
+  index -1; it now sets no resolution then (nolf2src's M-G1, M-E31;
+  src/Game/ClientShellDLL/ScreenDisplay.cpp `GetRendererData`, `OnFocus`).
+* **CL-32: window mode on the Display screen.** "Window mode", under the
+  resolution: Full screen, Window, Borderless window (`Windowed`,
+  `WindowMode`: EN-32). Borderless greys the resolution out (the
+  desktop's is used). Leaving the screen with another mode restarts the
+  renderer once at the chosen resolution (a framed window as large as the
+  desktop or larger takes the largest listed resolution that fits inside
+  it), then the camera, the profile's resolution and the cursor follow the
+  mode the engine gave; a window's size the screen has no mode for (EN-31)
+  is listed, so the screen shows it. A window after full screen is no
+  longer held to the full-screen rectangle by the cursor clip.
+  `display.cfg` (what the launcher reads) keeps `Windowed` and
+  `WindowMode` too (nolf2src's M-G40, M-G70;
+  src/Game/ClientShellDLL/ScreenDisplay.cpp/.h, GameClientShell.cpp
+  `OnEvent`, ProfileMgr.cpp `SaveDisplaySettings`, ClientRes strings
+  31000-31001, 31200-31202).
+* **CL-33: scope and camera overlays at wide resolutions.** The masks of
+  the scope and the camera are made for a 4:3 view: with EN-30 they keep
+  their shape and cover the centred 4:3 area, and the world showed past
+  their sides. While either is up the margins are filled black (nolf2src's
+  M-G34; src/Game/ClientShellDLL/HUDCrosshair.cpp `Render`).
+* **CL-34: the zoomed view's shape.** `CPlayerMgr::UpdateCameraZoom`
+  scaled the vertical angle with the horizontal one (`fovY = fovX * FovY /
+  FovX`), but a view's shape is the ratio of the angles' tangents: zoomed
+  in, the view came out about 7% flatter than the normal one. The zoomed
+  view now keeps the normal view's tangent ratio, and EN-30 widens it as
+  it does the normal view (nolf2src's M-G35;
+  src/Game/ClientShellDLL/PlayerMgr.cpp).
+* **CL-35: cinematics in 4:3.** With EN-30 a cutscene on a wide screen
+  shows more at the sides than it was framed for. The Display screen's
+  "4:3 cinematics" (`Cinematics43`, off by default) covers the sides
+  beyond the centred 4:3 area while the letterbox is up, fading in and out
+  with it (nolf2src's M-G36; src/Game/ClientShellDLL/InterfaceMgr.cpp
+  `UpdateLetterBox`, ScreenDisplay.cpp, ClientRes strings 31010-31011).
+* **APPS-30: widescreen resolutions in the launcher.** The Display
+  dialog lists every 32-bit mode at least as wide as 4:3, as the game's
+  Display screen does (CL-31) (nolf2src's M-G1;
+  src/Game/Launcher/DisplayMgr.cpp `CRenderer::Init`).
+* **APPS-31: window mode in the launcher.** The Display dialog has the
+  same choice under the resolutions: Full screen, Window, Borderless
+  window (the resolutions greyed out for it). It starts at the mode the
+  game was left in (`autoexec.cfg`, then `display.cfg`, as the engine
+  reads them) and, with OK, passes `+Windowed` and `+WindowMode` with the
+  resolution. `linux-run.sh` no longer forces `++windowed 1` in the modern
+  build, so the menu's choice stays (nolf2src's M-L5;
+  src/Game/Launcher/DisplayDlg.cpp/.h, DisplayMgr.cpp/.h,
+  TO2/RES/Lang/EN/Launcher.rc, TO2/resource.h;
+  build/game-scripts/linux-run.sh).
+* **APPS-32: a fresh install's display.** The first run's resolution was
+  the detail setting's (High 1024x768, Medium 800x600, Low 640x480),
+  full screen unless `linux-run.sh` added `++windowed 1`. A fresh install
+  is one where the game has never run: no `display.cfg` (the game writes
+  it at every start) and no `Windowed` in `autoexec.cfg`. There the
+  launcher passes its default display, with or without its Display dialog
+  (which shows it, and whose Cancel leaves it), and the detail setting
+  keeps only its other settings: a framed window (`Windowed 1`,
+  `WindowMode 1`), 32-bit, at the largest size whose window, frame and
+  title bar included, fits the desktop's work area, of the desktop's
+  shape if one fits (1600x900 on a 1920x1080 desktop), else of any. A
+  window can be any size (EN-31), so the common 4:3, 16:9, 16:10 and 21:9
+  sizes are candidates beside the adapter's modes, and one with no mode is
+  added to the dialog's list. On a Steam Deck (`SteamDeck=1`) full screen
+  at the panel's 1280x800, or the largest mode that fits it; with none, a
+  borderless window. A later run passes nothing, so Options > Display's or
+  the dialog's choice stays (nolf2src's M-L8;
+  src/Game/Launcher/DisplayMgr.cpp/.h `ModernIsFreshInstall`,
+  `ModernSetDefault`, LauncherDlg.cpp `LaunchGame`).

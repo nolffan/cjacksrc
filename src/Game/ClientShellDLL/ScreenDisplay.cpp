@@ -82,6 +82,51 @@ namespace
 //		g_pLTClient->CPrint("Slider: %d",slider);
 		return slider;
 	}
+
+#ifdef CJACK_MODERN
+	// MODERN.md CL-32: the window mode -- the engine's Windowed (0 full
+	// screen) and, for a window, WindowMode (1 framed, 2 borderless at the
+	// desktop's resolution; 0, unset, borderless only when as large as the
+	// desktop: EN-32)
+	enum { kModernFullScreen = 0, kModernWindow, kModernBorderless };
+
+	// the desktop's own resolution (the registry's, not the screen's, which
+	// in full screen is the game's), as the engine takes it
+	void ModernDesktopSize(uint32 *pWidth, uint32 *pHeight)
+	{
+		DEVMODE dm;
+		memset(&dm, 0, sizeof(dm));
+		dm.dmSize = sizeof(dm);
+		if ((EnumDisplaySettings(NULL, ENUM_REGISTRY_SETTINGS, &dm) ||
+			EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &dm)) && dm.dmPelsWidth && dm.dmPelsHeight)
+		{
+			*pWidth = dm.dmPelsWidth;
+			*pHeight = dm.dmPelsHeight;
+			return;
+		}
+		*pWidth = GetSystemMetrics(SM_CXSCREEN);
+		*pHeight = GetSystemMetrics(SM_CYSCREEN);
+	}
+
+	uint8 ModernGetWindowMode()
+	{
+		if (GetConsoleInt("Windowed",0) != 1)
+			return kModernFullScreen;
+
+		int nWindowMode = GetConsoleInt("WindowMode",0);
+		if (nWindowMode == 2)
+			return kModernBorderless;
+		if (nWindowMode == 1)
+			return kModernWindow;
+
+		RMode mode;
+		uint32 nDeskW, nDeskH;
+		ModernDesktopSize(&nDeskW, &nDeskH);
+		if (g_pLTClient->GetRenderMode(&mode) == LT_OK && mode.m_Width >= nDeskW && mode.m_Height >= nDeskH)
+			return kModernBorderless;
+		return kModernWindow;
+	}
+#endif
 }
 
 //helper function used for sorting
@@ -138,6 +183,12 @@ CScreenDisplay::CScreenDisplay()
 
     m_pResolutionCtrl   = LTNULL;
 	m_pHardwareCursor	= LTNULL;
+#ifdef CJACK_MODERN
+	// MODERN.md CL-32, CL-35
+	m_pModernWindowMode		= LTNULL;
+	m_nModernWindowMode		= kModernFullScreen;
+	m_bModernCinematics43	= LTFALSE;
+#endif
 }
 
 CScreenDisplay::~CScreenDisplay()
@@ -178,6 +229,17 @@ LTBOOL CScreenDisplay::Build()
 	// Setup the resolution control based on the current renderer
 	SetupResolutionCtrl();
 
+#ifdef CJACK_MODERN
+	// MODERN.md CL-32: the window mode -- full screen, a window, or a
+	// borderless window, which is at the desktop's resolution (so the
+	// resolution is greyed out for it)
+	m_pModernWindowMode = AddCycle(IDS_MODERN_WINDOWMODE,IDS_HELP_MODERN_WINDOWMODE,kGap,&m_nModernWindowMode);
+	m_pModernWindowMode->AddString(LoadTempString(IDS_MODERN_FULLSCREEN));
+	m_pModernWindowMode->AddString(LoadTempString(IDS_MODERN_WINDOW));
+	m_pModernWindowMode->AddString(LoadTempString(IDS_MODERN_BORDERLESS));
+	m_pModernWindowMode->NotifyOnChange(CMD_UPDATE,this);
+#endif
+
 	m_pHardwareCursor = AddToggle(IDS_HARDWARE_CURSOR,IDS_HELP_HARDWARE_CURSOR,kGap,&m_bHardwareCursor);
 
 	AddToggle(IDS_VSYNC,IDS_HELP_VSYNC,kGap,&m_bVSync);
@@ -202,6 +264,16 @@ LTBOOL CScreenDisplay::Build()
 	pBar->SetScale(g_pInterfaceResMgr->GetXRatio());
 	AddControl(pBar);
 
+#ifdef CJACK_MODERN
+	// MODERN.md CL-35: cutscenes in 4:3 on a wide screen
+	CLTGUIToggle *pModernCine = AddToggle(IDS_MODERN_CINEMATICS43,IDS_HELP_MODERN_CINEMATICS43,kGap,&m_bModernCinematics43);
+
+	// the frame takes in the new lines
+	int nModernBottom = pModernCine->GetBasePos().y + pModernCine->GetBaseHeight();
+	if (nModernBottom > frameRect.bottom)
+		pFrame->SetSize(nWd,(nModernBottom - frameRect.top) + 8);
+#endif
+
 
 
 
@@ -223,6 +295,16 @@ void CScreenDisplay::Escape()
 
 uint32 CScreenDisplay::OnCommand(uint32 dwCommand, uint32 dwParam1, uint32 dwParam2)
 {
+#ifdef CJACK_MODERN
+	// MODERN.md CL-32: a borderless window is at the desktop's resolution
+	if (dwCommand == CMD_UPDATE)
+	{
+		UpdateData();
+		if (m_pResolutionCtrl)
+			m_pResolutionCtrl->Enable(m_nModernWindowMode != kModernBorderless);
+		return 1;
+	}
+#endif
 	return CBaseScreen::OnCommand(dwCommand,dwParam1,dwParam2);
 };
 
@@ -309,7 +391,14 @@ void CScreenDisplay::GetRendererData()
 		{
 			// disallow non-standard aspect ratios
 			uint32 testWidth = (pCurrentMode->m_Height * 4 / 3);
+#ifdef CJACK_MODERN
+			// MODERN.md CL-31: widescreen resolutions. Every mode at least as
+			// wide as 4:3 (the engine widens the view to match, EN-30); only
+			// the narrower ones (5:4) are still left out.
+			if (pCurrentMode->m_Width < testWidth)
+#else
 			if (pCurrentMode->m_Width != testWidth)
+#endif
 			{
 			
 				// Go to the next render mode
@@ -439,6 +528,9 @@ void CScreenDisplay::OnFocus(LTBOOL bFocus)
 		
 
 		m_pHardwareCursor->Enable(GetConsoleInt("DisableHardwareCursor",0) == 0);
+#ifdef CJACK_MODERN
+		ModernReadOptions();	// MODERN.md CL-32, CL-35
+#endif
 
 		// The current render mode
 		RMode currentMode;
@@ -476,7 +568,15 @@ void CScreenDisplay::OnFocus(LTBOOL bFocus)
 			pProfile->m_bVSync = m_bVSync;
 			pProfile->m_fGamma = ConvertToGamma(m_nGamma);
 			// Set the render mode if we are losing focus
+#ifdef CJACK_MODERN
+			// MODERN.md CL-31: and only if one is listed: with none (a
+			// display whose only modes are narrower than 4:3) retail read the
+			// empty list at index -1
+			if (m_pResolutionCtrl &&
+				(uint32)m_pResolutionCtrl->GetSelIndex() < m_rendererData.m_resolutionArray.GetSize())
+#else
 			if (m_pResolutionCtrl)
+#endif
 			{
 				// Get the new renderer structure
 				RMode newMode=GetRendererModeStruct(m_pResolutionCtrl->GetSelIndex());
@@ -486,7 +586,14 @@ void CScreenDisplay::OnFocus(LTBOOL bFocus)
 				pProfile->m_nScreenDepth = newMode.m_BitDepth;
 			}
 	
+#ifdef CJACK_MODERN
+			// MODERN.md CL-32: a new window mode sets the mode itself
+			bool bModernNewWindow = ModernPrepareWindowMode(pProfile);
+#endif
 			pProfile->ApplyDisplay();
+#ifdef CJACK_MODERN
+			ModernApplyOptions(bModernNewWindow);	// MODERN.md CL-32, CL-35
+#endif
 					
 			//display settings can affect performance sttings so update them here...
 			g_pPerformanceMgr->GetPerformanceOptions(&pProfile->m_sPerformance);
@@ -688,4 +795,126 @@ void CScreenDisplay::ConfirmHardwareCursor(LTBOOL bReturn)
 	UpdateData(LTFALSE);
 }
 
+#ifdef CJACK_MODERN
+// MODERN.md CL-32, CL-35: the modern options' current values
+void CScreenDisplay::ModernReadOptions()
+{
+	m_nModernWindowMode = ModernGetWindowMode();
 
+	// A window may be of a size the screen has no mode for (EN-31); list
+	// it, or the screen would show (and its OK set) another resolution (a
+	// borderless window on a 5:4 desktop, say, when no mode at all is
+	// listed: then the renderer is the mode's)
+	RMode currentMode;
+	if (m_nModernWindowMode != kModernFullScreen && g_pLTClient->GetRenderMode(&currentMode) == LT_OK &&
+		currentMode.m_Width >= 640 && currentMode.m_Height >= 480)
+	{
+		if (!m_rendererData.m_description[0])
+		{
+			m_rendererData.m_bHWTnL = currentMode.m_bHWTnL;
+			SAFE_STRCPY(m_rendererData.m_description, currentMode.m_Description);
+			SAFE_STRCPY(m_rendererData.m_internalName, currentMode.m_InternalName);
+		}
+		ScreenDisplayResolution resolution;
+		resolution.m_dwWidth = currentMode.m_Width;
+		resolution.m_dwHeight = currentMode.m_Height;
+		resolution.m_dwBitDepth = currentMode.m_BitDepth;
+		LTBOOL bFound = LTFALSE;
+		for (uint32 i = 0; !bFound && i < m_rendererData.m_resolutionArray.GetSize(); i++)
+			bFound = (ScreenDisplayCompare(&(m_rendererData.m_resolutionArray[i]), &resolution) == 0);
+		if (!bFound)
+		{
+			m_rendererData.m_resolutionArray.Add(resolution);
+			SortRenderModes();
+			SetupResolutionCtrl();
+		}
+	}
+	if (m_pResolutionCtrl)
+		m_pResolutionCtrl->Enable(m_nModernWindowMode != kModernBorderless);
+	m_bModernCinematics43 = (GetConsoleInt("Cinematics43",0) != 0);
+}
+
+// Before the profile applies the resolution. A borderless window keeps the
+// mode in use (the engine makes it the desktop's); a new window mode is set
+// by restarting the renderer at the chosen resolution, once
+// (ModernApplyOptions), so the profile is left to set no mode itself.
+bool CScreenDisplay::ModernPrepareWindowMode(CUserProfile *pProfile)
+{
+	// A framed window as large as the desktop does not fit on it: take the
+	// largest resolution listed that does.
+	uint32 nDeskW, nDeskH;
+	ModernDesktopSize(&nDeskW, &nDeskH);
+	if (m_nModernWindowMode == kModernWindow && pProfile->m_nScreenWidth >= nDeskW && pProfile->m_nScreenHeight >= nDeskH)
+	{
+		for (uint32 i = 0; i < m_rendererData.m_resolutionArray.GetSize(); i++)
+		{
+			ScreenDisplayResolution res = m_rendererData.m_resolutionArray[i];
+			if (res.m_dwWidth < nDeskW && res.m_dwHeight < nDeskH)
+			{
+				pProfile->m_nScreenWidth = res.m_dwWidth;
+				pProfile->m_nScreenHeight = res.m_dwHeight;
+				pProfile->m_nScreenDepth = res.m_dwBitDepth;
+			}
+		}
+	}
+
+	bool bNewWindow = (m_nModernWindowMode != ModernGetWindowMode());
+	if (!bNewWindow && m_nModernWindowMode != kModernBorderless)
+		return false;
+
+	uint32 nWidth = pProfile->m_nScreenWidth;
+	uint32 nHeight = pProfile->m_nScreenHeight;
+	uint32 nDepth = pProfile->m_nScreenDepth;
+	RMode currentMode;
+	if (g_pLTClient->GetRenderMode(&currentMode) == LT_OK)
+	{
+		pProfile->m_nScreenWidth = currentMode.m_Width;
+		pProfile->m_nScreenHeight = currentMode.m_Height;
+		pProfile->m_nScreenDepth = currentMode.m_BitDepth;
+	}
+	if (!bNewWindow)
+		return false;
+
+	WriteConsoleInt("Windowed",m_nModernWindowMode != kModernFullScreen ? 1 : 0);
+	if (m_nModernWindowMode != kModernFullScreen)
+		WriteConsoleInt("WindowMode",m_nModernWindowMode == kModernBorderless ? 2 : 1);
+	WriteConsoleInt("ScreenWidth",(int)nWidth);
+	WriteConsoleInt("ScreenHeight",(int)nHeight);
+	WriteConsoleInt("BitDepth",(int)nDepth);
+	return true;
+}
+
+// ... and applied, when the screen is left with its OK
+void CScreenDisplay::ModernApplyOptions(bool bNewWindow)
+{
+	WriteConsoleInt("Cinematics43",m_bModernCinematics43 ? 1 : 0);
+
+	// A change of window mode takes a new renderer.
+	if (!bNewWindow)
+		return;
+
+	g_pInterfaceResMgr->DrawMessage(IDS_REINITIALIZING_RENDERER);
+	g_pInterfaceMgr->SetSwitchingRenderModes(LTTRUE);
+	g_pLTClient->RunConsoleString("RestartRender");
+	g_pInterfaceMgr->SetSwitchingRenderModes(LTFALSE);
+	g_pInterfaceMgr->ScreenDimsChanged();
+
+	// The mode may be another now (a borderless window is at the desktop's
+	// resolution), as after the profile sets one (CUserProfile::ApplyDisplay)
+	RMode mode;
+	CUserProfile *pProfile = g_pProfileMgr->GetCurrentProfile();
+	if (g_pLTClient->GetRenderMode(&mode) == LT_OK)
+	{
+		if (g_pPlayerMgr && g_pPlayerMgr->GetCamera())
+			g_pLTClient->SetCameraRect(g_pPlayerMgr->GetCamera(), LTTRUE, 0, 0, mode.m_Width, mode.m_Height);
+		if (pProfile)
+		{
+			pProfile->m_nScreenWidth = mode.m_Width;
+			pProfile->m_nScreenHeight = mode.m_Height;
+			pProfile->m_nScreenDepth = mode.m_BitDepth;
+		}
+	}
+	if (pProfile)
+		g_pCursorMgr->UseHardwareCursor(pProfile->m_bHardwareCursor,true);
+}
+#endif

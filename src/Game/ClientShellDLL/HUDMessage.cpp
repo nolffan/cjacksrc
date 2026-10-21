@@ -368,6 +368,9 @@ void CHUDMessage::JustifyPoly()
 
 	float x = (float)m_basePos.x * m_fScale;
 	float y = (float)m_basePos.y * m_fScale;
+#ifdef CJACK_MODERN
+	x += (float)CLTGUICtrl::GetPageOffset();	// MODERN.md CL-30: as m_pos has it
+#endif
 	float fw = (float)m_imageSize.x;
 	float fh = (float)m_imageSize.y;
 
