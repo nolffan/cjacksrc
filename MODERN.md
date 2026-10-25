@@ -587,6 +587,16 @@ test pad.
   on the speech) for the legacy build only: the modern build plays the
   movies with its own Bink (X-1) and decodes the speech itself (EN-50)
   (build/game-scripts/linux-run.sh).
+
+* **EN-51: copying reference-counted messages.** `CLTReference` now
+  increments the reference count when copied or assigned from another
+  reference. Its implicit copies only copied the pointer, so
+  `CPlayerMgr::UpdatePlayerInfo`'s saved messages outlived their references
+  and `CPlayerMgr::Term` called into freed memory on exit after gameplay.
+  The modern build supplies a copy constructor and copy assignment;
+  legacy keeps its existing implementation. `build/tests/ltreference.cpp`
+  checks ownership across copies, reassignment and destruction.
+
 * **EN-40: the frame limiter.** The engine's frame limiter, `MaxFPS`, only
   works outside the final build (`cm_HandleMaxFPS` is in retail's
   Lithtech.exe, 0x40e6b0, but `CClientMgr::Update` calls it only under

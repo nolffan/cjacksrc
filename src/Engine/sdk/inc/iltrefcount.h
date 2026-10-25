@@ -31,6 +31,18 @@ public:
 		if (m_pPtr)
 			m_pPtr->IncRef();
 	}
+#ifdef CJACK_MODERN
+	// A copied reference owns its own count, just like a reference made
+	// from a raw pointer. The implicit copies left dangling message pointers
+	// in CPlayerMgr after UpdatePlayerInfo's local references went away.
+	CLTReference(const CLTReference &other) : m_pPtr(other.m_pPtr) {
+		if (m_pPtr)
+			m_pPtr->IncRef();
+	}
+	CLTReference &operator=(const CLTReference &other) {
+		return operator=(other.m_pPtr);
+	}
+#endif
 	~CLTReference() {
 		if (m_pPtr)
 			m_pPtr->DecRef(); 
