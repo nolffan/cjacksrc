@@ -97,11 +97,18 @@ also finds them in the game directory or the one above it by itself
 (double-click `mac-install.command` in Finder), and can be run again.
 
 Both archives also carry the scripts that start the game
-(`build/game-scripts/`): `linux-run.sh` (the launcher under Wine, in a
+(`build/game-scripts/`): `linux-run.sh` (starts the game under Wine, in a
 prefix of its own; the legacy build's launcher gets the registry values
 the retail installer wrote) and `linux-server.sh` (a dedicated server,
 headless under `xvfb-run` without a display); each prints its usage with
 `--help`. On Windows, start `ContractJack.exe`.
+
+In modern builds, `ContractJack.exe` (and `linux-run.sh`) starts the game
+immediately using the launcher's saved settings and arguments, skips the
+first-run detail prompt, and waits until `Lithtech.exe` exits. Open
+`ContractJackLauncher.exe` for the interactive launcher. Under Wine, use
+the same prefix as `linux-run.sh` (`~/.wine-cjack` by default). Legacy
+builds keep their original launcher behavior.
 
 The modern build plays the intro movies with its own `binkw32.dll`, built
 on FFmpeg, and decodes the characters' speech (MP3) in its own

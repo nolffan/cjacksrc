@@ -81,6 +81,9 @@ BUILT=(
     "$E/snddrv/SndDrv.dll"              SndDrv.dll
     "$E/ltmsg/ltmsg.dll"                ltmsg.dll
 )
+case "${CJACKSRC_CFLAGS:-}" in
+    *CJACK_MODERN*) BUILT+=("$B/Launcher/ContractJackLauncher.exe" ContractJackLauncher.exe) ;;
+esac
 
 step "1. resources: game data from $RETAIL -> $OUT"
 python3 tools/retailextract.py resources "$RETAIL" "$OUT"

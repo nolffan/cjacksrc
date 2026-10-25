@@ -112,6 +112,16 @@ static CString ModernLauncherGameDir()
 
 BOOL CLauncherApp::InitInstance()
 {
+#ifdef CJACK_MODERN
+	// Both modern executables share the settings and command builder.
+	// The original game filename starts directly; the Launcher filename
+	// opens the interactive launcher.
+	char sModule[MAX_PATH];
+	DWORD nModuleLen = GetModuleFileName(NULL, sModule, sizeof(sModule));
+	const char* pName = (nModuleLen > 0 && nModuleLen < sizeof(sModule)) ? strrchr(sModule, '\\') : NULL;
+	m_bDirectLaunch = pName && _stricmp(pName + 1, "ContractJack.exe") == 0;
+	m_dwGameExitCode = ERROR_GEN_FAILURE;
+#endif
 	// Standard initialization
 	// If you are not using these features and wish to reduce the size
 	//  of your final executable, you should remove from the following
@@ -279,8 +289,21 @@ BOOL CLauncherApp::InitInstance()
 	m_Font.CreateFontIndirect(&lf);
 
 	CLauncherDlg dlg;
+#ifdef CJACK_MODERN
+	if(m_bDirectLaunch)
+	{
+		// No launcher window or first-run prompts. Use the same launch path
+		// as Play, including saved options, archives and extra arguments.
+		dlg.LaunchDirect();
+	}
+	else
+	{
+#endif
 	m_pMainWnd = &dlg;
 	int nResponse = dlg.DoModal();
+#ifdef CJACK_MODERN
+	}
+#endif
 
 	m_dwNumLauncherRuns++;
 
@@ -313,6 +336,13 @@ BOOL CLauncherApp::InitInstance()
 	return FALSE;
 }
 
+#ifdef CJACK_MODERN
+int CLauncherApp::ExitInstance()
+{
+	int nResult = CWinApp::ExitInstance();
+	return m_bDirectLaunch ? (int)m_dwGameExitCode : nResult;
+}
+#endif
 // ----------------------------------------------------------------------- //
 //
 //	ROUTINE:	CLauncherApp::MessageBox

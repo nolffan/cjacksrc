@@ -178,10 +178,18 @@ endef
 # objects are linked too: the others refer to the type information in them
 # (LNK1211 without).
 Z7 := $(findstring /Z7,$(CJACKSRC_CFLAGS))
-define binary
+define link_binary
 $(call tool,$(1),$(4) | wine-drives,\
     cd $(2) && { printf '%s\n' $(call q,$(CJACKSRC_LDFLAGS) $(3) /map:$(call ws,$(ROOT)/$(basename $(1))).map $(subst /,\,$(5) $(if $(Z7),$(6)))) > $(1:%=$(ROOT)/%).rsp; } && \
     $(ENV_GAME) $(WINE) $(LINK) '@$(call ws,$(ROOT)/$(1)).rsp')
+endef
+
+# Modern builds link both names from the same launcher objects. At startup
+# the original game filename selects direct launch; *Launcher.exe selects UI.
+MODERN_LAUNCHER := $(findstring CJACK_MODERN,$(CJACKSRC_CFLAGS))
+define binary
+$(call link_binary,$(1),$(2),$(3),$(4),$(5),$(6))
+$(if $(and $(MODERN_LAUNCHER),$(filter %/ContractJack.exe,$(1))),$(call link_binary,$(patsubst %.exe,%Launcher.exe,$(1)),$(2),$(subst ContractJack.exe,ContractJackLauncher.exe,$(3)),$(4),$(5),$(6)))
 endef
 
 # $(call custom,<outputs>,<input>,<project dir>,<commands>): a source's
@@ -220,6 +228,10 @@ WANTED += $$(filter $$(PROJECTS),$(subst $(comma), ,$(2)))
 endif
 endef
 $(foreach w,$(WORKSPACES),$(eval $(call workspace,$(firstword $(subst :, ,$(w))),$(lastword $(subst :, ,$(w))))))
+
+ifneq ($(MODERN_LAUNCHER),)
+Launcher: src/Game/built/Final/Launcher/ContractJackLauncher.exe
+endif
 
 .PHONY: all game
 all game: $(WANTED)
