@@ -642,6 +642,18 @@ test pad.
   sections in `Update`, `Render`, `ShowDrawSurface`, `UpdateObjects`;
   clientmgr.h; clientshell.cpp; engine_vars.cpp). Tested under Xvfb: the
   log and its summaries written, the parts adding up to the frame.
+* **EN-43: V-sync off in a window under Wine.** With `VSyncOnFlip 0`,
+  the renderer explicitly requests `D3DPRESENT_INTERVAL_IMMEDIATE` for
+  windows under Wine, including borderless full screen. Retail always
+  passed `DEFAULT` in a window, which Wine can synchronize to the display
+  even with `MaxFPS 0`. Native Direct3D 8 requires `DEFAULT` for a window
+  and keeps it. Device creation and reset use the same parameters.
+  From nolf2src's M-E62, checked against Contract J.A.C.K.'s renderer
+  (`src/Engine/runtime/render_a/src/sys/d3d/d3d_device.cpp`,
+  `SetPresentationParams`). Tested under Wine/Xvfb with 4x antialiasing:
+  the old build calls `wglSwapIntervalEXT(1)` with V-sync off; the new
+  one calls it with 0, and still uses 1 with V-sync on. M01S01 loads and
+  stays running. Xvfb cannot verify the physical display's frame rate.
 * **CL-40: Frame rate limit on the Display screen.** A "Frame rate limit"
   row under V Sync: 60, 120, 144, 240, None (`MaxFPS`, EN-40), 240 for a
   config without `MaxFPS`. A limit not on offer (one set by hand) shows as
