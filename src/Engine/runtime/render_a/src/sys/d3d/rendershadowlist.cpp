@@ -1391,5 +1391,6 @@ void CRenderShadowList::QueueShadow(ModelInstance* pInstance, const LTVector& vM
 //this will empty all shadows out of the list
 void CRenderShadowList::FlushShadows()
 {
-	m_cShadowList.clear();
+	// RETAIL: resize(0), not clear() (0x4ddbc0, called from d3d_DrawGlowModels)
+	m_cShadowList.resize(0);
 }

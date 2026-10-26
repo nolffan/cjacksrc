@@ -1122,6 +1122,27 @@ missed starts into extent-splits.csv):
 - the textured lightmap sections have no constructors now (round 2);
   watch the modern build for code that relied on them.
 
+**Round 8** (branch `engine3`, on master's e363f5d):
+- **Rotation check.** callcheck over both engine images: server.dll has
+  no WRONG call; Lithtech.exe's are the ICF-folded template families,
+  dsi_ClientSleep (SecuROM's Sleep, a false alarm) and
+  d3d_DrawGlowModels' FlushShadows (below). No rotation, quaternion,
+  matrix, tracker, prediction or camera function is unplaced or near
+  but these: **RotateWorldModel and MoveObject** (both images) had a
+  logic difference. CJ counts the objects standing on the mover from 0
+  and stores before counting (fear's tree starts at -1 and counts first,
+  which lets the 33rd rider write past the 32-entry array), and moves
+  them first to last where ours moved them last to first. Both are
+  identical now. MoveAttachment, SendAllObjectsUnguaranteed and
+  SetTransformMode differ only in registers and scheduling.
+- **The two unwritten** were not out-of-line resize copies of ours to
+  keep. They are CRenderShadowList::FlushShadows (0x4ddbc0) and
+  CRenderModelInfoList::Clear (0x50c600), which call `resize(0)` where
+  ours called `clear()`. That was callcheck's FlushShadows finding:
+  ours had matched an unrelated `_Tidy` at 0x4c2cb0. Both identical now.
+- Score: Lithtech.exe 6,884 identical, 0 unwritten, 333 unplaced;
+  server.dll 2,745, 0, 28.
+
 ### 7. apps
 
 `ContractJack.exe` and `ContractJackServer.exe` build from NOLF2's
