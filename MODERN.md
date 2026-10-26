@@ -599,6 +599,11 @@ test pad.
   `CLTReference` does). `build/tests/ltreference.cpp` checks ownership
   across copies, reassignment and destruction.
 
+* **EN-60: a music intensity out of range.** CLTDirectMusicMgr::
+  GetTransition checks the transition table's index too, as the 2006 tree
+  does, so an intensity the control file does not define falls back to the
+  first transition instead of reading past the table (`RETAIL_BUGS.md`;
+  src/Engine/runtime/kernel/src/sys/win/ltdirectmusic_impl.cpp).
 * **EN-40: the frame limiter.** The engine's frame limiter, `MaxFPS`, only
   works outside the final build (`cm_HandleMaxFPS` is in retail's
   Lithtech.exe, 0x40e6b0, but `CClientMgr::Update` calls it only under

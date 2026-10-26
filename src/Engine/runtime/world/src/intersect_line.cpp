@@ -17,7 +17,7 @@ struct RayStack
 
 
 // Tells if pPt is inside the convex poly.
-inline LTBOOL InsideConvex(WorldPoly *pPoly, LTVector *pPt)
+static LTBOOL InsideConvex(WorldPoly *pPoly, LTVector *pPt)
 {
 	LTPlane edgePlane;
 	float edgeDot;

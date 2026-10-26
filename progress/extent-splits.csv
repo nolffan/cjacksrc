@@ -266,3 +266,13 @@ Lithtech.exe,0x00487c20,CConCommandBox::Term (mov dword [ecx],0; ret): after the
 Lithtech.exe,0x004ee830,CModelShadowShader::~CModelShadowShader (stores the vtable 0x558cc4; ret): after the ret at 0x4ee825; enumerated inside the row at 0x4ee820
 Lithtech.exe,0x00512c00,a UI manager's destructor (stores the vtable 0x5592d8; ret): after the ret 4 at 0x512bf0; enumerated inside the row at 0x512bc0
 CShell.dll,0x10105810,CVehicleMgr::OnEnterWorld (a jmp to InitWorldData 0x101056e0) after the int3 padding that ends InitWorldData; called from CMoveMgr::OnEnterWorld (0x1002b2af)
+server.dll,0x1003cd30,CLTServer::CLTServer (stores the vtable 0x1006d430 and itself in the global at 0x1007c8f0; ret): after the jmp at 0x1003cd2c; enumerated inside the row at 0x1003ccf0, as in Lithtech.exe (0x46b7e0)
+server.dll,0x10039370,CLTServer::~CLTServer (stores CLTServer's vtable 0x1006d430; ret): enumerated inside the row at 0x10039310, as in Lithtech.exe (0x467e20)
+server.dll,0x100605a0,CRezMgr::GetRezFromPath (mov ecx,[ecx+0x44]; jmp CRezDir::GetRezFromPath 0x10060440): enumerated inside the row at 0x10060440, as in Lithtech.exe (0x4a20f0)
+server.dll,0x1005f570,a RezMgr member (add ecx,0x40; jmp CRezTypeHashTable::Find 0x10062200): after the ret at 0x1005f564; enumerated inside the row at 0x1005f48f, as in Lithtech.exe (0x4a10c0)
+server.dll,0x1005f580,CRezMgr::GetRootDir (mov eax,[ecx+0x44]; ret): after 0x1005f570; enumerated inside the row at 0x1005f48f, as in Lithtech.exe (0x4a10d0)
+server.dll,0x1005e690,LTMemTrackAllocEnd (dec the global at 0x1007ce28; ret): after a ret; enumerated inside the row at 0x1005e460, as in Lithtech.exe (0x4a00a0)
+server.dll,0x10045c20,udp_GetMaxPossiblePort (mov eax,0xffff; ret): enumerated inside the row at 0x10045ba0, as in Lithtech.exe (0x47a810)
+server.dll,0x10016eb0,LCriticalSection::IsValid (mov al,1; ret): lthread.obj's, after the ret 4 at 0x10016eab; enumerated inside the row at 0x10016e90
+server.dll,0x10016ef0,an LThread member (call 0x1001a710; xor eax,eax; ret): lthread.obj's, after the constructor-like stores ending at 0x10016eea; enumerated inside the row at 0x10016ee0
+server.dll,0x10045c30,an empty function (ret): after udp_GetMaxPossiblePort 0x10045c20 (mov eax,0xffff; ret); enumerated as one row with it
