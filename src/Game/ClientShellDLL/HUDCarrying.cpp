@@ -39,12 +39,12 @@ LTBOOL CHUDCarrying::Init()
 	m_hBodyCanCarry = g_pInterfaceResMgr->GetTexture("interface\\hud\\carry.dtx");
 
 	// RETAIL: 0x1005244b the chassis pieces' icons, by the pieces' ids.
+	ChassisPieceIcons icons;
 	ChassisButeMgr::PieceList::const_iterator iter = ChassisButeMgr::Instance( ).GetPieceList( ).begin( );
 	for( ; iter != ChassisButeMgr::Instance( ).GetPieceList( ).end( ); ++iter )
 	{
 		CHASSISPIECE const* pPiece = *iter;
 
-		ChassisPieceIcons icons;
 		icons.hCarrying = g_pInterfaceResMgr->GetTexture( pPiece->m_sCarryingIcon.c_str( ));
 		icons.hPickup = g_pInterfaceResMgr->GetTexture( pPiece->m_sPickupIcon.c_str( ));
 		m_ChassisPieceIcons.push_back( icons );

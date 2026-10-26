@@ -313,11 +313,10 @@ CButeMgr::CButeMgr()
 	m_ARangeBank.Init( 8, 0 );
 	m_SymTabItemBank.Init( 64, 0 );
 
-#ifndef _NOMFC
-	// RETAIL: the MFC build sets its attribute file name again, to an empty
-	// string (ContractJackServer.exe 0x411f63)
+	// RETAIL: every build sets its attribute file name again, to an empty
+	// string (ContractJackServer.exe 0x411f63, CShell.dll 0x10119123,
+	// Object.lto likewise)
 	m_sAttributeFilename = "";
-#endif
 }
 
 

@@ -1529,6 +1529,7 @@ void CTO2PlayerStats::ResetInventory()
 	}
 
 	m_Keys.Clear();
+	g_pHUDCarrying->ClearKeys();	// RETAIL: 0x100fca20
 }
 
 
