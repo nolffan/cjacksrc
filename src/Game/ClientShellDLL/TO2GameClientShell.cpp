@@ -83,14 +83,13 @@ LTRESULT CTO2GameClientShell::ProcessPacket(ILTMessage_Read *pMsg, uint8 senderA
 
 	// RETAIL: 0x100fa150. GameSpy's packets come to the game's socket: let
 	// the browser see them (its NAT negotiation and queries need them).
-	IGameSpyBrowser* pGameSpyBrowser = g_pClientMultiplayerMgr->GetGameSpyBrowser( );
-	if( pGameSpyBrowser )
+	if( g_pClientMultiplayerMgr->GetGameSpyBrowser( ))
 	{
 		uint32 nDataLen = pMsg->Size( ) / 8;
-		uint8* pData = ( uint8* )_alloca(( nDataLen + 3 ) & ~3 );
+		uint8* pData = ( uint8* )_alloca( nDataLen );
 		pMsg->ReadData( pData, nDataLen * 8 );
-		pGameSpyBrowser->HandleNetMessage( pData, nDataLen, senderAddr, senderPort );
-		pMsg->SeekTo( 0 );
+		g_pClientMultiplayerMgr->GetGameSpyBrowser( )->HandleNetMessage( pData, nDataLen, senderAddr, senderPort );
+		pMsg->Seek( 0 );	// RETAIL: 0x100fa1c9 (relative: the sub message below is absolute)
 	}
 
 	// Skip the engine-side portion of the message header

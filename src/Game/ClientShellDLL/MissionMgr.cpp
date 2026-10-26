@@ -213,15 +213,9 @@ bool CMissionMgr::FinishStartGameFromLevel()
 {
 	m_eStartGameState = eStartGameStarted;
 
-	// Make sure we have a server started.
-	if( !g_pClientMultiplayerMgr->StartClientServer( ))
-	{
-		g_pInterfaceMgr->LoadFailed( );
-		return false;
-	}
-
-	// Send the start game message.
-	if( !SendStartGameMessage( ))
+	// Make sure we have a server started, and send the start game message.
+	// RETAIL: 0x10089021: no LoadFailed when the server does not start.
+	if( !g_pClientMultiplayerMgr->StartClientServer( ) || !SendStartGameMessage( ))
 		return false;
 
 	// Tell the server to start with this level.
@@ -242,6 +236,15 @@ bool CMissionMgr::FinishStartGameFromLevel()
 // ----------------------------------------------------------------------- //
 bool CMissionMgr::StartGameFromQuickSave( )
 {
+	// RETAIL: 0x100889e9: the single player missions are loaded here, if
+	// another mission file is (not by the quickload key).
+	char const* pszMissionFile = g_pMissionButeMgr->GetAttributeFile( );
+	if( !pszMissionFile || stricmp( pszMissionFile, MISSION_DEFAULT_FILE ))
+	{
+		if( !g_pMissionButeMgr->Init( MISSION_DEFAULT_FILE ))
+			return false;
+	}
+
 	// Check if there was a save available.
 	if( !g_pClientSaveLoadMgr->QuickSaveExists( ))
 		return false;
@@ -967,6 +970,9 @@ bool CMissionMgr::SetLoadingLevel( )
 	// Clear the disconnect flags.
 	g_pInterfaceMgr->SetIntentionalDisconnect( false );
 
+	// RETAIL: 0x10088696: the level is no longer being exited.
+	m_bExitingLevel = false;
+
 	if (GS_LOADINGLEVEL == g_pInterfaceMgr->GetGameState())
 	{
 		g_pInterfaceMgr->UpdateLoadScreenInfo();
@@ -1050,6 +1056,10 @@ bool CMissionMgr::PreLoadWorld( char const* pszNewWorldName )
 	char szTmp[256];
 	SAFE_STRCPY(szTmp,pszNewWorldName);
 	strtok(szTmp,".");
+
+	// RETAIL: 0x1008888a: no world name, no world.
+	if( !szTmp[0] )
+		return false;
 
 	// Check if we already set ourselves up for this world.
 //	if( !m_sCurrentWorldName.IsEmpty( ) && m_sCurrentWorldName.CompareNoCase( szTmp ) == 0 )

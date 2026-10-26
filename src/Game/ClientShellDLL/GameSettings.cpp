@@ -73,7 +73,7 @@ LTBOOL CGameSettings::Init (ILTClient* pClientDE, CGameClientShell* pClientShell
 		SetFloatVar("SoundVolume",100.0f);
 
   	ImplementSoundVolume();
-	ImplementSoundQuality();
+	// RETAIL: 0x1004cda6: the sound is not initialized again here.
 
     return LTTRUE;
 }

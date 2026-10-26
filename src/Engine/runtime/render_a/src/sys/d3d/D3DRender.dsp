@@ -61,46 +61,57 @@ LIB32=link.exe -lib
 # Begin Source File
 
 SOURCE=.\d3d_device.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\common_init.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\d3d_renderstyleinterface.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\d3d_texture.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\d3d_init.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\d3d_device_wrapper.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\d3d_renderworld.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\d3d_draw.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\d3d_utils.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\d3d_shell.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\pixelshadermgr.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
@@ -110,6 +121,7 @@ SOURCE=.\screenglowmgr.cpp
 # Begin Source File
 
 SOURCE=.\d3dmeshrendobj_rigid.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
@@ -119,6 +131,7 @@ SOURCE=.\rendershadowlist.cpp
 # Begin Source File
 
 SOURCE=.\drawobjects.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
@@ -128,26 +141,32 @@ SOURCE=.\tagnodes.cpp
 # Begin Source File
 
 SOURCE=.\d3d_surface.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\memstats_world.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\d3d_renderblock.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\modelshadowshader.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\d3d_rendershader_dynamiclight.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\d3d_renderworld_occluder.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
@@ -157,139 +176,172 @@ SOURCE=.\texturescriptmgr.cpp
 # Begin Source File
 
 SOURCE=.\drawpolygrid.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\3d_ops.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\aabb.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\common_draw.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\common_stuff.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\d3d_drawsky.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\d3d_optimizedsurface.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\d3d_rendershader_glow.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\d3d_rendershader_gouraud.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\d3d_rendershader_gouraud_fullbright.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\d3d_rendershader_lightmap.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\d3d_renderstatemgr.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\d3d_renderstyle.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\d3d_viewparams.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\d3dmeshrendobj_skel.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\d3dmeshrendobj_vertanim.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
 SOURCE=..\shadows\d3dshadowtexture.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\devicelightlist.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\dirtyrect.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\draw_canvas.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\drawlight.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\drawlinesystem.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\drawmodel.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\drawparticles.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\drawparticles_A.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\drawsky.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\drawsprite.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\drawvolumeeffects.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\drawworldmodel.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\modeldebug.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\objectgroupmgr.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\relevantlightlist.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\rendererconsolevars.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\renderlight.cpp
-# ADD CPP /Yc"precompile.h"
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # Begin Source File
 
@@ -328,8 +380,13 @@ SOURCE=.\texturescriptinstance.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\precompile.cpp
+# ADD CPP /Yc"precompile.h"
+# End Source File
+# Begin Source File
+
 SOURCE=.\texturescriptinterpreter.cpp
-# ADD CPP /FI"precompile.h" /Yu"precompile.h"
+# SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # Begin Source File
 
@@ -339,6 +396,7 @@ SOURCE=.\texturescriptvarmgr.cpp
 # Begin Source File
 
 SOURCE=.\VertexBufferController.cpp
+# ADD CPP /Yu"precompile.h"
 # End Source File
 # End Group
 # End Target

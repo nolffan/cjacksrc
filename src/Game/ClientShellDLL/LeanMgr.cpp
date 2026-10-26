@@ -41,7 +41,7 @@
 // not at bodies.
 static bool LeanFilterFn( HOBJECT hObj, void *pUserData )
 {
-	uint32 dwFlags = 0;
+	uint32 dwFlags;
 	g_pCommonLT->GetObjectFlags( hObj, OFT_Flags, dwFlags );
 	if( !( dwFlags & FLAG_RAYHIT ))
 		return false;

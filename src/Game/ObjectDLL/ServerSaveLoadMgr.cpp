@@ -471,7 +471,11 @@ bool CServerSaveLoadMgr::CheckpointLoad( )
 	if( !CheckpointSaveExists( ))
 		return false;
 
-	return LoadSaveFile( CHECKPOINT_INIKEY, GetCheckpointSaveDir( ), GetCheckpointSaveFile( ));
+	// Load the save file.
+	if( !LoadSaveFile( CHECKPOINT_INIKEY, GetCheckpointSaveDir( ), GetCheckpointSaveFile( )))
+		return false;
+
+	return true;
 }
 
 // ----------------------------------------------------------------------- //
@@ -488,15 +492,10 @@ bool CServerSaveLoadMgr::CheckpointSave( int nMission, int nLevel )
 	if( !CanSaveGame())
 		return false;
 
-	// Make sure all the folders are setup.
+	// Make sure all the folders are setup.  RETAIL: Object 0x10140ea6: the
+	// checkpoint's own folder is made when the working dir is copied in.
 	if( !BuildProfileSaveDir( ))
 		return false;
-
-	if( !CWinUtil::DirExist( GetCheckpointSaveDir( ) ))
-	{
-		if( !CWinUtil::CreateDir( GetCheckpointSaveDir( ) ))
-			return false;
-	}
 
 	m_sSaveGameDir = GetCheckpointSaveDir( );
 	m_sSaveGameFile = GetCheckpointSaveFile( );
@@ -1304,6 +1303,15 @@ bool CServerSaveLoadMgr::FinishSaveGame( )
 
 		// Log that we made the save.
 		WriteSaveINI( m_sSaveGameKey, m_sSaveGameTitle, g_pGameServerShell->GetCurLevel( ));
+
+		// RETAIL: Object 0x10140622: a reload save (a level's start)
+		// makes the checkpoint stale.
+		if( !_stricmp( m_sSaveGameKey, RELOADLEVEL_INIKEY ))
+		{
+			DeleteFile( GetCheckpointSaveFile( ));
+			CWinUtil::RemoveDir( GetCheckpointSaveDir( ));
+			WriteSaveINI( CHECKPOINT_INIKEY, "", "" );
+		}
 	}
 
 

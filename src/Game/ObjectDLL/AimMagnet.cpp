@@ -170,9 +170,9 @@ void AimMagnet::Save( ILTMessage_Write *pMsg, uint32 dwSaveFlags )
 
 LTBOOL AimMagnet::ReadProp( ObjectCreateStruct *pStruct )
 {
-	if( !pStruct ) return LTFALSE;
-
 	GenericProp genProp;
+
+	if( !pStruct ) return LTFALSE;
 
 	if( g_pLTServer->GetPropGeneric( "Target", &genProp ) == LT_OK )
 	{
@@ -243,19 +243,13 @@ void AimMagnet::ResolveTarget( )
 	if( FindNamedObject( m_sTargetName.c_str( ), hTarget ) != LT_OK )
 	{
 		// Nothing to follow, so nothing to pull to.
-		if( m_hTarget )
-		{
-			m_hTarget = LTNULL;
-		}
+		m_hTarget = LTNULL;
 
 		g_pLTServer->RemoveObject( m_hObject );
 		return;
 	}
 
-	if( m_hTarget != hTarget )
-	{
-		m_hTarget = hTarget;
-	}
+	m_hTarget = hTarget;
 
 	GameBase* pTarget = dynamic_cast< GameBase* >( g_pLTServer->HandleToObject( m_hTarget ));
 	if( pTarget && pTarget->CanTransition( ))
@@ -322,11 +316,7 @@ bool AimMagnet::OnTrigger( HOBJECT hSender, const CParsedMsg &cMsg )
 		if( cMsg.GetArgCount( ) > 1 )
 		{
 			m_sTargetName = cMsg.GetArg( 1 ).c_str( );
-
-			if( m_hTarget )
-			{
-				m_hTarget = LTNULL;
-			}
+			m_hTarget = LTNULL;
 
 			ResolveTarget( );
 		}
@@ -447,7 +437,8 @@ uint32 AimMagnet::EngineMessageFn( uint32 messageID, void *pData, LTFLOAT fData 
 //
 // ----------------------------------------------------------------------- //
 
-AimMagnet::AimMagnet() : GameBase( OT_NORMAL )
+AimMagnet::AimMagnet() : GameBase( OT_NORMAL ),
+	m_hTarget( ( HOBJECT )LTNULL )	// RETAIL: Object 0x10059f2a links it to nothing
 {
 	MakeTransitionable();
 

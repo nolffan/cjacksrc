@@ -761,11 +761,7 @@ void CInterfaceMgr::Term()
 		m_hSound = LTNULL;
 	}
 
-	if( m_pGameSpyPatchInfo )
-	{
-		IGameSpyPatchInfo::Delete( m_pGameSpyPatchInfo );
-		m_pGameSpyPatchInfo = LTNULL;
-	}
+	// RETAIL: 0x100639c0: the patch query is left to UpdatePatchInfo.
 
 	// Unititialized.
 	m_bInitialized = false;
@@ -1286,6 +1282,10 @@ void CInterfaceMgr::UpdateLoadingLevelState()
 {
 	if (g_pPlayerMgr->IsPlayerInWorld())
 	{
+		// RETAIL: 0x10069bcc: not while the last level is still being left.
+		if( g_pMissionMgr->IsExitingLevel( ))
+			return;
+
 		// Make sure the loading screen isn't busy
 		m_LoadingScreen.Pause();
 		// Let the game client shell do stuff that's time consuming so we're not stuck on a black screen
@@ -2487,7 +2487,8 @@ LTBOOL CInterfaceMgr::OnEvent(uint32 dwEventID, uint32 dwParam)
 			if( IsMultiplayerGame( ))
 				m_ClientInfo.RemoveAllClients();
 
-			if ( g_pClientMultiplayerMgr->IsConnectedToRemoteServer( ))
+			// RETAIL: 0x1006a1d6: any disconnection we did not ask for.
+			if ( !m_bIntentionalDisconnect )
 			{
 				Disconnected(dwParam);
 			}
@@ -5992,17 +5993,21 @@ void CInterfaceMgr::Disconnected(uint32 nDisconnectFlag)
 		case eDisconnect_WrongPassword:
 			// RETAIL: CShell 0x1006983b: back to the multiplayer screen.
 			nMsgId = IDS_NETERR_WRONGPASS;
+			destination = SCREEN_ID_MULTI;
 			break;
 
 		// RETAIL: CShell 0x10069849: Contract J.A.C.K.'s handshake failures.
-		case eDisconnect_BadFiles:
-			nMsgId = IDS_CJ_BADFILES;
-			break;
 		case eDisconnect_CDKeyRejected:
 			nMsgId = IDS_CJ_CDKEYREJECTED;
+			destination = SCREEN_ID_MULTI;
+			break;
+		case eDisconnect_BadFiles:
+			nMsgId = IDS_CJ_BADFILES;
+			destination = SCREEN_ID_MULTI;
 			break;
 		case eDisconnect_Banned:
 			nMsgId = IDS_CJ_BANNED;
+			destination = SCREEN_ID_MULTI;
 			break;
 
 		case 0 : // Avoid the warning..

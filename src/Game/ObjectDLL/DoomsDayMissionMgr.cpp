@@ -274,13 +274,13 @@ bool CDoomsDayMissionMgr::HandleMultiplayerOptions( HCLIENT hSender, ILTMessage_
 
 	sms.m_bUseSkills = false;
 	sms.m_bFriendlyFire = sgo.GetDoomsday().m_bFriendlyFire;
-	sms.m_bWeaponsStay = sgo.GetDoomsday().m_bWeaponsStay;
 	sms.m_nRunSpeed = sgo.GetDoomsday().m_nRunSpeed;
 	sms.m_nScoreLimit = 0;
 	sms.m_nTimeLimit = sgo.GetDoomsday().m_nTimeLimit;
 	sms.m_nRounds = sgo.GetDoomsday().m_nRounds;
 	sms.m_nFragScore = sgo.GetDoomsday().m_nFragScore;
 	sms.m_nReviveScore = sgo.GetDoomsday().m_nRevivingScore;
+	sms.m_bWeaponsStay = sgo.GetDoomsday().m_bWeaponsStay;	// RETAIL: last
 
 	SetServerSettings(sms);
 

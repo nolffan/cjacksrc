@@ -50,6 +50,9 @@ TARGETS, one dict per shipped binary, in the README's order:
              cited address of an unmatched function is `attempted`
   cited_src  the source trees whose comments cite it (default CITED_SRC):
              per target, because the DLLs share the 0x10000000 range
+  unreadable a regex on our `module:symbol` names: functions of ours whose shipped
+             counterparts lie in `encrypted` (tools/progress.py): listed
+             as `encrypted`, neither placed nor unplaced
   purecall   the shipped address of the CRT's `_purecall` (every abstract
              vtable's filler), where tools/vtabcheck.py cannot find its
              `jmp [IAT]` thunk itself
@@ -129,6 +132,21 @@ TARGETS = [
          # the CRT's `jmp [_purecall]` thunk is in the encrypted pages (the
          # demo's, at retail's address)
          purecall=0x00538534,
+         # Ours whose shipped counterparts are in the encrypted pages,
+         # listed `encrypted`, neither placed nor unplaced: nothing there
+         # can be compared. Read in the single-player demo's plaintext,
+         # placed at retail's addresses (tools/demoimports.py plain):
+         # - the .text$x exception funclets (`mov eax, <FuncInfo>; jmp
+         #   __CxxFrameHandler`), 0x538c00..0x539a80 after the import
+         #   thunks, 198 of them, as ours follow our import thunks
+         #   (0x537ff0..0x538b40 in our .map);
+         # - Lib_Lith's basehash.obj and virtlist.obj, linked after D3DX
+         #   (0x5380b0..0x538414, before msvcprt's operator new[]): retail's
+         #   RezMgr calls them there (CRezDir's constructor 0x4a15c0 calls
+         #   CBaseHash's at 0x538240, CRezFileSingleFile's 0x4a4480
+         #   InsertFirst at 0x5382c0), and all 14 of their functions match
+         #   ours byte for byte in the plaintext
+         unreadable=r":__ehhandler\$|^Lib_Lith\((basehash|virtlist)\.obj\):",
          # D3DX, statically linked from the DirectX 8.1 SDK's d3dx8.lib
          # (cl 13.00.9178: the Rich header's 68 objects of tool 0x1d), as in
          # NOLF2's engine, after the engine's libraries. A few of its inline
@@ -160,7 +178,12 @@ TARGETS = [
          # without dllimport), a `jmp` to the next instruction (0x10008686),
          # msvcprt's operator new (0x1000868b) and msvcrt.lib from __aulldiv
          # (0x100086b0)
-         app=[(0x10001000, 0x10008632)]),
+         app=[(0x10001000, 0x10008632)],
+         # .text$x from the first `mov eax, <FuncInfo>; jmp
+         # ___CxxFrameHandler` (0x10008ca0, s_dx8.obj's five), then
+         # .text$yc and .text$yd, the objects' initializers and atexit
+         # terminators, to the end of .text
+         compiler_output=[(0x10008ca0, 0x10009061)]),
     dict(label="GameSpy.dll", what="the GameSpy services", kind="image",
          shipped=REFERENCE + "/GameSpy.dll", stem="GameSpy",
          # src/Game/Libs/GameSpy/GameSpy.dsw: Monolith's Game/Libs/GameSpy
@@ -180,6 +203,11 @@ TARGETS = [
          # GameSpy's SDK and WONAPI: third-party, listed, not counted, and
          # our builds of them are left out of our side (third_party)
          middleware=[(0x10006390, 0x10014e5e)],
+         # .text$x after the import thunks: the wrapper's and WONAPI's
+         # exception funclets (`mov eax, <FuncInfo>; jmp
+         # ___CxxFrameHandler`, the first at 0x100153d0) and unwind stubs,
+         # then the initializers, to the end of .text
+         compiler_output=[(0x100153d0, 0x10015507)],
          third_party=["darray.obj", "gcdkeyc.obj", "gcdkeys.obj",
                       "ghttpBuffer.obj", "ghttpCallbacks.obj", "ghttpCommon.obj",
                       "ghttpConnection.obj", "ghttpMain.obj", "ghttpPost.obj",
@@ -207,7 +235,9 @@ TARGETS = [
          # (0x40c630), the ATL module's (0x40c63a)
          built="src/Game/built/Final/Launcher/ContractJack.exe", optional=True,
          app=[(0x00401000, 0x0040b8dc), (0x0040c530, 0x0040c603),
-              (0x0040c630, 0x0040c63a)]),
+              (0x0040c630, 0x0040c63a)],
+         # .text$x: CustomizeDlg.obj's two exception funclets
+         compiler_output=[(0x0040c510, 0x0040c530)]),
     dict(label="ContractJackServer.exe", what="the dedicated server", kind="image",
          shipped=REFERENCE + "/ContractJackServer.exe", stem="ContractJackServer",
          # src/Game/TO2.dsw (ServerApp). As in our map: the server's objects
@@ -223,7 +253,11 @@ TARGETS = [
          # atexit destructors (0x415770..0x4158c9) before the ATL module's
          built="src/Game/built/Final/ServerApp/ContractJackServer.exe", optional=True,
          app=[(0x00401000, 0x0041441c), (0x004154c0, 0x00415746),
-              (0x00415770, 0x004158ca)]),
+              (0x00415770, 0x004158ca)],
+         # .text$x: ButeMgr.obj's exception funclets (25 `mov eax,
+         # <FuncInfo>; jmp ___CxxFrameHandler`) and unwind stubs, up to
+         # the initializers
+         compiler_output=[(0x00415180, 0x004154c0)]),
     # ---- the game ------------------------------------------------------
     dict(label="CShell.dll", what="the game: client", kind="image",
          shipped=REFERENCE + "/CShell.dll", stem="CShell",
@@ -366,6 +400,11 @@ TARGETS = [
              # (0x8b4) and spears (0x900), 0x10095bf0 sends BFX_CAN_CARRY
              "?RemovePowerupObjects@Body@@QAEXXZ": 0x10093180,
              "?SetCanCarry@Body@@UAEX_N@Z": 0x10095bf0,
+             # by size these two swapped: 0x100caff0 prints
+             # "EventCounter::Increment(): (%s) %s" and increments,
+             # 0x100cb120 prints "...Decrement()..." and stops at zero
+             "?Increment@EventCounter@@AAEXXZ": 0x100caff0,
+             "?Decrement@EventCounter@@AAEXXZ": 0x100cb120,
          }),
     dict(label="ClientFx.fxd", what="the game: client effects", kind="image",
          shipped=REFERENCE + "/ClientFx.fxd", stem="ClientFx",
@@ -375,7 +414,12 @@ TARGETS = [
          # starts, with newaop.obj (operator new[], a 5-byte jmp at
          # 0x1001b46b), newop.obj (0x1001b470), and libcmt.lib from
          # 0x1001b5f3
-         app=[(0x10001000, 0x1001b46b)]),
+         app=[(0x10001000, 0x1001b46b)],
+         # the game objects' .text$x (exception funclets from 0x100277d0,
+         # lightningfx.obj's, jumping to ___CxxFrameHandler 0x1001bf16),
+         # .text$yc and .text$yd (initializers, atexit registrations and
+         # terminators) after libcmt.lib, to the end of .text
+         compiler_output=[(0x100277d0, 0x10027c6a)]),
     dict(label="CRes.dll", what="the game's client resources",
          kind="resources", shipped=REFERENCE + "/CRes.dll", stem="CRes",
          built="src/Game/built/Final/ClientRes/TO2/CRes.dll"),

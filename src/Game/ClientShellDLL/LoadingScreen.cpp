@@ -819,8 +819,7 @@ LTBOOL CLoadingScreen::Update()
 
 LTBOOL CLoadingScreen::Show(LTBOOL bRun)
 {
-	if (bRun && !GetConsoleInt("DynamicLoadScreen",1))
-		bRun = LTFALSE;
+	// RETAIL: 0x1007fd00: no DynamicLoadScreen console variable.
 	// Make sure we're in the correct state
 	if (m_eCurState == STATE_NONE)
 	{

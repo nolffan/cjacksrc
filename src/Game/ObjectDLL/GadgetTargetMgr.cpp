@@ -292,10 +292,10 @@ GADGETTARGET::~GADGETTARGET()
 	debug_deletea( szLight2FileName );
 	debug_deletea( szLight1SocketName );
 	debug_deletea( szLight2SocketName );
-	debug_deletea( szAmmoType );
 	debug_deletea( szDebrisType );
 	debug_deletea( szDisablingSnd );
 	debug_deletea( szDisabledSnd );
+	debug_deletea( szAmmoType );	// RETAIL: Object 0x100d7344, last
 }	
 
 

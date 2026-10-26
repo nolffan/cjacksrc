@@ -25,9 +25,10 @@ struct CHASSISCREATESTRUCT : public SFXCREATESTRUCT
 
 inline CHASSISCREATESTRUCT::CHASSISCREATESTRUCT()
 {
+	// RETAIL: 0x100e3340
 	nTeam = INVALID_TEAM;
-	fDropZoneRadius = 0.0f;
-	nActivateType = 0;
+	fDropZoneRadius = 64.0f;
+	nActivateType = (uint8)-1;
 }
 
 class ChassisFX : public CSpecialFX

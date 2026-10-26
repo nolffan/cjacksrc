@@ -593,9 +593,11 @@ test pad.
   reference. Its implicit copies only copied the pointer, so
   `CPlayerMgr::UpdatePlayerInfo`'s saved messages outlived their references
   and `CPlayerMgr::Term` called into freed memory on exit after gameplay.
-  The modern build supplies a copy constructor and copy assignment;
-  legacy keeps its existing implementation. `build/tests/ltreference.cpp`
-  checks ownership across copies, reassignment and destruction.
+  The modern build supplies a copy constructor; the copy assignment is
+  retail's and both builds have it (retail's UpdatePlayerInfo releases and
+  references its saved messages, CShell 0x1009fbc5, as the Jupiter SDK's
+  `CLTReference` does). `build/tests/ltreference.cpp` checks ownership
+  across copies, reassignment and destruction.
 
 * **EN-40: the frame limiter.** The engine's frame limiter, `MaxFPS`, only
   works outside the final build (`cm_HandleMaxFPS` is in retail's
@@ -754,6 +756,11 @@ test pad.
   shorter than 10 ms, so this is the same as retail's there; it keeps the
   moods right whatever the tick. As nolf2src's M-G30 (src/Game/ObjectDLL/
   MusicMgr.cpp, .h `DoMoodFor`, AIState.cpp `UpdateMusic`). Not measured.
+
+* **CL-50: the end-of-mission screen without a mission record.** The
+  secrets line tests the mission record before reading its number of
+  secrets, as the mission's name does (`RETAIL_BUGS.md`;
+  src/Game/ClientShellDLL/ScreenEndMission.cpp). Not tested in a run.
 
 How EN-40 to CL-46 were measured: a temporary per-frame log (the player's
 position, speed and control flags, the camera, the client and game times;

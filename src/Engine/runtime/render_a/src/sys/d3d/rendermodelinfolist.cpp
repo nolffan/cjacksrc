@@ -50,7 +50,8 @@ void CRenderModelInfoList::FreeListMemory()
 //clears the list of all the information it has stored
 void CRenderModelInfoList::Clear()
 {
-	m_cInfoList.clear();
+	// RETAIL: resize(0), not clear() (0x50c600, tail-called from d3d_ModelPreFrame)
+	m_cInfoList.resize(0);
 }
 
 //gets the number of models that are queued up

@@ -711,7 +711,7 @@ CMDMGR_BEGIN_REGISTER_CLASS( CPlayerObj )
 	CMDMGR_ADD_MSG( OPTION,			-1,		ValidateObjectiveMsg,	"OPTION <action> <objective id>" )
 	CMDMGR_ADD_MSG( PARAMETER,		-1,		ValidateObjectiveMsg,	"PARAMETER <action> <objective id>" )
 	CMDMGR_ADD_MSG( KEY,			-1,		ValidateKeyMsg,			"KEY <action> <key id>" )
-	CMDMGR_ADD_MSG( TRANSMISSION,	-1,		ValidateTransmissionMsg,"TRANSMISSION <transmission id> [ActivePlayerComm] [TeamNumber]" )
+	CMDMGR_ADD_MSG( TRANSMISSION,	-1,		ValidateTransmissionMsg,"TRANSMISSION <transmission id> [ActivePlayerComm] [TeamNumber] [SoundVoiceId]" )
 	CMDMGR_ADD_MSG( CREDITS,		2,		ValidateCreditsMsg,		"CREDITS <action>" )
 	CMDMGR_ADD_MSG( INTEL,			-1,		ValidateIntelMsg,		"INTEL <text id> <popup id> [intel] [show]" )
 	CMDMGR_ADD_MSG( FADEIN,			2,		NULL,					"FADEIN <time>" )
@@ -745,6 +745,9 @@ CMDMGR_BEGIN_REGISTER_CLASS( CPlayerObj )
 	CMDMGR_ADD_MSG( WAKEUP,			1,		NULL,					"WAKEUP" )
 	CMDMGR_ADD_MSG( DROPBODY,		1,		NULL,					"DROPBODY" )
 	CMDMGR_ADD_MSG( SCORE,			2,		NULL,					"SCORE <+/-amount>" )
+	// RETAIL: Object .data 0x10227da8: Contract J.A.C.K.'s two.
+	CMDMGR_ADD_MSG( SECRET,			1,		NULL,					"SECRET" )
+	CMDMGR_ADD_MSG( CHANGEMODEL,	2,		NULL,					"ChangeModel <modelname>" )
 
 CMDMGR_END_REGISTER_CLASS( CPlayerObj, CCharacter )
 
@@ -857,7 +860,7 @@ CPlayerObj::CPlayerObj()
 
 	m_nRespawnCount  = 0;
 
-	m_bHasDoneHandshake = LTFALSE;
+	// RETAIL: Object 0x101148b9 clears the respawn count only: m_bHasDoneHandshake (unused) is never set.
 
 	m_eSoundPriority = SOUNDPRIORITY_PLAYER_HIGH;
 
@@ -1027,11 +1030,11 @@ uint32 CPlayerObj::EngineMessageFn(uint32 messageID, void *pData, LTFLOAT fData)
 				ObjectCreateStruct* pStruct = (ObjectCreateStruct*)pData;
 				if (pStruct)
 				{
-					// RETAIL: Object 0x10111b73: special non-solid only in
+					// RETAIL: Object 0x10111b73: server dims only in
 					// single player.
-					pStruct->m_Flags2 |= FLAG2_PLAYERCOLLIDE | FLAG2_SERVERDIMS;
+					pStruct->m_Flags2 |= FLAG2_PLAYERCOLLIDE | FLAG2_SPECIALNONSOLID;
 					if( !IsMultiplayerGame( ))
-						pStruct->m_Flags2 |= FLAG2_SPECIALNONSOLID;
+						pStruct->m_Flags2 |= FLAG2_SERVERDIMS;
 				}
 
 				uint32 dwRet = CCharacter::EngineMessageFn(messageID, pData, fData);
@@ -1885,14 +1888,16 @@ bool CPlayerObj::HandleOverlayMessage(const CParsedMsg &cMsg)
 		nMsg = 1;
 		m_Overlays.insert(nId);
 	}
-	else
-		return true;
 
-	CAutoMessage cClientMsg;
-	cClientMsg.Writeuint8(MID_PLAYER_OVERLAY);
-	cClientMsg.Writeuint8(nId);
-	cClientMsg.Writeuint8(nMsg);
-	g_pLTServer->SendToClient(cClientMsg.Read(), GetClient( ), MESSAGE_GUARANTEED);
+	if(nMsg < 255)
+	{
+
+		CAutoMessage cClientMsg;
+		cClientMsg.Writeuint8(MID_PLAYER_OVERLAY);
+		cClientMsg.Writeuint8(nId);
+		cClientMsg.Writeuint8(nMsg);
+		g_pLTServer->SendToClient(cClientMsg.Read(), GetClient( ), MESSAGE_GUARANTEED);
+	}
 
     return true;
 }
@@ -1909,9 +1914,11 @@ void CPlayerObj::SaveOverlays( ILTMessage_Write *pMsg )
 {
 	pMsg->Writeuint16(( uint16 )m_Overlays.size( ));
 
-	for( OverlaySet::iterator iter = m_Overlays.begin( ); iter != m_Overlays.end( ); ++iter )
+	OverlaySet::iterator iter = m_Overlays.begin( );
+	while( iter != m_Overlays.end( ))
 	{
 		pMsg->Writeuint8( *iter );
+		iter++;
 	}
 }
 

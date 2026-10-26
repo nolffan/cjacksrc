@@ -60,6 +60,7 @@ void CTeam::Init(uint8 nID, ILTMessage_Read *pMsg)
 {
 	m_nID = nID;
 	m_players.clear();
+	m_bAttacking = false;	// RETAIL: Object 0x101528a5
 	ReadData(pMsg);
 }
 

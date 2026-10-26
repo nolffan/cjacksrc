@@ -85,3 +85,6 @@ addr,reason
 0x0045098b,NOT A FUNCTION: interior block of CPlayerMover::Collide (0x004505d0): its loop's back edge and epilogue, split from it at the jump target
 0x004090eb,NOT A FUNCTION: interior block of ci_GetGameMode (0x004090d0): its `*pMode = GAMEMODE_NONE` branch; input_GetManager matched it only through the masked relocation
 0x0054128b,NOT A FUNCTION: mid-instruction inside the initializer at 0x541280 (flds; fdivs 0x593e44 at 0x541286; fstps; ret): a stray value in SecuROM's .obfzv section (at 0x657684) points at it and split its extent
+0x00541498,NOT A FUNCTION: interior block of the static initializer at 0x00541490 (an operand byte of its fmuls)
+0x00541b3a,NOT A FUNCTION: interior block of the static initializer at 0x00541b30 (an operand byte of its fstps)
+0x005422b2,NOT A FUNCTION: interior block of the static initializer at 0x005422a0 (its ret)

@@ -579,6 +579,84 @@ dedicated server (package 7).
 - **Found.** Under Wine, VC 7.1's compiler spins instead of exiting after
   a fatal error (a missing #include, C1020, ...): out-of-tree runs use a
   watchdog that kills a compile after ten minutes.
+- **Nears and the small binaries' unplaced (round 3, batch 1).**
+  - Logic put back to retail's: the projectile's rotation goes
+    unguaranteed with its position (NETFLAG_ROTUNGUARANTEED,
+    InitialUpdate); the player's precreate flags are PLAYERCOLLIDE |
+    SPECIALNONSOLID, SERVERDIMS in single player only (they were
+    swapped); RESETINVENTORY drops every weapon and clears the ammo
+    again (CPlayerAttachments::ResetAllWeapons is CWeapons::Reset, as
+    ResetInventory 0x10110462 shows: 0x10114fb0, which the earlier fix
+    read as it, is DeselectWeapon); the prone attack state's destructor
+    stands the AI's hit box up (SetLyingDown(false)); CheckBody forgets
+    the stimulus while it ignores bodies; GunMount's load leaves an
+    unknown firing state alone; the transition save passes no save flags;
+    the trigger plugin's PlayerKey list is the key manager's own hook.
+  - Command tables, all 130 classes against retail's (CMDMGR class
+    descriptions): CCharacter has MOVETOFLOOR, CPlayerObj SECRET and
+    CHANGEMODEL (and TRANSMISSION's syntax names the sound), CAI's DRIVE
+    is registered with 2 arguments after DESTROY, WorldProperties'
+    ADDTEAMSCORE with 2 (WorldEdit's check only).
+  - KeyFramer's offsets (CreateObjectList) and its key loading are
+    retail's logic; what is left there is block order and registers.
+    UpdateHeatSeeking's steering is retail's too (the character loop
+    normalizes with Norm()).
+  - Pairing: EventCounter's Increment/Decrement were swapped (own_symbols).
+    GunMount keeps an uncalled StopFiring (0x100e4c60, our name).
+  - Compiler output: `compiler_output` ranges for ClientFx.fxd, SndDrv.dll,
+    GameSpy.dll, ContractJack.exe and ContractJackServer.exe; the real
+    functions are splits of retail rows (CountMS, ~WaveFile, ~CSample,
+    LTMemInit, PublicAddressCallback, GetRandom, ~CReservedWord,
+    ~pair<CReservedWord>). ClientFx's CPlaySoundFX and
+    CPlayRandomSoundFX have no SuspendedUpdate in retail (their vtables
+    hold CBaseFX's, 0x10001080): the override came with the Build 69
+    merge and is gone. All five are at 0 unplaced.
+- **Batch 2.**
+  - Logic put back to retail's: OnClientEnterWorld's weapon-loop
+    catch-up walks the client references (GetNextClientRef,
+    GetClientRefObject), not the clients' user data; a reload save makes
+    the checkpoint stale (FinishSaveGame deletes Checkpoint.sav and its
+    folder and clears the CheckpointSave key, 0x10140622), and
+    CheckpointSave leaves the folder to the working dir's copy; the
+    sniper leaves the node it used last out of its view-node search
+    (Block/UnblockAttractorNodeFromSearch); SetupDisabledState plays
+    the time bomb's client FX before the activation and the countdown;
+    ClientFx's bouncy chunks forget their impact sound in Term, and a
+    particle's flags are read before it is removed.
+  - ClientFx.fxd's four nears are identical. GameSpy.dll's five are
+    block order and registers (IsValidKeyName, FromWideString,
+    ToWideString closer, GetSecretKey's strings checked, SBCallback's
+    dead store of the game-name match not reproduced).
+  - Left in Object.lto: register allocation and block order, and
+    inlining choices retail made differently (CAutoMessage's
+    constructor in HandleOverlayMessage and DoomsDayPiece::OnDrop,
+    SetGameOption<float> in HandleSetGameOption, ObjectCreateStruct's
+    destructor in SetupDisabledState, CTimer::Start). EventCounter's
+    debug name (setne/dec/and) was not reproduced. The heat-seeking
+    sort's instantiations still need the predicate's shape.
+
+- **Round 4 (nears' source shapes).**
+  - Identical now: SaveOverlays (a `while` loop with `iter++` lets
+    `_Inc` expand), CheckpointLoad (ReloadLevel's `if (!Load) return
+    false; return true;` shape; it had been paired with ReloadLevel's
+    twin), CAIHumanStateCharge's constructor (no m_vStartPos init),
+    AimMagnet's OnTrigger and ReadProp, CTeam::Init(msg) (clears the
+    attacking flag, Shared).
+  - Closer: HandleOverlayMessage (NOLF2's `if (nMsg < 255)` around the
+    message, which spends the inline budget so CAutoMessage's
+    constructor stays a call), DoomsDayPiece::OnDrop (`if (!bComplete)`
+    around the message, the same effect), Explosion::IsBlocked
+    (IntersectSegment's bool kept, the start point recomputed for the
+    second query), BootClients (a CPrint per branch).
+  - Tried, no source lever found: ProcessHandshake (str_Hash,
+    MessUp32BitValue and two CAutoMessage constructors out of line in
+    retail), HandleSetGameOption (SetGameOption<float>),
+    SetupDisabledState (CTimer::Start inline in retail), the Search
+    state's two "give up" blocks (retail keeps both), AimMagnet's switch
+    layout, ChassisButeMgr::Init's rotated loop, UpdateClientCDKeyChecks'
+    block order, GunMount's UpdateFiring; GameSpy's five (IsValidKeyName's
+    block order, SBCallback's stored bool, FromWideString,
+    GetSecretKey's scheduling).
 
 ### 4b. layouts
 
@@ -1122,6 +1200,80 @@ missed starts into extent-splits.csv):
 - the textured lightmap sections have no constructors now (round 2);
   watch the modern build for code that relied on them.
 
+**Round 8** (branch `engine3`, on master's e363f5d):
+- **Rotation check.** callcheck over both engine images: server.dll has
+  no WRONG call; Lithtech.exe's are the ICF-folded template families,
+  dsi_ClientSleep (SecuROM's Sleep, a false alarm) and
+  d3d_DrawGlowModels' FlushShadows (below). No rotation, quaternion,
+  matrix, tracker, prediction or camera function is unplaced or near
+  but these: **RotateWorldModel and MoveObject** (both images) had a
+  logic difference. CJ counts the objects standing on the mover from 0
+  and stores before counting (fear's tree starts at -1 and counts first,
+  which lets the 33rd rider write past the 32-entry array), and moves
+  them first to last where ours moved them last to first. Both are
+  identical now. MoveAttachment, SendAllObjectsUnguaranteed and
+  SetTransformMode differ only in registers and scheduling.
+- **The two unwritten** were not out-of-line resize copies of ours to
+  keep. They are CRenderShadowList::FlushShadows (0x4ddbc0) and
+  CRenderModelInfoList::Clear (0x50c600), which call `resize(0)` where
+  ours called `clear()`. That was callcheck's FlushShadows finding:
+  ours had matched an unrelated `_Tidy` at 0x4c2cb0. Both identical now.
+- Score after the first batch: Lithtech.exe 6,884 identical, 0
+  unwritten, 333 unplaced; server.dll 2,745, 0, 28.
+- **Where retail's math_phys sets are.** Aligning the initializer
+  sections (holders, strings, the five-function PI sets) and the .data
+  each set writes corrects round 4. Retail's 53 sets in Lithtech.exe
+  are: five in the main project (ltmodule, ltobjref, world_blind_object_data,
+  icommandlineargs, server_iltmodel; ltobjref's set writes 0x5880ac..
+  0x5880c8 around its ILTServer holder at 0x5880b4), ltmem's four and
+  RezMgr's two (their data spaced as ours: +0x1c, +0xb8, +0x84), the
+  sound loader's one, **forty in Lib_UI** (0x599ab8..0x59a14c, after the
+  sound loader's 0x5996a0), and **one in D3DRender** (0x593e44, just
+  before texturescriptinterpreter's holders). So D3DRender was built
+  through precompile.h throughout (made by a precompile.cpp stub, the
+  2006 tree's, which no symbol pulls from the library, so its set never
+  links) except texturescriptinterpreter, which includes its own header
+  first; Lib_UI was not precompiled at all; and Lithtech's bdefs.h is made
+  by world_blind_object_data.cpp (bdefs.obj has no set in retail), with
+  ltmodule, ltobjref, icommandlineargs and server_iltmodel off it and
+  transformmaker on it (/FI). ltdirectmusicloader stays off it: retail
+  shows no set there, so it was precompiled, but ours then loses three
+  identicals (CLTDMLoader's constructor inlines differently), so it is
+  our one surplus set.
+- **Unreadable code** (`unreadable` in progress/targets.py, tools'
+  progress.py): Lithtech.exe's .text$x funclets (0x538c00..0x539a80) and
+  Lib_Lith's basehash.obj and virtlist.obj (0x5380b0..0x538414, linked
+  after D3DX) lie in the SecuROM pages. The demo's plaintext has all 14
+  of those functions byte for byte as ours. Ours are listed `encrypted`,
+  not unplaced. The ehhandlers had been paired as nears with math_phys
+  initializers of their size; three of those initializers' rows were
+  split at operand bytes (screen-exclude), four merged rows of tiny
+  functions are split (extent-splits).
+- Removed what retail does not have: d3d_VectorToRGB (3d_ops.obj keeps
+  six functions, no /Gy) and ltlibraryloader.cpp (nothing calls
+  LTLibraryLoader; none of its shapes is in the image).
+- Score: Lithtech.exe 6,885 identical, 0 unwritten, 78 unplaced;
+  server.dll 2,745, 0, 25.
+- **Hidden starts.** Many of the short unplaced rows were not surplus:
+  retail has the function, but nothing calls it, so the enumeration ran
+  it into the row before (the 11-byte `mov [ecx],vtbl; jmp base` destructors,
+  32 in each image, of which 20 in Lithtech.exe and 6 in server.dll were
+  hidden; ~WorldTreeNode; the 7-byte vtable-store destructors; getters
+  and stubs such as FixedFromFloat, CRezMgr::GetRootDir,
+  udp_GetMaxPossiblePort). Each is split in extent-splits.csv with the
+  bytes that name it, after checking that a `ret` or padding precedes it.
+  Found by searching every unplaced short function's masked bytes
+  at 16-byte boundaries that are not row starts.
+- **Stopped here** (engine3, after merging integ 997a58f): Lithtech.exe
+  6,885 identical, 0 unwritten, 43 unplaced; server.dll 2,745, 0, 20.
+  Left: the one surplus math_phys set (ltdirectmusicloader, see above);
+  LoadLightGroup's push_front (retail inlines it in the exe's copy);
+  initializer and atexit shapes (clientmgr _$E50, winconsole_impl,
+  serverde_impl, the world_* objects); the 1- and 3-byte shapes, which
+  hide among jump targets and need naming by hand; server.dll's
+  CClassMgr tick stubs, gr_InterpolateRotation (a 5-byte jmp thunk) and
+  CLTServer's getters. Then the engine nears (Lithtech 50, server 12).
+
 ### 7. apps
 
 `ContractJack.exe` and `ContractJackServer.exe` build from NOLF2's
@@ -1508,6 +1660,84 @@ Round 1 (branch `cshell`), the items 8b leaves open:
   destructor 0x10020150 against ours of 160 bytes, OnCommandOff
   0x10063ee0, SetupSavedLevel 0x10088810). Next: those, then the
   unplaced functions.
+
+- Round 5, the nears (branch `cshell`), rotation first. Method: every
+  near's call sequence against retail's (`tools/callseq.py`; 56 differed),
+  then a register-masked diff of each rotation-related near. Logic fixed:
+  CMoveMgr::Update/UpdatePlayerAnimation were cross-paired by size; retail
+  Update sets the wanted dims from the crouch or stand dims (not the
+  animation's), passes ResetDims the downward offset, and stops only on
+  the server's pause; ResetDims moves the object and reads back where it
+  ended (no SetObjectPos past the collision); GetVehicleContourRoll counts
+  the lure too (the head cant); PlayMovementSound takes the vehicle id
+  (DoFootStepKey passes the create struct's model and vehicle, the head
+  bob none); HandlePitch tests the player first; UpdateOnVehicle reads no
+  flags; UpdateWeaponModel has no weapon-chooser test; HandleWeaponChanged
+  leaves the choosers open; UpdatePlaying only updates the player while
+  the server is paused; the lure bob uses the game's frame time; the body
+  never fades to a backpack (m_bFadeToBackpack only cleared);
+  CreateVehicleModel's create struct is not cleared twice; CGameSettings::
+  Init does not reinitialize the sound; FinishStartGameFromLevel has no
+  LoadFailed; SURFACE reserves six vehicle types (shared); PlayerVehicleFX::
+  Move has no vehicle test. CLTReference's copy assignment counts in the
+  legacy build too (retail's UpdatePlayerInfo releases and references its
+  saved messages, so EN-51's dangling messages were ours, not retail's).
+  Codegen only, left: CalculateCameraRotation and the lure rotation (the
+  pitch clamp's jump threading; the lure's clamp is now retail's `?:`),
+  the contour rotation (the vehicle angles' lerp spills), the banking
+  rotation (ebx/edi), LeanMgr::CalculateNewPosRot (scheduling),
+  UpdateVehicleMotion (the accel and decel branches' order, two vector
+  operators out of line), UpdatePlayerInfo (one store), AutoTargetFilterFn
+  (the exit block).
+- Round 6 (branch `cshell`): the rest of the call-sequence list. Fixed:
+  the weapon interface's slots 34-36 are IsMeleeWeapon, IsGriefWeapon (the
+  ammo's damage type a grief type, 0x10029c00), IsFireButtonDown,
+  GetShellEjectPos: Contract J.A.C.K. has no WeaponNeedsCrosshair, so
+  GadgetDisabler::Update asked the wrong slot for the fire button;
+  StartClient opens the driver's socket (ILTCSBase::OpenSocket, not
+  GetUDPSocket) and leaves the join to the update; quickload (F9) waits
+  for a message box to close and StartGameFromQuickSave loads the single
+  player missions itself; the joystick's actions are the commands' names
+  (SetDeviceData); the host command line's Demolition game uses the
+  multiplayer missions; the runs are counted in the registry (GameRuns)
+  and OnEngineInitialized writes the MP mission file after the scmd
+  handler; the player name typed on the player screen is fixed up; the
+  post-load screen falls back to the mission's name; Music::InitLevel does
+  not remake the music manager; no DynamicLoadScreen variable; no
+  CHUDDecision console prints; InterfaceMgr::Term leaves the patch query
+  alone; UpdateDynamicSpecialFX, the snow airspace's blockers, the chassis
+  create structs' defaults (64, 0xff), Disconnected's cases.
+- Left, codegen: GlobalClientMgr::Init (retail stops at the first failing
+  manager; reproducing it stops three debug_new expansions inlining, so it
+  stays NOLF2's), CreateMPMissionFile and CPlayerMgr::Load (an inline
+  called out of line in retail), OnCommandOn and HandleSFXMsg (block
+  layout), HUDCarrying's KeyIcon copies, UpdateNatNegotiation (ntohs).
+  The ScreenJoin sort helpers are a pairing tangle. UpdateTeam's else
+  branch is a row of its own (0x100f8d29).
+- Round 7 (branch `cshell`): the nears by byte delta. Logic fixed:
+  ChangeWeapon (CanChangeToWeapon always asked; the ammo change decided by
+  the ammo it would change to, not the one asked for); the disconnect
+  event reports any disconnection not asked for (not only a remote
+  server's); SetLoadingLevel clears the exiting-level flag and
+  UpdateLoadingLevelState waits while it is set; the host is marked joined
+  (StartServerAsHost); PreLoadWorld refuses an empty world name; the
+  occluder volume keeps its enabled state; CVehicleMgr::InitWorldData
+  forgets the vehicle's record; the host name keeps its whole buffer
+  (SetupClient); the handshake's level name buffer; GetInterfaceAttribute
+  Float reads a double; ProcessPacket's packet copy and Seek. Order and
+  layout: CPlayerMgr's and ClientMultiplayerMgr's constructors, the host
+  and multiplayer-options switches, the handshake's cases. A retail bug:
+  the end-of-mission screen reads a missing mission record
+  (RETAIL_BUGS.md, MODERN.md CL-50). CVehicleMgr::OnEnterWorld
+  (0x10105810) is split from InitWorldData's row.
+- Left, codegen: HandleCollision and UpdateVehicleMotion (temporaries),
+  the filter functions' shared exits (AutoTarget, Lean), HUDBombTarget
+  (its BombTimer copy is 8-byte aligned in ours), CSoundButeMgr's
+  constructor, the ButeMgr library's constructor and AddCharacter
+  (library code, not looked at).
+- Where it stops (round 7): the rest of the nears list (out/cs-style
+  register-masked diffs of 1-16 lines: register allocation and block
+  layout, plus ScreenJoin's sort helpers).
 
 ### 8d. playtest coverage (branch `apps2`)
 

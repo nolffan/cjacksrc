@@ -573,8 +573,8 @@ void CProjectile::AdjustDamage(LTFLOAT fModifier)
 void CProjectile::InitialUpdate(int nInfo)
 {
 	// projectiles move alot, make the position updates unguaranteed
-	// to help bandwidth
-	g_pLTServer->SetNetFlags(m_hObject, NETFLAG_POSUNGUARANTEED);
+	// to help bandwidth (RETAIL: Object 0x1011c9be, the rotation's too)
+	g_pLTServer->SetNetFlags(m_hObject, NETFLAG_POSUNGUARANTEED | NETFLAG_ROTUNGUARANTEED);
 
 	//
 	if (nInfo == INITIALUPDATE_SAVEGAME) return;
@@ -748,7 +748,7 @@ void CProjectile::UpdateHeatSeeking()
 		float fDistSqr = vDir.MagSqr();
 		if (fDistSqr > fRangeSqr) continue;
 
-		vDir.Normalize();
+		vDir.Norm();
 		if ((float)acos(vDir.Dot(vForward)) > fHalfAngle) continue;
 
 		HeatSeekingTarget target;

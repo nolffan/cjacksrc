@@ -135,7 +135,7 @@ void CDynamicOccluderVolumeFX::EnableOccluders(bool bEnable)
 		g_pLTClient->SetOccluderEnabled(m_nOccluderIds[i], bEnable);
 	}
 
-	m_bEnabled = true;
+	m_bEnabled = bEnable;	// RETAIL: 0x10039835 (NOLF2's set it true)
 }
 
 // ----------------------------------------------------------------------- //

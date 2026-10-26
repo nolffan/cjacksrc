@@ -83,8 +83,8 @@ bool ExplosionFilterFn(HOBJECT hObj, void *pUserData)
 Explosion::Explosion() : GameBase()
 {
 	m_fDamageRadius			= 200.0f;
-	m_fMinDamageRadius		= 50.0f;
 	m_fMaxDamage			= 200.0f;
+	m_fMinDamageRadius		= 50.0f;	// RETAIL: Object 0x100cbfbc
 	m_eDamageType			= DT_UNSPECIFIED;
 
 	// For now these aren't used with DEdit created Explosions...
@@ -519,20 +519,19 @@ bool Explosion::IsBlocked(HOBJECT hObj)
 	g_pLTServer->GetObjectPos(hObj, &vObjPos);
 
 	LTVector vDir = vObjPos - m_vPos;
-	LTVector vStart = m_vPos + vDir * (1.0f / vDir.Mag());
 
 	qInfo.m_Flags	  = INTERSECT_HPOLY | INTERSECT_OBJECTS | IGNORE_NONSOLID;
 	qInfo.m_FilterFn  = ExplosionFilterFn;
 
-	qInfo.m_From = vStart;
+	qInfo.m_From = m_vPos + vDir * (1.0f / vDir.Mag());
 	qInfo.m_To   = vObjPos;
 
-	bool bIntersect1 = !!g_pLTServer->IntersectSegment(&qInfo, &iInfo);
+	bool bIntersect1 = g_pLTServer->IntersectSegment(&qInfo, &iInfo);
 
 	qInfo.m_From = vObjPos;
-	qInfo.m_To   = vStart;
+	qInfo.m_To   = m_vPos + vDir * (1.0f / vDir.Mag());
 
-	bool bIntersect2 = !!g_pLTServer->IntersectSegment(&qInfo, &iInfo);
+	bool bIntersect2 = g_pLTServer->IntersectSegment(&qInfo, &iInfo);
 
 	return bIntersect1 || bIntersect2;
 }

@@ -206,3 +206,63 @@ Lithtech.exe,0x00512fc0,CUIWidgetManager::GetScreenHeight (mov ax,[ecx+6]; ret):
 Lithtech.exe,0x00513200,CUIWidgetManager::~CUIWidgetManager (the vtable store; ret): after the empty function at 0x5131f0; enumerated as one row with it
 Lithtech.exe,0x004ea0f0,CTextureScriptMgr::GetHardcodedEvaluator (xor eax,eax; ret 4): after GetSingleton (mov eax,<instance>; ret) 0x4ea0e0; enumerated as one row with it
 Object.lto,0x1015eaa0,the sine wave function after WaveFn_Linear (0x1015ea90: flds 4(%esp); ret, then int3 padding); referenced from the wave function table
+Object.lto,0x100e4c60,GunMount::StopFiring (our name; mov [ecx+0x94]; 0 / mov al; 1 / ret): nothing calls it and GunMount.obj (no /Gy) keeps it; enumerated inside IsAnimationDone 0x100e4c00
+SndDrv.dll,0x100010a0,CounterFinal::CountMS (jmp EndMS 0x10001040): uncalled; counter.obj compiled /Ox keeps it; enumerated inside the gap row from EndMS 0x10001040
+SndDrv.dll,0x10003340,WaveFile::~WaveFile (jmp Close 0x10001480): uncalled; s_dx8.obj compiled /Ox keeps it; enumerated inside the gap row from WaveFile::WaveFile 0x10003330
+SndDrv.dll,0x10004740,CSample::~CSample (mov [ecx]; vtable 0x1000a738 / jmp Term 0x10003c60): uncalled (the deleting destructor inlines it at 0x10004cc2); enumerated inside CSample::CSample 0x100046d0
+GameSpy.dll,0x10003c60,CGameSpyServer::PublicAddressCallback (ret): never registered; GameSpyServer.obj compiled /Ox keeps it; enumerated inside NatNegCompletedCallback 0x10003c50 (ret)
+ContractJackServer.exe,0x0040f170,std::pair<const char* const; CReservedWord>::~pair (add ecx 4 / jmp ~CReservedWord 0x40ec60): reached only by tail jumps (0x40f503 and the unwind stub at 0x41535b); enumerated inside 0x40ee50 after its jump table
+ContractJackServer.exe,0x00401000,GetRandom() (jmp [rand]): the first function of the image (CommonUtilities.obj; /Ox keeps it though nothing calls it); the enumeration starts at 0x401040
+SndDrv.dll,0x100085d0,LTMemInit (ret): ltmem.obj's first function; the initializer inlines it so nothing calls it; enumerated inside 0x10008540 (s_dx8.obj's last)
+Lithtech.exe,0x0049f610,LTMemTerm (ret): after LTMemInit (ret) 0x49f600, ltmem.obj's first two functions; enumerated as one row with it
+Lithtech.exe,0x0049fe00,LTMemTrackTerm (ret): after LTMemTrackInit (ret) 0x49fdf0, after the tracking-off LTMemConsole 0x49fdc0; enumerated as one row with it
+Lithtech.exe,0x00519870,CUIBase::SendMessageToChildren (mov ecx,[ecx+4]; jmp CUIBase_Impl::SendMessageToChildren 0x517cd0): after CUIBase::GetUserCallback 0x519860 (the same, to 0x517cb0); enumerated as one row with it
+Lithtech.exe,0x005198e0,CUIDropDownList_Impl::~CUIDropDownList_Impl (the vtable store; jmp ~CUIList_Impl 0x51a720): after CUIBase::GetUserCallbackData 0x5198d0 (mov eax,[ecx+4]; mov eax,[eax+0xc]; ret); enumerated as one row with it
+Lithtech.exe,0x00454a20,WorldModelInstance::~WorldModelInstance (the vtable store; jmp ~LTObject 0x454910): nothing calls it (the scalar deleting destructor inlines it); enumerated inside the row at 0x4549a0
+Lithtech.exe,0x00454ef0,SpriteInstance::~SpriteInstance (the vtable store; jmp ~LTObject 0x454910): nothing calls it (the scalar deleting destructor inlines it); enumerated inside the row at 0x454e10
+Lithtech.exe,0x00454f20,DynamicLight::~DynamicLight (the vtable store; jmp ~LTObject 0x454910): nothing calls it (the scalar deleting destructor inlines it); enumerated inside the row at 0x454f00
+Lithtech.exe,0x00454f80,CameraInstance::~CameraInstance (the vtable store; jmp ~LTObject 0x454910): nothing calls it (the scalar deleting destructor inlines it); enumerated inside the row at 0x454f30
+Lithtech.exe,0x00455290,ContainerInstance::~ContainerInstance (the vtable store; jmp ~LTObject 0x454910): nothing calls it (the scalar deleting destructor inlines it); enumerated inside the row at 0x455255
+Lithtech.exe,0x00455310,LTVolumeEffect::~LTVolumeEffect (the vtable store; jmp ~LTObject 0x454910): nothing calls it (the scalar deleting destructor inlines it); enumerated inside the row at 0x4552d0
+Lithtech.exe,0x004748d0,CSoundBuffer::~CSoundBuffer (the vtable store; jmp CSoundBuffer::Term 0x474560): nothing calls it (the scalar deleting destructor inlines it); enumerated inside the row at 0x474860
+Lithtech.exe,0x00516730,CUIFormattedPolyString::~CUIFormattedPolyString (the vtable store; jmp ~CUIPolyString 0x512a00): nothing calls it (the scalar deleting destructor inlines it); enumerated inside the row at 0x5166d0
+Lithtech.exe,0x00517290,CUIDropDownList::~CUIDropDownList (the vtable store; jmp ~CUIList 0x517320): nothing calls it (the scalar deleting destructor inlines it); enumerated inside the row at 0x517250
+Lithtech.exe,0x005174d0,CUIOption::~CUIOption (the vtable store; jmp ~CUICheck 0x517570): nothing calls it (the scalar deleting destructor inlines it); enumerated inside the row at 0x517490
+Lithtech.exe,0x00517600,CUIProgress::~CUIProgress (the vtable store; jmp ~CUIInterval 0x51b0e0): nothing calls it (the scalar deleting destructor inlines it); enumerated inside the row at 0x5175e0
+Lithtech.exe,0x005176c0,CUISlider::~CUISlider (the vtable store; jmp ~CUIInterval 0x51b0e0): nothing calls it (the scalar deleting destructor inlines it); enumerated inside the row at 0x517690
+Lithtech.exe,0x00517800,CUIStaticImage::~CUIStaticImage (the vtable store; jmp ~CUIWidget 0x519650): nothing calls it (the scalar deleting destructor inlines it); enumerated inside the row at 0x5177d0
+Lithtech.exe,0x00517980,CUIWindow::~CUIWindow (the vtable store; jmp ~CUIWidget 0x519650): nothing calls it (the scalar deleting destructor inlines it); enumerated inside the row at 0x517950
+Lithtech.exe,0x0051a990,CUIOption_Impl::~CUIOption_Impl (the vtable store; jmp ~CUICheck_Impl 0x51ab10): nothing calls it (the scalar deleting destructor inlines it); enumerated inside the row at 0x51a970
+Lithtech.exe,0x0051b220,CUIProgress_Impl::~CUIProgress_Impl (the vtable store; jmp ~CUIInterval_Impl 0x51d850): nothing calls it (the scalar deleting destructor inlines it); enumerated inside the row at 0x51b1c0
+Lithtech.exe,0x0051b860,CUISlider_Impl::~CUISlider_Impl (the vtable store; jmp ~CUIInterval_Impl 0x51d850): nothing calls it (the scalar deleting destructor inlines it); enumerated inside the row at 0x51b800
+Lithtech.exe,0x0051c8b0,CUIWindow_Impl::~CUIWindow_Impl (the vtable store; jmp ~CUIWidget_Impl 0x51d3c0): nothing calls it (the scalar deleting destructor inlines it); enumerated inside the row at 0x51c830
+Lithtech.exe,0x0048abf0,WorldTreeNode::~WorldTreeNode (jmp 0x48aab0): after ~WorldTreeObj 0x48abe0 (the vtable store; jmp RemoveFromWorldTree 0x48aa60), as in world_tree.obj; enumerated as one row with it
+server.dll,0x1002d020,WorldModelInstance::~WorldModelInstance (the vtable store; jmp ~LTObject 0x1002cf10): nothing calls it (the scalar deleting destructor inlines it); enumerated inside the row at 0x1002cfa0, as in Lithtech.exe (0x454a20)
+server.dll,0x1002d4f0,SpriteInstance::~SpriteInstance (the vtable store; jmp ~LTObject 0x1002cf10): nothing calls it; enumerated inside the row at 0x1002d410, as in Lithtech.exe (0x454ef0)
+server.dll,0x1002d520,DynamicLight::~DynamicLight (the vtable store 0x1006caf4, the one its constructor 0x1002d500 sets; jmp ~LTObject 0x1002cf10): nothing calls it; enumerated inside the row at 0x1002d410, as in Lithtech.exe (0x454f20)
+server.dll,0x1002d580,CameraInstance::~CameraInstance (the vtable store; jmp ~LTObject 0x1002cf10): nothing calls it; enumerated inside the row at 0x1002d530, as in Lithtech.exe (0x454f80)
+server.dll,0x1002d890,ContainerInstance::~ContainerInstance (the vtable store; jmp ~LTObject 0x1002cf10): nothing calls it; enumerated inside the row at 0x1002d830, as in Lithtech.exe (0x455290)
+server.dll,0x1002d910,LTVolumeEffect::~LTVolumeEffect (the vtable store 0x1006cb40, the one its constructor 0x1002d8d0 sets; jmp ~LTObject 0x1002cf10): nothing calls it; enumerated inside the row at 0x1002d830, as in Lithtech.exe (0x455310)
+server.dll,0x10057ed0,WorldTreeNode::~WorldTreeNode (jmp 0x10057d90): after ~WorldTreeObj 0x10057ec0 (the vtable store; jmp RemoveFromWorldTree 0x10057d40), as in world_tree.obj and Lithtech.exe (0x48abf0); enumerated as one row with it
+Lithtech.exe,0x00515a70,FixedFromFloat (fldl [esp+4]; fmull 65536.0; jmp _ftol): cuivectorfont.obj's helper after the ret at 0x515a60; enumerated inside the row at 0x515990
+Lithtech.exe,0x0046b7e0,CLTServer::CLTServer (stores the vtable 0x551078 and itself in the global at 0x588eac; ret): after the jmp at 0x46b7dc; enumerated inside the row at 0x46b7a0
+Lithtech.exe,0x0043da60,CLTDMLoader::AddRefP (add ecx,8; push ecx; call InterlockedIncrement; ret): after padding; enumerated inside the row at 0x43da40
+Lithtech.exe,0x0045ee00,r_GetObjectFrameCode (mov ecx,<renderer>; jmp [vtable+4]): after the ret at 0x45edfe; enumerated inside the row at 0x45edf0
+Lithtech.exe,0x004a20f0,CRezMgr::GetRezFromPath (mov ecx,[ecx+0x44]; jmp CRezDir::GetRezFromPath 0x4a1f90): after padding; enumerated inside the row at 0x4a1f90
+Lithtech.exe,0x004a10c0,a RezMgr member (add ecx,0x40; jmp CRezTypeHashTable::Find 0x4a3d50): after the ret at 0x4a10b4; enumerated inside the row at 0x4a0fdf
+Lithtech.exe,0x004a10d0,CRezMgr::GetRootDir (mov eax,[ecx+0x44]; ret, the root GetRezFromPath reads): after 0x4a10c0; enumerated inside the row at 0x4a0fdf
+Lithtech.exe,0x0040d720,CClientMgr::GetErrorCode (mov eax,[ecx+0xa40]; ret): after padding; enumerated inside the row at 0x40d6e0
+Lithtech.exe,0x0043e810,error_FiltersChanged (inc the global at 0x587ed8; ret): after the ret at 0x43e803; enumerated inside the row at 0x43e7b0
+Lithtech.exe,0x004a00a0,LTMemTrackAllocEnd (dec the global at 0x58a800; ret): after the ret at 0x4a0098; enumerated inside the row at 0x4a0093
+Lithtech.exe,0x0047a810,udp_GetMaxPossiblePort (mov eax,0xffff; ret): after the ret at 0x47a803; enumerated inside the row at 0x47a790
+Lithtech.exe,0x00512fb0,CUIWidgetManager::GetScreenWidth (mov ax,[ecx+4]; ret): after the ret at 0x512fa5, before GetScreenHeight 0x512fc0; enumerated inside the row at 0x512f90
+Lithtech.exe,0x00517bd0,a UI getter (mov eax,[ecx+0x10]; ret): after the ret 4 at 0x517bc3; enumerated inside the row at 0x517bb0
+Lithtech.exe,0x00473cb0,CClientShell::DoYouHaveThisFile (mov al,1; ret 0xc): shelltransfer.obj's stub after the ret at 0x473ca3; enumerated inside the row at 0x473960
+Lithtech.exe,0x00473d10,CClientShell::MakeDirectoryExist (mov al,1; ret 8): shelltransfer.obj's stub after the ret 8 at 0x473d00; enumerated inside the row at 0x473cd0
+Lithtech.exe,0x0040b2e0,CLTClient::~CLTClient (stores CLTClient's vtable 0x54b728; ret): after the ret at 0x40b2d3; enumerated inside the row at 0x40b220
+Lithtech.exe,0x0041a5c0,a destructor in consolecommands.obj (stores the vtable 0x54c608; ret): after the ret at 0x41a5b9; enumerated inside the row at 0x41a580
+Lithtech.exe,0x00467e20,CLTServer::~CLTServer (stores CLTServer's vtable 0x551078, as its constructor 0x46b7e0 does; ret): after the ret at 0x467e13; enumerated inside the row at 0x467dc0
+Lithtech.exe,0x00487c20,CConCommandBox::Term (mov dword [ecx],0; ret): after the ret 4 at 0x487c12; enumerated inside the row at 0x487bb0
+Lithtech.exe,0x004ee830,CModelShadowShader::~CModelShadowShader (stores the vtable 0x558cc4; ret): after the ret at 0x4ee825; enumerated inside the row at 0x4ee820
+Lithtech.exe,0x00512c00,a UI manager's destructor (stores the vtable 0x5592d8; ret): after the ret 4 at 0x512bf0; enumerated inside the row at 0x512bc0
+CShell.dll,0x10105810,CVehicleMgr::OnEnterWorld (a jmp to InitWorldData 0x101056e0) after the int3 padding that ends InitWorldData; called from CMoveMgr::OnEnterWorld (0x1002b2af)
