@@ -8599,7 +8599,7 @@ CAIHumanStateCharge::CAIHumanStateCharge()
 	m_fYellDistanceSqr = 900.f * 900.f;
 	m_fStopDistanceSqr = 200.f * 200.f;
 	m_bLimitDistance = LTFALSE;
-	m_vStartPos.Init();
+	// RETAIL: Object 0x10043d90 leaves m_vStartPos to the first update.
 
 	m_pStrategyFollowPath = AI_FACTORY_NEW(CAIHumanStrategyFollowPath);
 }

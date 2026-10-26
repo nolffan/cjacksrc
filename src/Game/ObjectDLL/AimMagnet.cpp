@@ -170,9 +170,9 @@ void AimMagnet::Save( ILTMessage_Write *pMsg, uint32 dwSaveFlags )
 
 LTBOOL AimMagnet::ReadProp( ObjectCreateStruct *pStruct )
 {
-	if( !pStruct ) return LTFALSE;
-
 	GenericProp genProp;
+
+	if( !pStruct ) return LTFALSE;
 
 	if( g_pLTServer->GetPropGeneric( "Target", &genProp ) == LT_OK )
 	{
@@ -316,11 +316,7 @@ bool AimMagnet::OnTrigger( HOBJECT hSender, const CParsedMsg &cMsg )
 		if( cMsg.GetArgCount( ) > 1 )
 		{
 			m_sTargetName = cMsg.GetArg( 1 ).c_str( );
-
-			if( m_hTarget )
-			{
-				m_hTarget = LTNULL;
-			}
+			m_hTarget = LTNULL;
 
 			ResolveTarget( );
 		}

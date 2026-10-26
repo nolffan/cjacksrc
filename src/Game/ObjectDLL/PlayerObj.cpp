@@ -1888,14 +1888,16 @@ bool CPlayerObj::HandleOverlayMessage(const CParsedMsg &cMsg)
 		nMsg = 1;
 		m_Overlays.insert(nId);
 	}
-	else
-		return true;
 
-	CAutoMessage cClientMsg;
-	cClientMsg.Writeuint8(MID_PLAYER_OVERLAY);
-	cClientMsg.Writeuint8(nId);
-	cClientMsg.Writeuint8(nMsg);
-	g_pLTServer->SendToClient(cClientMsg.Read(), GetClient( ), MESSAGE_GUARANTEED);
+	if(nMsg < 255)
+	{
+
+		CAutoMessage cClientMsg;
+		cClientMsg.Writeuint8(MID_PLAYER_OVERLAY);
+		cClientMsg.Writeuint8(nId);
+		cClientMsg.Writeuint8(nMsg);
+		g_pLTServer->SendToClient(cClientMsg.Read(), GetClient( ), MESSAGE_GUARANTEED);
+	}
 
     return true;
 }
@@ -1912,9 +1914,11 @@ void CPlayerObj::SaveOverlays( ILTMessage_Write *pMsg )
 {
 	pMsg->Writeuint16(( uint16 )m_Overlays.size( ));
 
-	for( OverlaySet::iterator iter = m_Overlays.begin( ); iter != m_Overlays.end( ); ++iter )
+	OverlaySet::iterator iter = m_Overlays.begin( );
+	while( iter != m_Overlays.end( ))
 	{
 		pMsg->Writeuint8( *iter );
+		iter++;
 	}
 }
 

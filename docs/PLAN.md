@@ -635,6 +635,29 @@ dedicated server (package 7).
     debug name (setne/dec/and) was not reproduced. The heat-seeking
     sort's instantiations still need the predicate's shape.
 
+- **Round 4 (nears' source shapes).**
+  - Identical now: SaveOverlays (a `while` loop with `iter++` lets
+    `_Inc` expand), CheckpointLoad (ReloadLevel's `if (!Load) return
+    false; return true;` shape; it had been paired with ReloadLevel's
+    twin), CAIHumanStateCharge's constructor (no m_vStartPos init),
+    AimMagnet's OnTrigger and ReadProp, CTeam::Init(msg) (clears the
+    attacking flag, Shared).
+  - Closer: HandleOverlayMessage (NOLF2's `if (nMsg < 255)` around the
+    message, which spends the inline budget so CAutoMessage's
+    constructor stays a call), DoomsDayPiece::OnDrop (`if (!bComplete)`
+    around the message, the same effect), Explosion::IsBlocked
+    (IntersectSegment's bool kept, the start point recomputed for the
+    second query), BootClients (a CPrint per branch).
+  - Tried, no source lever found: ProcessHandshake (str_Hash,
+    MessUp32BitValue and two CAutoMessage constructors out of line in
+    retail), HandleSetGameOption (SetGameOption<float>),
+    SetupDisabledState (CTimer::Start inline in retail), the Search
+    state's two "give up" blocks (retail keeps both), AimMagnet's switch
+    layout, ChassisButeMgr::Init's rotated loop, UpdateClientCDKeyChecks'
+    block order, GunMount's UpdateFiring; GameSpy's five (IsValidKeyName's
+    block order, SBCallback's stored bool, FromWideString,
+    GetSecretKey's scheduling).
+
 ### 4b. layouts
 
 Class layouts and save/load against retail, in both game DLLs (branch

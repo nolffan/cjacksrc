@@ -249,12 +249,15 @@ bool DoomsDayPiece::OnDrop( HOBJECT hSender )
 
 	// Send a message letting the players know which team currently has the piece...
 
-	CAutoMessage cMsg;
-	cMsg.Writeuint8( MID_DOOMSDAY_MESSAGE );
-	cMsg.Writeuint8( nDDAction );
-	cMsg.Writeuint8( m_pChassisPiece->m_nId );
-	cMsg.Writeuint8( pPlayer->GetTeamID() );
-	g_pLTServer->SendToClient( cMsg.Read(), LTNULL, MESSAGE_GUARANTEED );
+	if( !bComplete )
+	{
+		CAutoMessage cMsg;
+		cMsg.Writeuint8( MID_DOOMSDAY_MESSAGE );
+		cMsg.Writeuint8( nDDAction );
+		cMsg.Writeuint8( m_pChassisPiece->m_nId );
+		cMsg.Writeuint8( pPlayer->GetTeamID() );
+		g_pLTServer->SendToClient( cMsg.Read(), LTNULL, MESSAGE_GUARANTEED );
+	}
 
 	return true;
 }
