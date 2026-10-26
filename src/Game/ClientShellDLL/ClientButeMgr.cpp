@@ -530,7 +530,8 @@ float CClientButeMgr::GetInterfaceAttributeFloat(char* pAttribute, float fDef)
 {
 	if (!pAttribute) return fDef;
 
-	return m_buteMgr.GetFloat(CBMGR_INTERFACE_TAG, pAttribute, fDef);
+	// RETAIL: 0x1001a6cb: through GetDouble.
+	return (float)m_buteMgr.GetDouble(CBMGR_INTERFACE_TAG, pAttribute, fDef);
 }
 
 

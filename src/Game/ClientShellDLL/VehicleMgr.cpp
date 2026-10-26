@@ -370,6 +370,7 @@ void CVehicleMgr::InitWorldData()
 	m_fJumpVolumeVel		= 0.0f;
 	m_bTurned				= false;
 	m_bHolsteredWeapon			= false;
+	m_pVehicleButes			= LTNULL;	// RETAIL: 0x101057fe
 
 }
 

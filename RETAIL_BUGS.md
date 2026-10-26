@@ -37,11 +37,12 @@ batched screen quads' colours (EN-6), SoundSys's null Term (EN-7),
 SetCamera's unset viewport (EN-8), the launcher's path overrun (APPS-1),
 find handles (APPS-2), "Contract J.A.C.K. 2" (APPS-4) and the registry
 opened for writing (APPS-7), the dedicated server's console formats
-(APPS-3), a gamepad's buttons bound as axes (CL-24), and six that come
+(APPS-3), a gamepad's buttons bound as axes (CL-24), the end-of-mission
+screen's missing record (CL-50), and six that come
 with high frame rates: the AIs slowed (EN-41), the player's run, crouch
 and jump (CL-41), the float and jump out of water (CL-42), particle and
 line systems gone dark (CL-44), aim, sparks and debris (CL-45) and the
-music's moods (GAME-40). Twenty-six in all.
+music's moods (GAME-40). Twenty-seven in all.
 
 ## Format
 
@@ -476,3 +477,14 @@ client_physics.cpp, MODERN.md CL-45.
 ## NOLF2's bugs Contract J.A.C.K. no longer has
 
 (none checked yet)
+
+### The end-of-mission screen reads a mission record it may not have
+
+CShell.dll 0x100c0920 (CScreenEndMission::OnFocus, src/Game/ClientShellDLL/
+ScreenEndMission.cpp). The mission's name is shown only when
+`g_pMissionButeMgr->GetMission` found a record, but a few lines on the
+secrets line reads that record's `nNumSecrets` without testing it (the
+load at 0x100c0afc), so a mission with no record (a world played outside
+the mission list) reads through NULL there.
+
+Fixed in the modern build: ScreenEndMission.cpp, MODERN.md CL-50.

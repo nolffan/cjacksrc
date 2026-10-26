@@ -742,6 +742,11 @@ test pad.
   moods right whatever the tick. As nolf2src's M-G30 (src/Game/ObjectDLL/
   MusicMgr.cpp, .h `DoMoodFor`, AIState.cpp `UpdateMusic`). Not measured.
 
+* **CL-50: the end-of-mission screen without a mission record.** The
+  secrets line tests the mission record before reading its number of
+  secrets, as the mission's name does (`RETAIL_BUGS.md`;
+  src/Game/ClientShellDLL/ScreenEndMission.cpp). Not tested in a run.
+
 How EN-40 to CL-46 were measured: a temporary per-frame log (the player's
 position, speed and control flags, the camera, the client and game times;
 the first AI's updates), not committed, and scripted runs of the modern

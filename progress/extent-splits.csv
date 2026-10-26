@@ -215,3 +215,4 @@ ContractJackServer.exe,0x0040ec60,CReservedWords::CReservedWord::~CReservedWord 
 ContractJackServer.exe,0x0040f170,std::pair<const char* const; CReservedWord>::~pair (add ecx 4 / jmp ~CReservedWord 0x40ec60): reached only by tail jumps (0x40f503 and the unwind stub at 0x41535b); enumerated inside 0x40ee50 after its jump table
 ContractJackServer.exe,0x00401000,GetRandom() (jmp [rand]): the first function of the image (CommonUtilities.obj; /Ox keeps it though nothing calls it); the enumeration starts at 0x401040
 SndDrv.dll,0x100085d0,LTMemInit (ret): ltmem.obj's first function; the initializer inlines it so nothing calls it; enumerated inside 0x10008540 (s_dx8.obj's last)
+CShell.dll,0x10105810,CVehicleMgr::OnEnterWorld (a jmp to InitWorldData 0x101056e0) after the int3 padding that ends InitWorldData; called from CMoveMgr::OnEnterWorld (0x1002b2af)

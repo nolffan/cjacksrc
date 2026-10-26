@@ -1617,9 +1617,30 @@ Round 1 (branch `cshell`), the items 8b leaves open:
   layout), HUDCarrying's KeyIcon copies, UpdateNatNegotiation (ntohs).
   The ScreenJoin sort helpers are a pairing tangle. UpdateTeam's else
   branch is a row of its own (0x100f8d29).
-- Where it stops (round 6): the nears by byte delta (HandleCollision,
-  ButeMgr's constructor, UpdateVehicleMotion, AddCharacter, InitWorldData,
-  InterfaceMgr::OnMessage, UpdateAirspaces, ...).
+- Round 7 (branch `cshell`): the nears by byte delta. Logic fixed:
+  ChangeWeapon (CanChangeToWeapon always asked; the ammo change decided by
+  the ammo it would change to, not the one asked for); the disconnect
+  event reports any disconnection not asked for (not only a remote
+  server's); SetLoadingLevel clears the exiting-level flag and
+  UpdateLoadingLevelState waits while it is set; the host is marked joined
+  (StartServerAsHost); PreLoadWorld refuses an empty world name; the
+  occluder volume keeps its enabled state; CVehicleMgr::InitWorldData
+  forgets the vehicle's record; the host name keeps its whole buffer
+  (SetupClient); the handshake's level name buffer; GetInterfaceAttribute
+  Float reads a double; ProcessPacket's packet copy and Seek. Order and
+  layout: CPlayerMgr's and ClientMultiplayerMgr's constructors, the host
+  and multiplayer-options switches, the handshake's cases. A retail bug:
+  the end-of-mission screen reads a missing mission record
+  (RETAIL_BUGS.md, MODERN.md CL-50). CVehicleMgr::OnEnterWorld
+  (0x10105810) is split from InitWorldData's row.
+- Left, codegen: HandleCollision and UpdateVehicleMotion (temporaries),
+  the filter functions' shared exits (AutoTarget, Lean), HUDBombTarget
+  (its BombTimer copy is 8-byte aligned in ours), CSoundButeMgr's
+  constructor, the ButeMgr library's constructor and AddCharacter
+  (library code, not looked at).
+- Where it stops (round 7): the rest of the nears list (out/cs-style
+  register-masked diffs of 1-16 lines: register allocation and block
+  layout, plus ScreenJoin's sort helpers).
 
 ### 8d. playtest coverage (branch `apps2`)
 
