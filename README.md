@@ -55,6 +55,10 @@ those functions make up.
 | `ltmsg.dll` | the engine's messages, not in the total | 5 / 5 resources | 2,054 / 2,054 bytes | `████████████████████` 100.0% | 0 | -- |
 | `CRes.dll` | the game's client resources, not in the total | 457 / 457 resources | 330,555 / 330,555 bytes | `████████████████████` 100.0% | 0 | -- |
 | `SRes.dll` | the game's server resources, not in the total | no resources | -- | -- | -- | -- |
+| `Lithtech.exe:rsrc` | the engine's resources, not in the total | 18 / 53 resources | 8,296 / 20,810 bytes | `███████░░░░░░░░░░░░░` 39.8% | 1 | -- |
+| `server.dll:rsrc` | the engine's server's resources, not in the total | 2 / 2 resources | 760 / 760 bytes | `████████████████████` 100.0% | 0 | -- |
+| `ContractJack.exe:rsrc` | the launcher's resources, not in the total | 101 / 101 resources | 4,917,154 / 4,917,154 bytes | `████████████████████` 100.0% | 0 | -- |
+| `ContractJackServer.exe:rsrc` | the dedicated server's resources, not in the total | 18 / 18 resources | 937,508 / 937,508 bytes | `████████████████████` 100.0% | 0 | -- |
 | **All** | | **26,384 / 29,721** | **4,458,764 / 4,633,655 bytes** | `███████████████████░` **96.2%** | **0** | **52** |
 <!-- progress:end -->
 

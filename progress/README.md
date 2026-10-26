@@ -23,6 +23,7 @@ added there, with the evidence for its ranges.
 |---|---|---|
 | `Lithtech.exe`, `server.dll`, `SndDrv.dll`, `GameSpy.dll`, `ContractJack.exe`, `ContractJackServer.exe`, `CShell.dll`, `Object.lto`, `ClientFx.fxd` | the retail 1.1 binaries, extracted from the installed game into `out/reference/` (`build/reference.sh`; the game DLLs from `Update_v1x1.rez` and, for the two the update does not replace, `GameDLL.rez`: `build/retail.py`) | the image `make` built (`src/.../built/Final/...`) and every object and library of ours its link read, from the link's response file beside it (`<image>.rsp`). A binary with no build yet scores as all unwritten, and is counted |
 | `CRes.dll`, `SRes.dll`, `ltmsg.dll` | the same | resource by resource: their only code is the C runtime's DLL entry and an empty `DllMain`. Listed after the code, not in the total. The retail `SRes.dll` has no resources at all |
+| `<image>:rsrc` (`Lithtech.exe`, `server.dll`, `ContractJack.exe`, `ContractJackServer.exe`) | the same images' resources | the resources of our images, resource by resource: each image's resources are a target of their own beside its code (version blocks, dialogs, string tables, icons, bitmaps), listed after the code and not in the total, which counts code only. `identical.txt` lists them as `<image>:rsrc<TAB>rsrc:<type>/<name>/<language>`. `SndDrv.dll`, `GameSpy.dll` and the game DLLs have no resources |
 
 The retail images have no symbols, so their functions are enumerated from
 the code itself (call targets, vtables, callbacks, exports, ...), and each

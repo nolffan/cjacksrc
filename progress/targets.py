@@ -453,4 +453,26 @@ TARGETS = [
     dict(label="SRes.dll", what="the game's server resources",
          kind="resources", shipped=REFERENCE + "/SRes.dll", stem="SRes",
          built="src/Game/built/Final/ServerRes/TO2/SRes.dll"),
+    # The other images' resources (version blocks, dialogs, string tables,
+    # icons, bitmaps), each a target of its own beside the image's code, as
+    # nolfsrc and nolf2src score them. SndDrv.dll, GameSpy.dll and the game
+    # DLLs have none.
+    dict(label="Lithtech.exe:rsrc", what="the engine's resources",
+         kind="resources", shipped=REFERENCE + "/Lithtech.exe",
+         stem="Lithtech-rsrc",
+         built="src/Engine/built/Final/Lithtech/Lithtech.exe", optional=True),
+    dict(label="server.dll:rsrc", what="the engine's server's resources",
+         kind="resources", shipped=REFERENCE + "/server.dll",
+         stem="server-rsrc",
+         built="src/Engine/built/Final/server/server.dll", optional=True),
+    dict(label="ContractJack.exe:rsrc", what="the launcher's resources",
+         kind="resources", shipped=REFERENCE + "/ContractJack.exe",
+         stem="ContractJack-rsrc",
+         built="src/Game/built/Final/Launcher/ContractJack.exe", optional=True),
+    dict(label="ContractJackServer.exe:rsrc",
+         what="the dedicated server's resources",
+         kind="resources", shipped=REFERENCE + "/ContractJackServer.exe",
+         stem="ContractJackServer-rsrc",
+         built="src/Game/built/Final/ServerApp/ContractJackServer.exe",
+         optional=True),
 ]
