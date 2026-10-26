@@ -802,13 +802,8 @@ void CParticleSystemFX::AddParticles( )
 
 void CParticleSystemFX::RemoveParticle(LTParticle* pParticle)
 {
-	// Disable this particle
- 	m_pLTClient->RemoveParticle( m_hObject, pParticle );
-
-	//update our counts
-	assert(m_nNumParticles > 0);
-	m_nNumParticles--;
-	
+	// RETAIL: ClientFx 0x10012157: the particle's flags are read before
+	// it is removed.
 	if(pParticle->m_nUserData & BOUNCE_FLAG)
 	{
 		m_nNumBounceParticles--;
@@ -817,6 +812,13 @@ void CParticleSystemFX::RemoveParticle(LTParticle* pParticle)
 	{
 		m_nNumSplatParticles--;
 	}
+
+	// Disable this particle
+ 	m_pLTClient->RemoveParticle( m_hObject, pParticle );
+
+	//update our counts
+	assert(m_nNumParticles > 0);
+	m_nNumParticles--;
 }
 
 

@@ -835,7 +835,7 @@ LPBASECLASS	CGameServerShell::OnClientEnterWorld(HCLIENT hClient)
 	// This will be filled in with clientdata for mp games.
 	NetClientData ncd;
 	memset( &ncd, 0, sizeof( ncd ));
-	ePlayerModelId = eModelIdInvalid;
+
 
 	// RETAIL: 0x100de0ea the client data was checked and the client named
 	// as it connected (OnAddClient); only its model is needed here.
@@ -900,16 +900,18 @@ LPBASECLASS	CGameServerShell::OnClientEnterWorld(HCLIENT hClient)
 	}
 
 	// RETAIL: Object 0x100de246: the client hears the other players'
-	// weapon sound loops.  Retail asks for the first client twice.
-	HCLIENT hOtherClient = g_pLTServer->GetNextClient( LTNULL );
-	hOtherClient = g_pLTServer->GetNextClient( LTNULL );
-	while( hOtherClient )
+	// weapon sound loops, through the client references' objects.  Retail
+	// asks for the first reference twice.
+	HCLIENTREF hClientRef = g_pLTServer->GetNextClientRef( LTNULL );
+	hClientRef = g_pLTServer->GetNextClientRef( LTNULL );
+	while( hClientRef )
 	{
-		CPlayerObj* pOtherPlayer = dynamic_cast< CPlayerObj* >(( LPBASECLASS )g_pLTServer->GetClientUserData( hOtherClient ));
+		HOBJECT hOtherPlayer = g_pLTServer->GetClientRefObject( hClientRef );
+		CPlayerObj* pOtherPlayer = dynamic_cast< CPlayerObj* >( g_pLTServer->HandleToObject( hOtherPlayer ));
 		if( pOtherPlayer )
 			pOtherPlayer->SendWeaponSoundLoopToClient( hClient, pPlayer );
 
-		hOtherClient = g_pLTServer->GetNextClient( hOtherClient );
+		hClientRef = g_pLTServer->GetNextClientRef( hClientRef );
 	}
 
 	// All done...
@@ -4308,11 +4310,11 @@ bool CGameServerShell::InitGameType( ServerGameOptions const& serverGameOptions 
 		case eGameTypeTeamDeathmatch:
 			m_pServerMissionMgr = debug_new( CTeamDeathMatchMissionMgr );
 			break;
-		case eGameTypeDoomsDay:
-			m_pServerMissionMgr = debug_new( CDoomsDayMissionMgr );
-			break;
 		case eGameTypeDemolition:
 			m_pServerMissionMgr = debug_new( CDemolitionMissionMgr );
+			break;
+		case eGameTypeDoomsDay:
+			m_pServerMissionMgr = debug_new( CDoomsDayMissionMgr );
 			break;
 		default:
 			ASSERT( !"CGameServerShell::InitGameType: Invalid game type." );

@@ -114,8 +114,9 @@ public:
 
 	// misc functions
 	virtual bool          IsMeleeWeapon() const { return ( m_pAmmo && ( DT_MELEE == m_pAmmo->eInstDamageType ) ); }
+	// RETAIL: CShell 0x10029c00
+	virtual bool          IsGriefWeapon() const { return ( m_pAmmo && IsGriefType( m_pAmmo->eInstDamageType ) ); }
 	virtual bool          IsFireButtonDown() const { return m_bFireKeyDownLastUpdate; }
-	virtual bool          WeaponNeedsCrosshair() const { return true; }
 
 	virtual void          GetShellEjectPos( LTVector *vOriginalPos );
 

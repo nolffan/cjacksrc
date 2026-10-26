@@ -1734,18 +1734,17 @@ void CSFXMgr::UpdateDynamicSpecialFX()
 
 		for (int i=0; i < nNumSFX; i++)
 		{
-			if (m_dynSFXLists[j][i])
+			// RETAIL: 0x100e0c8b reads each effect once.
+			CSpecialFX* pSFX = m_dynSFXLists[j][i];
+			if (pSFX && fTime >= pSFX->m_fNextUpdateTime)
 			{
-				if (fTime >= m_dynSFXLists[j][i]->m_fNextUpdateTime)
+				if (!pSFX->Update())
 				{
-					if (!m_dynSFXLists[j][i]->Update())
-					{
-						m_dynSFXLists[j].Remove(m_dynSFXLists[j][i]);
-					}
-					else
-					{
-						m_dynSFXLists[j][i]->m_fNextUpdateTime = fTime + m_dynSFXLists[j][i]->GetUpdateDelta();
-					}
+					m_dynSFXLists[j].Remove(pSFX);
+				}
+				else
+				{
+					pSFX->m_fNextUpdateTime = fTime + pSFX->GetUpdateDelta();
 				}
 			}
 		}

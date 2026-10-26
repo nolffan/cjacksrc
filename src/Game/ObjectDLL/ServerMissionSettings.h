@@ -24,7 +24,6 @@ class ServerMissionSettings
 		{ 
 			m_bUseSkills = false;
 			m_bFriendlyFire = false;
-			m_bWeaponsStay = false;
 			m_nMPDifficulty = 0;
 			m_fPlayerDiffFactor = 0.0f;
 			m_nRunSpeed = 100;
@@ -33,6 +32,7 @@ class ServerMissionSettings
 			m_nRounds = 1;
 			m_nFragScore = 0;
 			m_nReviveScore = 0;
+			m_bWeaponsStay = false;	// RETAIL: Object 0x1013f380, last
 		};
 
 

@@ -247,6 +247,7 @@ void CBouncyChunkFX::Term()
 	if (m_hImpactSound)
 	{
 		m_pLTClient->SoundMgr()->KillSound(m_hImpactSound);
+		m_hImpactSound = NULL;	// RETAIL: ClientFx 0x1000d2eb, 0x100023db
 	}
 }
 

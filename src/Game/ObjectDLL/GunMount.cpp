@@ -307,13 +307,16 @@ bool GunMount::CreateWeapon( )
 	if( !pModel ) return false;
 
 	LTRotation rRot( 0.0f, MATH_PI, 0.0f );
-	LTVector vOffset( 0.0f, 0.0f, 0.0f );
 	HATTACHMENT hAttachment;
 
 	// RETAIL: Object 0x100e52f9: both failures share the removal.
-	if( g_pLTServer->CreateAttachment( m_hObject, pModel->m_hObject, LTNULL, &vOffset, &rRot, &hAttachment ) == LT_OK )
+	if( g_pLTServer->CreateAttachment( m_hObject, pModel->m_hObject, LTNULL, &LTVector( 0.0f, 0.0f, 0.0f ), &rRot, &hAttachment ) == LT_OK )
 	{
-		if( m_Weapons.Init( m_hObject, pModel->m_hObject ))
+		if( !m_Weapons.Init( m_hObject, pModel->m_hObject ))
+		{
+			g_pLTServer->RemoveAttachment( hAttachment );
+		}
+		else
 		{
 			m_Weapons.ObtainWeapon( nWeaponId, nAmmoId, 10000 );
 			m_Weapons.ChangeWeapon( nWeaponId );
@@ -323,8 +326,6 @@ bool GunMount::CreateWeapon( )
 
 			return true;
 		}
-
-		g_pLTServer->RemoveAttachment( hAttachment );
 	}
 
 	g_pLTServer->RemoveObject( pModel->m_hObject );
@@ -441,6 +442,21 @@ bool GunMount::IsAnimationDone( )
 
 	// RETAIL: Object 0x100e4c54: the flag's bit converts to the bool.
 	return ( dwState & MS_PLAYDONE ) ? true : false;
+}
+
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	GunMount::StopFiring
+//
+//	PURPOSE:	RETAIL: Object 0x100e4c60 (our name): nothing calls it, but
+//				GunMount.obj, built without /Gy, keeps it
+//
+// ----------------------------------------------------------------------- //
+
+bool GunMount::StopFiring( )
+{
+	m_eFiringState = eNotFiring;
+	return true;
 }
 
 // ----------------------------------------------------------------------- //
@@ -625,7 +641,10 @@ bool GunMount::OnTrigger( HOBJECT hSender, const CParsedMsg &cMsg )
 
 	if( cMsg.GetArg(0) == s_cTok_Fire )
 	{
-		m_nRoundsToFire = ( cMsg.GetArgCount( ) > 1 ) ? atoi( cMsg.GetArg(1) ) : 1;
+		if( cMsg.GetArgCount( ) > 1 )
+			m_nRoundsToFire = atoi( cMsg.GetArg(1) );
+		else
+			m_nRoundsToFire = 1;
 		BeginFire( );
 	}
 	else if( cMsg.GetArg(0) == s_cTok_BeginFire )
@@ -639,13 +658,14 @@ bool GunMount::OnTrigger( HOBJECT hSender, const CParsedMsg &cMsg )
 	}
 	else if( cMsg.GetArg(0) == s_cTok_Visible )
 	{
-		bool bOn = ( cMsg.GetArg(1) == s_cTok_1 || cMsg.GetArg(1) == s_cTok_True );
-		SetVisible( bOn );
+		// RETAIL: Object 0x100e5b54: the member first, then SetVisible.
+		m_bVisible = ( cMsg.GetArg(1) == s_cTok_1 || cMsg.GetArg(1) == s_cTok_True );
+		SetVisible( m_bVisible );
 	}
 	else if( cMsg.GetArg(0) == s_cTok_Hidden )
 	{
-		bool bOn = ( cMsg.GetArg(1) == s_cTok_1 || cMsg.GetArg(1) == s_cTok_True );
-		SetVisible( !bOn );
+		m_bVisible = !( cMsg.GetArg(1) == s_cTok_1 || cMsg.GetArg(1) == s_cTok_True );
+		SetVisible( m_bVisible );
 	}
 	else
 	{
@@ -705,15 +725,15 @@ void GunMount::Load( ILTMessage_Read *pMsg, uint32 dwLoadFlags )
 
 	switch( m_eFiringState )
 	{
+		// RETAIL: Object 0x100e580d: no default, another state stays.
+		case eNotFiring:
+		case ePostFiring:
+			m_eFiringState = eNotFiring;
+		break;
+
 		case ePreFiring:
 		case eFiring:
 			BeginFire( );
-		break;
-
-		case eNotFiring:
-		case ePostFiring:
-		default:
-			m_eFiringState = eNotFiring;
 		break;
 	}
 }
