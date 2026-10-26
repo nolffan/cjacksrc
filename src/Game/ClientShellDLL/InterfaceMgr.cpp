@@ -1282,6 +1282,10 @@ void CInterfaceMgr::UpdateLoadingLevelState()
 {
 	if (g_pPlayerMgr->IsPlayerInWorld())
 	{
+		// RETAIL: 0x10069bcc: not while the last level is still being left.
+		if( g_pMissionMgr->IsExitingLevel( ))
+			return;
+
 		// Make sure the loading screen isn't busy
 		m_LoadingScreen.Pause();
 		// Let the game client shell do stuff that's time consuming so we're not stuck on a black screen
@@ -2483,7 +2487,8 @@ LTBOOL CInterfaceMgr::OnEvent(uint32 dwEventID, uint32 dwParam)
 			if( IsMultiplayerGame( ))
 				m_ClientInfo.RemoveAllClients();
 
-			if ( g_pClientMultiplayerMgr->IsConnectedToRemoteServer( ))
+			// RETAIL: 0x1006a1d6: any disconnection we did not ask for.
+			if ( !m_bIntentionalDisconnect )
 			{
 				Disconnected(dwParam);
 			}

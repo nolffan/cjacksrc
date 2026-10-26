@@ -2583,18 +2583,18 @@ void CGameClientShell::HandleMsgMultiplayerOptions( ILTMessage_Read* pMsg )
 		pProfile->m_ServerGameOptions.GetTeamDeathmatch().m_bFriendlyFire = bFriendlyFire;
 		pProfile->m_ServerGameOptions.GetTeamDeathmatch().m_bWeaponsStay = bWeaponsStay;
 		break;
+	case eGameTypeDemolition:
+		pProfile->m_ServerGameOptions.GetDemolition().m_nRunSpeed = nRunSpeed;
+		pProfile->m_ServerGameOptions.GetDemolition().m_nRounds = nRounds;
+		pProfile->m_ServerGameOptions.GetDemolition().m_bFriendlyFire = bFriendlyFire;
+		pProfile->m_ServerGameOptions.GetDemolition().m_bWeaponsStay = bWeaponsStay;
+		break;
 	case eGameTypeDoomsDay:
 		pProfile->m_ServerGameOptions.GetDoomsday().m_nRunSpeed = nRunSpeed;
 		pProfile->m_ServerGameOptions.GetDoomsday().m_nTimeLimit = nTimeLimit;
 		pProfile->m_ServerGameOptions.GetDoomsday().m_nRounds = nRounds;
 		pProfile->m_ServerGameOptions.GetDoomsday().m_bFriendlyFire = bFriendlyFire;
 		pProfile->m_ServerGameOptions.GetDoomsday().m_bWeaponsStay = bWeaponsStay;
-		break;
-	case eGameTypeDemolition:
-		pProfile->m_ServerGameOptions.GetDemolition().m_nRunSpeed = nRunSpeed;
-		pProfile->m_ServerGameOptions.GetDemolition().m_nRounds = nRounds;
-		pProfile->m_ServerGameOptions.GetDemolition().m_bFriendlyFire = bFriendlyFire;
-		pProfile->m_ServerGameOptions.GetDemolition().m_bWeaponsStay = bWeaponsStay;
 		break;
 	}
 

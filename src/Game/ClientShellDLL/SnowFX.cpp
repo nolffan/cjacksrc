@@ -368,7 +368,7 @@ bool CSnowFX::UpdateAirspaces( void )
 
 	// RETAIL: 0x100efe96: or once the front has reached the bottom.
 	LTVector vPos;
-	m_pClientDE->GetObjectPos( m_hServerObject, &vPos );
+	g_pLTClient->GetObjectPos( m_hServerObject, &vPos );	// RETAIL: 0x100efe96
 	if( vPos.y - m_vDims.y >= m_fTopY )
 		m_bFromTop = false;
 

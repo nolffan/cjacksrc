@@ -647,7 +647,8 @@ bool CClientWeaponMgr::ChangeWeapon( uint8 nWeaponId,
                                      bool bPlayDeselect /*=true*/ )
 {
 	// check to see if weapon is a valid weapon to switch to
-	if ( m_pCurrentWeapon && !CanChangeToWeapon( nWeaponId ) )
+	// RETAIL: 0x1002a52b: whether or not there is a current weapon.
+	if ( !CanChangeToWeapon( nWeaponId ) )
 	{
 		return false;
 	}
@@ -659,9 +660,8 @@ bool CClientWeaponMgr::ChangeWeapon( uint8 nWeaponId,
 	if ( m_pCurrentWeapon )
 	{
 		// If there is a current weapon, determine if we
-		// have to switch the weapon, the ammo, or both.
+		// have to switch the weapon.
 		uint8 nCurrentWeaponId = m_pCurrentWeapon->GetWeaponId();
-		uint8 nCurrentAmmoId = m_pCurrentWeapon->GetAmmoId();
 		
 		// Do we need to change the weapon?
 		if ( nWeaponId == nCurrentWeaponId )
@@ -672,18 +672,6 @@ bool CClientWeaponMgr::ChangeWeapon( uint8 nWeaponId,
 			if (WMGR_INVALID_ID != m_nRequestedWeaponId)
 			{
 				m_nRequestedWeaponId = nCurrentWeaponId;
-			}
-		}
-
-		// Do we need to change the ammo?
-		if ( nAmmoId == nCurrentAmmoId )
-		{
-			bChangeAmmo = false;
-
-			// Make sure a ammo change in progress is aborted...
-			if (WMGR_INVALID_ID != m_nRequestedAmmoId)
-			{
-				m_nRequestedAmmoId = nCurrentAmmoId;
 			}
 		}
 	}
@@ -731,6 +719,25 @@ bool CClientWeaponMgr::ChangeWeapon( uint8 nWeaponId,
 	else
 	{
 		nNewAmmoAmount = nAmmoAmount;
+	}
+
+	// RETAIL: 0x1002a617: the ammo we would change to is compared with the
+	// current one (not the ammo asked for, which may be "the best").
+	if ( m_pCurrentWeapon )
+	{
+		uint8 nCurrentAmmoId = m_pCurrentWeapon->GetAmmoId();
+
+		// Do we need to change the ammo?
+		if ( nNewAmmoId == nCurrentAmmoId )
+		{
+			bChangeAmmo = false;
+
+			// Make sure a ammo change in progress is aborted...
+			if (WMGR_INVALID_ID != m_nRequestedAmmoId)
+			{
+				m_nRequestedAmmoId = nCurrentAmmoId;
+			}
+		}
 	}
 
 	bool bSwitchInstantly = bChangeWeapon;

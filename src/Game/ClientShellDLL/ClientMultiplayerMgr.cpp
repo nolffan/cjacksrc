@@ -41,6 +41,11 @@ ClientMultiplayerMgr* g_pClientMultiplayerMgr = NULL;
 // --------------------------------------------------------------------------- //
 
 ClientMultiplayerMgr::ClientMultiplayerMgr( )
+	// RETAIL: 0x1002027e: the NAT wait is initialized with the members.
+:	m_fNatWaitStart( 0.0f ),
+	m_fNatWaitTime( 0.0f ),
+	m_fNatWaitNow( 0.0f ),
+	m_bNatNegotiated( false )
 {
 	m_nServerPort = -1;
 	m_nServerKey = 0;
@@ -52,9 +57,8 @@ ClientMultiplayerMgr::ClientMultiplayerMgr( )
 	m_aCurMessageSourceAddr[3] = 0;
 	m_nCurMessageSourcePort = 0;
 
-	memset( &m_StartGameRequest, 0, sizeof( m_StartGameRequest ));
-	// No socket of our own yet (StartGameRequest::m_hSocket): the engine opens one.
-	m_StartGameRequest.m_hSocket = (uint32)-1;
+	// RETAIL: 0x100202df: StartGameRequest's constructor clears it (its
+	// socket -1); only the type is set here.
 	m_StartGameRequest.m_Type = GAMEMODE_NONE;
 	memset( &m_NetClientData, 0, sizeof( m_NetClientData ));
 
@@ -70,10 +74,6 @@ ClientMultiplayerMgr::ClientMultiplayerMgr( )
 
 	m_bNatNegotiate = false;
 	m_eJoinState = eJoinState_None;
-	m_fNatWaitStart = 0.0f;
-	m_fNatWaitTime = 0.0f;
-	m_fNatWaitNow = 0.0f;
-	m_bNatNegotiated = false;
 	m_bUsePublicAddress = true;	// RETAIL: CShell 0x10020328
 }
 
@@ -332,9 +332,12 @@ bool ClientMultiplayerMgr::SetupClient( char const* pszHostName, char const* psz
 		MAX_SGR_STRINGLEN );
 	m_StartGameRequest.m_Type = STARTGAME_CLIENTTCP;
 
-	strncpy( m_StartGameRequest.m_HostInfo.m_sName, ( pszHostName && pszHostName[0] ) ? pszHostName : "",
-		MAX_SGR_STRINGLEN );
-	m_StartGameRequest.m_HostInfo.m_sName[MAX_SGR_STRINGLEN - 1] = '\0';
+	// RETAIL: 0x1001f3b7: the whole session name buffer.
+	if( pszHostName && pszHostName[0] )
+		strncpy( m_StartGameRequest.m_HostInfo.m_sName, pszHostName, ARRAY_LEN( m_StartGameRequest.m_HostInfo.m_sName ) - 1 );
+	else
+		strncpy( m_StartGameRequest.m_HostInfo.m_sName, "", ARRAY_LEN( m_StartGameRequest.m_HostInfo.m_sName ) - 1 );
+	m_StartGameRequest.m_HostInfo.m_sName[ARRAY_LEN( m_StartGameRequest.m_HostInfo.m_sName ) - 1] = '\0';
 
 	if( pszPassword )
 		m_nClientPass = str_Hash( pszPassword );
@@ -417,15 +420,15 @@ bool ClientMultiplayerMgr::SetupServerHost( int nPort, bool bLANOnly )
 		LTStrCpy( m_StartGameRequest.m_HostInfo.m_sName, pProfile->m_ServerGameOptions.GetTeamDeathmatch().m_sSessionName.c_str( ),
 					sizeof(m_StartGameRequest.m_HostInfo.m_sName));
 		break;
-	case eGameTypeDoomsDay:
-	    m_StartGameRequest.m_HostInfo.m_dwMaxConnections = pProfile->m_ServerGameOptions.GetDoomsday().m_nMaxPlayers-1;
-		LTStrCpy( m_StartGameRequest.m_HostInfo.m_sName, pProfile->m_ServerGameOptions.GetDoomsday().m_sSessionName.c_str( ),
-					sizeof(m_StartGameRequest.m_HostInfo.m_sName));
-		break;
 	// RETAIL: 0x1001f450
 	case eGameTypeDemolition:
 	    m_StartGameRequest.m_HostInfo.m_dwMaxConnections = pProfile->m_ServerGameOptions.GetDemolition().m_nMaxPlayers-1;
 		LTStrCpy( m_StartGameRequest.m_HostInfo.m_sName, pProfile->m_ServerGameOptions.GetDemolition().m_sSessionName.c_str( ),
+					sizeof(m_StartGameRequest.m_HostInfo.m_sName));
+		break;
+	case eGameTypeDoomsDay:
+	    m_StartGameRequest.m_HostInfo.m_dwMaxConnections = pProfile->m_ServerGameOptions.GetDoomsday().m_nMaxPlayers-1;
+		LTStrCpy( m_StartGameRequest.m_HostInfo.m_sName, pProfile->m_ServerGameOptions.GetDoomsday().m_sSessionName.c_str( ),
 					sizeof(m_StartGameRequest.m_HostInfo.m_sName));
 		break;
 	};
@@ -670,7 +673,7 @@ bool ClientMultiplayerMgr::HandleMsgHandshake( ILTMessage_Read & msg )
 			// The server's session name and the level it is on.
 			msg.ReadString( m_StartGameRequest.m_HostInfo.m_sName, ARRAY_LEN( m_StartGameRequest.m_HostInfo.m_sName ));
 
-			char szLevel[MAX_PATH+256];
+			char szLevel[MAX_PATH*2];	// RETAIL: 0x208 bytes (0x1001fb73)
 			msg.ReadString( szLevel, ARRAY_LEN( szLevel ));
 			g_pMissionMgr->SetServerLevel( szLevel );
 
@@ -793,6 +796,12 @@ bool ClientMultiplayerMgr::HandleMsgHandshake( ILTMessage_Read & msg )
 			// This just means the server validated us...
 		}
 		break;
+		case MID_HANDSHAKE_BADFILES:
+		{
+			m_bForceDisconnect = true;
+			SetDisconnectCode(eDisconnect_BadFiles, NULL);
+		}
+		break;
 		case MID_HANDSHAKE_WRONGPASS:
 		{
 			// Oops... wrong password, disconnect
@@ -804,12 +813,6 @@ bool ClientMultiplayerMgr::HandleMsgHandshake( ILTMessage_Read & msg )
 		{
 			m_bForceDisconnect = true;
 			SetDisconnectCode(eDisconnect_CDKeyRejected, NULL);
-		}
-		break;
-		case MID_HANDSHAKE_BADFILES:
-		{
-			m_bForceDisconnect = true;
-			SetDisconnectCode(eDisconnect_BadFiles, NULL);
 		}
 		break;
 		case MID_HANDSHAKE_BANNED:
@@ -1247,6 +1250,9 @@ bool ClientMultiplayerMgr::StartServerAsHost( )
 	m_StartGameRequest.m_GameInfoLen = sizeof( pServerGameOptions );
 	m_StartGameRequest.m_pClientData = &m_NetClientData;
 	m_StartGameRequest.m_ClientDataLen = sizeof( m_NetClientData );
+
+	// RETAIL: 0x1001ef2e: the host is joined to its own server.
+	m_eJoinState = eJoinState_Joined;
 
 	// Start the server.
 	m_nLastConnectionResult = g_pLTClient->StartGame( const_cast< StartGameRequest * >( &m_StartGameRequest ));

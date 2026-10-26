@@ -236,9 +236,6 @@ CPlayerMgr::CPlayerMgr()
 
 	m_bCameraAttachedToHead	= false;
 	m_bLerpAttachedCamera	= false;
-	m_bManualAim			= false;
-	m_bRespawnRequested		= false;
-	m_vLastOrientation.Init( );
 
 	m_nPlayerInfoChangeFlags	= 0;
 	m_fPlayerInfoLastSendTime	= 0.0f;
@@ -257,8 +254,8 @@ CPlayerMgr::CPlayerMgr()
 	m_fMaxDuckDistance		= -20.0f;
 	m_fStartDuckTime		= 0.0f;
 
+	// RETAIL: 0x1009bc40: the carried piece is not cleared here.
 	m_nCarryingObject		= CFX_CARRY_NONE;
-	m_pCarryingChassisPiece	= LTNULL;
 	m_bCanDropCarriedObject	= false;
 
  	m_fDistanceIndicatorPercent = -1.0f;
@@ -270,6 +267,10 @@ CPlayerMgr::CPlayerMgr()
 
 	m_fMultiplayerDeathCamMoveTimer = 0.0f;
 	m_fMultiAttachDeathCamTimer = 0.0f;
+
+	m_bManualAim			= false;
+	m_bRespawnRequested		= false;
+	m_vLastOrientation.Init( );
 }
 
 CPlayerMgr::~CPlayerMgr()

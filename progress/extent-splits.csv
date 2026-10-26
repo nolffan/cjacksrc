@@ -265,3 +265,4 @@ Lithtech.exe,0x00467e20,CLTServer::~CLTServer (stores CLTServer's vtable 0x55107
 Lithtech.exe,0x00487c20,CConCommandBox::Term (mov dword [ecx],0; ret): after the ret 4 at 0x487c12; enumerated inside the row at 0x487bb0
 Lithtech.exe,0x004ee830,CModelShadowShader::~CModelShadowShader (stores the vtable 0x558cc4; ret): after the ret at 0x4ee825; enumerated inside the row at 0x4ee820
 Lithtech.exe,0x00512c00,a UI manager's destructor (stores the vtable 0x5592d8; ret): after the ret 4 at 0x512bf0; enumerated inside the row at 0x512bc0
+CShell.dll,0x10105810,CVehicleMgr::OnEnterWorld (a jmp to InitWorldData 0x101056e0) after the int3 padding that ends InitWorldData; called from CMoveMgr::OnEnterWorld (0x1002b2af)

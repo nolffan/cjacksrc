@@ -970,6 +970,9 @@ bool CMissionMgr::SetLoadingLevel( )
 	// Clear the disconnect flags.
 	g_pInterfaceMgr->SetIntentionalDisconnect( false );
 
+	// RETAIL: 0x10088696: the level is no longer being exited.
+	m_bExitingLevel = false;
+
 	if (GS_LOADINGLEVEL == g_pInterfaceMgr->GetGameState())
 	{
 		g_pInterfaceMgr->UpdateLoadScreenInfo();
@@ -1053,6 +1056,10 @@ bool CMissionMgr::PreLoadWorld( char const* pszNewWorldName )
 	char szTmp[256];
 	SAFE_STRCPY(szTmp,pszNewWorldName);
 	strtok(szTmp,".");
+
+	// RETAIL: 0x1008888a: no world name, no world.
+	if( !szTmp[0] )
+		return false;
 
 	// Check if we already set ourselves up for this world.
 //	if( !m_sCurrentWorldName.IsEmpty( ) && m_sCurrentWorldName.CompareNoCase( szTmp ) == 0 )
