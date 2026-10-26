@@ -199,12 +199,12 @@ bool CTeamDeathMatchMissionMgr::HandleMultiplayerOptions( HCLIENT hSender, ILTMe
 
 	sms.m_bUseSkills = false;
 	sms.m_bFriendlyFire = sgo.GetTeamDeathmatch().m_bFriendlyFire;
-	sms.m_bWeaponsStay = sgo.GetTeamDeathmatch().m_bWeaponsStay;
 	sms.m_nRunSpeed = sgo.GetTeamDeathmatch().m_nRunSpeed;
 	sms.m_nScoreLimit = sgo.GetTeamDeathmatch().m_nScoreLimit;
 	sms.m_nTimeLimit = sgo.GetTeamDeathmatch().m_nTimeLimit;
 	sms.m_nRounds = sgo.GetTeamDeathmatch().m_nRounds;
 	sms.m_nFragScore = sgo.GetTeamDeathmatch().m_nFragScore;
+	sms.m_bWeaponsStay = sgo.GetTeamDeathmatch().m_bWeaponsStay;	// RETAIL: last
 
 	SetServerSettings(sms);
 

@@ -206,3 +206,12 @@ Lithtech.exe,0x00512fc0,CUIWidgetManager::GetScreenHeight (mov ax,[ecx+6]; ret):
 Lithtech.exe,0x00513200,CUIWidgetManager::~CUIWidgetManager (the vtable store; ret): after the empty function at 0x5131f0; enumerated as one row with it
 Lithtech.exe,0x004ea0f0,CTextureScriptMgr::GetHardcodedEvaluator (xor eax,eax; ret 4): after GetSingleton (mov eax,<instance>; ret) 0x4ea0e0; enumerated as one row with it
 Object.lto,0x1015eaa0,the sine wave function after WaveFn_Linear (0x1015ea90: flds 4(%esp); ret, then int3 padding); referenced from the wave function table
+Object.lto,0x100e4c60,GunMount::StopFiring (our name; mov [ecx+0x94]; 0 / mov al; 1 / ret): nothing calls it and GunMount.obj (no /Gy) keeps it; enumerated inside IsAnimationDone 0x100e4c00
+SndDrv.dll,0x100010a0,CounterFinal::CountMS (jmp EndMS 0x10001040): uncalled; counter.obj compiled /Ox keeps it; enumerated inside the gap row from EndMS 0x10001040
+SndDrv.dll,0x10003340,WaveFile::~WaveFile (jmp Close 0x10001480): uncalled; s_dx8.obj compiled /Ox keeps it; enumerated inside the gap row from WaveFile::WaveFile 0x10003330
+SndDrv.dll,0x10004740,CSample::~CSample (mov [ecx]; vtable 0x1000a738 / jmp Term 0x10003c60): uncalled (the deleting destructor inlines it at 0x10004cc2); enumerated inside CSample::CSample 0x100046d0
+GameSpy.dll,0x10003c60,CGameSpyServer::PublicAddressCallback (ret): never registered; GameSpyServer.obj compiled /Ox keeps it; enumerated inside NatNegCompletedCallback 0x10003c50 (ret)
+ContractJackServer.exe,0x0040ec60,CReservedWords::CReservedWord::~CReservedWord (jmp [CStringT::~CStringT]): reached only by tail jumps (0x40f173 and the unwind stubs at 0x415353 0x415384 0x415395); enumerated inside 0x40ec20
+ContractJackServer.exe,0x0040f170,std::pair<const char* const; CReservedWord>::~pair (add ecx 4 / jmp ~CReservedWord 0x40ec60): reached only by tail jumps (0x40f503 and the unwind stub at 0x41535b); enumerated inside 0x40ee50 after its jump table
+ContractJackServer.exe,0x00401000,GetRandom() (jmp [rand]): the first function of the image (CommonUtilities.obj; /Ox keeps it though nothing calls it); the enumeration starts at 0x401040
+SndDrv.dll,0x100085d0,LTMemInit (ret): ltmem.obj's first function; the initializer inlines it so nothing calls it; enumerated inside 0x10008540 (s_dx8.obj's last)

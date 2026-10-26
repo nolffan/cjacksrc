@@ -37,9 +37,9 @@ CAIGoalAttack::CAIGoalAttack()
 	m_eWeaponType = kAIWeap_Ranged;
 
 	m_bPanicCanActivate = LTFALSE;
-	m_bSeekPlayer = LTFALSE;
 	m_ePosture = kAP_Stand;
 	m_fChaseDelay = 1.0f;
+	m_bSeekPlayer = LTFALSE;	// RETAIL: Object 0x1001d8f1
 
 	m_bNodeBased	= LTFALSE;
 	m_bForceSearch	= LTFALSE;

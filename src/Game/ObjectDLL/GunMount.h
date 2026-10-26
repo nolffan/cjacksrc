@@ -57,6 +57,7 @@ class GunMount : public GameBase
 		void			SetVisible( bool bVisible );
 
 		bool			IsAnimationDone( );
+		bool			StopFiring( );	// RETAIL: our name
 		bool			BeginFire( );
 		bool			StartFiring( );
 		bool			EndFire( );

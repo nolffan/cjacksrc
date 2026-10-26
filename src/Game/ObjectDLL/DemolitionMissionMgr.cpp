@@ -100,11 +100,12 @@ bool CDemolitionMissionMgr::StartGame(ILTMessage_Read& msg )
 	// Each team attacks as often as it defends: an even number of rounds,
 	// two at least.
 
-	sms.m_nRounds = sgo.GetDemolition().m_nRounds;
-	if( sms.m_nRounds & 1 )
-		sms.m_nRounds++;
-	if( sms.m_nRounds <= 2 )
-		sms.m_nRounds = 2;
+	uint8 nRounds = sgo.GetDemolition().m_nRounds;
+	if( nRounds & 1 )
+		nRounds++;
+	if( nRounds <= 2 )
+		nRounds = 2;
+	sms.m_nRounds = nRounds;
 
 	sms.m_nFragScore = sgo.GetDemolition().m_nFragScore;
 
@@ -113,7 +114,10 @@ bool CDemolitionMissionMgr::StartGame(ILTMessage_Read& msg )
 	if( !g_pMissionButeMgr->Init( MISSION_DM_FILE ))
 		return false;
 
-	return CServerMissionMgr::StartGame( msg );
+	if( !CServerMissionMgr::StartGame( msg ))
+		return false;
+
+	return true;
 }
 
 // ----------------------------------------------------------------------- //
@@ -219,12 +223,12 @@ bool CDemolitionMissionMgr::HandleMultiplayerOptions( HCLIENT hSender, ILTMessag
 
 	sms.m_bUseSkills = false;
 	sms.m_bFriendlyFire = sgo.GetDemolition().m_bFriendlyFire;
-	sms.m_bWeaponsStay = sgo.GetDemolition().m_bWeaponsStay;
 	sms.m_nRunSpeed = sgo.GetDemolition().m_nRunSpeed;
 	sms.m_nScoreLimit = 0;
 	sms.m_nTimeLimit = 0;
 	sms.m_nRounds = sgo.GetDemolition().m_nRounds;
 	sms.m_nFragScore = sgo.GetDemolition().m_nFragScore;
+	sms.m_bWeaponsStay = sgo.GetDemolition().m_bWeaponsStay;	// RETAIL: last
 
 	SetServerSettings(sms);
 

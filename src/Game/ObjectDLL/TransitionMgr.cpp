@@ -394,7 +394,7 @@ LTBOOL CTransitionMgr::SaveTransitionObjects( )
 		uint8 nOldFlags = g_pGameServerShell->GetLGFlags( );
 		g_pGameServerShell->SetLGFlags( LOAD_TRANSITION );
 
-		LTRESULT res = g_pLTServer->SaveObjects( const_cast< char* >( g_pServerSaveLoadMgr->GetTransitionFile( )), pTransObjList, LOAD_TRANSITION, SAVEOBJECTS_SAVEGAMECONSOLE );
+		LTRESULT res = g_pLTServer->SaveObjects( const_cast< char* >( g_pServerSaveLoadMgr->GetTransitionFile( )), pTransObjList, LOAD_TRANSITION, 0 ); // RETAIL: Object 0x1015900a, no flags
 
 		g_pGameServerShell->SetLGFlags( nOldFlags );
 		

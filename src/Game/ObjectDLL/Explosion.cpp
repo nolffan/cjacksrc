@@ -83,8 +83,8 @@ bool ExplosionFilterFn(HOBJECT hObj, void *pUserData)
 Explosion::Explosion() : GameBase()
 {
 	m_fDamageRadius			= 200.0f;
-	m_fMinDamageRadius		= 50.0f;
 	m_fMaxDamage			= 200.0f;
+	m_fMinDamageRadius		= 50.0f;	// RETAIL: Object 0x100cbfbc
 	m_eDamageType			= DT_UNSPECIFIED;
 
 	// For now these aren't used with DEdit created Explosions...

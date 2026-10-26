@@ -596,7 +596,10 @@ LTBOOL CAIGoalCheckBody::HandleGoalSenseTrigger(AISenseRecord* pSenseRecord)
 			AddBodyToSeenList( m_hStimulusSource );
 			m_vStimulusPos = pSenseRecord->vLastStimulusPos;
 
-			return ( g_pLTServer->GetTime() > m_fIgnoreBodiesTime );
+			// RETAIL: Object 0x10024e48.  Ignoring bodies, the AI also
+			// forgets the stimulus (below).
+			if( g_pLTServer->GetTime() > m_fIgnoreBodiesTime )
+				return LTTRUE;
 		}
 
 		// Handle any other sense.
