@@ -1979,29 +1979,10 @@ void CMoveMgr::UpdatePlayerAnimation()
 
 		g_pLTClient->SetModelAnimation(m_hObject, modelAnim);
 
-		// Get our wanted dims.
-	    LTVector oldDims;
-		oldDims = m_vWantedDims;
-		m_vWantedDims.Init(1.0f, 1.0f, 1.0f);
-		g_pCommonLT->GetModelAnimUserDims(m_hObject, &m_vWantedDims, modelAnim);
-
-		// Figure out a position offset.
-		LTVector offset;
-		offset.Init();
-		if (m_vWantedDims.y < oldDims.y)
-		{
-			offset.y = -(oldDims.y - m_vWantedDims.y);
-			offset.y -= .01f; // Fudge factor
-		}
+		// RETAIL: 0x1002b480. The dims no longer come from the animation:
+		// Update sets them from the crouch and stand dims.
 
 		g_pCommonLT->SetObjectFlags(m_hObject, OFT_Flags, curFlags, FLAGMASK_ALL);
-
-		// This makes you small before setting the dims so you don't clip thru stuff.
-
-		if (!AreDimsCorrect())
-		{
-			ResetDims(&offset);
-		}
 	}
 }
 
@@ -2053,14 +2034,17 @@ void CMoveMgr::ResetDims(LTVector *pOffset)
 	// Move them if they want
 	else if (pOffset && (*pOffset != LTVector(0.0f, 0.0f, 0.0f)))
 	{
-		vOldPos += *pOffset;
-		g_pPhysicsLT->MoveObject(m_hObject, &vOldPos, 0);
-		g_pLTClient->SetObjectPos(m_hObject, &vOldPos);
+		// RETAIL: 0x1002b64d: the object is moved (not placed) there, and
+		// the ground height is where the move ended.
+		LTVector vNewPos = vOldPos + *pOffset;
+		g_pPhysicsLT->MoveObject(m_hObject, &vNewPos, 0);
+		LTVector vPos;
+		g_pLTClient->GetObjectPos(m_hObject, &vPos);
 		// Update the "last on ground" position so we don't think we're falling based on the position change
 		CollisionInfo Info;
 		g_pPhysicsLT->GetStandingOn(m_hObject, &Info);
 		if (Info.m_hObject)
-			m_fLastOnGroundY = vOldPos.y;
+			m_fLastOnGroundY = vPos.y;
 	}
 }
 
@@ -2348,7 +2332,8 @@ void CMoveMgr::ShowPos(char *pBlah)
 
 void CMoveMgr::Update()
 {
-	if (g_pGameClientShell->IsGamePaused()) return;
+	// RETAIL: 0x1002f36b: only the server's pause stops the movement.
+	if (g_pGameClientShell->IsServerPaused()) return;
 	
 	HOBJECT hObj = g_pLTClient->GetClientObject();
 	if (!m_hObject || !hObj) return;
@@ -2379,11 +2364,30 @@ void CMoveMgr::Update()
 
 	UpdateSound();
 
+	// RETAIL: 0x1002f434. The wanted dims are the crouch or the stand
+	// dims (not the animation's), and shrinking moves the object down.
+
+	LTVector vOldDims = m_vWantedDims;
+	if (IsDucking())
+	{
+		m_vWantedDims = m_vCrouchDims;
+	}
+	else
+	{
+		m_vWantedDims = m_vStandDims;
+	}
+
 	// Make sure we have desired dims....
 
 	if (!AreDimsCorrect())
 	{
-		ResetDims();
+		LTVector vOffset(0.0f, 0.0f, 0.0f);
+		if (m_vWantedDims.y < vOldDims.y)
+		{
+			vOffset.y = -(vOldDims.y - m_vWantedDims.y);
+		}
+
+		ResetDims(&vOffset);
 	}
 
 	MoveLocalSolidObject();

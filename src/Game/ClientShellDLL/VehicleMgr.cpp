@@ -1948,8 +1948,8 @@ void CVehicleMgr::SetNormalPhysicsModel()
 
 void CVehicleMgr::CreateVehicleModel()
 {
+	// RETAIL: 0x10109870: constructed, not cleared again.
 	ObjectCreateStruct createStruct;
-	INIT_OBJECTCREATESTRUCT(createStruct);
 
 	// NEED TO MOVE THESE INTO A BUTE FILE!!!
 	switch (m_ePPhysicsModel)
@@ -3540,11 +3540,7 @@ void CVehicleMgr::CalculateLureVehicleRotation(LTVector & vPlayerPYR,
 
 	// Turn the old camera rotation by the change.
 	LTRotation rOld( fOldPitch, fOldYaw, vPlayerPYR.z );
-	float fPitch = vNewPYR.x;
-	if( fPitch <= -DEG2RAD( 76.5f ))
-		fPitch = -DEG2RAD( 76.5f );
-	else if( fPitch > DEG2RAD( 76.5f ))
-		fPitch = DEG2RAD( 76.5f );
+	float fPitch = ( vNewPYR.x > -DEG2RAD( 76.5f )) ? (( DEG2RAD( 76.5f ) < vNewPYR.x ) ? DEG2RAD( 76.5f ) : vNewPYR.x ) : -DEG2RAD( 76.5f );
 	LTRotation rDelta( fPitch - fOldPitch, vNewPYR.y - fOldYaw, 0.0f );
 	LTRotation rNew = rOld * rDelta;
 
@@ -3643,7 +3639,8 @@ void CVehicleMgr::CalculateVehicleCameraDisplacment( LTVector& vDisplacement )
 				}
 
 				// Adjust our parameterized bob.
-				m_fLureBobParameter += g_pLTClient->GetFrameTime( ) * g_vtBicycleBobRate.GetFloat( );
+				// RETAIL: 0x101082e3: the game's frame time.
+				m_fLureBobParameter += g_pGameClientShell->GetFrameTime( ) * g_vtBicycleBobRate.GetFloat( );
 				
 				// Keep in range of 0 to 1.0.
 				m_fLureBobParameter = fmod( m_fLureBobParameter, 1.0f );

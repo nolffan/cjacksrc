@@ -4265,7 +4265,7 @@ void CGameClientShell::RenderCamera(bool bDrawInterface)
 
 	//update all the effects status as well as any that might effect the camera
 	// (RETAIL: 0x10047cdb, always in multiplayer)
-	m_ClientFXMgr.UpdateAllActiveFX( IsMultiplayerGame( ) || m_bMainWindowFocus );
+	m_ClientFXMgr.UpdateAllActiveFX( IsMultiplayerGame( ) ? true : m_bMainWindowFocus );
 
     g_pLTClient->Start3D();
 

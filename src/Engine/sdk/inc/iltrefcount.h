@@ -33,16 +33,17 @@ public:
 	}
 #ifdef CJACK_MODERN
 	// A copied reference owns its own count, just like a reference made
-	// from a raw pointer. The implicit copies left dangling message pointers
-	// in CPlayerMgr after UpdatePlayerInfo's local references went away.
+	// from a raw pointer (MODERN.md EN-51).
 	CLTReference(const CLTReference &other) : m_pPtr(other.m_pPtr) {
 		if (m_pPtr)
 			m_pPtr->IncRef();
 	}
+#endif
+	// RETAIL: an assigned reference counts (CShell 0x1009fbc5, CPlayerMgr::
+	// UpdatePlayerInfo keeping its last message), as the Jupiter SDK's.
 	CLTReference &operator=(const CLTReference &other) {
 		return operator=(other.m_pPtr);
 	}
-#endif
 	~CLTReference() {
 		if (m_pPtr)
 			m_pPtr->DecRef(); 
