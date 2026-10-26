@@ -136,9 +136,8 @@ LTBOOL CBodyFX::Init(SFXCREATESTRUCT* psfxCreateStruct)
 
 	m_HitBox.Init( m_hServerObject, m_bs.vHitBoxDims, m_bs.vHitBoxOffset );
 
-	// Fade to backpacks in low violence games and only for players in non-singlepleyer game types...
-	
-	m_bFadeToBackpack = g_pVersionMgr->IsLowViolence() || ((GetGameType() != eGameTypeSingle) && (m_bs.nClientId != (uint8)-1));
+	// RETAIL: 0x1000f2cf: Contract J.A.C.K. never sets m_bFadeToBackpack (the
+	// constructor clears it): no backpacks for low violence or multiplayer.
 
 
 	//if we are in a low-violence game, hide the body and create a backpack,

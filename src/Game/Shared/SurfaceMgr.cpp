@@ -389,6 +389,9 @@ SURFACE::SURFACE()
 
 	szExitFXName[0]			= '\0';
 	szUWExitFXName[0]		= '\0';
+
+	// RETAIL: CShell 0x100f5ca3, Object 0x10151233: room for six vehicles.
+	aVehicleTypes.reserve( 6 );
 }
 
 SURFACE::~SURFACE()

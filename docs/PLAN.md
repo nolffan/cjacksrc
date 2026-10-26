@@ -1564,6 +1564,44 @@ Round 1 (branch `cshell`), the items 8b leaves open:
   0x10063ee0, SetupSavedLevel 0x10088810). Next: those, then the
   unplaced functions.
 
+- Round 5, the nears (branch `cshell`), rotation first. Method: every
+  near's call sequence against retail's (`tools/callseq.py`; 56 differed),
+  then a register-masked diff of each rotation-related near. Logic fixed:
+  CMoveMgr::Update/UpdatePlayerAnimation were cross-paired by size; retail
+  Update sets the wanted dims from the crouch or stand dims (not the
+  animation's), passes ResetDims the downward offset, and stops only on
+  the server's pause; ResetDims moves the object and reads back where it
+  ended (no SetObjectPos past the collision); GetVehicleContourRoll counts
+  the lure too (the head cant); PlayMovementSound takes the vehicle id
+  (DoFootStepKey passes the create struct's model and vehicle, the head
+  bob none); HandlePitch tests the player first; UpdateOnVehicle reads no
+  flags; UpdateWeaponModel has no weapon-chooser test; HandleWeaponChanged
+  leaves the choosers open; UpdatePlaying only updates the player while
+  the server is paused; the lure bob uses the game's frame time; the body
+  never fades to a backpack (m_bFadeToBackpack only cleared);
+  CreateVehicleModel's create struct is not cleared twice; CGameSettings::
+  Init does not reinitialize the sound; FinishStartGameFromLevel has no
+  LoadFailed; SURFACE reserves six vehicle types (shared); PlayerVehicleFX::
+  Move has no vehicle test. CLTReference's copy assignment counts in the
+  legacy build too (retail's UpdatePlayerInfo releases and references its
+  saved messages, so EN-51's dangling messages were ours, not retail's).
+  Codegen only, left: CalculateCameraRotation and the lure rotation (the
+  pitch clamp's jump threading; the lure's clamp is now retail's `?:`),
+  the contour rotation (the vehicle angles' lerp spills), the banking
+  rotation (ebx/edi), LeanMgr::CalculateNewPosRot (scheduling),
+  UpdateVehicleMotion (the accel and decel branches' order, two vector
+  operators out of line), UpdatePlayerInfo (one store), AutoTargetFilterFn
+  (the exit block).
+- Where it stops (round 5): the callseq list's rest (out of the rotation
+  set): SetCarryingObject, HandleSaveData, ChangeWeapon, ChassisButeMgr::
+  Init, KillMe, ScreenPlayer::HandleCallback (callees that may only be
+  placed elsewhere), GlobalClientMgr::Init, SetDeviceData, HandleSFXMsg,
+  InterfaceMgr::Term, OnCommandOn, OnKeyDown, CPlayerMgr::Load, HUD
+  Carrying/Decision, LoadingScreen::Show, Music::InitLevel, OnEngine
+  Initialized, UpdateDynamicSpecialFX; UpdateTeam's else branch is a row
+  of its own (0x100f8d29) paired with an EH stub of ours. Then the rest by
+  byte delta.
+
 ### 8d. playtest coverage (branch `apps2`)
 
 Harness: `make control` (out/cjack-control: retail's game with our

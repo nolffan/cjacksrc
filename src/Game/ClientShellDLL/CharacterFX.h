@@ -92,8 +92,10 @@ class CCharacterFX : public CSpecialFX
 
 		void PlayDingSound();
 
+		// RETAIL: 0x10011d50 (ret 0x1c): the vehicle's id is the caller's.
         void PlayMovementSound(LTVector vPos, SurfaceType eSurface,
-			LTBOOL bLeftFoot, PlayerPhysicsModel eModel=PPM_NORMAL);
+			LTBOOL bLeftFoot, PlayerPhysicsModel eModel=PPM_NORMAL,
+			uint8 nVehicleId=0xff);	// VBMGR_INVALID_ID
 
  		void ResetSoundBufferData() { m_NodeController.ResetSoundBufferData(); }
  
