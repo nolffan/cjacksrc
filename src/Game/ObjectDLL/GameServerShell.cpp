@@ -1490,10 +1490,9 @@ bool CGameServerShell::BootClients( )
 		if( !pClientData )
 			continue;
 
-		char const* pszReason;
 		if( pClientData->m_bKicked )
 		{
-			pszReason = "Removing kicked client.";
+			g_pLTServer->CPrint( "Removing kicked client." );
 		}
 		else
 		{
@@ -1510,10 +1509,9 @@ bool CGameServerShell::BootClients( )
 			if( nDeltaTime < nAutoBootTime )
 				continue;
 
-			pszReason = "Booting innactive client.";
+			g_pLTServer->CPrint( "Booting innactive client." );
 		}
 
-		g_pLTServer->CPrint( pszReason );
 		g_pLTServer->KickClient( pClientData->m_hClient );
 	}
 

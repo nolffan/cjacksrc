@@ -471,7 +471,11 @@ bool CServerSaveLoadMgr::CheckpointLoad( )
 	if( !CheckpointSaveExists( ))
 		return false;
 
-	return LoadSaveFile( CHECKPOINT_INIKEY, GetCheckpointSaveDir( ), GetCheckpointSaveFile( ));
+	// Load the save file.
+	if( !LoadSaveFile( CHECKPOINT_INIKEY, GetCheckpointSaveDir( ), GetCheckpointSaveFile( )))
+		return false;
+
+	return true;
 }
 
 // ----------------------------------------------------------------------- //
