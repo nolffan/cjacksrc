@@ -519,6 +519,7 @@ CShell.dll	sub_100023a0
 CShell.dll	sub_100023e0
 CShell.dll	sub_10002470
 CShell.dll	sub_100024b0
+CShell.dll	sub_10002560
 CShell.dll	sub_10002590
 CShell.dll	sub_100025d0
 CShell.dll	sub_100025e0
@@ -742,6 +743,7 @@ CShell.dll	sub_1000bf20
 CShell.dll	sub_1000bf40
 CShell.dll	sub_1000bfa0
 CShell.dll	sub_1000c000
+CShell.dll	sub_1000c030
 CShell.dll	sub_1000c070
 CShell.dll	sub_1000c080
 CShell.dll	sub_1000c0a0
@@ -7966,11 +7968,13 @@ GameSpy.dll	sub_10006070
 GameSpy.dll	sub_100060e0
 GameSpy.dll	sub_10006140
 GameSpy.dll	sub_10006190
+Lithtech.exe	sub_401000
 Lithtech.exe	sub_401040
 Lithtech.exe	sub_401070
 Lithtech.exe	sub_401080
 Lithtech.exe	sub_401090
 Lithtech.exe	sub_4010a0
+Lithtech.exe	sub_4010d0
 Lithtech.exe	sub_4010ea
 Lithtech.exe	sub_401100
 Lithtech.exe	sub_401113
@@ -7985,6 +7989,7 @@ Lithtech.exe	sub_401210
 Lithtech.exe	sub_401250
 Lithtech.exe	sub_401270
 Lithtech.exe	sub_4012b0
+Lithtech.exe	sub_4012fe
 Lithtech.exe	sub_401310
 Lithtech.exe	sub_40135e
 Lithtech.exe	sub_401370
@@ -11609,7 +11614,6 @@ Lithtech.exe	sub_498d00
 Lithtech.exe	sub_498dd0
 Lithtech.exe	sub_498de0
 Lithtech.exe	sub_498f60
-Lithtech.exe	sub_499016
 Lithtech.exe	sub_499020
 Lithtech.exe	sub_4991f0
 Lithtech.exe	sub_499210
@@ -11723,7 +11727,6 @@ Lithtech.exe	sub_49c310
 Lithtech.exe	sub_49c339
 Lithtech.exe	sub_49c350
 Lithtech.exe	sub_49c380
-Lithtech.exe	sub_49c3a9
 Lithtech.exe	sub_49c3c0
 Lithtech.exe	sub_49c3f0
 Lithtech.exe	sub_49c430
@@ -15007,6 +15010,7 @@ Object.lto	sub_100070b0
 Object.lto	sub_100070f0
 Object.lto	sub_10007110
 Object.lto	sub_10007130
+Object.lto	sub_100071a0
 Object.lto	sub_100071d0
 Object.lto	sub_10007200
 Object.lto	sub_10007220
@@ -15191,6 +15195,7 @@ Object.lto	sub_10011fd0
 Object.lto	sub_10012040
 Object.lto	sub_10012060
 Object.lto	sub_10012080
+Object.lto	sub_100120a0
 Object.lto	sub_100120e0
 Object.lto	sub_10012120
 Object.lto	sub_10012170
@@ -24110,6 +24115,7 @@ server.dll	sub_100014b0
 server.dll	sub_10001670
 server.dll	sub_100016b0
 server.dll	sub_100016f0
+server.dll	sub_10001800
 server.dll	sub_10001830
 server.dll	sub_10001890
 server.dll	sub_100018e0

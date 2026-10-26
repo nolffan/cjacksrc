@@ -43,19 +43,19 @@ those functions make up.
 
 | Binary | | Byte-identical functions | Byte-identical code | | Unwritten | Unplaced |
 |---|---|--:|--:|---|--:|--:|
-| `Lithtech.exe` | the engine | 6,892 / 8,028 | 1,123,247 / 1,164,056 bytes | `███████████████████░` 96.4% | 0 | 42 |
-| `server.dll` | the engine's server | 2,746 / 3,140 | 391,663 / 403,635 bytes | `███████████████████░` 97.0% | 0 | 10 |
-| `SndDrv.dll` | the sound driver | 225 / 259 | 28,371 / 28,555 bytes | `███████████████████░` 99.3% | 0 | 0 |
-| `GameSpy.dll` | the GameSpy services | 163 / 182 | 19,242 / 20,178 bytes | `███████████████████░` 95.3% | 0 | 0 |
-| `ContractJack.exe` | the launcher | 284 / 344 | 40,336 / 40,759 bytes | `███████████████████░` 98.9% | 0 | 0 |
-| `ContractJackServer.exe` | the dedicated server | 551 / 646 | 74,668 / 75,622 bytes | `███████████████████░` 98.7% | 0 | 0 |
-| `CShell.dll` | the game: client | 6,075 / 6,555 | 1,090,405 / 1,154,928 bytes | `██████████████████░░` 94.4% | 0 | 0 |
-| `Object.lto` | the game: server objects | 9,007 / 9,787 | 1,585,917 / 1,637,670 bytes | `███████████████████░` 96.8% | 0 | 0 |
-| `ClientFx.fxd` | the game: client effects | 435 / 450 | 104,625 / 104,716 bytes | `███████████████████░` 99.9% | 0 | 0 |
+| `Lithtech.exe` | the engine | 6,893 / 8,027 | 1,123,295 / 1,164,104 bytes | `███████████████████░` 96.4% | 0 | 42 |
+| `server.dll` | the engine's server | 2,747 / 3,167 | 391,711 / 403,943 bytes | `███████████████████░` 96.9% | 0 | 10 |
+| `SndDrv.dll` | the sound driver | 225 / 264 | 28,371 / 28,605 bytes | `███████████████████░` 99.1% | 0 | 0 |
+| `GameSpy.dll` | the GameSpy services | 163 / 191 | 19,242 / 20,268 bytes | `██████████████████░░` 94.9% | 0 | 0 |
+| `ContractJack.exe` | the launcher | 284 / 346 | 40,336 / 40,779 bytes | `███████████████████░` 98.9% | 0 | 0 |
+| `ContractJackServer.exe` | the dedicated server | 551 / 669 | 74,668 / 75,852 bytes | `███████████████████░` 98.4% | 0 | 0 |
+| `CShell.dll` | the game: client | 6,077 / 6,665 | 1,090,502 / 1,156,103 bytes | `██████████████████░░` 94.3% | 0 | 0 |
+| `Object.lto` | the game: server objects | 9,009 / 9,937 | 1,586,014 / 1,639,238 bytes | `███████████████████░` 96.7% | 0 | 0 |
+| `ClientFx.fxd` | the game: client effects | 435 / 455 | 104,625 / 104,763 bytes | `███████████████████░` 99.8% | 0 | 0 |
 | `ltmsg.dll` | the engine's messages, not in the total | 5 / 5 resources | 2,054 / 2,054 bytes | `████████████████████` 100.0% | 0 | -- |
 | `CRes.dll` | the game's client resources, not in the total | 457 / 457 resources | 330,555 / 330,555 bytes | `████████████████████` 100.0% | 0 | -- |
 | `SRes.dll` | the game's server resources, not in the total | no resources | -- | -- | -- | -- |
-| **All** | | **26,378 / 29,391** | **4,458,474 / 4,630,119 bytes** | `███████████████████░` **96.2%** | **0** | **52** |
+| **All** | | **26,384 / 29,721** | **4,458,764 / 4,633,655 bytes** | `███████████████████░` **96.2%** | **0** | **52** |
 <!-- progress:end -->
 
 Every function in that table is recorded in `progress/identical.txt`, and

@@ -276,3 +276,4 @@ server.dll,0x10045c20,udp_GetMaxPossiblePort (mov eax,0xffff; ret): enumerated i
 server.dll,0x10016eb0,LCriticalSection::IsValid (mov al,1; ret): lthread.obj's, after the ret 4 at 0x10016eab; enumerated inside the row at 0x10016e90
 server.dll,0x10016ef0,an LThread member (call 0x1001a710; xor eax,eax; ret): lthread.obj's, after the constructor-like stores ending at 0x10016eea; enumerated inside the row at 0x10016ee0
 server.dll,0x10045c30,an empty function (ret): after udp_GetMaxPossiblePort 0x10045c20 (mov eax,0xffff; ret); enumerated as one row with it
+Lithtech.exe,0x004f0080,an empty function (ret): after the int3 padding that ends the getter at 0x4f0070 (mov eax,0x58c818; ret); enumerated as one row with it
