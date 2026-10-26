@@ -1801,9 +1801,23 @@ Round 1 (branch `cshell`), the items 8b leaves open:
   (its BombTimer copy is 8-byte aligned in ours), CSoundButeMgr's
   constructor, the ButeMgr library's constructor and AddCharacter
   (library code, not looked at).
-- Where it stops (round 7): the rest of the nears list (out/cs-style
-  register-masked diffs of 1-16 lines: register allocation and block
-  layout, plus ScreenJoin's sort helpers).
+- Round 8 (branch `cshell`): the nears not yet looked at, libraries
+  included. Fixed: an edit field takes no leading space (LTGUIMgr's
+  AddCharacter); every ButeMgr build clears its attribute file name at the
+  end of its constructor (Object.lto's too); the Doomsday piece messages
+  play their voice line per action and piece (not the chat sound, and the
+  piece checked as a byte); ResetInventory clears the HUD's key icons; the
+  vehicle's blink rate is a variable and fades in below 0.01, not at it;
+  StartClientServer clears the server status; LaunchApplication is a
+  member returning a BOOLEAN; CHUDCarrying::Init's icon pair is
+  constructed once.
+- Left, codegen: FillVertexBuffer (its "from the top" logic decodes as
+  ours), ChassisButeMgr::Init and the filter functions (shared exits),
+  CSoundButeMgr's constructor (the comparator byte), ScreenJoin::Build,
+  ScreenMulti::HandleCallback, CreateCameraCollisionObject, the rotations
+  of round 5, the ScreenJoin sort helpers.
+- Where it stops (round 8): the remaining 116 nears are register
+  allocation, scheduling and block layout as far as read.
 
 ### 8d. playtest coverage (branch `apps2`)
 

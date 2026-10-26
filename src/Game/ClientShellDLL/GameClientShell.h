@@ -149,6 +149,8 @@ public:
 
 	bool		LauncherServerApp( char const* pszProfileFile );
 	bool		LaunchPatchUpdater( char const* pszURL );
+	// RETAIL: 0x10045f00, a member (its callers pass this).
+	BOOLEAN		LaunchApplication( char const* pszApplication, char const* pszParameters );
 
 	// RETAIL: CShell.dll 0x1004adb0, called once the game has initialized:
 	// writes the multiplayer missions file (MPMissions.txt) from the

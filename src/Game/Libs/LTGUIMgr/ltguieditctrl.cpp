@@ -303,7 +303,10 @@ void CLTGUIEditCtrl::AddCharacter(char c)
 	if (m_pText->GetLength() >= m_nMaxLength)
 		return;
 
-	
+	// RETAIL: CShell 0x101242e6: no leading space.
+	if (!m_pText->GetLength() && c == ' ')
+		return;
+
 	SAFE_STRCPY(szString,m_pText->GetText());
 	int nIndex = strlen(szString);
 
