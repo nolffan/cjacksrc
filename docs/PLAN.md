@@ -1176,6 +1176,25 @@ missed starts into extent-splits.csv):
   LTLibraryLoader; none of its shapes is in the image).
 - Score: Lithtech.exe 6,885 identical, 0 unwritten, 78 unplaced;
   server.dll 2,745, 0, 25.
+- **Hidden starts.** Many of the short unplaced rows were not surplus:
+  retail has the function, but nothing calls it, so the enumeration ran
+  it into the row before (the 11-byte `mov [ecx],vtbl; jmp base` destructors,
+  32 in each image, of which 20 in Lithtech.exe and 6 in server.dll were
+  hidden; ~WorldTreeNode; the 7-byte vtable-store destructors; getters
+  and stubs such as FixedFromFloat, CRezMgr::GetRootDir,
+  udp_GetMaxPossiblePort). Each is split in extent-splits.csv with the
+  bytes that name it, after checking that a `ret` or padding precedes it.
+  Found by searching every unplaced short function's masked bytes
+  at 16-byte boundaries that are not row starts.
+- **Stopped here** (engine3, after merging integ 997a58f): Lithtech.exe
+  6,885 identical, 0 unwritten, 43 unplaced; server.dll 2,745, 0, 20.
+  Left: the one surplus math_phys set (ltdirectmusicloader, see above);
+  LoadLightGroup's push_front (retail inlines it in the exe's copy);
+  initializer and atexit shapes (clientmgr _$E50, winconsole_impl,
+  serverde_impl, the world_* objects); the 1- and 3-byte shapes, which
+  hide among jump targets and need naming by hand; server.dll's
+  CClassMgr tick stubs, gr_InterpolateRotation (a 5-byte jmp thunk) and
+  CLTServer's getters. Then the engine nears (Lithtech 50, server 12).
 
 ### 7. apps
 
