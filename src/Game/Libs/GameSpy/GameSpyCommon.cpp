@@ -257,10 +257,11 @@ uint8 CGameSpyCommon::GetKeyId( char const* pszKeyName, uint8* pnNextKeyId )
 // RETAIL: 0x10003300 (not called in the retail image)
 std::wstring ToWideString( std::string const& sString )
 {
-	wchar_t* pwszString = ( wchar_t* )_alloca(( sString.length( ) + 1 ) * sizeof( wchar_t ));
-	wchar_t* pwszOut = pwszString;
+	uint32 nLen = sString.length( );
+	wchar_t* pwszString = ( wchar_t* )_alloca(( nLen + 1 ) * sizeof( wchar_t ));
 	char const* pszIn = sString.c_str( );
-	wchar_t* pwszEnd = pwszString + sString.length( );
+	wchar_t* pwszEnd = pwszString + nLen;
+	wchar_t* pwszOut = pwszString;
 	while( pwszOut != pwszEnd )
 	{
 		*pwszOut++ = btowc( *pszIn++ );

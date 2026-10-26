@@ -50,7 +50,6 @@
 			bool							Init(ILTClient *pClientDE, FX_BASEDATA *pData, const CBaseFXProps *pProps);
 			void							Term();
 			bool							Update(float tmCur);
-			bool							SuspendedUpdate(float tmFrameTime);
 
 			// Accessors
 

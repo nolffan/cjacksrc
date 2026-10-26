@@ -605,7 +605,7 @@ bool KeyFramer::LoadKeys()
 	g_pLTServer->FreeBlindObjectData( m_nKeyDataIndex, KEYFRAMER_BLINDOBJECTID );
 
 
-	return (m_pKeys != LTNULL);
+	return m_pKeys ? true : false;
 }
 
 

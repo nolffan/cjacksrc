@@ -579,6 +579,61 @@ dedicated server (package 7).
 - **Found.** Under Wine, VC 7.1's compiler spins instead of exiting after
   a fatal error (a missing #include, C1020, ...): out-of-tree runs use a
   watchdog that kills a compile after ten minutes.
+- **Nears and the small binaries' unplaced (round 3, batch 1).**
+  - Logic put back to retail's: the projectile's rotation goes
+    unguaranteed with its position (NETFLAG_ROTUNGUARANTEED,
+    InitialUpdate); the player's precreate flags are PLAYERCOLLIDE |
+    SPECIALNONSOLID, SERVERDIMS in single player only (they were
+    swapped); RESETINVENTORY drops every weapon and clears the ammo
+    again (CPlayerAttachments::ResetAllWeapons is CWeapons::Reset, as
+    ResetInventory 0x10110462 shows: 0x10114fb0, which the earlier fix
+    read as it, is DeselectWeapon); the prone attack state's destructor
+    stands the AI's hit box up (SetLyingDown(false)); CheckBody forgets
+    the stimulus while it ignores bodies; GunMount's load leaves an
+    unknown firing state alone; the transition save passes no save flags;
+    the trigger plugin's PlayerKey list is the key manager's own hook.
+  - Command tables, all 130 classes against retail's (CMDMGR class
+    descriptions): CCharacter has MOVETOFLOOR, CPlayerObj SECRET and
+    CHANGEMODEL (and TRANSMISSION's syntax names the sound), CAI's DRIVE
+    is registered with 2 arguments after DESTROY, WorldProperties'
+    ADDTEAMSCORE with 2 (WorldEdit's check only).
+  - KeyFramer's offsets (CreateObjectList) and its key loading are
+    retail's logic; what is left there is block order and registers.
+    UpdateHeatSeeking's steering is retail's too (the character loop
+    normalizes with Norm()).
+  - Pairing: EventCounter's Increment/Decrement were swapped (own_symbols).
+    GunMount keeps an uncalled StopFiring (0x100e4c60, our name).
+  - Compiler output: `compiler_output` ranges for ClientFx.fxd, SndDrv.dll,
+    GameSpy.dll, ContractJack.exe and ContractJackServer.exe; the real
+    functions are splits of retail rows (CountMS, ~WaveFile, ~CSample,
+    LTMemInit, PublicAddressCallback, GetRandom, ~CReservedWord,
+    ~pair<CReservedWord>). ClientFx's CPlaySoundFX and
+    CPlayRandomSoundFX have no SuspendedUpdate in retail (their vtables
+    hold CBaseFX's, 0x10001080): the override came with the Build 69
+    merge and is gone. All five are at 0 unplaced.
+- **Batch 2.**
+  - Logic put back to retail's: OnClientEnterWorld's weapon-loop
+    catch-up walks the client references (GetNextClientRef,
+    GetClientRefObject), not the clients' user data; a reload save makes
+    the checkpoint stale (FinishSaveGame deletes Checkpoint.sav and its
+    folder and clears the CheckpointSave key, 0x10140622), and
+    CheckpointSave leaves the folder to the working dir's copy; the
+    sniper leaves the node it used last out of its view-node search
+    (Block/UnblockAttractorNodeFromSearch); SetupDisabledState plays
+    the time bomb's client FX before the activation and the countdown;
+    ClientFx's bouncy chunks forget their impact sound in Term, and a
+    particle's flags are read before it is removed.
+  - ClientFx.fxd's four nears are identical. GameSpy.dll's five are
+    block order and registers (IsValidKeyName, FromWideString,
+    ToWideString closer, GetSecretKey's strings checked, SBCallback's
+    dead store of the game-name match not reproduced).
+  - Left in Object.lto: register allocation and block order, and
+    inlining choices retail made differently (CAutoMessage's
+    constructor in HandleOverlayMessage and DoomsDayPiece::OnDrop,
+    SetGameOption<float> in HandleSetGameOption, ObjectCreateStruct's
+    destructor in SetupDisabledState, CTimer::Start). EventCounter's
+    debug name (setne/dec/and) was not reproduced. The heat-seeking
+    sort's instantiations still need the predicate's shape.
 
 ### 4b. layouts
 

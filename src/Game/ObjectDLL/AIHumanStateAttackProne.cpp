@@ -29,6 +29,9 @@ CAIHumanStateAttackProne::~CAIHumanStateAttackProne()
 	{
 		g_pAICentralKnowledgeMgr->RemoveKnowledge( kCK_Attacking, GetAI() );
 		AIASSERT( !g_pAICentralKnowledgeMgr->CountMatches( kCK_Attacking, GetAI() ), GetAI()->m_hObject, "~CAIHumanStateAttackProne: Too many attackers registered!" );
+
+		// RETAIL: Object 0x1004e90f: the AI is no longer lying down.
+		GetAI()->SetLyingDown( false );
 	}
 }
 
