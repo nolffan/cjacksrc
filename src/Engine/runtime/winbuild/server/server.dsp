@@ -232,10 +232,6 @@ SOURCE=..\..\kernel\src\sys\win\lthread.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\kernel\src\sys\win\ltlibraryloader.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=..\..\shared\src\ltmessage.cpp
 # End Source File
 # Begin Source File

@@ -1177,6 +1177,80 @@ missed starts into extent-splits.csv):
 - the textured lightmap sections have no constructors now (round 2);
   watch the modern build for code that relied on them.
 
+**Round 8** (branch `engine3`, on master's e363f5d):
+- **Rotation check.** callcheck over both engine images: server.dll has
+  no WRONG call; Lithtech.exe's are the ICF-folded template families,
+  dsi_ClientSleep (SecuROM's Sleep, a false alarm) and
+  d3d_DrawGlowModels' FlushShadows (below). No rotation, quaternion,
+  matrix, tracker, prediction or camera function is unplaced or near
+  but these: **RotateWorldModel and MoveObject** (both images) had a
+  logic difference. CJ counts the objects standing on the mover from 0
+  and stores before counting (fear's tree starts at -1 and counts first,
+  which lets the 33rd rider write past the 32-entry array), and moves
+  them first to last where ours moved them last to first. Both are
+  identical now. MoveAttachment, SendAllObjectsUnguaranteed and
+  SetTransformMode differ only in registers and scheduling.
+- **The two unwritten** were not out-of-line resize copies of ours to
+  keep. They are CRenderShadowList::FlushShadows (0x4ddbc0) and
+  CRenderModelInfoList::Clear (0x50c600), which call `resize(0)` where
+  ours called `clear()`. That was callcheck's FlushShadows finding:
+  ours had matched an unrelated `_Tidy` at 0x4c2cb0. Both identical now.
+- Score after the first batch: Lithtech.exe 6,884 identical, 0
+  unwritten, 333 unplaced; server.dll 2,745, 0, 28.
+- **Where retail's math_phys sets are.** Aligning the initializer
+  sections (holders, strings, the five-function PI sets) and the .data
+  each set writes corrects round 4. Retail's 53 sets in Lithtech.exe
+  are: five in the main project (ltmodule, ltobjref, world_blind_object_data,
+  icommandlineargs, server_iltmodel; ltobjref's set writes 0x5880ac..
+  0x5880c8 around its ILTServer holder at 0x5880b4), ltmem's four and
+  RezMgr's two (their data spaced as ours: +0x1c, +0xb8, +0x84), the
+  sound loader's one, **forty in Lib_UI** (0x599ab8..0x59a14c, after the
+  sound loader's 0x5996a0), and **one in D3DRender** (0x593e44, just
+  before texturescriptinterpreter's holders). So D3DRender was built
+  through precompile.h throughout (made by a precompile.cpp stub, the
+  2006 tree's, which no symbol pulls from the library, so its set never
+  links) except texturescriptinterpreter, which includes its own header
+  first; Lib_UI was not precompiled at all; and Lithtech's bdefs.h is made
+  by world_blind_object_data.cpp (bdefs.obj has no set in retail), with
+  ltmodule, ltobjref, icommandlineargs and server_iltmodel off it and
+  transformmaker on it (/FI). ltdirectmusicloader stays off it: retail
+  shows no set there, so it was precompiled, but ours then loses three
+  identicals (CLTDMLoader's constructor inlines differently), so it is
+  our one surplus set.
+- **Unreadable code** (`unreadable` in progress/targets.py, tools'
+  progress.py): Lithtech.exe's .text$x funclets (0x538c00..0x539a80) and
+  Lib_Lith's basehash.obj and virtlist.obj (0x5380b0..0x538414, linked
+  after D3DX) lie in the SecuROM pages. The demo's plaintext has all 14
+  of those functions byte for byte as ours. Ours are listed `encrypted`,
+  not unplaced. The ehhandlers had been paired as nears with math_phys
+  initializers of their size; three of those initializers' rows were
+  split at operand bytes (screen-exclude), four merged rows of tiny
+  functions are split (extent-splits).
+- Removed what retail does not have: d3d_VectorToRGB (3d_ops.obj keeps
+  six functions, no /Gy) and ltlibraryloader.cpp (nothing calls
+  LTLibraryLoader; none of its shapes is in the image).
+- Score: Lithtech.exe 6,885 identical, 0 unwritten, 78 unplaced;
+  server.dll 2,745, 0, 25.
+- **Hidden starts.** Many of the short unplaced rows were not surplus:
+  retail has the function, but nothing calls it, so the enumeration ran
+  it into the row before (the 11-byte `mov [ecx],vtbl; jmp base` destructors,
+  32 in each image, of which 20 in Lithtech.exe and 6 in server.dll were
+  hidden; ~WorldTreeNode; the 7-byte vtable-store destructors; getters
+  and stubs such as FixedFromFloat, CRezMgr::GetRootDir,
+  udp_GetMaxPossiblePort). Each is split in extent-splits.csv with the
+  bytes that name it, after checking that a `ret` or padding precedes it.
+  Found by searching every unplaced short function's masked bytes
+  at 16-byte boundaries that are not row starts.
+- **Stopped here** (engine3, after merging integ 997a58f): Lithtech.exe
+  6,885 identical, 0 unwritten, 43 unplaced; server.dll 2,745, 0, 20.
+  Left: the one surplus math_phys set (ltdirectmusicloader, see above);
+  LoadLightGroup's push_front (retail inlines it in the exe's copy);
+  initializer and atexit shapes (clientmgr _$E50, winconsole_impl,
+  serverde_impl, the world_* objects); the 1- and 3-byte shapes, which
+  hide among jump targets and need naming by hand; server.dll's
+  CClassMgr tick stubs, gr_InterpolateRotation (a 5-byte jmp thunk) and
+  CLTServer's getters. Then the engine nears (Lithtech 50, server 12).
+
 ### 7. apps
 
 `ContractJack.exe` and `ContractJackServer.exe` build from NOLF2's

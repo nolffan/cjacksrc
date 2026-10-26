@@ -120,8 +120,6 @@ void d3d_UnsetEnvMapTransform(uint32 nStage);
 void d3d_SetBumpMapTransform(uint32 nStage, float fTextureScale);
 
 
-DWORD d3d_VectorToRGB(LTVector * pVector);
-
 
 inline void d3d_SetupTransformation(const LTVector *pPos, float *pRotation, LTVector *pScale, LTMatrix *pMat)
 {

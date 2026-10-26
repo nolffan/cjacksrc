@@ -1528,7 +1528,10 @@ void MoveObject
 		pWasStandingOnObj = LTNULL;
 	}
 
-	nNumObjectsStanding = -1;
+	// RETAIL: CJ counts the riders from 0 and stores before counting
+	// (server.dll 0x10022e22, as in RotateWorldModel), and moves them
+	// first to last below.
+	nNumObjectsStanding = 0;
 	if(flags & MO_MOVESTANDINGONS)
 	{
 		// Transfer the objects that are on object now, so we can move them later...
@@ -1548,9 +1551,9 @@ void MoveObject
 			{
 				if( nNumObjectsStanding < MAX_CARRIED_OBJECTS )
 				{
-					nNumObjectsStanding++;
 					startPosInfo[nNumObjectsStanding].m_pObj = pObjOn;
 					startPosInfo[nNumObjectsStanding].m_vRelPos = pObjOn->GetPos() - pState->m_pObj->GetPos();
+					nNumObjectsStanding++;
 				}
 				else
 				{
@@ -1610,10 +1613,10 @@ void MoveObject
 	if(flags & MO_MOVESTANDINGONS)
 	{
 		// Offset everyone that was standing on us by the same amount.
-		while( nNumObjectsStanding >= 0 )
+		for( int32 nObj = 0; nObj < nNumObjectsStanding; nObj++ )
 		{
-			pObjOn = startPosInfo[nNumObjectsStanding].m_pObj;
-			newPos = pState->m_pObj->GetPos() + startPosInfo[nNumObjectsStanding].m_vRelPos;
+			pObjOn = startPosInfo[nObj].m_pObj;
+			newPos = pState->m_pObj->GetPos() + startPosInfo[nObj].m_vRelPos;
 			// Push the carried object into whatever it's standing on so it resets the standing on flag properly
 			newPos -= LTVector(0.0f, 0.1f, 0.0f);
 			
@@ -1630,8 +1633,6 @@ void MoveObject
 			{
 				SetObjectStanding(pObjOn, pState->m_pObj, LTNULL); // It's still standing on me...
 			}
-			
-			nNumObjectsStanding--;
 		}
 	}
 
@@ -1832,8 +1833,11 @@ void RotateWorldModel(MoveState *pState,
 	memset( &collisionInfo, 0, sizeof( CollisionInfo ));
 
 	// Transfer the objects that are on object now, so we can move them later...
+	// RETAIL: CJ counts the riders from 0 and stores before counting
+	// (server.dll 0x10023d14, Lithtech.exe 0x44bc34), so the 32-entry
+	// array is never overrun, and moves them first to last below.
 	pCur = pObj->m_ObjectsStandingOn.m_pNext;
-	nNumObjectsStanding = -1;
+	nNumObjectsStanding = 0;
 	while(pCur != &pObj->m_ObjectsStandingOn )
 	{
 		pNext = pCur->m_pNext;
@@ -1848,9 +1852,9 @@ void RotateWorldModel(MoveState *pState,
 		{
 			if( nNumObjectsStanding < MAX_CARRIED_OBJECTS )
 			{
-				nNumObjectsStanding++;
 				startPosInfo[nNumObjectsStanding].m_pObj = pObjOn;
 				startPosInfo[nNumObjectsStanding].m_vRelPos = pObjOn->GetPos();
+				nNumObjectsStanding++;
 			}
 			// Too many...
 			else
@@ -1880,18 +1884,16 @@ void RotateWorldModel(MoveState *pState,
 	}
 
 	// Offset everyone that was standing on us by the same amount.
-	while( nNumObjectsStanding >= 0 )
+	for( int32 nObj = 0; nObj < nNumObjectsStanding; nObj++ )
 	{
-		pObjOn = startPosInfo[nNumObjectsStanding].m_pObj;
+		pObjOn = startPosInfo[nObj].m_pObj;
 
 		// Rotate its position.
-		MatVMul_H(&newPos, &fullTransform, &startPosInfo[nNumObjectsStanding].m_vRelPos);
+		MatVMul_H(&newPos, &fullTransform, &startPosInfo[nObj].m_vRelPos);
 		moveState.Setup(pState->m_pWorldTree, pState->m_pAbstract, pObjOn, pObjOn->m_BPriority);
 		// Move down a little so it will hit the object again...
 		newPos.y -= 0.5f;
 		MoveObject(&moveState, newPos, MO_DETACHSTANDING|MO_SETCHANGEFLAG|MO_MOVESTANDINGONS);
-
-		nNumObjectsStanding--;
 	}
 
 	// We're done moving.
