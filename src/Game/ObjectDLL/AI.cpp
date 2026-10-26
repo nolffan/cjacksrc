@@ -2810,7 +2810,8 @@ bool CAI::HandleCommand(const CParsedMsg &cMsg)
 				{
 					// RETAIL: Object 0x10010469: the state is read before
 					// the height.
-					((CAIHumanStateUseObject*)m_pState)->Drive( (float)atof( cMsg.GetArg(2).c_str() ));
+					CAIHumanStateUseObject* pStateUseObject = (CAIHumanStateUseObject*)m_pState;
+					pStateUseObject->Drive( (float)atof( cMsg.GetArg(2).c_str() ));
 				}
 			}
 			else

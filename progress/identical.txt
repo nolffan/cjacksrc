@@ -6520,6 +6520,7 @@ ClientFx.fxd	sub_100021a0
 ClientFx.fxd	sub_100021e0
 ClientFx.fxd	sub_10002220
 ClientFx.fxd	sub_10002340
+ClientFx.fxd	sub_10002390
 ClientFx.fxd	sub_100023f0
 ClientFx.fxd	sub_10002450
 ClientFx.fxd	sub_10002720
@@ -6725,6 +6726,7 @@ ClientFx.fxd	sub_1000d0a7
 ClientFx.fxd	sub_1000d0b3
 ClientFx.fxd	sub_1000d1b0
 ClientFx.fxd	sub_1000d220
+ClientFx.fxd	sub_1000d2a0
 ClientFx.fxd	sub_1000d300
 ClientFx.fxd	sub_1000d360
 ClientFx.fxd	sub_1000d630
@@ -6827,6 +6829,7 @@ ClientFx.fxd	sub_10011fa0
 ClientFx.fxd	sub_10011fe0
 ClientFx.fxd	sub_100120b0
 ClientFx.fxd	sub_10012140
+ClientFx.fxd	sub_10012150
 ClientFx.fxd	sub_100121a0
 ClientFx.fxd	sub_100121c0
 ClientFx.fxd	sub_100122a0
@@ -6834,6 +6837,7 @@ ClientFx.fxd	sub_10012850
 ClientFx.fxd	sub_10012890
 ClientFx.fxd	sub_100128c0
 ClientFx.fxd	sub_100131f0
+ClientFx.fxd	sub_10013bc0
 ClientFx.fxd	sub_100145c0
 ClientFx.fxd	sub_100149e0
 ClientFx.fxd	sub_10014a10
@@ -20108,6 +20112,7 @@ Object.lto	sub_100ddda0
 Object.lto	sub_100dde20
 Object.lto	sub_100ddf10
 Object.lto	sub_100ddf40
+Object.lto	sub_100de0c0
 Object.lto	sub_100de2d0
 Object.lto	sub_100de9e0
 Object.lto	sub_100dec30
@@ -22204,6 +22209,7 @@ Object.lto	sub_10140260
 Object.lto	sub_101402b0
 Object.lto	sub_10140370
 Object.lto	sub_101403a0
+Object.lto	sub_10140470
 Object.lto	sub_10140680
 Object.lto	sub_101406a0
 Object.lto	sub_101407a0
@@ -22215,6 +22221,7 @@ Object.lto	sub_10140b10
 Object.lto	sub_10140b60
 Object.lto	sub_10140c70
 Object.lto	sub_10140d80
+Object.lto	sub_10140e60
 Object.lto	sub_10140f40
 Object.lto	sub_10140f90
 Object.lto	sub_10141050

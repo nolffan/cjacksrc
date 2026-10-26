@@ -271,8 +271,9 @@ AINode* CAIGoalSniper::HandleTargetPos()
 		return LTNULL;
 	}
 
-	HOBJECT hTarget = m_pAI->HasTarget() ? m_pAI->GetTarget()->GetObject() : (HOBJECT)m_hSeekTarget;
-	CCharacter* pCharacter = (CCharacter*)g_pLTServer->HandleToObject( hTarget );
+	CCharacter* pCharacter = m_pAI->HasTarget() ?
+		(CCharacter*)g_pLTServer->HandleToObject( m_pAI->GetTarget()->GetObject() ) :
+		(CCharacter*)g_pLTServer->HandleToObject( m_hSeekTarget );
 	if( !pCharacter )
 	{
 		return LTNULL;
@@ -302,6 +303,11 @@ AINode* CAIGoalSniper::HandleTargetPos()
 	AIVolumePlayerInfo* pPlayerInfoVolume = (AIVolumePlayerInfo*)pInfoVolume;
 	AIGBM_GoalTemplate* pTemplate = g_pAIGoalButeMgr->GetTemplate( GetGoalType() );
 
+	// RETAIL: Object 0x10035487: the node the sniper used last is left
+	// out of the search.
+
+	BlockAttractorNodeFromSearch( m_hLastNodeUseObject );
+
 	AINode* pSniperNode = LTNULL;
 	for(uint32 iAttractor=0; iAttractor < pTemplate->cAttractors; ++iAttractor)
 	{
@@ -320,6 +326,8 @@ AINode* CAIGoalSniper::HandleTargetPos()
 			break;
 		}
 	}
+
+	UnblockAttractorNodeFromSearch( m_hLastNodeUseObject );
 
 	// Set new sniper node.
 

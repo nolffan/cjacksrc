@@ -611,14 +611,29 @@ dedicated server (package 7).
     CPlayRandomSoundFX have no SuspendedUpdate in retail (their vtables
     hold CBaseFX's, 0x10001080): the override came with the Build 69
     merge and is gone. All five are at 0 unplaced.
-  - Next (seen, not done): OnClientEnterWorld's weapon-loop catch-up
-    passes the client's CPlayerObj* to HandleToObject in retail (a retail
-    bug, to go behind CJACK_MODERN); SURFACE's constructor reserves
-    aVehicleTypes (6) in retail, both DLLs; Bombable::SetupDisabledState
-    plays the client FX before the defuse flags and the countdown; the
-    remaining Object nears are register allocation, block order, and
-    inlining (CAutoMessage's constructor out of line in
-    HandleOverlayMessage and DoomsDayPiece::OnDrop).
+- **Batch 2.**
+  - Logic put back to retail's: OnClientEnterWorld's weapon-loop
+    catch-up walks the client references (GetNextClientRef,
+    GetClientRefObject), not the clients' user data; a reload save makes
+    the checkpoint stale (FinishSaveGame deletes Checkpoint.sav and its
+    folder and clears the CheckpointSave key, 0x10140622), and
+    CheckpointSave leaves the folder to the working dir's copy; the
+    sniper leaves the node it used last out of its view-node search
+    (Block/UnblockAttractorNodeFromSearch); SetupDisabledState plays
+    the time bomb's client FX before the activation and the countdown;
+    ClientFx's bouncy chunks forget their impact sound in Term, and a
+    particle's flags are read before it is removed.
+  - ClientFx.fxd's four nears are identical. GameSpy.dll's five are
+    block order and registers (IsValidKeyName, FromWideString,
+    ToWideString closer, GetSecretKey's strings checked, SBCallback's
+    dead store of the game-name match not reproduced).
+  - Left in Object.lto: register allocation and block order, and
+    inlining choices retail made differently (CAutoMessage's
+    constructor in HandleOverlayMessage and DoomsDayPiece::OnDrop,
+    SetGameOption<float> in HandleSetGameOption, ObjectCreateStruct's
+    destructor in SetupDisabledState, CTimer::Start). EventCounter's
+    debug name (setne/dec/and) was not reproduced. The heat-seeking
+    sort's instantiations still need the predicate's shape.
 
 ### 4b. layouts
 

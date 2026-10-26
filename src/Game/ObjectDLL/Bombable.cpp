@@ -413,6 +413,12 @@ void Bombable::SetupDisabledState( LTBOOL bDestroyed )
 	}
 	
 	
+	// Play the projectiles ClientFX on the time bomb model (RETAIL: Object
+	// 0x1009cae6, before the activation and the countdown)...
+
+	if( pAmmo->pProjectileFX->szFXName[0] )
+		SetObjectClientFXMsg( m_hTimeBombModel, pAmmo->pProjectileFX->szFXName, FXFLAG_LOOP );
+
 	// Set us up so we can now be activated to defuse the TimeBomb...
 
 	if( m_bCanDefuse )
@@ -434,10 +440,6 @@ void Bombable::SetupDisabledState( LTBOOL bDestroyed )
 		m_bCanDeactivate = false;
 	}
 
-	// Play the projectiles ClientFX on the time bomb model...
-
-	if( pAmmo->pProjectileFX->szFXName[0] )
-		SetObjectClientFXMsg( m_hTimeBombModel, pAmmo->pProjectileFX->szFXName, FXFLAG_LOOP );
 }
 
 
