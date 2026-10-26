@@ -88,3 +88,4 @@ addr,reason
 0x00541498,NOT A FUNCTION: interior block of the static initializer at 0x00541490 (an operand byte of its fmuls)
 0x00541b3a,NOT A FUNCTION: interior block of the static initializer at 0x00541b30 (an operand byte of its fstps)
 0x005422b2,NOT A FUNCTION: interior block of the static initializer at 0x005422a0 (its ret)
+0x0046b7e8,NOT A FUNCTION: interior block of CLTServer::CLTServer (0x0046b7e0): its store of this to the global at 0x588eac, after the vtable store; a pointer into it split its extent

@@ -1282,8 +1282,20 @@ missed starts into extent-splits.csv):
   bytes larger: one more local) and the known inlining ones
   (LoadLightGroup's push_front, CModelMgr::ForEach's _Inc, the
   MarkSectionBreaks family).
-- Score: Lithtech.exe 6,892 identical, 0 unwritten, 43 unplaced;
-  server.dll 2,746, 0, 20.
+- Unplaced: server.dll's hidden starts (CLTServer's constructor and
+  destructor, the RezMgr members, LTMemTrackAllocEnd,
+  udp_GetMaxPossiblePort and an empty function after it, two lthread
+  members) split as Lithtech.exe's were; CLTServer's constructor in
+  Lithtech.exe had a row inside it (screen-exclude).
+- **Stopped here.** Lithtech.exe 6,892 identical, 0 unwritten, 42
+  unplaced; server.dll 2,746, 0, 10. The unplaced left are shapes with no
+  hidden retail copy to name: the one surplus math_phys set
+  (ltdirectmusicloader), LoadLightGroup's push_front, initializer and
+  atexit shapes (clientmgr's _$E50, winconsole_impl, serverde_impl, the
+  world_* objects), the 44-byte CInternalSection operator== instances
+  (retail folds more of them), and 1- to 8-byte shapes found only among
+  jump targets. The nears left are register, scheduling and frame-size
+  differences, and SupportsGlowShader's block order.
 
 ### 7. apps
 
