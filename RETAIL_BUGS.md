@@ -33,6 +33,7 @@ bugs (MODERN.md GS-1), GetCommandName (GAME-1), the chassis's update
 (GAME-2), the join screen's deadlock (GAME-3), a body's spears
 (GAME-4), the message queue's lost message (GAME-5), the world shaders' section order (EN-1), ShowVersionInfo (EN-3),
 the music thread's handle (EN-4), a failed transition segment (EN-5),
+a music intensity out of range (EN-60),
 batched screen quads' colours (EN-6), SoundSys's null Term (EN-7),
 SetCamera's unset viewport (EN-8), the launcher's path overrun (APPS-1),
 find handles (APPS-2), "Contract J.A.C.K. 2" (APPS-4) and the registry
@@ -41,7 +42,7 @@ opened for writing (APPS-7), the dedicated server's console formats
 with high frame rates: the AIs slowed (EN-41), the player's run, crouch
 and jump (CL-41), the float and jump out of water (CL-42), particle and
 line systems gone dark (CL-44), aim, sparks and debris (CL-45) and the
-music's moods (GAME-40). Twenty-six in all.
+music's moods (GAME-40). Twenty-seven in all.
 
 ## Format
 
@@ -249,6 +250,21 @@ code tests it (a fix marked "[kml]").
 
 Fixed in the modern build: src/Engine/runtime/kernel/src/sys/win/
 ltdirectmusic_impl.cpp, MODERN.md EN-5.
+
+### An intensity outside the music's range reads past its transitions
+
+Lithtech.exe 0x439630 (CLTDirectMusicMgr::GetTransition, src/Engine/
+runtime/kernel/src/sys/win/ltdirectmusic_impl.cpp). The transition table
+has (I+1)*(I+1)+1 entries for I intensities, indexed by
+from+1+to*(I+1). Retail checks only that each intensity is between 1 and
+the table's size, not the index itself, so an intensity number above I
+(a mission asking for an intensity its control file does not define, or
+a control file's transition naming one) reads, and when the control file
+is loaded writes, past the end of the table. The 2006 tree checks the
+index as well.
+
+Fixed in the modern build: src/Engine/runtime/kernel/src/sys/win/
+ltdirectmusic_impl.cpp, MODERN.md EN-60.
 
 ### Batched screen-space quads lose their vertex colours
 

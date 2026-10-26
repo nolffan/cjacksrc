@@ -473,19 +473,17 @@ ModelPiece::~ModelPiece()
 void ModelPiece::Term()
 {
     // Delete/release renderobjects.
-	if (m_pRenderObjects)
+	// RETAIL: no test of the array itself first (Lithtech.exe 0x443000)
+	for (uint32 i = 0; i < m_nLODs; ++i)
 	{
-		for (uint32 i = 0; i < m_nLODs; ++i)
-		{
 #ifdef DE_CLIENT_COMPILE
-			if (m_pRenderObjects[i] && r_GetRenderStruct()->m_bLoaded) r_GetRenderStruct()->DestroyRenderObject(m_pRenderObjects[i]);
+		if (m_pRenderObjects[i] && r_GetRenderStruct()->m_bLoaded) r_GetRenderStruct()->DestroyRenderObject(m_pRenderObjects[i]);
 #endif
 #ifdef DE_RENDER_COMPILE
-			if (m_pRenderObjects[i]) g_Device.DestroyRenderObject(m_pRenderObjects[i]);
+		if (m_pRenderObjects[i]) g_Device.DestroyRenderObject(m_pRenderObjects[i]);
 #endif
-			// RETAIL: no server-side deletion of the empty render objects
-			// (server.dll 0x1001ade0)
-		}
+		// RETAIL: no server-side deletion of the empty render objects
+		// (server.dll 0x1001ade0)
 	}
 
 	// release the dist values ;

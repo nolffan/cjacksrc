@@ -2058,13 +2058,14 @@ void CClientMgr::RemoveObjectsInList(LTList *pList, bool bServerOnly) {
 // notifications and whatnot
 void CClientMgr::RemoveClientObject(LTObject *pObj)
 {
-	LTLink *pListHead = &m_ObjectMgr.m_ObjectLists[pObj->GetObjType()].m_Head;
+	LTLink *pListHead = &m_ObjectMgr.m_ObjectLists[pObj->m_ObjectType].m_Head;
     LTLink *pCur = pListHead->m_pNext;
     while (pCur != pListHead)
     {
         LTLink *pNext = pCur->m_pNext;
+		// RETAIL: removed with the list's count (Lithtech.exe 0x40ec50)
 		if ((LTObject*)pCur->m_pData == pObj)
-			dl_Remove(pCur);
+			dl_RemoveAt(&m_ObjectMgr.m_ObjectLists[pObj->m_ObjectType], pCur);
 		pCur = pNext;
 	}
 }

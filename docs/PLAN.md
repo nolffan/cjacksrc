@@ -1251,6 +1251,40 @@ missed starts into extent-splits.csv):
   CClassMgr tick stubs, gr_InterpolateRotation (a 5-byte jmp thunk) and
   CLTServer's getters. Then the engine nears (Lithtech 50, server 12).
 
+**Round 9** (branch `engine3`, after merging integ 40aadc4):
+- **The nears, callees and constants first.** Every near's call
+  sequence was compared with retail's (retail targets named through the
+  exematch placements; import calls checked by hand) and its immediates
+  multiset too. Logic differences found and fixed:
+  - CSysTexInterface::ReleaseTextureHandle never frees the texture at a
+    count of 0 (0x420ab0; the 2006 tree re-enabled the free).
+  - CLTClient::OpenSocket starts the networking first when there is no
+    driver, as StartPing does (0x40c3c0).
+  - CClientMgr::RemoveClientObject removes with dl_RemoveAt, keeping the
+    object list's count (0x40ec50); it indexes by the byte m_ObjectType.
+  - CLTDirectMusicMgr::GetTransition does not check the table index: a
+    retail bug, RETAIL_BUGS.md, fixed in the modern build as EN-60.
+  - ModelPiece::Term does not test the render-object array first.
+  - CScreenGlowMgr::UpdateShader (and so SupportsGlowShader) returns
+    true whether the glow shader loaded or not; the glow then blurs with
+    two textures. UpdateShader (0x4d2910) and RenderScreenGlow are
+    identical. SupportsGlowShader (0x4d2820, by its place in the object)
+    lays the inlined early return out first, which no source shape tried
+    (fourteen) reproduces; it is written out and placed by own_symbols, a
+    near.
+  - InsideConvex is `static`: VC 7.1 gives an internal function a
+    register calling convention (pPoly in esi), as retail's has.
+- The RotateWorldModel rider overflow was ours only: retail stores while
+  the count is below 32 and then counts (0x10023d52), so nothing for
+  RETAIL_BUGS.md.
+- What the comparison left are register, scheduling and stack-frame
+  differences (SetupModelLight and DrawDynamicParticles have frames 4
+  bytes larger: one more local) and the known inlining ones
+  (LoadLightGroup's push_front, CModelMgr::ForEach's _Inc, the
+  MarkSectionBreaks family).
+- Score: Lithtech.exe 6,892 identical, 0 unwritten, 43 unplaced;
+  server.dll 2,746, 0, 20.
+
 ### 7. apps
 
 `ContractJack.exe` and `ContractJackServer.exe` build from NOLF2's
