@@ -116,7 +116,8 @@ LTVector CAutoTargetMgr::GetCrosshairPos() const
 	else
 		vTemp = m_vFirePos + (m_vForward * 100.0f);
 
-	return g_pInterfaceMgr->GetScreenFromWorldPos(vTemp, g_pPlayerMgr->GetCamera());
+	LTVector vScreen = g_pInterfaceMgr->GetScreenFromWorldPos(vTemp, g_pPlayerMgr->GetCamera());
+	return vScreen;
 }
 
 // ----------------------------------------------------------------------- //
@@ -210,7 +211,7 @@ bool CAutoTargetMgr::FindNode()
 bool CAutoTargetMgr::IsPointInCone(const LTVector &vTargetPos)
 {
 	// divide by 2 because we're taking the half angle left or right of the forward vector
-	float cosOfAngle = (float)cos(DEG2RAD(m_fAngle) * 0.5f);
+	float cosOfAngle = (float)cos(MATH_DEGREES_TO_RADIANS(m_fAngle) * 0.5f);
 	
 	float fOffset = GetConsoleFloat("AutoTargetOffset",300.0f);
 
@@ -223,7 +224,7 @@ bool CAutoTargetMgr::IsPointInCone(const LTVector &vTargetPos)
 	//make sure it's on screen too
 	LTVector vecD = vTargetPos - m_vFirePos;
 	vecD.Normalize();
-	static float MaxScreenAngle = (float)cos( g_vtFOVYNormal.GetFloat() * MATH_PI / 180.0f * 0.5 );
+	static float MaxScreenAngle = (float)cos( DEG2RAD(g_vtFOVYNormal.GetFloat()) * 0.5 );
 
 	if (m_vForward.Dot(vecD) < MaxScreenAngle)
 	{

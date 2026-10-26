@@ -243,16 +243,14 @@ void CPlayerVehicleFX::Move(LTVector const& vFrom, LTVector const& vTo)
 	g_pClientFXMgr->ShutdownClientFX(&m_FadeFX);
 	g_pLTClient->SetObjectColor(m_hServerObject, 1.0f, 1.0f, 1.0f, 1.0f);
 
+	// RETAIL: 0x100a1606: no test of the vehicle, the positions as given.
 	VEHICLEBUTES* pVehicle = g_pVehicleButeMgr->GetVehicle(m_cs.nVehicleId);
-	if (!pVehicle) return;
 
-	LTVector vPos = vFrom;
-	CLIENTFX_CREATESTRUCT fxUnspawn(pVehicle->sMPUnspawnFX.c_str(), 0, vPos);
+	CLIENTFX_CREATESTRUCT fxUnspawn(pVehicle->sMPUnspawnFX.c_str(), 0, const_cast<LTVector&>(vFrom));
 	CLIENTFX_LINK fxUnspawnLink;
 	g_pClientFXMgr->CreateClientFX(&fxUnspawnLink, fxUnspawn, LTTRUE);
 
-	vPos = vTo;
-	CLIENTFX_CREATESTRUCT fxSpawn(pVehicle->sMPSpawnFX.c_str(), 0, vPos);
+	CLIENTFX_CREATESTRUCT fxSpawn(pVehicle->sMPSpawnFX.c_str(), 0, const_cast<LTVector&>(vTo));
 	CLIENTFX_LINK fxSpawnLink;
 	g_pClientFXMgr->CreateClientFX(&fxSpawnLink, fxSpawn, LTTRUE);
 }

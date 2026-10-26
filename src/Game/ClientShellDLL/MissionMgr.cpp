@@ -213,15 +213,9 @@ bool CMissionMgr::FinishStartGameFromLevel()
 {
 	m_eStartGameState = eStartGameStarted;
 
-	// Make sure we have a server started.
-	if( !g_pClientMultiplayerMgr->StartClientServer( ))
-	{
-		g_pInterfaceMgr->LoadFailed( );
-		return false;
-	}
-
-	// Send the start game message.
-	if( !SendStartGameMessage( ))
+	// Make sure we have a server started, and send the start game message.
+	// RETAIL: 0x10089021: no LoadFailed when the server does not start.
+	if( !g_pClientMultiplayerMgr->StartClientServer( ) || !SendStartGameMessage( ))
 		return false;
 
 	// Tell the server to start with this level.

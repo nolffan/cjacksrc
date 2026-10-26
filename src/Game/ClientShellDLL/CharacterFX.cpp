@@ -1469,16 +1469,6 @@ void CCharacterFX::DoFootStepKey(HLOCALOBJ hObj, LTBOOL bForceSound)
 {
 	if (!hObj) return;
 
-    // Play one-off sounds on vehicles...
-
-	// RETAIL: Contract J.A.C.K. knows from CFX_PHYSICSMODEL.
-	PlayerPhysicsModel eModel = PPM_NORMAL;
-    if (m_cs.bIsPlayer)
-    {
-		eModel = (PlayerPhysicsModel)m_cs.nPhysicsModel;
-    }
-
-
 	CMoveMgr* pMoveMgr = g_pPlayerMgr->GetMoveMgr();
 	if (!pMoveMgr) return;
 
@@ -1574,7 +1564,10 @@ void CCharacterFX::DoFootStepKey(HLOCALOBJ hObj, LTBOOL bForceSound)
 
 	if (bPlaySound)
 	{
-		PlayMovementSound(vPos, m_eLastSurface, m_bLeftFoot, eModel);
+		// RETAIL: 0x10015678: the model and the vehicle from the create
+		// struct, whoever the character is.
+		PlayMovementSound(vPos, m_eLastSurface, m_bLeftFoot,
+			(PlayerPhysicsModel)m_cs.nPhysicsModel, m_cs.nVehicleId);
 	}
 
 
@@ -1597,7 +1590,8 @@ void CCharacterFX::DoFootStepKey(HLOCALOBJ hObj, LTBOOL bForceSound)
 // ----------------------------------------------------------------------- //
 
 void CCharacterFX::PlayMovementSound(LTVector vPos, SurfaceType eSurface,
-                                     LTBOOL bLeftFoot, PlayerPhysicsModel eModel)
+                                     LTBOOL bLeftFoot, PlayerPhysicsModel eModel,
+                                     uint8 nVehicleId)
 {
     char* pSound = LTNULL;
 
@@ -1684,7 +1678,7 @@ void CCharacterFX::PlayMovementSound(LTVector vPos, SurfaceType eSurface,
 
 
 
-	pSound = GetMovementSound(eSurface, bLeftFoot, eModel, m_cs.nVehicleId);
+	pSound = GetMovementSound(eSurface, bLeftFoot, eModel, nVehicleId);
 
 	if (pSound && *pSound)
 	{
@@ -1899,10 +1893,8 @@ void CCharacterFX::UpdateOnVehicle()
 
     if (!m_cs.bIsPlayer) return;
 
-    uint32 dwFlags;
-    g_pCommonLT->GetObjectFlags(m_hServerObject, OFT_User, dwFlags);
-
-    // RETAIL: Contract J.A.C.K. knows from CFX_PHYSICSMODEL.
+    // RETAIL: 0x10014018: Contract J.A.C.K. knows from CFX_PHYSICSMODEL
+    // (no user flags read).
 
 	// Play multiplayer sounds if appropriate...
 
@@ -3009,12 +3001,13 @@ void CCharacterFX::KillWeaponLoopSound()
 // data (UpdatePitch).
 void CCharacterFX::HandlePitch( uint8 ucPitch )
 {
-	// remap it to a float
-	UncompressAngleFromByte( ucPitch, &m_cs.fPitch );
-
 	// Only players can pitch...
+	// RETAIL: 0x10012686: tested before the pitch is stored.
 	if( !m_cs.bIsPlayer ) 
 		return;
+
+	// remap it to a float
+	UncompressAngleFromByte( ucPitch, &m_cs.fPitch );
 	
 	float fPitch = m_cs.fPitch;
 
@@ -3056,7 +3049,7 @@ void CCharacterFX::UpdatePitch( )
 
 	// RETAIL: 0x10012842. The server sends the pitch, a byte, as the
 	// object's unguaranteed data.
-	uint32 nData = 0;
+	uint32 nData;
 	if( g_pLTClient->GetObjectUnguaranteedData( m_hServerObject, &nData ) == LT_OK )
 		HandlePitch(( uint8 )nData );
 
