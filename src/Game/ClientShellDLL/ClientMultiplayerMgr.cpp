@@ -1014,8 +1014,8 @@ void ClientMultiplayerMgr::UpdateNatNegotiation( )
 // RETAIL: 0x1001f260
 void ClientMultiplayerMgr::UpdateNatWait( )
 {
-	float fNow = ( m_fNatWaitNow > 0.0f ) ? m_fNatWaitNow : g_pLTClient->GetTime( );
-	if( fNow - m_fNatWaitStart >= m_fNatWaitTime )
+	if(( m_fNatWaitNow > 0.0f ) ? ( m_fNatWaitNow - m_fNatWaitStart >= m_fNatWaitTime ) :
+		( g_pLTClient->GetTime( ) - m_fNatWaitStart >= m_fNatWaitTime ))
 		m_eJoinState = eJoinState_Join;
 }
 
@@ -1156,10 +1156,15 @@ bool ClientMultiplayerMgr::StartClient( )
 	m_StartGameRequest.m_pClientData = &m_NetClientData;
 	m_StartGameRequest.m_ClientDataLen = sizeof( m_NetClientData );
 
-	if( m_bNatNegotiate )
+	if( !m_bNatNegotiate )
+	{
+		m_eJoinState = eJoinState_Join;
+		return true;
+	}
+
 	{
 		// Have GameSpy negotiate with the server's NAT, on our socket.
-		char szIP[MAX_SGR_STRINGLEN];
+		char szIP[256];
 		char const* pszPort = strchr( m_StartGameRequest.m_TCPAddress, ':' );
 		if( !pszPort || !pszPort[1] )
 			return false;
@@ -1169,8 +1174,10 @@ bool ClientMultiplayerMgr::StartClient( )
 		szIP[nIPLen] = '\0';
 		unsigned short nPort = ( unsigned short )atoi( pszPort + 1 );
 
-		uint32 hSocket = ( uint32 )-1;
-		if( g_pLTClient->GetUDPSocket( &hSocket ) != LT_OK )
+		// RETAIL: 0x1001ede2: the network driver's socket, opened now
+		// (ILTCSBase::OpenSocket, not the internet driver's GetUDPSocket).
+		uint32 hSocket;
+		if( g_pLTClient->OpenSocket( &hSocket ) != LT_OK )
 			return false;
 
 		if( !m_pGameSpyBrowser )
@@ -1184,16 +1191,9 @@ bool ClientMultiplayerMgr::StartClient( )
 		}
 	}
 
-	// RETAIL: leaves the connection to the next update; cjacksrc: connects
-	// now, so a failure goes back the way NOLF2's did.
+	// RETAIL: 0x1001ee4c: the connection is left to the next update
+	// (UpdateJoinState).
 	m_eJoinState = eJoinState_Join;
-	JoinServer( );
-	if( m_eJoinState != eJoinState_Joined )
-	{
-		m_eJoinState = eJoinState_None;
-		return false;
-	}
-
 	return true;
 }
 

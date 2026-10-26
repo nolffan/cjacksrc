@@ -128,10 +128,11 @@ public:
 
 	// misc functions
 	virtual bool          IsMeleeWeapon() const { return false; }
+	// RETAIL: Contract J.A.C.K.'s interface has a grief weapon test after the
+	// melee one and no WeaponNeedsCrosshair (CShell.dll's vtables 0x1012c59c
+	// and 0x1013a5f4, slots 34 to 36)
+	virtual bool          IsGriefWeapon() const { return false; }
 	virtual bool          IsFireButtonDown() const { return false; }
-	// RETAIL: Contract J.A.C.K.'s interface asks for the crosshair before the
-	// shell eject position (CShell.dll's vtables, slots 35 and 36)
-	virtual bool          WeaponNeedsCrosshair() const { return false; }
 	virtual void          GetShellEjectPos( LTVector *vOriginalPos ) { vOriginalPos->Init( 0.0f, 0.0f, 0.0f ); }
 
 	// used with the cheat codes to adjust the proper position of the weapon

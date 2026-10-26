@@ -1537,15 +1537,34 @@ Round 1 (branch `cshell`), the items 8b leaves open:
   UpdateVehicleMotion (the accel and decel branches' order, two vector
   operators out of line), UpdatePlayerInfo (one store), AutoTargetFilterFn
   (the exit block).
-- Where it stops (round 5): the callseq list's rest (out of the rotation
-  set): SetCarryingObject, HandleSaveData, ChangeWeapon, ChassisButeMgr::
-  Init, KillMe, ScreenPlayer::HandleCallback (callees that may only be
-  placed elsewhere), GlobalClientMgr::Init, SetDeviceData, HandleSFXMsg,
-  InterfaceMgr::Term, OnCommandOn, OnKeyDown, CPlayerMgr::Load, HUD
-  Carrying/Decision, LoadingScreen::Show, Music::InitLevel, OnEngine
-  Initialized, UpdateDynamicSpecialFX; UpdateTeam's else branch is a row
-  of its own (0x100f8d29) paired with an EH stub of ours. Then the rest by
-  byte delta.
+- Round 6 (branch `cshell`): the rest of the call-sequence list. Fixed:
+  the weapon interface's slots 34-36 are IsMeleeWeapon, IsGriefWeapon (the
+  ammo's damage type a grief type, 0x10029c00), IsFireButtonDown,
+  GetShellEjectPos: Contract J.A.C.K. has no WeaponNeedsCrosshair, so
+  GadgetDisabler::Update asked the wrong slot for the fire button;
+  StartClient opens the driver's socket (ILTCSBase::OpenSocket, not
+  GetUDPSocket) and leaves the join to the update; quickload (F9) waits
+  for a message box to close and StartGameFromQuickSave loads the single
+  player missions itself; the joystick's actions are the commands' names
+  (SetDeviceData); the host command line's Demolition game uses the
+  multiplayer missions; the runs are counted in the registry (GameRuns)
+  and OnEngineInitialized writes the MP mission file after the scmd
+  handler; the player name typed on the player screen is fixed up; the
+  post-load screen falls back to the mission's name; Music::InitLevel does
+  not remake the music manager; no DynamicLoadScreen variable; no
+  CHUDDecision console prints; InterfaceMgr::Term leaves the patch query
+  alone; UpdateDynamicSpecialFX, the snow airspace's blockers, the chassis
+  create structs' defaults (64, 0xff), Disconnected's cases.
+- Left, codegen: GlobalClientMgr::Init (retail stops at the first failing
+  manager; reproducing it stops three debug_new expansions inlining, so it
+  stays NOLF2's), CreateMPMissionFile and CPlayerMgr::Load (an inline
+  called out of line in retail), OnCommandOn and HandleSFXMsg (block
+  layout), HUDCarrying's KeyIcon copies, UpdateNatNegotiation (ntohs).
+  The ScreenJoin sort helpers are a pairing tangle. UpdateTeam's else
+  branch is a row of its own (0x100f8d29).
+- Where it stops (round 6): the nears by byte delta (HandleCollision,
+  ButeMgr's constructor, UpdateVehicleMotion, AddCharacter, InitWorldData,
+  InterfaceMgr::OnMessage, UpdateAirspaces, ...).
 
 ### 8d. playtest coverage (branch `apps2`)
 

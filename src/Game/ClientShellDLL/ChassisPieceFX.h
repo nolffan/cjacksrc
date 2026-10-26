@@ -37,7 +37,7 @@ inline CHASSISPIECECREATESTRUCT::CHASSISPIECECREATESTRUCT()
 	bCarried = false;
 	nTeam = INVALID_TEAM;
 	bPlanted = false;
-	nActivateType = 0;
+	nActivateType = (uint8)-1;	// RETAIL: 0x100e3310
 	bRespawnSoon = false;
 }
 

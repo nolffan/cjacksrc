@@ -15,6 +15,7 @@
 #include "ClientMultiplayerMgr.h"
 
 #include "GameClientShell.h"
+#include "ProfileUtils.h"
 extern CGameClientShell* g_pGameClientShell;
 
 static const int kMaxBandwidthStrLen = 8;
@@ -502,11 +503,12 @@ void CScreenPlayer::HandleCallback(uint32 dwParam1, uint32 dwParam2)
 		break;
 	case CMD_EDIT_NAME:
 		{
-			char* pName = ((char *)dwParam1);
+			// RETAIL: 0x100d65b3: the name is fixed first.
+			const char* pName = FixPlayerName((char *)dwParam1);
 			if (pName && strlen(pName))
 			{
 				m_sPlayerName = pName;
-				m_pName->SetString(1,m_sPlayerName.c_str());
+				m_pName->SetString(1,pName);
 			}
 		} break;
 	}

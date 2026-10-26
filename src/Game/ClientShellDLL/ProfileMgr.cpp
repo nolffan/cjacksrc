@@ -1866,14 +1866,16 @@ void CProfileMgr::SetDeviceData()
 	LoadString(IDS_WHEEL_UP,szWheelUp,sizeof(szWheelUp));
 	LoadString(IDS_WHEEL_DOWN,szWheelDown,sizeof(szWheelDown));
 
-	LoadString(IDS_ACTIONSTRING_LOOKUP,szJoyLookUp,sizeof(szJoyLookUp));
-	LoadString(IDS_ACTIONSTRING_LOOKDOWN,szJoyLookDown,sizeof(szJoyLookDown));
-	LoadString(IDS_ACTIONSTRING_FORWARD,szJoyForward,sizeof(szJoyForward));
-	LoadString(IDS_ACTIONSTRING_BACKWARD,szJoyBackward,sizeof(szJoyBackward));
-	LoadString(IDS_ACTIONSTRING_TURNLEFT,szJoyLeft,sizeof(szJoyLeft));
-	LoadString(IDS_ACTIONSTRING_TURNRIGHT,szJoyRight,sizeof(szJoyRight));
-	LoadString(IDS_ACTIONSTRING_STRAFELEFT,szJoyStrafeLeft,sizeof(szJoyStrafeLeft));
-	LoadString(IDS_ACTIONSTRING_STRAFERIGHT,szJoyStrafeRight,sizeof(szJoyStrafeRight));
+	// RETAIL: 0x100abf1e: the joystick's actions are the commands' names,
+	// not the localized strings.
+	strncpy(szJoyLookUp,"LookUp",sizeof(szJoyLookUp));
+	strncpy(szJoyLookDown,"LookDown",sizeof(szJoyLookDown));
+	strncpy(szJoyForward,"Forward",sizeof(szJoyForward));
+	strncpy(szJoyBackward,"Backward",sizeof(szJoyBackward));
+	strncpy(szJoyLeft,"Left",sizeof(szJoyLeft));
+	strncpy(szJoyRight,"Right",sizeof(szJoyRight));
+	strncpy(szJoyStrafeLeft,"StrafeLeft",sizeof(szJoyStrafeLeft));
+	strncpy(szJoyStrafeRight,"StrafeRight",sizeof(szJoyStrafeRight));
 
 
 	m_nNumDeviceAxis = 0;

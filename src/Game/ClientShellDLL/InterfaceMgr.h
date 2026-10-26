@@ -315,6 +315,8 @@ class CInterfaceMgr
 	    void		ShowMessageBox(int nStringID, MBCreate* pCreate, uint8 nFontSize = 0, LTBOOL bDefaultReturn = LTTRUE);
 	    void		ShowMessageBox(const char *pString, MBCreate* pCreate, uint8 nFontSize = 0, LTBOOL bDefaultReturn = LTTRUE);
 	    void		CloseMessageBox(LTBOOL bReturn);
+		// RETAIL: CShell 0x10048ebb (CGameClientShell::OnKeyDown)
+		LTBOOL		IsMessageBoxVisible() { return m_MessageBox.IsVisible(); }
 
 
 		void		ViewOptions();
