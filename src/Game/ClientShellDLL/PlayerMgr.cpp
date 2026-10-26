@@ -1056,6 +1056,14 @@ void CPlayerMgr::UpdateUnderMenus()
 
 void CPlayerMgr::UpdatePlaying()
 {
+	// RETAIL: 0x100a0f68: while the server is paused only the player is
+	// updated.
+	if (g_pGameClientShell->IsServerPaused())
+	{
+		UpdatePlayer();
+		return;
+	}
+
 	// First time UpdatePlaying is called...
 
 	if (!m_bStartedPlaying)
@@ -1530,9 +1538,10 @@ void CPlayerMgr::HandleMsgPlayerOrientation (ILTMessage_Read *pMsg)
 	{
 		case MID_ORIENTATION_ALL :
 		{
-			m_fPitch	= vVec.x;
-			m_fYaw		= vVec.y;
-			m_fRoll		= vVec.z;
+			// RETAIL: 0x1009cf01 reads them back from the member.
+			m_fPitch	= m_vLastOrientation.x;
+			m_fYaw		= m_vLastOrientation.y;
+			m_fRoll		= m_vLastOrientation.z;
 		}
 		break;
 
@@ -2173,9 +2182,9 @@ void CPlayerMgr::UpdateWeaponModel()
 	//    player is not choosing a weapon AND
 	//    player is not dead AND
 	//    player is not in spectator mode
+	// RETAIL: 0x1009edbb: choosing a weapon does not stop the firing.
 	if ( ( m_dwPlayerFlags & BC_CFLG_FIRING ) &&
 	     ( !g_pInterfaceMgr->IsChoosingAmmo() ) &&
-	     ( !g_pInterfaceMgr->IsChoosingWeapon() ) &&
 	     ( !IsPlayerDead() ) &&
 	     ( !m_bSpectatorMode ) &&
 		 ( g_pInterfaceMgr->GetGameState() == GS_PLAYING ) )
@@ -2184,10 +2193,9 @@ void CPlayerMgr::UpdateWeaponModel()
 	}
 
 	// RETAIL: CShell 0x1009edf2: a vehicle with a weapon fires that.
-	CVehicleMgr* pVehicleMgr = m_pMoveMgr->GetVehicleMgr();
-	if (pVehicleMgr->IsVehiclePhysics() && pVehicleMgr->HasVehicleWeapon())
+	if (m_pMoveMgr->GetVehicleMgr()->IsVehiclePhysics() && m_pMoveMgr->GetVehicleMgr()->HasVehicleWeapon())
 	{
-		pVehicleMgr->UpdateVehicleWeapon( rRot, vPos, bFire, eFireType );
+		m_pMoveMgr->GetVehicleMgr()->UpdateVehicleWeapon( rRot, vPos, bFire, eFireType );
 		return;
 	}
 
@@ -2451,8 +2459,7 @@ void CPlayerMgr::HandleWeaponChanged(uint8 nWeaponId, uint8 nAmmoId, bool bImmed
 		m_pClientWeaponMgr->HideWeapons();
 	}
 
-	//shutdown the weapon or ammo choosers...
-	g_pInterfaceMgr->CloseChoosers();
+	// RETAIL: 0x1009ef32: the weapon and ammo choosers are left open.
 
 	//when the swicth is complete...
 	if (bImmediateSwitch)
@@ -4119,7 +4126,7 @@ void CPlayerMgr::UpdatePlayerFlags()
 //
 // ----------------------------------------------------------------------- //
 
-static bool IsSameMessage( ILTMessage_Read* pMsgA, ILTMessage_Read* pMsgB )
+bool IsSameMessage( ILTMessage_Read* pMsgA, ILTMessage_Read* pMsgB )
 {
 	if( !pMsgA || !pMsgB )
 		return ( pMsgA == pMsgB );
@@ -4133,11 +4140,10 @@ static bool IsSameMessage( ILTMessage_Read* pMsgA, ILTMessage_Read* pMsgB )
 	pMsgB->SeekTo( 0 );
 
 	bool bSame = true;
-	while( !pMsgA->EOM( ))
+	while( bSame && !pMsgA->EOM( ))
 	{
-		bSame &= ( pMsgA->ReadBits( 32 ) == pMsgB->ReadBits( 32 ));
-		if( !bSame )
-			break;
+		uint32 nBitsB = pMsgB->ReadBits( 32 );
+		bSame &= ( pMsgA->ReadBits( 32 ) == nBitsB );
 	}
 
 	pMsgA->SeekTo( nPosA );
@@ -4197,7 +4203,7 @@ void CPlayerMgr::UpdatePlayerInfo(bool bPlaying)
 	// RETAIL: CShell 0x1009f6f5: Contract J.A.C.K. sends what did not
 	// change only every 1/CSendRate_Min seconds.
 	bool bSendAll = true;
-	if (1.0f / g_vtCSendRateMin.GetFloat(DEFAULT_CSENDRATE_MIN) >= fCurTime - m_fPlayerInfoLastFullSendTime)
+	if (!(fCurTime - m_fPlayerInfoLastFullSendTime > 1.0f / g_vtCSendRateMin.GetFloat(DEFAULT_CSENDRATE_MIN)))
 	{
 		bSendAll = false;
 	}

@@ -98,7 +98,9 @@ class CVehicleMgr
 	void		SetPlayerLureId( uint32 nPlayerLureId );
 	uint32		GetPlayerLureId( ) { return m_nPlayerLureId; }
 
-	float		GetVehicleContourRoll() const { return m_ePPhysicsModel == PPM_SNOWMOBILE ? m_fContourRoll : 0.0f; }
+	// RETAIL: CShell 0x1004f6e3 (inlined in UpdateHeadCant): any vehicle
+	// model, the lure too, not only the snowmobile.
+	float		GetVehicleContourRoll() const { return IsVehicleModel(m_ePPhysicsModel) ? m_fContourRoll : 0.0f; }
 
 	// Called by vehiclemgr.
 	bool		MoveLocalSolidObject( );
