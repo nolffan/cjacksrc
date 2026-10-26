@@ -441,9 +441,9 @@ CMDMGR_BEGIN_REGISTER_CLASS( CAI )
 	CMDMGR_ADD_MSG( DELCMD,			2,		VelidateDelcmd,			"DELCMD <activateon or activateoff>")
 	CMDMGR_ADD_MSG( HEALTHMOD,		2,		NULL,					"HEALTHMOD <mod>" )
 	CMDMGR_ADD_MSG( ARMORMOD,		2,		NULL,					"ARMORMOD <mod>" )
-	CMDMGR_ADD_MSG_ARG_RANGE( DRIVE,	2,	3,	NULL,				"DRIVE <1 or 0> [height]" )
-	CMDMGR_ADD_MSG( DEATHPOP,		2,		NULL,					"DEATHPOP <1 or 0>" )
 	CMDMGR_ADD_MSG( DESTROY,		1,		NULL,					"DESTROY" )
+	CMDMGR_ADD_MSG( DRIVE,			2,		NULL,					"DRIVE <1 or 0> <y-offset>" )	// RETAIL: 2, though the y-offset makes 3
+	CMDMGR_ADD_MSG( DEATHPOP,		2,		NULL,					"DEATHPOP <1 or 0>" )
 
 	CMDMGR_ADD_MSG_SPECIAL( ValidateMsgGoalPrefix )
 

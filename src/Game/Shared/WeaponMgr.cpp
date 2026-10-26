@@ -2265,12 +2265,6 @@ AMMO::AMMO()
 	bCanBeDeflected = false;
 	bCanAdjustInstDamage = true;
 
-	// RETAIL: Object 0x10160d40
-	bHeatSeeking			= false;
-	fHeatSeekingRange		= 2000.0f;
-	fHeatSeekingAngle		= 45.0f;
-	fHeatSeekingRateOfTurn	= 30.0f;
-
 	pProjectileFX			= NULL;
 	pImpactFX				= NULL;
 	pUWImpactFX				= NULL;
@@ -2283,6 +2277,12 @@ AMMO::AMMO()
 
 	bServerRestricted = false;
 	bCanServerRestrict = true;
+
+	// RETAIL: Object 0x10160d40, CShell 0x101113a0: last
+	bHeatSeeking			= false;
+	fHeatSeekingRange		= 2000.0f;
+	fHeatSeekingAngle		= 45.0f;
+	fHeatSeekingRateOfTurn	= 30.0f;
 }
 
 

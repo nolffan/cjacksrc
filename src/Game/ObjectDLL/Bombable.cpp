@@ -602,11 +602,7 @@ void Bombable::SetupDefusedState( )
 	// Create the TimeBomb ammo powerup...  RETAIL: Object 0x1009ccab:
 	// not where weapons stay, and the ammo is the gadget target's.
 
-	if( IsMultiplayerGame( ) && g_pServerMissionMgr->GetServerSettings( ).m_bWeaponsStay )
-	{
-		m_hBombPickup = LTNULL;
-	}
-	else
+	if( !IsMultiplayerGame( ) || !g_pServerMissionMgr->GetServerSettings( ).m_bWeaponsStay )
 	{
 	GADGETTARGET* pGadgetTarget = g_pGadgetTargetMgr->GetGadgetTarget( m_nGTID );
 	if( !pGadgetTarget || !pGadgetTarget->szAmmoType )
@@ -645,6 +641,10 @@ void Bombable::SetupDefusedState( )
 
 		m_hBombPickup = pClass->m_hObject;
 	}
+	}
+	else
+	{
+		m_hBombPickup = LTNULL;
 	}
 
 

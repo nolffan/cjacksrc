@@ -204,7 +204,6 @@ MISSION::MISSION()
 
 	nNameId				= -1;
 	nDescId				= 0;
-	nNumSecrets			= 0;
 	bResetPlayer		= true;
 
 	szLayout[0]			= '\0';
@@ -220,7 +219,7 @@ MISSION::MISSION()
 	aDefaultWeapons[0]	= WMGR_INVALID_ID;
 	aDefaultAmmo[0]		= WMGR_INVALID_ID;
 	aDefaultMods[0]		= WMGR_INVALID_ID;
-
+	nNumSecrets			= 0;	// RETAIL: Object 0x100f9a27, CShell 0x10087637
 }
 
 // ----------------------------------------------------------------------- //

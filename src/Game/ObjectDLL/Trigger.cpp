@@ -104,10 +104,12 @@ LTRESULT CTriggerPlugin::PreHook_EditStringList(
 		// Clear the first entry, so you can always clear out this field
 		strcpy(aszStrings[0], "<None>");
 
-		// Hand off the rest to the keymgr
-		LTBOOL bResult = m_KeyMgrPlugin.PopulateStringList(aszStrings + 1, pcStrings, cMaxStrings - 1, cMaxStringLength);
+		// Hand off the rest to the keymgr (RETAIL: Object 0x101596ff, its
+		// string list hook)
+		if( m_KeyMgrPlugin.PreHook_EditStringList( szRezPath, szPropName, aszStrings + 1, pcStrings, cMaxStrings - 1, cMaxStringLength ) == LT_ERROR )
+			return LT_ERROR;
 		++(*pcStrings);
-		return (bResult) ? LT_OK : LT_ERROR;
+		return LT_OK;
 	}
 	else if( stricmp( szPropName, "TriggerType" ) == 0 )
 	{

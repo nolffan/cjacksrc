@@ -396,7 +396,6 @@ void CAttachments::HideAttachments(LTBOOL bHide)
 			SetAttachmentHiddenState( *pAttachment );
 		}
 	}
-
 }
 
 // ----------------------------------------------------------------------- //

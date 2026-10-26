@@ -4308,11 +4308,11 @@ bool CGameServerShell::InitGameType( ServerGameOptions const& serverGameOptions 
 		case eGameTypeTeamDeathmatch:
 			m_pServerMissionMgr = debug_new( CTeamDeathMatchMissionMgr );
 			break;
-		case eGameTypeDoomsDay:
-			m_pServerMissionMgr = debug_new( CDoomsDayMissionMgr );
-			break;
 		case eGameTypeDemolition:
 			m_pServerMissionMgr = debug_new( CDemolitionMissionMgr );
+			break;
+		case eGameTypeDoomsDay:
+			m_pServerMissionMgr = debug_new( CDoomsDayMissionMgr );
 			break;
 		default:
 			ASSERT( !"CGameServerShell::InitGameType: Invalid game type." );
