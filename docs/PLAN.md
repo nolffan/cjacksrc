@@ -658,6 +658,26 @@ dedicated server (package 7).
     block order, SBCallback's stored bool, FromWideString,
     GetSecretKey's scheduling).
 
+- **Round 5.**
+  - Identical now: the heat-seeking sort's five instantiations (_Med3,
+    _Insertion_sort, _Adjust_heap, _Push_heap, _Unguarded_partition):
+    the predicate is two explicit cases (character before AimMagnet,
+    AimMagnet after character), then the distance; and
+    KeyFramer::CreateObjectList (the ConParse is constructed before
+    m_sObjectName.c_str() is passed to Init).
+  - The 729 `small` rows checked by their relocations: every callee
+    resolved through the scorer's placements, every string by content,
+    every pointer to initialized data by value (vtables by their first
+    slot's placement). Nothing differs (807 fields), so none of them
+    calls another function or reads another string than retail's.
+  - Tried: UpdateHeatSeeking (retail keeps the direction in registers
+    and normalizes it with Norm(), out of line in the characters' loop,
+    expanded in the AimMagnets' loop and the turn; a normalized copy
+    gets the size to 2186 against 2183 but not the code), AddWeapon and
+    others whose difference is CAutoMessage's members left out of line
+    (the inline budget; changing AutoMessage.h would move thousands of
+    matched functions), OnAddClient (registers).
+
 ### 4b. layouts
 
 Class layouts and save/load against retail, in both game DLLs (branch
