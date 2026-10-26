@@ -729,6 +729,21 @@ test pad.
   rate, averaged over 30 frames, at the top of the screen in play (the
   engine's `ShowFrameRate` prints only in a debug engine). As nolf2src's
   M-G44 (src/Game/ClientShellDLL/HUDMgr.cpp). Tested: shown in M01S01.
+* **CL-47: damage flashes fill a wide viewport.** The taking-health and
+  taking-armor sprites were authored for a 4:3 view. Really-close sprites
+  using `UP_PLAYERVIEW` now widen with the camera viewport above 4:3;
+  the shipped effects database uses that combination for `TakingHealth`
+  and `TakingArmor`. The authored 512-pixel ArmorHit sprite and really-close projection
+  also set a minimum width, so the original quad's small inset leaves no hard
+  vertical edges inside a wide view; scale keys stay relative to the
+  first key. The height, colour and fade are kept, and every
+  update starts from the animation's scale, so changes of resolution do
+  not accumulate stretch. Models, weapon-node effects, scope masks and
+  4:3 or narrower views keep their scale. As nolf2src's M-G89
+  (`src/Game/ClientFxDLL/BaseFx.cpp`, `CBaseFX::Update`).
+  Tested under Wine/Xvfb with a temporary looping hit-flash preview (not
+  shipped): 640x480 and 1680x720, with repeated fades and no inset edges
+  in the wide view.
 * **GAME-40: music moods above 100 frames a second.** `CMusicMgr::Update`
   takes one server frame's time off every mood each frame; the AIs put one
   frame's time back on the mood they want, but from their own update, at
