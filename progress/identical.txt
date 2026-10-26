@@ -11952,6 +11952,7 @@ Lithtech.exe	sub_4a7ad0
 Lithtech.exe	sub_4a7af0
 Lithtech.exe	sub_4a7b50
 Lithtech.exe	sub_4a7b70
+Lithtech.exe	sub_4a7bb0
 Lithtech.exe	sub_4a7cd0
 Lithtech.exe	sub_4a7d00
 Lithtech.exe	sub_4a7d40

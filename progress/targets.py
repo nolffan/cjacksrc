@@ -50,6 +50,9 @@ TARGETS, one dict per shipped binary, in the README's order:
              cited address of an unmatched function is `attempted`
   cited_src  the source trees whose comments cite it (default CITED_SRC):
              per target, because the DLLs share the 0x10000000 range
+  unreadable a regex on our `module:symbol` names: functions of ours whose shipped
+             counterparts lie in `encrypted` (tools/progress.py): listed
+             as `encrypted`, neither placed nor unplaced
   purecall   the shipped address of the CRT's `_purecall` (every abstract
              vtable's filler), where tools/vtabcheck.py cannot find its
              `jmp [IAT]` thunk itself
@@ -129,6 +132,21 @@ TARGETS = [
          # the CRT's `jmp [_purecall]` thunk is in the encrypted pages (the
          # demo's, at retail's address)
          purecall=0x00538534,
+         # Ours whose shipped counterparts are in the encrypted pages,
+         # listed `encrypted`, neither placed nor unplaced: nothing there
+         # can be compared. Read in the single-player demo's plaintext,
+         # placed at retail's addresses (tools/demoimports.py plain):
+         # - the .text$x exception funclets (`mov eax, <FuncInfo>; jmp
+         #   __CxxFrameHandler`), 0x538c00..0x539a80 after the import
+         #   thunks, 198 of them, as ours follow our import thunks
+         #   (0x537ff0..0x538b40 in our .map);
+         # - Lib_Lith's basehash.obj and virtlist.obj, linked after D3DX
+         #   (0x5380b0..0x538414, before msvcprt's operator new[]): retail's
+         #   RezMgr calls them there (CRezDir's constructor 0x4a15c0 calls
+         #   CBaseHash's at 0x538240, CRezFileSingleFile's 0x4a4480
+         #   InsertFirst at 0x5382c0), and all 14 of their functions match
+         #   ours byte for byte in the plaintext
+         unreadable=r":__ehhandler\$|^Lib_Lith\((basehash|virtlist)\.obj\):",
          # D3DX, statically linked from the DirectX 8.1 SDK's d3dx8.lib
          # (cl 13.00.9178: the Rich header's 68 objects of tool 0x1d), as in
          # NOLF2's engine, after the engine's libraries. A few of its inline

@@ -82,7 +82,6 @@ SOURCE=..\..\model\src\animtracker.cpp
 # Begin Source File
 
 SOURCE=..\..\shared\src\bdefs.cpp
-# ADD CPP /Yc"bdefs.h"
 # End Source File
 # Begin Source File
 
@@ -379,10 +378,6 @@ SOURCE=..\..\client\src\ltinfo_impl.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\kernel\src\sys\win\ltlibraryloader.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=..\..\kernel\mem\src\ltmemory.cpp
 # End Source File
 # Begin Source File
@@ -400,12 +395,12 @@ SOURCE=..\..\server\src\ltmessage_server.cpp
 # Begin Source File
 
 SOURCE=..\..\..\sdk\inc\ltmodule.cpp
-# ADD CPP /FI"bdefs.h"
+# SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\..\sdk\inc\ltobjref.cpp
-# ADD CPP /FI"bdefs.h"
+# SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # Begin Source File
 
@@ -619,7 +614,7 @@ SOURCE=..\..\kernel\src\sys\win\timemgr.cpp
 # Begin Source File
 
 SOURCE=..\..\model\src\transformmaker.cpp
-# SUBTRACT CPP /YX /Yc /Yu
+# ADD CPP /FI"bdefs.h"
 # End Source File
 # Begin Source File
 
@@ -658,6 +653,7 @@ SOURCE=..\..\client\src\sys\win\winconsole_impl.cpp
 # Begin Source File
 
 SOURCE=..\..\world\src\world_blind_object_data.cpp
+# ADD CPP /Yc"bdefs.h"
 # End Source File
 # Begin Source File
 
@@ -690,7 +686,7 @@ SOURCE=..\..\world\src\world_tree.cpp
 # Begin Source File
 
 SOURCE=..\..\kernel\src\icommandlineargs.cpp
-# ADD CPP /FI"bdefs.h"
+# SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # Begin Source File
 
@@ -707,6 +703,7 @@ SOURCE=..\..\shared\src\modellt_impl.cpp
 # Begin Source File
 
 SOURCE=..\..\server\src\server_iltmodel.cpp
+# SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # Begin Source File
 
