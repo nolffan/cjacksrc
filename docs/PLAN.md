@@ -1340,6 +1340,30 @@ missed starts into extent-splits.csv):
   jump targets. The nears left are register, scheduling and frame-size
   differences, and SupportsGlowShader's block order.
 
+**Round 10** (branch `engine3`, on integ 50a3340; stopped here):
+- **The "small" functions' operands.** For every small pairing, each
+  relocated operand was read in both linked images and checked against a
+  map of our targets to retail's built from the identical functions, and
+  any read-only data it points at compared by content; each of ours was
+  re-paired with the same-shape retail row that agrees best. No logic
+  difference in either binary's small functions: what is flagged is
+  shape pairing among look-alike initializers and atexit thunks, the
+  folded one-line interface getters (0x407c50), holder statics (every
+  holder of an interface points at the same object) and import slots.
+- **The same map over the identical functions** (a data target of ours
+  that reaches more than one retail address): **InsideConvex** rejects a
+  point beyond -0.001, not -INTERSECT_EPSILON (-0.01), in both images
+  (0x434510, 0x10014210): fixed, still identical. Line casts against
+  world polygons were 0.01 too lenient at the edges.
+- Not yet looked at (from the same list): CConsole::Draw and DrawSmall
+  read the screen size from two globals at 0x58aa4c/0x58aa50 rather than
+  g_ScreenWidth/Height (0x573820/4); CLTDirectMusicMgr::CCommandItem's
+  operator new reaches the chunk allocator at 0x587e08, not its own
+  (0x587df4); ~CD3DRenderStyle's g_pRenderStylesInterface (0x58ae28,
+  likely another object's holder). The scripts were in /tmp: rebuild
+  them from this description (relocation runs from the object's mask;
+  rel32 after e8/e9/0f8x, otherwise absolute).
+
 ### 7. apps
 
 `ContractJack.exe` and `ContractJackServer.exe` build from NOLF2's

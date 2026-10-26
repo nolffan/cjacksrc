@@ -41,7 +41,9 @@ static LTBOOL InsideConvex(WorldPoly *pPoly, LTVector *pPt)
 		edgePlane.m_Dist = edgePlane.m_Normal.Dot(currVec);
 
 		edgeDot = edgePlane.DistTo(*pPt);
-		if(edgeDot < -INTERSECT_EPSILON)
+		// RETAIL: a tenth of INTERSECT_EPSILON here (Lithtech.exe 0x434510,
+		// server.dll 0x10014210 read -0.001)
+		if(edgeDot < -0.001f)
 			return LTFALSE;
 
 		iPrev = iCur;
