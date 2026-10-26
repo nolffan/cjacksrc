@@ -1012,19 +1012,13 @@ uint32 CGameClientShell::OnEngineInitialized(RMode *pMode, LTGUID *pAppGuid)
 		CWinUtil::CreateDir("Save");
 	}
 
-	// Add to NumRuns count...
-
-	float nNumRuns = 0.0f;
-    HCONSOLEVAR hVar = g_pLTClient->GetConsoleVar("NumRuns");
-	if (hVar)
+	// RETAIL: 0x1004ba28: the runs are counted in the registry ("GameRuns"),
+	// not in the NumRuns console variable.
+	if (g_pVersionMgr)
 	{
-        nNumRuns = g_pLTClient->GetVarValueFloat(hVar);
+		CRegMgr* pRegMgr = g_pVersionMgr->GetRegMgr();
+		pRegMgr->Set("GameRuns", pRegMgr->Get("GameRuns", 0) + 1);
 	}
-	nNumRuns++;
-
-	char strConsole[64];
-	sprintf (strConsole, "+NumRuns %f", nNumRuns);
-    g_pLTClient->RunConsoleString(strConsole);
 
     bool bNetworkGameStarted = false;
 
@@ -1208,6 +1202,7 @@ uint32 CGameClientShell::OnEngineInitialized(RMode *pMode, LTGUID *pAppGuid)
 
 	// Process command line.
 
+	HCONSOLEVAR hVar;
 	if (hVar = g_pLTClient->GetConsoleVar("join")) // looking for join [ip] format
 	{
 		g_pInterfaceMgr->SetCommandLineJoin( true );
@@ -1237,16 +1232,13 @@ uint32 CGameClientShell::OnEngineInitialized(RMode *pMode, LTGUID *pAppGuid)
 				}
 				break;
 
+				// RETAIL: 0x1004bf60: Demolition too, from the multiplayer file.
 				case eGameTypeDeathmatch:
 				case eGameTypeTeamDeathmatch:
+				case eGameTypeDoomsDay:
+				case eGameTypeDemolition:
 				{
 					sMissionFile = MISSION_DM_FILE;
-				}
-				break;
-
-				case eGameTypeDoomsDay:
-				{
-					sMissionFile = MISSION_DD_FILE;
 				}
 				break;
 
@@ -1326,13 +1318,6 @@ uint32 CGameClientShell::OnEngineInitialized(RMode *pMode, LTGUID *pAppGuid)
 #endif // _TO2DEMO
 
 
-	// RETAIL: the multiplayer missions file, written at every start
-	CreateMPMissionFile();
-
-	// Determine how long it took to initialize the game...
-	sprintf(strTimeDiff, "Game initialized in %f seconds.\n", CWinUtil::GetTime() - fStartTime);
-	CWinUtil::DebugOut(strTimeDiff);
-
 	m_pPerformanceTest = debug_new(CPerformanceTest);
 
 	// Intialize the scmd handler.
@@ -1341,6 +1326,14 @@ uint32 CGameClientShell::OnEngineInitialized(RMode *pMode, LTGUID *pAppGuid)
 	{
 		return LT_ERROR;
 	}
+
+	// RETAIL: the multiplayer missions file, written at every start (after
+	// the scmd handler, 0x1004c1ca)
+	CreateMPMissionFile();
+
+	// Determine how long it took to initialize the game...
+	sprintf(strTimeDiff, "Game initialized in %f seconds.\n", CWinUtil::GetTime() - fStartTime);
+	CWinUtil::DebugOut(strTimeDiff);
 
 	return LT_OK;
 }
@@ -2263,6 +2256,10 @@ void CGameClientShell::OnKeyDown(int key, int rep)
 			return;
 
 
+		// RETAIL: 0x10048ebb: not while a message box is up.
+		if( g_pInterfaceMgr->IsMessageBoxVisible( ))
+			return;
+
 		// Check if we can do a load.
 		if( g_pClientSaveLoadMgr->CanLoadGame( ) && g_pClientSaveLoadMgr->QuickSaveExists( ))
 		{
@@ -2277,17 +2274,7 @@ void CGameClientShell::OnKeyDown(int key, int rep)
 			}
 			else
 			{
-				//if mission bute mgr is not initialized
-				if (!g_pMissionButeMgr->GetAttributeFile( ) || !strlen(g_pMissionButeMgr->GetAttributeFile( )))
-				{
-					// Initialize to the sp mission bute.
-					if( !g_pMissionButeMgr->Init( MISSION_DEFAULT_FILE ))
-					{
-						g_pLTClient->ShutdownWithMessage("Could not load mission bute %s.", MISSION_DEFAULT_FILE );
-						return;
-  					}
-				}
-
+				// RETAIL: 0x10048f52: the mission butes are not loaded here.
 				g_pMissionMgr->StartGameFromQuickSave( );
 			}
 		}

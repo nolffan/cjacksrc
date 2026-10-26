@@ -761,11 +761,7 @@ void CInterfaceMgr::Term()
 		m_hSound = LTNULL;
 	}
 
-	if( m_pGameSpyPatchInfo )
-	{
-		IGameSpyPatchInfo::Delete( m_pGameSpyPatchInfo );
-		m_pGameSpyPatchInfo = LTNULL;
-	}
+	// RETAIL: 0x100639c0: the patch query is left to UpdatePatchInfo.
 
 	// Unititialized.
 	m_bInitialized = false;
@@ -5992,17 +5988,21 @@ void CInterfaceMgr::Disconnected(uint32 nDisconnectFlag)
 		case eDisconnect_WrongPassword:
 			// RETAIL: CShell 0x1006983b: back to the multiplayer screen.
 			nMsgId = IDS_NETERR_WRONGPASS;
+			destination = SCREEN_ID_MULTI;
 			break;
 
 		// RETAIL: CShell 0x10069849: Contract J.A.C.K.'s handshake failures.
-		case eDisconnect_BadFiles:
-			nMsgId = IDS_CJ_BADFILES;
-			break;
 		case eDisconnect_CDKeyRejected:
 			nMsgId = IDS_CJ_CDKEYREJECTED;
+			destination = SCREEN_ID_MULTI;
+			break;
+		case eDisconnect_BadFiles:
+			nMsgId = IDS_CJ_BADFILES;
+			destination = SCREEN_ID_MULTI;
 			break;
 		case eDisconnect_Banned:
 			nMsgId = IDS_CJ_BANNED;
+			destination = SCREEN_ID_MULTI;
 			break;
 
 		case 0 : // Avoid the warning..

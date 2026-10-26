@@ -103,7 +103,6 @@ void CHUDDecision::Show(ILTMessage_Read *pMsg)
 	if (bShow)
 	{
 		LTBOOL bForce = (LTBOOL)pMsg->Readuint8();
-		g_pLTClient->CPrint("CHUDDecision::Show() : show");
 		//read in the message
 		for (int i=0; i < MAX_DECISION_CHOICES; i++)
 		{
@@ -125,7 +124,6 @@ void CHUDDecision::Show(ILTMessage_Read *pMsg)
 		//if we're out of range, bail right away
 		if (!bForce && fRad > 0.0f && fDist > fRad)
 		{
-			g_pLTClient->CPrint("CHUDDecision::Show() : out of range");
 			Hide();
 			return;
 		}
@@ -188,7 +186,6 @@ void CHUDDecision::Show(ILTMessage_Read *pMsg)
 		HOBJECT hObject = pMsg->ReadObject();
 		if (m_hObject == hObject)
 		{
-			g_pLTClient->CPrint("CHUDDecision::Show() : hide");
 			m_hObject = LTNULL;
 			if (m_bVisible)
 				g_pClientSoundMgr->PlayInterfaceSound(szCloseSound);

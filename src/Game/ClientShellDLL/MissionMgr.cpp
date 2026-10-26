@@ -236,6 +236,15 @@ bool CMissionMgr::FinishStartGameFromLevel()
 // ----------------------------------------------------------------------- //
 bool CMissionMgr::StartGameFromQuickSave( )
 {
+	// RETAIL: 0x100889e9: the single player missions are loaded here, if
+	// another mission file is (not by the quickload key).
+	char const* pszMissionFile = g_pMissionButeMgr->GetAttributeFile( );
+	if( !pszMissionFile || stricmp( pszMissionFile, MISSION_DEFAULT_FILE ))
+	{
+		if( !g_pMissionButeMgr->Init( MISSION_DEFAULT_FILE ))
+			return false;
+	}
+
 	// Check if there was a save available.
 	if( !g_pClientSaveLoadMgr->QuickSaveExists( ))
 		return false;

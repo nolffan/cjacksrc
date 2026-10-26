@@ -135,19 +135,7 @@ LTBOOL CMusic::InitLevel(char* pDirectory, char* pControlFile)
 		TermLevel();
 	}
 
-	//we need to make sure to completely destroy the music between levels, otherwise
-	//it tends to hold onto resources due to a DX8 bug, which cannot be reclaimed.
-	ILTClient* pILTClient = m_pClientDE;
-
-	if(IsInitialized())
-	{
-		Term();
-	}
-
-	if(!Init(pILTClient))
-	{
-		return LTFALSE;
-	}
+	// RETAIL: 0x1008da11: the music manager is not made again for each level.
 
 
 	// If we're using low quality music, make sure we update the directory
