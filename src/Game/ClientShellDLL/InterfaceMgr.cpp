@@ -2344,9 +2344,18 @@ LTBOOL CInterfaceMgr::OnMessage(uint8 messageID, ILTMessage_Read *pMsg)
 					
 					static eChatMsgType eChatType[] = { kMsgBlueTeam, kMsgRedTeam };
 
-					
+					// RETAIL: CShell 0x1014bd64: a voice line for each action
+					// and piece.
+					static const char* szVoice[][kDoomsDay_MAXTYPES] =
+					{
+						{ "voice\\10348.wav", "voice\\10352.wav", "voice\\10344.wav" },
+						{ "voice\\10349.wav", "voice\\10353.wav", "voice\\10345.wav" },
+						{ "voice\\10350.wav", "voice\\10354.wav", "voice\\10346.wav" },
+						{ "voice\\10351.wav", "voice\\10355.wav", "voice\\10347.wav" },
+					};
+
 					// RETAIL: the server sends the chassis piece's id.
-					DDPieceType Piece = GetDoomsDayPieceType( pMsg->Readuint8() );
+					uint8		Piece = GetDoomsDayPieceType( pMsg->Readuint8() );
 					uint8		nTeam = pMsg->Readuint8();
 
 					if( Piece >= kDoomsDay_MAXTYPES )
@@ -2369,8 +2378,9 @@ LTBOOL CInterfaceMgr::OnMessage(uint8 messageID, ILTMessage_Read *pMsg)
 					g_pChatMsgs->AddMessage( szTransmission, eChatType[nTeam] );
 
 					// Play a sound...
+					// RETAIL: 0x10068660: the voice line, not the chat sound.
 
-					g_pClientSoundMgr->PlayInterfaceSound( "Interface\\Snd\\chat.wav" );
+					g_pClientSoundMgr->PlayInterfaceSound( szVoice[nId][Piece] );
 				}
 				break;
 

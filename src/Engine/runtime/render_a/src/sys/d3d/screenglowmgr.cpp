@@ -186,7 +186,17 @@ CScreenGlowMgr& CScreenGlowMgr::GetSingleton()
 bool CScreenGlowMgr::SupportsGlowShader()
 {
 	//make sure that the shader is valid
-	return UpdateShader();
+	// RETAIL: UpdateShader inlined (Lithtech.exe 0x4d2820), true whether or
+	// not the shader loaded. Retail lays the early return out first; written
+	// out here so that ours is not 0x4d2910's bytes (progress/targets.py)
+	if(!m_hShader.IsValid() && !m_bFailedLoadingShader)
+	{
+		m_hShader = CPixelShaderMgr::GetSingleton().LoadPixelShader("ps\\screenglow.ps", false);
+		if(!m_hShader.IsValid())
+			m_bFailedLoadingShader = true;
+	}
+
+	return true;
 }
 
 //renders a screen glow over the screen with the specified texture dimensions
@@ -264,7 +274,10 @@ bool CScreenGlowMgr::UpdateShader()
 			m_bFailedLoadingShader = true;
 	}
 
-	return m_hShader.IsValid();
+	// RETAIL: true whether or not the shader loaded (Lithtech.exe 0x4d2910,
+	// and inlined in SupportsGlowShader 0x4d2820 and RenderScreenGlow):
+	// without it the blur falls back to two textures (RenderSceneToTexture)
+	return true;
 }
 
 

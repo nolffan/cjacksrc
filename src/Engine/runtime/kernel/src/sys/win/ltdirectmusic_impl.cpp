@@ -3231,9 +3231,17 @@ CLTDirectMusicMgr::CTransition* CLTDirectMusicMgr::GetTransition(int nFrom, int 
 {
 	int Index = nFrom+1+(nTo*(m_nNumIntensities+1));
 
+#ifdef CJACK_MODERN
+	// MODERN.md EN-60: the table index itself is checked too
 	if ((nFrom > m_nNumTransitions) || (nFrom <= 0) || 
 		(nTo > m_nNumTransitions) || (nTo <= 0) || 
 		(Index >= m_nNumTransitions) || (Index < 0))
+#else
+	// RETAIL: only the two intensities are checked, against the number of
+	// transitions, not the index (Lithtech.exe 0x439630, RETAIL_BUGS.md)
+	if ((nFrom > m_nNumTransitions) || (nFrom <= 0) || 
+		(nTo > m_nNumTransitions) || (nTo <= 0))
+#endif
 	{
 		return &m_aryTransitions[0];
 	}

@@ -638,14 +638,12 @@ bool KeyFramer::CreateObjectList()
 
 	// Make sure our object and key index are valid...
 
-    const char* pNames = m_sObjectName.c_str();
-
-
 	// Find all the objects with the given names (m_hstrObjectName may be
 	// of the form: name1;name2;name3...
 
 	ConParse parse;
-	parse.Init(pNames);
+	parse.Init(m_sObjectName.c_str());	// RETAIL: Object 0x100eae09
+
 
     m_pObjectList = g_pLTServer->CreateObjectList();
 	if (!m_pObjectList)

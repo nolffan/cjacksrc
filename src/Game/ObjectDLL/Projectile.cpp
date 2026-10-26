@@ -690,8 +690,11 @@ namespace
 
 		bool operator()( HeatSeekingTarget const& a, HeatSeekingTarget const& b ) const
 		{
-			if( a.bCharacter != b.bCharacter )
-				return a.bCharacter;
+			if( a.bCharacter && !b.bCharacter )
+				return true;
+
+			if( !a.bCharacter && b.bCharacter )
+				return false;
 
 			return a.fDistSqr < b.fDistSqr;
 		}
@@ -772,12 +775,7 @@ void CProjectile::UpdateHeatSeeking()
 		float fDistSqr = vDir.MagSqr();
 		if (fDistSqr > fRangeSqr) continue;
 
-		float fDist = vDir.Mag();
-		if (fDist != 0.0f)
-		{
-			vDir *= 1.0f / fDist;
-		}
-
+		vDir.Norm();
 		if ((float)acos(vDir.Dot(vForward)) > fHalfAngle) continue;
 
 		HeatSeekingTarget target;
@@ -817,11 +815,7 @@ void CProjectile::UpdateHeatSeeking()
 	g_pLTServer->GetObjectPos(iter->pObject->m_hObject, &vTargetPos);
 
 	LTVector vDir = vTargetPos - vPos;
-	float fDist = vDir.Mag();
-	if (fDist != 0.0f)
-	{
-		vDir *= 1.0f / fDist;
-	}
+	vDir.Norm();
 
 	float fMaxTurn = g_pLTServer->GetFrameTime() * MATH_DEGREES_TO_RADIANS(m_pAmmoData->fHeatSeekingRateOfTurn);
 	float fAngle = (float)acos(vDir.Dot(vForward));

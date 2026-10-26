@@ -203,11 +203,14 @@ void CPlayerVehicleFX::StopBlink()
 //
 // ----------------------------------------------------------------------- //
 
+// RETAIL: CShell .data 0x1014dbb0: the blink's rate, a variable.
+static float s_fBlinkRate = 2.0f;
+
 void CPlayerVehicleFX::UpdateBlink()
 {
 	if (m_bFadeIn)
 	{
-		m_fAlpha += g_pLTClient->GetFrameTime() * 2.0f;
+		m_fAlpha += g_pLTClient->GetFrameTime() * s_fBlinkRate;
 		if (m_fAlpha > 1.0f)
 		{
 			m_fAlpha = 1.0f;
@@ -216,8 +219,8 @@ void CPlayerVehicleFX::UpdateBlink()
 	}
 	else
 	{
-		m_fAlpha -= g_pLTClient->GetFrameTime() * 2.0f;
-		if (m_fAlpha <= 0.01f)
+		m_fAlpha -= g_pLTClient->GetFrameTime() * s_fBlinkRate;
+		if (m_fAlpha < 0.01f)
 		{
 			m_fAlpha = 0.01f;
 			m_bFadeIn = true;

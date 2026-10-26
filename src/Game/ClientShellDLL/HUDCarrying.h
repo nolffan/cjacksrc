@@ -50,6 +50,9 @@ private:
 	// The carrying and pickup icons of each chassis piece, by its id.
 	struct ChassisPieceIcons
 	{
+		// RETAIL: CShell 0x1005244b clears them.
+		ChassisPieceIcons( ) : hCarrying( LTNULL ), hPickup( LTNULL ) { }
+
 		HTEXTURE	hCarrying;
 		HTEXTURE	hPickup;
 	};

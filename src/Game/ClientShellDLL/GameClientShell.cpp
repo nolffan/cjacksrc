@@ -88,7 +88,7 @@ static char const* g_pszPatchUpdater = "FPUpdate.exe";
 //
 // --------------------------------------------------------------------------- //
 
-bool WINAPI LaunchApplication( char const* pszApplication, char const* pszParameters )
+BOOLEAN CGameClientShell::LaunchApplication( char const* pszApplication, char const* pszParameters )
 {
 	if( !pszApplication || !pszApplication[0] || !CWinUtil::FileExist( pszApplication ))
 		return false;
@@ -5098,7 +5098,7 @@ bool CGameClientShell::LaunchPatchUpdater( char const* pszURL )
 	if( !pszURL || !pszURL[0] )
 		return false;
 
-	return LaunchApplication( g_pszPatchUpdater, pszURL );
+	return LaunchApplication( g_pszPatchUpdater, pszURL );	// RETAIL: 0x100483c9 (a BOOLEAN)
 }
 
 // --------------------------------------------------------------------------- //

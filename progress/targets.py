@@ -147,6 +147,17 @@ TARGETS = [
          #   InsertFirst at 0x5382c0), and all 14 of their functions match
          #   ours byte for byte in the plaintext
          unreadable=r":__ehhandler\$|^Lib_Lith\((basehash|virtlist)\.obj\):",
+         # Functions of ours whose bytes recur at another shipped address:
+         own_symbols={
+             # CScreenGlowMgr: retail's screenglowmgr.obj has two uncalled
+             # 70-byte copies of UpdateShader's body: 0x4d2910, between
+             # FreeTextures/FreeDeviceObjects (0x4d2870) and SetupRectVerts
+             # (0x4d2960), where UpdateShader is in our object, and
+             # 0x4d2820, after the constructor (0x4d27c0), which is
+             # SupportsGlowShader (it inlines UpdateShader; its early return
+             # is laid out first). Ours writes its body out, a near
+             "?SupportsGlowShader@CScreenGlowMgr@@QAE_NXZ": 0x004d2820,
+         },
          # D3DX, statically linked from the DirectX 8.1 SDK's d3dx8.lib
          # (cl 13.00.9178: the Rich header's 68 objects of tool 0x1d), as in
          # NOLF2's engine, after the engine's libraries. A few of its inline

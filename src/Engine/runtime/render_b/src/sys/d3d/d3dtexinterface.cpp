@@ -298,16 +298,11 @@ bool CSysTexInterface::ReleaseTextureHandle(const HTEXTURE hTexture)
 
 	pTexture->SetRefCount(pTexture->GetRefCount() - 1);
 
-	// [dlk] 12/21/2005 - uncommented this block, as it caused a 64k memory leak on the console font.
-	// each time "restartrender" was called. (change carried over from Jupiter_Xbox)
-	//
-	// (OLD comment) KLS - The texture will be cleaned up on level switch, don't delete it now
-	// since both the engine and game code may be reference this texture.
-	
-	if(pTexture->GetRefCount() == 0) 
-	{
-		g_pClientMgr->FreeSharedTexture(hTexture); 
-	}
+	// RETAIL: CJ never frees it here (Lithtech.exe 0x420ab0): KLS - The
+	// texture will be cleaned up on level switch, don't delete it now since
+	// both the engine and game code may be reference this texture. (The 2005
+	// tree frees it at a count of 0, for the console font's leak on each
+	// "restartrender".)
 
 	return true;
 }

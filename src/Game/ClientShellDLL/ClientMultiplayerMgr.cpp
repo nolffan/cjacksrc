@@ -1310,6 +1310,7 @@ bool ClientMultiplayerMgr::StartClientServer( )
 	//clear out old session specific data before starting new session
 	m_nTeam = INVALID_TEAM;
 	m_bHasSelectedTeam = false;
+	m_ServerGameOptions.m_nServerStatus = 0;	// RETAIL: 0x1001f044
 
 	switch( m_StartGameRequest.m_Type )
 	{

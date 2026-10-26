@@ -821,6 +821,11 @@ LTRESULT CLTClient::GetPingStatus(uint32 nPingID, uint32 *pStatus, uint32 *pLate
 // RETAIL: the internet driver's OpenSocket, as the server's (0x1003cc70)
 LTRESULT CLTClient::OpenSocket(uint32 *phSocket)
 {
+	// RETAIL: as StartPing, it starts the networking when there is no
+	// driver yet (Lithtech.exe 0x40c3c0)
+	if (g_pClientMgr->m_NetMgr.m_Drivers.GetSize() == 0)
+		InitNetworking(NULL, 0);
+
 	for (uint32 i=0; i < g_pClientMgr->m_NetMgr.m_Drivers; i++)
 	{
 		CBaseDriver *pDriver = g_pClientMgr->m_NetMgr.m_Drivers[i];

@@ -658,6 +658,26 @@ dedicated server (package 7).
     block order, SBCallback's stored bool, FromWideString,
     GetSecretKey's scheduling).
 
+- **Round 5.**
+  - Identical now: the heat-seeking sort's five instantiations (_Med3,
+    _Insertion_sort, _Adjust_heap, _Push_heap, _Unguarded_partition):
+    the predicate is two explicit cases (character before AimMagnet,
+    AimMagnet after character), then the distance; and
+    KeyFramer::CreateObjectList (the ConParse is constructed before
+    m_sObjectName.c_str() is passed to Init).
+  - The 729 `small` rows checked by their relocations: every callee
+    resolved through the scorer's placements, every string by content,
+    every pointer to initialized data by value (vtables by their first
+    slot's placement). Nothing differs (807 fields), so none of them
+    calls another function or reads another string than retail's.
+  - Tried: UpdateHeatSeeking (retail keeps the direction in registers
+    and normalizes it with Norm(), out of line in the characters' loop,
+    expanded in the AimMagnets' loop and the turn; a normalized copy
+    gets the size to 2186 against 2183 but not the code), AddWeapon and
+    others whose difference is CAutoMessage's members left out of line
+    (the inline budget; changing AutoMessage.h would move thousands of
+    matched functions), OnAddClient (registers).
+
 ### 4b. layouts
 
 Class layouts and save/load against retail, in both game DLLs (branch
@@ -1274,6 +1294,76 @@ missed starts into extent-splits.csv):
   CClassMgr tick stubs, gr_InterpolateRotation (a 5-byte jmp thunk) and
   CLTServer's getters. Then the engine nears (Lithtech 50, server 12).
 
+**Round 9** (branch `engine3`, after merging integ 40aadc4):
+- **The nears, callees and constants first.** Every near's call
+  sequence was compared with retail's (retail targets named through the
+  exematch placements; import calls checked by hand) and its immediates
+  multiset too. Logic differences found and fixed:
+  - CSysTexInterface::ReleaseTextureHandle never frees the texture at a
+    count of 0 (0x420ab0; the 2006 tree re-enabled the free).
+  - CLTClient::OpenSocket starts the networking first when there is no
+    driver, as StartPing does (0x40c3c0).
+  - CClientMgr::RemoveClientObject removes with dl_RemoveAt, keeping the
+    object list's count (0x40ec50); it indexes by the byte m_ObjectType.
+  - CLTDirectMusicMgr::GetTransition does not check the table index: a
+    retail bug, RETAIL_BUGS.md, fixed in the modern build as EN-60.
+  - ModelPiece::Term does not test the render-object array first.
+  - CScreenGlowMgr::UpdateShader (and so SupportsGlowShader) returns
+    true whether the glow shader loaded or not; the glow then blurs with
+    two textures. UpdateShader (0x4d2910) and RenderScreenGlow are
+    identical. SupportsGlowShader (0x4d2820, by its place in the object)
+    lays the inlined early return out first, which no source shape tried
+    (fourteen) reproduces; it is written out and placed by own_symbols, a
+    near.
+  - InsideConvex is `static`: VC 7.1 gives an internal function a
+    register calling convention (pPoly in esi), as retail's has.
+- The RotateWorldModel rider overflow was ours only: retail stores while
+  the count is below 32 and then counts (0x10023d52), so nothing for
+  RETAIL_BUGS.md.
+- What the comparison left are register, scheduling and stack-frame
+  differences (SetupModelLight and DrawDynamicParticles have frames 4
+  bytes larger: one more local) and the known inlining ones
+  (LoadLightGroup's push_front, CModelMgr::ForEach's _Inc, the
+  MarkSectionBreaks family).
+- Unplaced: server.dll's hidden starts (CLTServer's constructor and
+  destructor, the RezMgr members, LTMemTrackAllocEnd,
+  udp_GetMaxPossiblePort and an empty function after it, two lthread
+  members) split as Lithtech.exe's were; CLTServer's constructor in
+  Lithtech.exe had a row inside it (screen-exclude).
+- **Stopped here.** Lithtech.exe 6,892 identical, 0 unwritten, 42
+  unplaced; server.dll 2,746, 0, 10. The unplaced left are shapes with no
+  hidden retail copy to name: the one surplus math_phys set
+  (ltdirectmusicloader), LoadLightGroup's push_front, initializer and
+  atexit shapes (clientmgr's _$E50, winconsole_impl, serverde_impl, the
+  world_* objects), the 44-byte CInternalSection operator== instances
+  (retail folds more of them), and 1- to 8-byte shapes found only among
+  jump targets. The nears left are register, scheduling and frame-size
+  differences, and SupportsGlowShader's block order.
+
+**Round 10** (branch `engine3`, on integ 50a3340; stopped here):
+- **The "small" functions' operands.** For every small pairing, each
+  relocated operand was read in both linked images and checked against a
+  map of our targets to retail's built from the identical functions, and
+  any read-only data it points at compared by content; each of ours was
+  re-paired with the same-shape retail row that agrees best. No logic
+  difference in either binary's small functions: what is flagged is
+  shape pairing among look-alike initializers and atexit thunks, the
+  folded one-line interface getters (0x407c50), holder statics (every
+  holder of an interface points at the same object) and import slots.
+- **The same map over the identical functions** (a data target of ours
+  that reaches more than one retail address): **InsideConvex** rejects a
+  point beyond -0.001, not -INTERSECT_EPSILON (-0.01), in both images
+  (0x434510, 0x10014210): fixed, still identical. Line casts against
+  world polygons were 0.01 too lenient at the edges.
+- Not yet looked at (from the same list): CConsole::Draw and DrawSmall
+  read the screen size from two globals at 0x58aa4c/0x58aa50 rather than
+  g_ScreenWidth/Height (0x573820/4); CLTDirectMusicMgr::CCommandItem's
+  operator new reaches the chunk allocator at 0x587e08, not its own
+  (0x587df4); ~CD3DRenderStyle's g_pRenderStylesInterface (0x58ae28,
+  likely another object's holder). The scripts were in /tmp: rebuild
+  them from this description (relocation runs from the object's mask;
+  rel32 after e8/e9/0f8x, otherwise absolute).
+
 ### 7. apps
 
 `ContractJack.exe` and `ContractJackServer.exe` build from NOLF2's
@@ -1735,9 +1825,23 @@ Round 1 (branch `cshell`), the items 8b leaves open:
   (its BombTimer copy is 8-byte aligned in ours), CSoundButeMgr's
   constructor, the ButeMgr library's constructor and AddCharacter
   (library code, not looked at).
-- Where it stops (round 7): the rest of the nears list (out/cs-style
-  register-masked diffs of 1-16 lines: register allocation and block
-  layout, plus ScreenJoin's sort helpers).
+- Round 8 (branch `cshell`): the nears not yet looked at, libraries
+  included. Fixed: an edit field takes no leading space (LTGUIMgr's
+  AddCharacter); every ButeMgr build clears its attribute file name at the
+  end of its constructor (Object.lto's too); the Doomsday piece messages
+  play their voice line per action and piece (not the chat sound, and the
+  piece checked as a byte); ResetInventory clears the HUD's key icons; the
+  vehicle's blink rate is a variable and fades in below 0.01, not at it;
+  StartClientServer clears the server status; LaunchApplication is a
+  member returning a BOOLEAN; CHUDCarrying::Init's icon pair is
+  constructed once.
+- Left, codegen: FillVertexBuffer (its "from the top" logic decodes as
+  ours), ChassisButeMgr::Init and the filter functions (shared exits),
+  CSoundButeMgr's constructor (the comparator byte), ScreenJoin::Build,
+  ScreenMulti::HandleCallback, CreateCameraCollisionObject, the rotations
+  of round 5, the ScreenJoin sort helpers.
+- Where it stops (round 8): the remaining 116 nears are register
+  allocation, scheduling and block layout as far as read.
 
 ### 8d. playtest coverage (branch `apps2`)
 
