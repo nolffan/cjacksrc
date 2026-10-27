@@ -931,7 +931,7 @@ protected:
 		{
 			iCurSection->m_bSectionBreak =
 				(iPrevSection == m_aSections.end()) ||
-				(*iCurSection != *iPrevSection) ||
+				!(*iCurSection == *iPrevSection) ||	// RETAIL: 0x4bbdec
 				(iCurSection->m_nVBIndex != iPrevSection->m_nVBIndex);
 			iPrevSection = iCurSection;
 		}
@@ -1182,7 +1182,11 @@ protected:
 
  		bool operator==(const CInternalSection &cOther) const
  		{
- 			if(	CShaderSection::operator==(static_cast<const CShaderSection&>(cOther)) &&
+			// RETAIL: sections of different worlds never compare equal
+			// (0x4bbe20), so a batch stops where the world, and with it the
+			// world transform, changes
+ 			if(	(m_pWorld == cOther.m_pWorld) &&
+				CShaderSection::operator==(static_cast<const CShaderSection&>(cOther)) &&
  				(m_pTextureEffect == cOther.m_pTextureEffect))
  			{
  				return true;
