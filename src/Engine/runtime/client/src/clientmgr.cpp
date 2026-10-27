@@ -776,6 +776,11 @@ static void cm_ModernFrameLimit(bool bMultiplayer)
     if (bMultiplayer && (fFPS <= 0.0f || fFPS > kMultiplayerFPS))
         fFPS = kMultiplayerFPS;
 
+    // EN-62: V-sync in a window under Wine caps the rate at the monitor's
+    // refresh instead of waiting for it (d3d_device.cpp)
+    if (g_nModernVSyncCapHz && (fFPS <= 0.0f || fFPS > (float)g_nModernVSyncCapHz))
+        fFPS = (float)g_nModernVSyncCapHz;
+
     if (fFPS <= 0.0f)
     {
         s_bCounting = false;
@@ -823,6 +828,7 @@ extern float g_CV_FrameTimeLog;
 bool    g_bModernFrameLog = false;
 DWORD   g_dwModernFrameLogThread = 0;
 __int64 g_aModernFrameTicks[MFL_COUNT];
+uint32  g_nModernVSyncCapHz = 0;     // EN-62 (modernframelog.h)
 
 namespace
 {

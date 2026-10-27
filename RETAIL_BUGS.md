@@ -40,11 +40,12 @@ SetCamera's unset viewport (EN-8), the launcher's path overrun (APPS-1),
 find handles (APPS-2), "Contract J.A.C.K. 2" (APPS-4) and the registry
 opened for writing (APPS-7), the dedicated server's console formats
 (APPS-3), a gamepad's buttons bound as axes (CL-24), the end-of-mission
-screen's missing record (CL-50), and six that come
+screen's missing record (CL-50), the scope's and camera's masks short
+of the view's sides (CL-51), and six that come
 with high frame rates: the AIs slowed (EN-41), the player's run, crouch
 and jump (CL-41), the float and jump out of water (CL-42), particle and
 line systems gone dark (CL-44), aim, sparks and debris (CL-45) and the
-music's moods (GAME-40). Twenty-eight in all.
+music's moods (GAME-40). Twenty-nine in all.
 
 ## Format
 
@@ -267,6 +268,18 @@ index as well.
 
 Fixed in the modern build: src/Engine/runtime/kernel/src/sys/win/
 ltdirectmusic_impl.cpp, MODERN.md EN-60.
+
+### The scope's and camera's masks fall short of the view's sides
+
+CShell.dll's scope and camera overlays (the masks `Interface\hud\Spr\
+ssmask.spr` and the scope's, drawn by the interface manager). Their black
+stops a strip about a fortieth of the screen's height short of each side
+of the 4:3 view, so the world shows down both edges while zoomed: about 12
+pixels a side at 640x480. The art is NOLF2's, byte for byte, and so is the
+gap (nolf2src's M-G90).
+
+Fixed in the modern build: src/Game/ClientShellDLL/HUDCrosshair.cpp,
+MODERN.md CL-51.
 
 ### Projected shadows throw their culling buffer away for every section
 

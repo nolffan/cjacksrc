@@ -493,6 +493,16 @@ test pad.
   their shape and cover the centred 4:3 area, and the world showed past
   their sides. While either is up the margins are filled black (nolf2src's
   M-G34; src/Game/ClientShellDLL/HUDCrosshair.cpp `Render`).
+* **CL-51: the scope's and camera's masks reach the sides.** The masks
+  fall short of even the 4:3 view's sides by a strip a fortieth of the
+  screen's height wide, so the world showed down both edges while zoomed:
+  in retail at 640x480 (`RETAIL_BUGS.md`) and, on a wide screen, just
+  inside CL-33's black margins. The black beside the 4:3 area now reaches
+  3% of the height into it at every shape of screen; both masks are a
+  circle on black, well inside that. Contract J.A.C.K.'s camera masks
+  (`Interface\hud\Spr\ssmask.spr` and its textures) are NOLF2's, byte for
+  byte. nolf2src's M-G90 (src/Game/ClientShellDLL/HUDCrosshair.cpp
+  `Render`).
 * **CL-34: the zoomed view's shape.** `CPlayerMgr::UpdateCameraZoom`
   scaled the vertical angle with the horizontal one (`fovY = fovX * FovY /
   FovX`), but a view's shape is the ratio of the angles' tangents: zoomed
@@ -686,6 +696,19 @@ test pad.
   the old build calls `wglSwapIntervalEXT(1)` with V-sync off; the new
   one calls it with 0, and still uses 1 with V-sync on. M01S01 loads and
   stays running. Xvfb cannot verify the physical display's frame rate.
+* **EN-62: V-sync in a window caps rather than waits.** A window
+  (borderless too) gets one back buffer, so with V-sync in effect a frame
+  a little longer than a refresh waits for the next one and the frame rate
+  halves; heavier scenes, Shadows on High among them, then drop to half
+  the refresh rate. The desktop's compositor already keeps a window from
+  tearing, so under Wine a window now always presents at once, and with
+  `VSyncOnFlip` on the frame limiter (EN-40) holds the game to the
+  display's refresh rate (GDI's `VREFRESH`; 60 for the driver's
+  "default"), or to `MaxFPS` if lower. Full screen keeps the real wait;
+  native Direct3D 8 must use the default interval in a window, so Windows
+  is unchanged. nolf2src's M-E70 (src/Engine/runtime/render_a/src/sys/d3d/
+  d3d_device.cpp `SetPresentationParams`, client/src/clientmgr.cpp
+  `cm_ModernFrameLimit`).
 * **CL-40: Frame rate limit on the Display screen.** A "Frame rate limit"
   row under V Sync: 60, 120, 144, 240, None (`MaxFPS`, EN-40), 240 for a
   config without `MaxFPS`. A limit not on offer (one set by hand) shows as
