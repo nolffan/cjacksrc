@@ -12122,6 +12122,7 @@ Lithtech.exe	sub_4a6260
 Lithtech.exe	sub_4a6280
 Lithtech.exe	sub_4a64d0
 Lithtech.exe	sub_4a6520
+Lithtech.exe	sub_4a6570
 Lithtech.exe	sub_4a65e0
 Lithtech.exe	sub_4a6650
 Lithtech.exe	sub_4a6790

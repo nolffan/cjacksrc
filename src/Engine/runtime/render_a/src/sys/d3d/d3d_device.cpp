@@ -150,7 +150,7 @@ void CD3D_Device::FreeDevice()
 		// Remember, this is actually the wrapper we're deleting here.  The above
 		// call to Release is for the actual D3D device.
 		delete m_pD3DDevice;
-		m_pD3DDevice = NULL;
+		// RETAIL: no NULL here; ResetDeviceVars clears it (as nolf2src's)
 	}
 
 	ResetDeviceVars();
