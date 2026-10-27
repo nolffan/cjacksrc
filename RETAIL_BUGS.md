@@ -33,7 +33,8 @@ bugs (MODERN.md GS-1), GetCommandName (GAME-1), the chassis's update
 (GAME-2), the join screen's deadlock (GAME-3), a body's spears
 (GAME-4), the message queue's lost message (GAME-5), the world shaders' section order (EN-1), ShowVersionInfo (EN-3),
 the music thread's handle (EN-4), a failed transition segment (EN-5),
-a music intensity out of range (EN-60),
+a music intensity out of range (EN-60), the shadows' culling buffer
+thrown away per section (EN-61),
 batched screen quads' colours (EN-6), SoundSys's null Term (EN-7),
 SetCamera's unset viewport (EN-8), the launcher's path overrun (APPS-1),
 find handles (APPS-2), "Contract J.A.C.K. 2" (APPS-4) and the registry
@@ -43,7 +44,7 @@ screen's missing record (CL-50), and six that come
 with high frame rates: the AIs slowed (EN-41), the player's run, crouch
 and jump (CL-41), the float and jump out of water (CL-42), particle and
 line systems gone dark (CL-44), aim, sparks and debris (CL-45) and the
-music's moods (GAME-40). Twenty-seven in all.
+music's moods (GAME-40). Twenty-eight in all.
 
 ## Format
 
@@ -266,6 +267,20 @@ index as well.
 
 Fixed in the modern build: src/Engine/runtime/kernel/src/sys/win/
 ltdirectmusic_impl.cpp, MODERN.md EN-60.
+
+### Projected shadows throw their culling buffer away for every section
+
+CModelShadowShader::RenderSection (src/Engine/runtime/render_a/src/sys/
+d3d/modelshadowshader.cpp). With Shadows on High
+(`ModelShadow_Proj_BackFaceCull 1`) every world section inside a shadow's
+projection is culled into a temporary index buffer, locked with
+D3DLOCK_DISCARD for every section whether or not a triangle survives;
+m_nTempIBIndex is only ever reset, so its NOOVERWRITE branch and wrap
+test are dead and every draw reads from index 0. Correct output, but the
+buffer is thrown away hundreds of times a second (Wine logs "Filtering out
+redundant discard"). As nolf2src's M-E69.
+
+Fixed in the modern build: modelshadowshader.cpp, MODERN.md EN-61.
 
 ### Batched screen-space quads lose their vertex colours
 

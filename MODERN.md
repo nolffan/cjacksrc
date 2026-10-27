@@ -604,6 +604,21 @@ test pad.
   does, so an intensity the control file does not define falls back to the
   first transition instead of reading past the table (`RETAIL_BUGS.md`;
   src/Engine/runtime/kernel/src/sys/win/ltdirectmusic_impl.cpp).
+* **EN-61: projected shadows' culling buffer.** With Shadows on High
+  (`ModelShadow_Proj_BackFaceCull 1`) every world section inside a
+  shadow's projection goes through `CModelShadowShader::RenderSection`,
+  which culls its triangles into a temporary index buffer. Retail locks
+  that buffer with `D3DLOCK_DISCARD` for every section, whether or not a
+  triangle survives, and never moves on from its start, so every draw
+  reads from index 0 and the buffer is thrown away each time: under Wine,
+  hundreds of discards a second. The modern build locks it only once a
+  triangle survives, appends from where the last section stopped
+  (`NOOVERWRITE`), draws from there, and discards only when it is full.
+  `FrameTimeLog` (EN-42) gains a `shadows` part, `RenderQueuedShadows`,
+  taken out of `render`; the sections moved from clientmgr.h to
+  shared/src/sys/win/modernframelog.h so that the renderer can time its
+  own. nolf2src's M-E69 (src/Engine/runtime/render_a/src/sys/d3d/
+  modelshadowshader.cpp, rendershadowlist.cpp).
 * **EN-40: the frame limiter.** The engine's frame limiter, `MaxFPS`, only
   works outside the final build (`cm_HandleMaxFPS` is in retail's
   Lithtech.exe, 0x40e6b0, but `CClientMgr::Update` calls it only under
@@ -649,7 +664,7 @@ test pad.
   frame's milliseconds, and its parts -- `input`, `net`, `server` (the
   local server: single player and a host), `game` (the client shell's own
   update, less the engine work it asks for), `objects`, `render`,
-  `present`, `sound`, `video`, `limit` (EN-40's wait) and `other` -- with
+  `shadows` (EN-61), `present`, `sound`, `video`, `limit` (EN-40's wait) and `other` -- with
   a summary line every ten seconds (frames, average rate, worst frame,
   frames over the threshold, each part's average). The engine's own tick
   counters are compiled out of the final build, so the parts are timed by
@@ -657,7 +672,7 @@ test pad.
   off, a section is one test of a flag). nolf2src's M-E58 unchanged
   (src/Engine/runtime/client/src/clientmgr.cpp `cm_ModernFrameLog` and the
   sections in `Update`, `Render`, `ShowDrawSurface`, `UpdateObjects`;
-  clientmgr.h; clientshell.cpp; engine_vars.cpp). Tested under Xvfb: the
+  shared/src/sys/win/modernframelog.h; clientshell.cpp; engine_vars.cpp). Tested under Xvfb: the
   log and its summaries written, the parts adding up to the frame.
 * **EN-43: V-sync off in a window under Wine.** With `VSyncOnFlip 0`,
   the renderer explicitly requests `D3DPRESENT_INTERVAL_IMMEDIATE` for
