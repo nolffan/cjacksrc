@@ -118,7 +118,9 @@ void CClientSaveLoadMgr::Term( )
 bool CClientSaveLoadMgr::QuickSave( )
 {
 	// Make sure it's valid to save.
-	if( !CanSaveGame() && g_pInterfaceMgr->GetGameState() == GS_PLAYING )
+	// RETAIL: CanSaveGame alone decides (CShell 0x10020d41); NOLF2's also
+	// asked for GS_PLAYING
+	if( !CanSaveGame() )
 		return false;
 
 	g_pGameClientShell->CSPrint( LoadTempString( IDS_QUICKSAVING ));

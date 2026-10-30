@@ -1176,6 +1176,7 @@ CShell.dll	sub_10020bb0
 CShell.dll	sub_10020bd0
 CShell.dll	sub_10020c70
 CShell.dll	sub_10020cd0
+CShell.dll	sub_10020d40
 CShell.dll	sub_10020df0
 CShell.dll	sub_10020eb0
 CShell.dll	sub_10020f60
