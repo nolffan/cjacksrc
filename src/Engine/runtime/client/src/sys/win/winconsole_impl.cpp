@@ -1116,7 +1116,9 @@ void CConsole::BorderedRectangle(uint32 fillColor, uint32 borderColor, LTRect re
 
 }
 
-extern int32	g_ScreenWidth, g_ScreenHeight;
+// RETAIL: the renderer's screen size (render_a's common_stuff.cpp; Lithtech.exe
+// 0x58aa50/0x58aa4c), not the ScreenWidth/ScreenHeight console variables
+extern uint32	g_ScreenWidth, g_ScreenHeight;
 void CConsole::Draw() {
 	//	if ((!m_pFontBitmapData) || (!m_pStruct)) return;
 	if (!m_pStruct) return;

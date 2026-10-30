@@ -157,6 +157,13 @@ TARGETS = [
              # SupportsGlowShader (it inlines UpdateShader; its early return
              # is laid out first). Ours writes its body out, a near
              "?SupportsGlowShader@CScreenGlowMgr@@QAE_NXZ": 0x004d2820,
+             # The DirectMusic manager's chunk-allocated classes: each
+             # operator new pops its own allocator's free list (CCommandItem
+             # 0x587df4/0x587e04, CSegment 0x587e08/0x587e18); the bodies are
+             # alike up to those addresses, and the scorer paired
+             # CCommandItem's with CSegment's
+             "??2CCommandItem@CLTDirectMusicMgr@@SAPAXI@Z": 0x0043cc40,
+             "??2CSegment@CLTDirectMusicMgr@@SAPAXI@Z": 0x0043cc80,
          },
          # D3DX, statically linked from the DirectX 8.1 SDK's d3dx8.lib
          # (cl 13.00.9178: the Rich header's 68 objects of tool 0x1d), as in

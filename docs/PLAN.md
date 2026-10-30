@@ -1355,14 +1355,16 @@ missed starts into extent-splits.csv):
   point beyond -0.001, not -INTERSECT_EPSILON (-0.01), in both images
   (0x434510, 0x10014210): fixed, still identical. Line casts against
   world polygons were 0.01 too lenient at the edges.
-- Not yet looked at (from the same list): CConsole::Draw and DrawSmall
-  read the screen size from two globals at 0x58aa4c/0x58aa50 rather than
-  g_ScreenWidth/Height (0x573820/4); CLTDirectMusicMgr::CCommandItem's
-  operator new reaches the chunk allocator at 0x587e08, not its own
-  (0x587df4); ~CD3DRenderStyle's g_pRenderStylesInterface (0x58ae28,
-  likely another object's holder). The scripts were in /tmp: rebuild
-  them from this description (relocation runs from the object's mask;
-  rel32 after e8/e9/0f8x, otherwise absolute).
+- Looked at since (from the same list): CConsole::Draw and DrawSmall
+  read the renderer's screen size (render_a's uint32 g_ScreenWidth/Height,
+  0x58aa50/0x58aa4c), not the ScreenWidth/ScreenHeight console variables
+  (0x573820/4): winconsole_impl.cpp's extern now names the renderer's
+  pair (both still nears, for other reasons). The CCommandItem flag was the
+  scorer's pairing: retail's CCommandItem::operator new (0x43cc40) uses
+  its own allocator, and CSegment's (0x43cc80) is alike up to the
+  addresses; both are pinned in targets.py. ~CD3DRenderStyle's 0x58ae28 is
+  d3d_renderstyle.obj's own g_pRenderStylesInterface (its initializer at
+  0x540a71), as ours: nothing to change.
 
 ### 7. apps
 
