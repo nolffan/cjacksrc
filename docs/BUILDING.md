@@ -105,7 +105,7 @@ Every game directory is packaged twice by `build/package.sh`:
   against its SHA-256, so the result is the private archive's directory,
   byte for byte. The one to give to other people.
 
-`LICENSE-NOTES.md` says what each holds and under whose terms.
+`LICENSE_NOTES.md` says what each holds and under whose terms.
 
 Nothing is installed or run from the discs or the update. Contract
 J.A.C.K.'s setup stores its files compressed in InstallShield 6 cabinets

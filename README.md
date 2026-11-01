@@ -135,4 +135,4 @@ GitHub release of it with the modern build's two public archives
 hyphen is a pre-release), and every push to `master` whose builds pass
 replaces the pre-release `nightly` with that commit's
 (`cjacksrc-nightly-<commit>.tar.gz`). The release text is
-`.github/release-notes.md`.
+`.github/release_notes.md`.

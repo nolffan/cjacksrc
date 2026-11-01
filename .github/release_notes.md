@@ -47,7 +47,7 @@ The game runs in CrossOver (or another Wine for macOS). Unpack the archive, put 
 
 ## What the modern build changes
 
-Every change from the retail game, and what is planned, is in [`MODERN.md`](https://github.com/{{REPO}}/blob/{{TAG}}/MODERN.md); the retail game's own bugs it fixes are in [`RETAIL_BUGS.md`](https://github.com/{{REPO}}/blob/{{TAG}}/RETAIL_BUGS.md). Its `binkw32.dll` is our Bink player statically linked with [FFmpeg](https://ffmpeg.org) (LGPL-2.1-or-later), and its `SndDrv.dll` carries [minimp3](https://github.com/lieff/minimp3) (CC0); what is whose, and where the source is, is in [`LICENSE-NOTES.md`](https://github.com/{{REPO}}/blob/{{TAG}}/LICENSE-NOTES.md).
+Every change from the retail game, and what is planned, is in [`MODERN.md`](https://github.com/{{REPO}}/blob/{{TAG}}/docs/MODERN.md); the retail game's own bugs it fixes are in [`RETAIL_BUGS.md`](https://github.com/{{REPO}}/blob/{{TAG}}/docs/RETAIL_BUGS.md). Its `binkw32.dll` is our Bink player statically linked with [FFmpeg](https://ffmpeg.org) (LGPL-2.1-or-later), and its `SndDrv.dll` carries [minimp3](https://github.com/lieff/minimp3) (CC0); what is whose, and where the source is, is in [`LICENSE_NOTES.md`](https://github.com/{{REPO}}/blob/{{TAG}}/docs/LICENSE_NOTES.md).
 
 ## Testing
 

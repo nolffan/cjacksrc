@@ -1939,8 +1939,8 @@ another pairing) or not, then the exclusion file for the compiler's own.
   with the modern build's public archives (`cjacksrc-<tag>.tar.gz`,
   `cjacksrc-debug-<tag>.tar.gz`), and each push to master whose builds pass
   moves the pre-release `nightly` to it, with its archives
-  (`cjacksrc-nightly-<commit>.tar.gz`); text from `.github/release-notes.md`
-  and `nightly-notes.md`. The release step was dry-run with a stand-in `gh`
+  (`cjacksrc-nightly-<commit>.tar.gz`); text from `.github/release_notes.md`
+  and `nightly_notes.md`. The release step was dry-run with a stand-in `gh`
   (new and existing tag, nightly new, moved and stale).
 - `mac-install.command` (Perl, `build/game-scripts/`; `tools/mkinstall.py`
   appends the same list as linux-install.sh's): checked on Linux to write
