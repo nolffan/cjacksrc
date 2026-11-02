@@ -1770,7 +1770,7 @@ SOCKET udp_BindToPort(sockaddr_in *pAddr, sockaddr_in *pFinalAddr)
 
 	if (status != 0) 
 	{
-		dsi_ConsolePrint("ioctlsocket/fcnt FIONBIO (nonblocking) returned %d", status);
+		dsi_ConsolePrint("ioctlsocket FIONBIO (nonblocking) returned %d", status); // RETAIL: retail's text (not "ioctlsocket/fcnt")
 
 #ifdef __LINUX
 		close(ret);
