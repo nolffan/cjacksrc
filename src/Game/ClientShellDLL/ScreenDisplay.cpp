@@ -36,8 +36,13 @@ namespace
 	const int	kNumSteps = 50;
 	const float	kBreakpoint = (float)(kNumSteps/3);
 	const float	kUpperSteps = (float)kNumSteps - kBreakpoint;
-	const float fLowerRange = 1.0f - kMinGamma;
-	const float fUpperRange = kMaxGamma - 1.0f;
+	// Contract J.A.C.K.'s neutral gamma is 1.04 (the launcher's default
+	// too), not NOLF2's 1.0: retail's slider pivots, adds and compares at
+	// 1.04f (0x10136410) and its ranges are 0.54 and 4.96 (.data
+	// 0x1014ea10, 0x1014ea14)
+	const float kMidGamma = 1.04f;
+	const float fLowerRange = kMidGamma - kMinGamma;
+	const float fUpperRange = kMaxGamma - kMidGamma;
 	float ConvertToGamma(int slider)
 	{
 		float gamma = 1.0f;
@@ -51,7 +56,7 @@ namespace
 		{
 			float fRatio = ((float)slider - kBreakpoint) / kUpperSteps;
 			fRatio *= fRatio;
-			gamma = 1.0f + fRatio * fUpperRange;
+			gamma = kMidGamma + fRatio * fUpperRange;
 		}
 
 //		g_pLTClient->CPrint("Gamma: %0.2f",gamma);
@@ -63,7 +68,7 @@ namespace
 	int	ConvertToSlider(float gamma)
 	{
 		int slider = 5;
-		if (gamma < 1.0f)
+		if (gamma < kMidGamma)
 		{
 			float underVal = gamma - kMinGamma;
 			float fRatio = underVal / fLowerRange;
@@ -73,7 +78,7 @@ namespace
 		}
 		else
 		{
-			float overVal = gamma - 1.0f;
+			float overVal = gamma - kMidGamma;
 			float fRatio = overVal / fUpperRange;
 			fRatio = (float)sqrt(fRatio);
 			slider = (int)(0.5f + kBreakpoint + kUpperSteps * fRatio);

@@ -1706,7 +1706,7 @@ void Prop::StartFade( float fDuration, float fDelayStartTime /* = 0.0f */, float
 	m_bFading = true;
 
 	m_fFadeStartTime	= g_pLTServer->GetTime() + fDelayStartTime + g_pLTServer->GetFrameTime();
-	m_fFadeDuration		= Clamp( fDuration, 0.1f, 100000.0f );
+	m_fFadeDuration		= Clamp( fDuration, 0.0f, 100000.0f );	// retail's floor is 0 (0x101a83e0), not NOLF2's 0.1
 	m_fEndAlpha			= Clamp( fEndAlpha, 0.0f, 1.0f );
 	m_bFadeRemoveWhenDone = bRemove;
 
