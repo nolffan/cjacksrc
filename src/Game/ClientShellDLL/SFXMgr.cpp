@@ -1355,6 +1355,12 @@ CSpecialFX* CSFXMgr::CreateSFX(uint8 nId, SFXCREATESTRUCT *psfxCreateStruct,
 		}
 		break;
 
+		case SFX_AIMMAGNET_ID :	// RETAIL: before the chassis cases (CShell 0x100e1c6e)
+		{
+			pSFX = g_SFXBank_AimMagnet.New();
+		}
+		break;
+
 		case SFX_CHASSISPIECE_ID :
 		{
 			pSFX = g_SFXBank_ChassisPiece.New();
@@ -1364,12 +1370,6 @@ CSpecialFX* CSFXMgr::CreateSFX(uint8 nId, SFXCREATESTRUCT *psfxCreateStruct,
 		case SFX_CHASSIS_ID :
 		{
 			pSFX = g_SFXBank_Chassis.New();
-		}
-		break;
-
-		case SFX_AIMMAGNET_ID :
-		{
-			pSFX = g_SFXBank_AimMagnet.New();
 		}
 		break;
 
