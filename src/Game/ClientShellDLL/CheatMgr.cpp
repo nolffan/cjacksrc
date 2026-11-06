@@ -60,8 +60,16 @@ CCheatMgr::CheatInfo CCheatMgr::s_CheatInfo[] = {
     { "CMLR",			LTFALSE },  // boot				- boot a player
     { "CSVJA",			LTFALSE },	// build			- build info
 	{ "FWJI@A^H",		LTFALSE },	// gimmegun <gun>	- give specific weapon
+#ifdef CJACK_MODERN
+	// MODERN.md CL-52: each name in its own slot
+	{ "FWJI@WHN",		LTFALSE },	// gimmemod <mod>	- give specific mod
+	{ "FWJI@ANI[",		LTFALSE },	// gimmegear <gear> - give specific gear
+#else
+	// RETAIL: the mod slot holds "ewkkckmb" and the gear slot "gimmemod", so
+	// gimmemod gives gear and gimmegear does nothing (RETAIL_BUGS.md)
 	{ "DUHWNUVL",		LTFALSE },	// gimmemod <mod>	- give specific mod
 	{ "FWJI@WHN",		LTFALSE },	// gimmegear <gear> - give specific gear
+#endif
 	{ "FWJI@KVUV",		LTFALSE },	// gimmeammo <ammo> - give specific ammo
     { "NBSQ^O",			LTFALSE },  // obtuse			- enables the console in release builds (not supported currently)
     { "RIVJIf",			LTFALSE },  // skillz			- give skill points

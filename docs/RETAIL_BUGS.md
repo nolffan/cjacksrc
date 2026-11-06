@@ -41,11 +41,12 @@ find handles (APPS-2), "Contract J.A.C.K. 2" (APPS-4) and the registry
 opened for writing (APPS-7), the dedicated server's console formats
 (APPS-3), a gamepad's buttons bound as axes (CL-24), the end-of-mission
 screen's missing record (CL-50), the scope's and camera's masks short
-of the view's sides (CL-51), and six that come
+of the view's sides (CL-51), the gimmemod and gimmegear cheats' names
+(CL-52), and six that come
 with high frame rates: the AIs slowed (EN-41), the player's run, crouch
 and jump (CL-41), the float and jump out of water (CL-42), particle and
 line systems gone dark (CL-44), aim, sparks and debris (CL-45) and the
-music's moods (GAME-40). Twenty-nine in all.
+music's moods (GAME-40). Thirty in all.
 
 ## Format
 
@@ -268,6 +269,18 @@ index as well.
 
 Fixed in the modern build: src/Engine/runtime/kernel/src/sys/win/
 ltdirectmusic_impl.cpp, MODERN.md EN-60.
+
+### gimmemod gives gear, and gimmegear does nothing
+
+CShell.dll's cheat table (CCheatMgr::s_CheatInfo, src/Game/ClientShellDLL/
+CheatMgr.cpp; the release names are stored scrambled). The gimmemod slot
+holds the scrambled form of "ewkkckmb", and the gimmegear slot that of
+"gimmemod". So typing `gimmemod <name>` runs the gear cheat (it looks the
+name up among the gear items and says "Giving gear"), `gimmegear` is not
+a cheat at all, and the mod cheat can only be had by typing `ewkkckmb
+<mod>`. NOLF2 shipped the same table.
+
+Fixed in the modern build: CheatMgr.cpp, MODERN.md CL-52.
 
 ### The scope's and camera's masks fall short of the view's sides
 

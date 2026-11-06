@@ -503,6 +503,10 @@ test pad.
   (`Interface\hud\Spr\ssmask.spr` and its textures) are NOLF2's, byte for
   byte. nolf2src's M-G90 (src/Game/ClientShellDLL/HUDCrosshair.cpp
   `Render`).
+* **CL-52: gimmemod and gimmegear.** Retail's scrambled cheat names put
+  "ewkkckmb" in the gimmemod slot and "gimmemod" in the gimmegear slot, so
+  gimmemod gave gear and gimmegear did nothing (`RETAIL_BUGS.md`). Each
+  name is now in its own slot (src/Game/ClientShellDLL/CheatMgr.cpp).
 * **CL-34: the zoomed view's shape.** `CPlayerMgr::UpdateCameraZoom`
   scaled the vertical angle with the horizontal one (`fovY = fovX * FovY /
   FovX`), but a view's shape is the ratio of the angles' tangents: zoomed
