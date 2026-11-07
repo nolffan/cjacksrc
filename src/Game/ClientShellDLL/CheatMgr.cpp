@@ -329,6 +329,16 @@ bool CCheatMgr::Process( CheatCode nCheatCode, CParsedMsg &cMsg )
 			ToggleEndgameFlag();
 		break;
 
+#ifdef CJACK_MODERN
+#ifdef _FINAL
+		// MODERN.md CL-53: retail handles budonkadonk only in multiplayer
+		// (above); its single-player case is a development build's only
+		case CHEAT_CHASETOGGLE:	   // toggle 3rd person view
+			ChaseToggle();
+		break;
+#endif
+#endif
+
 #ifndef _FINAL
 
 		case CHEAT_CHASETOGGLE:	   // toggle 3rd person view

@@ -42,11 +42,11 @@ opened for writing (APPS-7), the dedicated server's console formats
 (APPS-3), a gamepad's buttons bound as axes (CL-24), the end-of-mission
 screen's missing record (CL-50), the scope's and camera's masks short
 of the view's sides (CL-51), the gimmemod and gimmegear cheats' names
-(CL-52), and six that come
+(CL-52), the chase-view cheat in single player (CL-53), and six that come
 with high frame rates: the AIs slowed (EN-41), the player's run, crouch
 and jump (CL-41), the float and jump out of water (CL-42), particle and
 line systems gone dark (CL-44), aim, sparks and debris (CL-45) and the
-music's moods (GAME-40). Thirty in all.
+music's moods (GAME-40). Thirty-one in all.
 
 ## Format
 
@@ -269,6 +269,17 @@ index as well.
 
 Fixed in the modern build: src/Engine/runtime/kernel/src/sys/win/
 ltdirectmusic_impl.cpp, MODERN.md EN-60.
+
+### The chase-view cheat works only in multiplayer
+
+CCheatMgr::Process (CShell.dll, src/Game/ClientShellDLL/CheatMgr.cpp).
+budonkadonk is in the release cheat list ("toggle chase view"), but the
+final build handles it only in its multiplayer branch ("Well, okay, let
+them toggle between 1st and 3rd person ;)"); the single-player case sits
+inside `#ifndef _FINAL`. In a single-player game the code is accepted and
+nothing happens. NOLF2 shipped the same (nolf2src's M-G92).
+
+Fixed in the modern build: CheatMgr.cpp, MODERN.md CL-53.
 
 ### gimmemod gives gear, and gimmegear does nothing
 

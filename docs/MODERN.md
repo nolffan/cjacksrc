@@ -507,6 +507,12 @@ test pad.
   "ewkkckmb" in the gimmemod slot and "gimmemod" in the gimmegear slot, so
   gimmemod gave gear and gimmegear did nothing (`RETAIL_BUGS.md`). Each
   name is now in its own slot (src/Game/ClientShellDLL/CheatMgr.cpp).
+* **CL-53: the chase-view cheat in single player.** Retail's final build
+  handles budonkadonk only in multiplayer; its single-player case is
+  compiled into development builds only, so in a single-player game the
+  cheat did nothing (`RETAIL_BUGS.md`). The modern build handles it there
+  too, through ChaseToggle (third person while alive and not zoomed).
+  nolf2src's M-G92 (src/Game/ClientShellDLL/CheatMgr.cpp `Process`).
 * **CL-34: the zoomed view's shape.** `CPlayerMgr::UpdateCameraZoom`
   scaled the vertical angle with the horizontal one (`fovY = fovX * FovY /
   FovX`), but a view's shape is the ratio of the angles' tangents: zoomed
