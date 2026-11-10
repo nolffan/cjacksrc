@@ -47,12 +47,13 @@ Each retail function gets one status (`out/progress/functions.csv`):
 | `middleware` | third-party code linked among the binary's own: listed, not counted (below) |
 | `encrypted` | code `Lithtech.exe` keeps encrypted on disc: listed, not counted (below) |
 
-Three more statuses are for functions of OURS, not shipped ones, so none of
+Four more statuses are for functions of OURS, not shipped ones, so none of
 them is counted in the denominator:
 
 | Status | Meaning |
 |---|---|
 | `unplaced` | written, and our own link puts it in our image, but no shipped function is placed for it |
+| `unreferenced` | as `unplaced`, but an `/OPT:REF` walk over our own objects (`tools/progress.py`) reaches it from nothing the retail link would have kept, so that link would have discarded it: a template member, inline or compiler-generated helper only dead code or an instantiation of ours emits. An ordinary out-of-line function is never this. A target can turn the walk off with `no_reach` in `targets.py` |
 | `unlinked` | compiled, but our own link leaves it out too: a library member this binary does not pull |
 | `driver` | emitted only by a scoring driver that ships nowhere (none here) |
 
