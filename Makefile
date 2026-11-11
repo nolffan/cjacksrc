@@ -35,7 +35,7 @@ DOCKER_RUN = docker run --rm --init --name $(CONTAINER) \
 
 TOOLCHAIN_FILES = toolchains/msvc-7.10-3077/bin/cl.exe toolchains/dxsdk-8.1/include/d3d8.h
 
-.PHONY: all game debug modern modern-debug image retail check-rez check-tools check-ext check-toolchain \
+.PHONY: all game debug modern modern-debug image retail check-rez check-tools check-lithtools check-ext check-toolchain \
 	test mptest campaign control reference progress progress-update shell clean distclean help
 
 all: game
@@ -71,15 +71,15 @@ help:
 	@echo "           IMAGE_BUILD=0 (use the docker image as it is, as CI does)"
 	@echo "           COMPLETE=1, COVERED=1, ACCEPT_LOSSES=1 (progress/README.md)"
 
-game: check-toolchain retail
+game: check-toolchain check-lithtools retail
 	$(DOCKER_RUN) bash build/all.sh
 
-debug: check-toolchain retail
+debug: check-toolchain check-lithtools retail
 	$(DOCKER_RUN) bash build/variant.sh $@
 
 # the modern build also builds its Bink player on FFmpeg from ext/
 # (build/ext.sh)
-modern modern-debug: check-toolchain check-ext retail
+modern modern-debug: check-toolchain check-lithtools check-ext retail
 	$(DOCKER_RUN) bash build/variant.sh $@
 
 # IMAGE_BUILD=0: use $(IMAGE) as it is (CI builds it with a layer cache
@@ -110,6 +110,9 @@ check-rez:
 
 check-tools:
 	@[ -f tools/progress.py ] || { echo "error: tools/ is empty -- the reconstruction tools are the tools/ submodule: run git submodule update --init" >&2; exit 1; }
+
+check-lithtools:
+	@[ -f lithtools/tools/lithrez/CMakeLists.txt ] || { echo "error: lithtools/ is empty -- lithrez, which packs assets/ into cjacksrc.rez, is the lithtools submodule's: run git submodule update --init lithtools" >&2; exit 1; }
 
 check-ext:
 	@[ -f ext/ffmpeg/LICENSE.md ] || { echo "error: ext/ffmpeg is empty -- the modern build's Bink player is built on the ext/ffmpeg submodule: run git submodule update --init ext/ffmpeg" >&2; exit 1; }

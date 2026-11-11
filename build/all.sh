@@ -18,6 +18,9 @@
 #                         archives (with the retail game DLLs inside them
 #                         zeroed), the movies, the shipped autoexec.cfg and
 #                         default profile. No binary.
+#   1b. assets            the 1.1 update's data, committed in assets/rez/
+#                         (assets/README.md), packed into cjacksrc.rez by
+#                         lithtools' lithrez with a fixed time.
 #   2. third-party runtime  Bink (binkw32.dll) and the Microsoft C++ and MFC
 #                         7.1 runtime DLLs, from the retail game: licensed
 #                         binaries with no source. The modern build
@@ -107,6 +110,19 @@ for s in linux-run.sh linux-server.sh; do
     chmod +x "$OUT/$s"
 done
 
+step "1b. assets: the 1.1 update's data (assets/) -> $OUT/cjacksrc.rez"
+# The 1.1 update's data ships with the release (assets/README.md): what its
+# Update_v1x1.rez carries besides the game DLLs, packed into cjacksrc.rez by
+# lithtools' lithrez (build/lithrez.sh) with a fixed time (the update's
+# readme's date), so the archive is the same bytes on every build.
+# build/retail.py keeps the retail Update_v1x1.rez out.
+bash build/lithrez.sh
+rm -f "$OUT/Update_v1x1.rez"                 # the retail archive, before assets/
+out/lithrez/lithrez c "$OUT/cjacksrc.rez.part" assets/rez --time 1067472000 >/dev/null
+mv "$OUT/cjacksrc.rez.part" "$OUT/cjacksrc.rez"
+printf 'asset assets/rez (lithrez)\tcjacksrc.rez\n' >> "$OUT/MANIFEST.txt"
+echo "   cjacksrc.rez  <-  assets/rez/ ($(find assets/rez -type f | wc -l) files)"
+
 if [ "${CJACK_MIDDLEWARE:-retail}" = open ]; then
     step "2. open runtime: our Bink player on FFmpeg (build/ext.sh); the Microsoft runtime from $RETAIL"
     bash build/ext.sh
@@ -133,13 +149,15 @@ for ((i = 0; i < ${#BUILT[@]}; i += 2)); do
 done
 # one row per file: the manifest is rewritten by the next step's tool
 python3 - "$OUT/MANIFEST.txt" <<'PY'
-import sys
+import os, sys
 p = sys.argv[1]
 rows = {}
 for line in open(p).read().splitlines():
     if "\t" in line and not line.startswith("#"):
         origin, path = line.split("\t", 1)
-        rows[path] = origin
+        # a file an older build put here and this one removed
+        if os.path.exists(os.path.join(os.path.dirname(p), path)):
+            rows[path] = origin
 with open(p, "w") as f:
     f.write("# origin<TAB>path, one row per file build/all.sh put here\n")
     for path in sorted(rows, key=str.lower):

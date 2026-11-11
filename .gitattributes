@@ -1,0 +1,2 @@
+# assets/rez/: the retail data the release ships, byte for byte as published
+assets/rez/** -text -diff

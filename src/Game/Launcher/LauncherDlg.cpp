@@ -1050,12 +1050,12 @@ BOOL CLauncherDlg::LaunchGame(DWORD dwAction)
 		}
 	}
 #ifdef CJACK_MODERN
-	else if(GetFileAttributes("Update_v1x1.rez") != INVALID_FILE_ATTRIBUTES)
+	else if(GetFileAttributes("cjacksrc.rez") != INVALID_FILE_ATTRIBUTES)
 	{
 		// MODERN.md APPS-5: no updates in the registry (the 1.1 update's
-		// installer never ran here): its archive, as its UpdateCommandLine0
-		// names it
-		sNewCmdLine += " -rez Update_v1x1.rez";
+		// installer never ran here): its data, which ships with the release
+		// as cjacksrc.rez, where its UpdateCommandLine0 put its archive
+		sNewCmdLine += " -rez cjacksrc.rez";
 	}
 
 	// MODERN.md APPS-5: custom/ -- the game DLLs built from source -- after

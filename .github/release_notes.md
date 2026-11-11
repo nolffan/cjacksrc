@@ -11,7 +11,7 @@ The release text (.github/workflows/public-archives.yml, the job "release"):
 
 **Work in progress.** The reconstruction is not finished: see [where it stands](https://github.com/{{REPO}}/blob/{{TAG}}/README.md#where-it-stands) before expecting a game that plays from start to end.
 
-**No game data is included.** A platform specific installer is included that copies the game's data from your own images of the two discs of the European or the USA release, and from the English 1.1 update, `contractjack_update_en_10_11.exe` (read, not run).
+**No game data is included beyond the free 1.1 update.** The update's data, which was a free public download, ships as `cjacksrc.rez`. A platform specific installer is included that copies the rest of the game's data from your own images of the two discs of the European or the USA release (read, not run).
 
 Supported images, as redump names them (a plain `.iso`, redump's `.bin`/`.cue`, or redump's `.zip`):
 
@@ -24,7 +24,7 @@ Supported images, as redump names them (a plain `.iso`, redump's `.bin`/`.cue`, 
 
 ### Windows
 
-Unpack the archive, drop both disc images and `contractjack_update_en_10_11.exe` onto `windows-install.bat`, then start `ContractJack.exe`.
+Unpack the archive, drop both disc images onto `windows-install.bat`, then start `ContractJack.exe`.
 
 ### Linux
 
@@ -33,7 +33,7 @@ There's no native Linux build; the game is a Windows program, run under Wine or 
 ```sh
 tar xzf cjacksrc-{{ARCHIVE}}.tar.gz
 cd cjacksrc-{{ARCHIVE}}
-./linux-install.sh /path/to/disc1.zip /path/to/disc2.zip /path/to/contractjack_update_en_10_11.exe
+./linux-install.sh /path/to/disc1.zip /path/to/disc2.zip
 ./linux-run.sh
 ```
 
@@ -43,7 +43,7 @@ No codec or winetricks step is needed: the game decodes the characters' speech (
 
 ### Mac
 
-The game runs in CrossOver (or another Wine for macOS). Unpack the archive, put both disc images and `contractjack_update_en_10_11.exe` in its folder and double-click `mac-install.command`, then run `ContractJack.exe` in a CrossOver bottle with Run Command. If macOS will not open the script (it is downloaded and not signed), allow it in System Settings > Privacy & Security ("Open Anyway"), or run it in Terminal: `./mac-install.command disc1.zip disc2.zip contractjack_update_en_10_11.exe`.
+The game runs in CrossOver (or another Wine for macOS). Unpack the archive, put both disc images in its folder and double-click `mac-install.command`, then run `ContractJack.exe` in a CrossOver bottle with Run Command. If macOS will not open the script (it is downloaded and not signed), allow it in System Settings > Privacy & Security ("Open Anyway"), or run it in Terminal: `./mac-install.command disc1.zip disc2.zip`.
 
 ## What the modern build changes
 

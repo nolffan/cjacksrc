@@ -3,10 +3,10 @@
 # own path and the files dropped on it). Windows PowerShell 5.1; ASCII
 # only, as it reads a .ps1 without a byte-order mark as the ANSI code page.
 #
-# What linux-install.sh does: find the two disc images and the 1.1 update
-# (the arguments, or the files in the game folder or the one above it; a
-# redump .bin, .cue or .zip converted to a temporary .iso first), check
-# their sizes and SHA-256, unpack the update's cabinet, then write each file
+# What linux-install.sh does: find the two disc images (the arguments,
+# or the files in the game folder or the one above it; a redump .bin, .cue
+# or .zip converted to a temporary .iso first), check their sizes and
+# SHA-256, then write each file
 # of the list at the end of the .bat from the retail file it names -- read
 # from byte ranges of the images, as they are or as InstallShield 6
 # cabinet data (16-bit length, raw deflate stream; .NET's DeflateStream
@@ -198,7 +198,7 @@ if (-not (Test-Complete)) {
         }
     }
     Write-Host '  (a disc as an .iso, or redump''s .bin/.cue or .zip of it)'
-    Fail 'drop both disc images and contractjack_update_en_10_11.exe on windows-install.bat, or put them in this folder'
+    Fail 'drop both disc images on windows-install.bat, or put them in this folder'
 }
 
 # Raw deflate data, inflated: $pre (a stored block holding a dictionary,

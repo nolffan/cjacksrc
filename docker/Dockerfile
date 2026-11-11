@@ -30,6 +30,7 @@ RUN dpkg --add-architecture i386 \
         procps \
         curl ca-certificates gcc make libc6-dev zlib1g-dev \
         xz-utils patch \
+        g++ cmake ninja-build \
  && rm -rf /var/lib/apt/lists/*
 
 ARG ZIG_VERSION=0.16.0

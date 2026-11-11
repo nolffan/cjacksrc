@@ -22,6 +22,8 @@ code in substance either way.
 | `rez/` (submodule) | the disc images' installer; the images themselves are fetched from archive.org | see `rez/README.md` |
 | `toolchains/` (submodule) | the compilers, assembled from public copies of the original media | see `toolchains/README.md` |
 | `tools/` (submodule) | the reconstruction tools, written for these projects | see `tools/README.md` |
+| `lithtools/` (submodule) | the LithTech development tools rebuilt for these projects; only its `lithrez` is built here, to pack `assets/rez/` | see `lithtools/README.md` |
+| `assets/` | **Monolith Productions / Vivendi Universal Games**: the data of the free English 1.1 update (`contractjack_update_en_10_11.exe`), unchanged (`assets/README.md`) | the publishers'; included because the update was distributed freely for anyone to download |
 
 The game code (`src/Game/`, from NOLF2's source release) and the engine
 (`src/Engine/runtime/`, from the LithTech Jupiter engine source) are being
@@ -35,6 +37,7 @@ directory lists every file; `tools/retailextract.py audit` every binary):
 |---|---|---|
 | everything built (`MANIFEST.txt`: `built`) | built here from the source above | `src/` |
 | the game data: `.rez` archives, movies, configs | Monolith Productions / Vivendi Universal Games | the retail game (the retail game DLLs inside the archives are zeroed) |
+| `cjacksrc.rez` (`MANIFEST.txt`: `asset`) | Monolith Productions / Vivendi Universal Games: the free 1.1 update's data | `assets/rez/`, packed by lithrez |
 | `binkw32.dll` (Bink), the Microsoft C++ and MFC 7.1 runtime DLLs | RAD Game Tools, Microsoft | the retail game |
 | `binkw32.dll` in the modern build | built here: our player (`src/modern/binkw32/`) statically linked with FFmpeg (LGPL-2.1-or-later) | `build/ext.sh`, from `ext/ffmpeg` |
 | `SndDrv.dll` in the modern build | built here as above, with minimp3 (CC0) compiled in | `src/Engine/snddrv/`, `src/cjacksrc/mp3/` |
@@ -63,12 +66,12 @@ the debug builds; in the modern builds, our `binkw32.dll`, FFmpeg's code
 under the LGPL-2.1-or-later, whose source is `src/modern/binkw32/` and
 `ext/ffmpeg`, rebuilt by `build/ext.sh`, and `SndDrv.dll` with minimp3, CC0),
 `linux-install.sh`, `windows-install.bat`, `cjackcmds.txt` and
-`MANIFEST.txt`. It has no `.rez` archive, movie, setting or profile of the
+`MANIFEST.txt`, and `cjacksrc.rez`, the free 1.1 update's data (above). It
+has no `.rez` archive of the discs, no movie, setting or profile of the
 retail game, no RAD Bink and no Microsoft runtime DLL. (The launcher and the dedicated server built here do carry the retail
 game's art in their resources, compiled in from the retail images: an open
 question for the public archive, which ships them as built.) The install scripts copy those from the player's own disc images of
-Contract J.A.C.K. (the European or the USA release) and its English 1.1
-update into the directory, on the player's machine; nothing of them is in
+Contract J.A.C.K. (the European or the USA release) into the directory, on the player's machine; nothing of them is in
 the archive, and the scripts carry no InstallShield or Microsoft code (they
 inflate with python3's zlib or .NET's DeflateStream). So the public archive
 is the one meant for other people -- but its binaries are built from

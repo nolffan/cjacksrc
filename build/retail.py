@@ -3,10 +3,14 @@
 # 1.1 update, as rez/ installs it (rez/games/contract-jack-eu-1.1,
 # build/retail.sh).
 
-# The archives, under their installed names. GameDLL.rez holds the 1.0 game
-# DLLs and Update_v1x1.rez the 1.1 ones that replace three of them; our
-# copies of both have every PE entry zeroed.
-REZ = ["Engine.REZ", "Game.rez", "GameDLL.rez", "Sound.rez", "Update_v1x1.rez"]
+# The archives of the retail install the game directory takes, under their
+# installed names: the discs' (GameDLL.rez holds the 1.0 game DLLs; our copy
+# has every PE entry zeroed). The 1.1 update's data ships with the release
+# instead (assets/README.md): build/all.sh packs assets/rez/ -- what
+# Update_v1x1.rez carries besides the three game DLLs -- into cjacksrc.rez.
+# The retail install's Update_v1x1.rez stays the source of the 1.1 game DLLs
+# the scoring compares against (REFERENCE_GAME).
+REZ = ["Engine.REZ", "Game.rez", "GameDLL.rez", "Sound.rez"]
 
 DATA_DIRS = ["Movies"]
 RETAIL_COPIES = [("autoexec.cfg", "autoexec.cfg.retail"),
@@ -38,11 +42,12 @@ OPEN_RUNTIME = [
 # --- the public archive's install scripts (tools/mkinstall.py) ------------
 # The game's data is copied out of the player's own disc images -- the
 # European or the USA release's two discs (their InstallShield 6 cabinets
-# span both: data1.cab, data2.cab on disc 1, data3.cab on disc 2) -- and
-# the 1.1 update, by build/game-scripts/linux-install.sh and
-# windows-install.ps1 with the list mkinstall.py writes.
+# span both: data1.cab, data2.cab on disc 1, data3.cab on disc 2) -- by
+# build/game-scripts/linux-install.sh and windows-install.ps1 with the list
+# mkinstall.py writes. The 1.1 update's data ships with the release
+# (cjacksrc.rez), so they ask for the discs alone.
 INSTALL_RELEASE = "contract-jack-eu-1.1"
-INSTALL_UPDATE = "patches/contractjack_update_en_10_11.exe"
+INSTALL_UPDATE = None
 _CJ = "Contract J.A.C.K."
 INSTALL_DISCS = {
     "eu1": f"{_CJ} (Europe) (Disc 1)",
@@ -58,9 +63,8 @@ INSTALL_BAT_HEADER = r"""@echo off
 rem windows-install.bat -- install the game data from your Contract J.A.C.K. discs.
 rem
 rem   Drop the images of both discs of Contract J.A.C.K. (the European or
-rem   the USA release) and the English 1.1 update,
-rem   contractjack_update_en_10_11.exe, onto this file -- or put them in this
-rem   folder or the one above it and double-click it. An image is a plain
+rem   the USA release) onto this file -- or put them in this folder or the
+rem   one above it and double-click it. An image is a plain
 rem   .iso, redump's .bin (or its .cue), or redump's .zip download; a .bin or
 rem   .zip is first converted to a temporary .iso in this folder (about
 rem   0.7 GB a disc, removed at the end).

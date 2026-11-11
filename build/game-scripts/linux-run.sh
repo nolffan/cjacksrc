@@ -51,10 +51,11 @@
 # Productions\Contract Jack\1.0:
 #   * InstallDir: this directory (the launcher changes to it).
 #   * UpdateNum, UpdateCommandLine0: the archive it adds after its own
-#     (Game.rez, GameDLL.rez, Sound.rez, custom): the 1.1 update's, as its
-#     installer wrote -- and, after it, custom/ again, holding the game DLLs
-#     built from source, so that the update's (zeroed) retail DLLs cannot
-#     override them (later archives win).
+#     (Game.rez, GameDLL.rez, Sound.rez, custom): the 1.1 update's data,
+#     which ships with this game as cjacksrc.rez, where its installer put
+#     its archive -- and, after it, custom/ again, holding the game DLLs
+#     built from source, so that no archive's copies of them override them
+#     (later archives win).
 # No disc is needed: the launcher only looks for one to install from.
 # Multiplayer asks for a CD key the first time (Multiplayer > CD Key).
 # On the first run autoexec.cfg -- the game's settings, rewritten on every
@@ -123,7 +124,7 @@ if [ -z "$MODERN" ]; then
     reg "$KEY" /v InstallDir         /t REG_SZ    /d "$DIR"
     reg "$KEY" /v NetRegionCode      /t REG_SZ    /d EN
     reg "$KEY" /v UpdateNum          /t REG_DWORD /d 1
-    reg "$KEY" /v UpdateCommandLine0 /t REG_SZ    /d '-rez Update_v1x1.rez -rez custom'
+    reg "$KEY" /v UpdateCommandLine0 /t REG_SZ    /d '-rez cjacksrc.rez -rez custom'
 fi
 
 # the legacy build's launcher has no window mode: a window unless asked;

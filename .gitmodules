@@ -11,3 +11,7 @@
 	path = ext/ffmpeg
 	url = git@github.com:FFmpeg/FFmpeg.git
 	shallow = true
+[submodule "lithtools"]
+	path = lithtools
+	url = git@github.com:nolffan/lithtools.git
+	shallow = true

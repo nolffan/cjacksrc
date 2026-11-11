@@ -148,18 +148,18 @@ launcher's are in its own `resource.h`.
   where it is not); the key is made when it is missing, so the launcher's
   settings are kept, and when it cannot be (no right to write the
   machine's key) the launcher plays with its defaults. With no
-  `UpdateNum` the command line gets the 1.1 update's `-rez
-  Update_v1x1.rez` (if the file is there), as its installer's
-  `UpdateCommandLine0`; `-rez custom` moves after the updates, so the
-  update's game DLLs (emptied in this build's archives) never override
-  ours. Uninstall (the installer's setup.exe) is disabled; "Install",
+  `UpdateNum` the command line gets the 1.1 update's data, `-rez
+  cjacksrc.rez` (if the file is there; it ships with the release,
+  `assets/README.md`), where its installer's `UpdateCommandLine0` put its
+  archive; `-rez custom` moves after the updates, so no archive's game
+  DLLs ever override ours. Uninstall (the installer's setup.exe) is disabled; "Install",
   left only to a launcher away from its game, says the game is not
   installed properly instead of looking for the disc (nolf2src's M-L6;
   src/Game/Launcher/Launcher.cpp InitInstance, OpenRegistryKey,
   LauncherDlg.cpp OnInitDialog, OnPlay, LaunchGame). The key is the
   user's (APPS-7). Tested as APPS-4: the launcher offered Play with no
   registry values, and its command line ended `-rez Update_v1x1.rez -rez
-  custom`.
+  custom` (now `-rez cjacksrc.rez -rez custom`).
 * **APPS-6: no CD key.** A server published with GameSpy (every multiplayer
   server, a LAN one too) sent each joining client a CD-key challenge, had
   GameSpy's servers check the answer, and turned the client away with
@@ -192,8 +192,8 @@ launcher's are in its own `resource.h`.
   else starts at its default (the detail dialog comes once more, on the
   first Play). The dedicated server hosts without the key -- the retail
   server did not host at all without the machine's -- and, with no update
-  values in the user's key, adds `Update_v1x1.rez` itself, as the launcher
-  does (nolf2src's M-G50) (src/Game/Launcher/Launcher.cpp
+  values in the user's key, adds `cjacksrc.rez` (the 1.1 update's data)
+  itself, as the launcher does (nolf2src's M-G50) (src/Game/Launcher/Launcher.cpp
   OpenRegistryKey, src/Game/Shared/VersionMgr.cpp CVersionMgr::CVersionMgr,
   src/Game/ServerApp/ServerDlg.cpp DoHost, AddResources). Tested under
   Wine in a fresh prefix: the launcher (Play, the detail dialog) and the

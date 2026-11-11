@@ -85,6 +85,9 @@ tar -C "$REPO" -cf - --exclude='__pycache__' --exclude=.git build tools | tar -C
 # the modern build's open-source middleware (build/ext.sh), built once into
 # out/ext/ for every variant
 [ -L "$TREE/ext" ] || ln -s ../../ext "$TREE/ext"
+# the 1.1 update's data, and lithrez's source, which packs it (step 1b)
+[ -L "$TREE/assets" ] || ln -s ../../assets "$TREE/assets"
+[ -L "$TREE/lithtools" ] || ln -s ../../lithtools "$TREE/lithtools"
 
 export CJACKSRC_CFLAGS="$CFLAGS"
 export CJACKSRC_LDFLAGS="$LDFLAGS"

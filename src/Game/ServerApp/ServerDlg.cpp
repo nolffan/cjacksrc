@@ -1541,13 +1541,14 @@ bool CServerDlg::AddResources( )
 #ifdef CJACK_MODERN
 	{
 		// MODERN.md APPS-7: no updates in the user's key (the 1.1 update's
-		// installer wrote the machine's): its archive, as its
-		// UpdateCommandLine0 names it, as the modern launcher does (APPS-5)
+		// installer wrote the machine's): its data, which ships with the
+		// release as cjacksrc.rez, where its UpdateCommandLine0 put its
+		// archive, as the modern launcher does (APPS-5)
 		DWORD nUpdateNum = 0;
 		if( !regMgr.GetField( "UpdateNum", &nUpdateNum ) &&
-			GetFileAttributes( "Update_v1x1.rez" ) != INVALID_FILE_ATTRIBUTES )
+			GetFileAttributes( "cjacksrc.rez" ) != INVALID_FILE_ATTRIBUTES )
 		{
-			lstRez.AddTail( "Update_v1x1.rez" );
+			lstRez.AddTail( "cjacksrc.rez" );
 		}
 	}
 #endif

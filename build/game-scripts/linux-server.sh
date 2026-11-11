@@ -76,7 +76,8 @@ fi
 # a prefix to set up: make it now if it does not exist yet
 [ -d "$WINEPREFIX/dosdevices" ] || "$WINE" wineboot -i >/dev/null 2>&1 || true
 # The legacy build's server stops without the installer's key, and takes the
-# 1.1 update's archive (and custom/ again after it) from its values.
+# 1.1 update's data, cjacksrc.rez, where its installer put its archive
+# (and custom/ again after it), from its values.
 if [ -z "$MODERN" ]; then
     DIR="$("$WINE" winepath -w "$(pwd)" 2>/dev/null)"
     KEY='HKLM\Software\Monolith Productions\Contract Jack\1.0'
@@ -84,7 +85,7 @@ if [ -z "$MODERN" ]; then
             "$WINE" reg add "$@" /reg:64 /f >/dev/null 2>&1 || true; }
     reg "$KEY" /v InstallDir         /t REG_SZ    /d "$DIR"
     reg "$KEY" /v UpdateNum          /t REG_DWORD /d 1
-    reg "$KEY" /v UpdateCommandLine0 /t REG_SZ    /d '-rez Update_v1x1.rez -rez custom'
+    reg "$KEY" /v UpdateCommandLine0 /t REG_SZ    /d '-rez cjacksrc.rez -rez custom'
 fi
 
 if [ -n "$HEADLESS" ]; then

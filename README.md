@@ -72,8 +72,9 @@ the evidence, is `progress/COMPILERS.md`.
 
 Needs docker and the submodules (`git submodule update --init`):
 `toolchains/` (the compilers), `rez/` (which fetches the European discs from
-archive.org and installs the game with its 1.1 update) and `tools/` (the
-reconstruction tools); and, for `make modern`, `ext/ffmpeg` (FFmpeg n8.1.3,
+archive.org and installs the game with its 1.1 update), `tools/` (the
+reconstruction tools) and `lithtools/` (whose `lithrez` packs the 1.1
+update's data, `assets/`, into `cjacksrc.rez`); and, for `make modern`, `ext/ffmpeg` (FFmpeg n8.1.3,
 which the modern build's Bink player is built on, by `build/ext.sh`).
 
 ```sh
@@ -85,18 +86,18 @@ make help       # everything else
 Each build also makes two archives of its game directory
 (`build/package.sh`): `out/<name>-private.tar.gz`, with the retail game's
 data, for your own machines, and `out/<name>-public.tar.gz`, without
-anything from the retail game, to give to other people. The public one
-carries scripts that copy the data out of the player's own images of both
+the discs' data, to give to other people (it carries only the free 1.1
+update's, as `cjacksrc.rez`: `assets/README.md`). The public one
+carries scripts that copy the rest out of the player's own images of both
 discs (European or USA; a plain `.iso`, redump's `.bin`/`.cue` or its
-`.zip`) and the English 1.1 update, `contractjack_update_en_10_11.exe`,
-checking every file they write (`tools/mkinstall.py`):
+`.zip`), checking every file they write (`tools/mkinstall.py`):
 
 ```sh
-cjack-modern-release/linux-install.sh disc1.zip disc2.zip contractjack_update_en_10_11.exe    # Linux
-cjack-modern-release/mac-install.command disc1.zip disc2.zip contractjack_update_en_10_11.exe # a Mac, for CrossOver
+cjack-modern-release/linux-install.sh disc1.zip disc2.zip    # Linux
+cjack-modern-release/mac-install.command disc1.zip disc2.zip # a Mac, for CrossOver
 ```
 
-On Windows, drop the three files onto `windows-install.bat`. Each script
+On Windows, drop the two images onto `windows-install.bat`. Each script
 also finds them in the game directory or the one above it by itself
 (double-click `mac-install.command` in Finder), and can be run again.
 

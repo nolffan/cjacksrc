@@ -20,6 +20,10 @@ parts of it by hand, and how the game is packaged.
     archive's install scripts are made against too (below). `make` does it
     the first time (`make retail`); see `rez/README.md`.
   * `tools/`, the reconstruction tools, shared with nolfsrc and nolf2src.
+  * `lithtools/` (fetched shallow), for its `lithrez`: `build/lithrez.sh`
+    builds it (CMake and Ninja in the build image, without its Qt GUI)
+    into `out/lithrez/`, and step 1b packs `assets/rez/` into
+    `cjacksrc.rez` with it.
   * `ext/ffmpeg`, for the modern builds only: FFmpeg (n8.1.3, fetched at
     depth 1), which `build/ext.sh` builds, with Zig's C compiler in the
     build image, into the modern build's Bink player, `binkw32.dll`
@@ -47,11 +51,12 @@ parts of it by hand, and how the game is packaged.
 | Step | What | Output |
 |---|---|---|
 | 1. resources | the game data from the retail game: the `.rez` archives (the retail game DLLs inside them zeroed), the movies, the shipped `autoexec.cfg` and default profile (`build/retail.py` says which) | `out/cjack-legacy-release/` |
+| 1b. assets | the free 1.1 update's data, committed in `assets/rez/` (`assets/README.md`: what its `Update_v1x1.rez` carries besides the game DLLs), packed by lithtools' `lithrez` with a fixed time, so the archive is the same bytes on every build; it loads where the update's archive did, after the discs' archives and before `custom/` | `out/cjack-legacy-release/cjacksrc.rez` |
 | 2. third-party runtime | Bink (`binkw32.dll`) and the Microsoft C++ and MFC 7.1 runtime DLLs from the retail game: licensed binaries with no source. The modern builds take only the Microsoft runtime, and our `binkw32.dll` on FFmpeg, which `build/ext.sh` builds from `src/modern/binkw32/` and `ext/ffmpeg` (`MODERN.md` X-1) | `out/cjack-legacy-release/` |
 | 3. compile | `build/compile.sh`: every compile and link, by `build/build.mk`, of every workspace in the tree (`WORKSPACES`: `ltmsg`, `snddrv`, `GameSpy`, the game's `TO2.dsw` with the launcher and the dedicated server, the engine's `Engine.dsw`); first the launcher's and the server's art, which their resource scripts compile, out of the retail images (`build/appres.py`) | `src/*/built/` |
 | 4. assemble | the built binaries into the game directory; the game DLLs go in `custom/`, last in the rez stack (`cjackcmds.txt`). A binary whose source is not here yet is left out and named | `out/cjack-legacy-release/` |
 | 5. audit | every PE file in the game directory listed with its origin (`MANIFEST.txt`); the build fails if one is unaccounted for, or if a `.rez` archive still holds one | |
-| 6. package | the game directory as a compressed tar, whole (`-private`), and without the retail game's files plus the scripts that install them from the player's own disc images and 1.1 update (`-public`; below) | `out/cjack-legacy-release-private.tar.gz`, `-public.tar.gz` |
+| 6. package | the game directory as a compressed tar, whole (`-private`), and without the retail game's files plus the scripts that install them from the player's own disc images (`-public`; below) | `out/cjack-legacy-release-private.tar.gz`, `-public.tar.gz` |
 
 ## Other targets
 
@@ -95,30 +100,27 @@ Every game directory is packaged twice by `build/package.sh`:
 * `out/<directory>-private.tar.gz` (about 0.8 GB): the whole directory,
   the retail game's data included. For your own machines, and for others
   developing on the build.
-* `out/<directory>-public.tar.gz`: the same without anything that came
-  from the retail game -- every file `MANIFEST.txt` lists as `data` or
-  `THIRD-PARTY` -- and with two scripts that install those files from the
-  player's own disc images of *Contract J.A.C.K.* (the European or the USA
-  release) and its English 1.1 update, `contractjack_update_en_10_11.exe`:
-  `linux-install.sh` and `windows-install.bat` (`tools/mkinstall.py`, with
+* `out/<directory>-public.tar.gz` (about 5 MB): the same without anything that came
+  from the discs -- every file `MANIFEST.txt` lists as `data` or
+  `THIRD-PARTY`; it keeps `cjacksrc.rez`, the free 1.1 update's data
+  (origin `asset`) -- and with two scripts that install those files from
+  the player's own disc images of *Contract J.A.C.K.* (the European or the
+  USA release): `linux-install.sh` and `windows-install.bat` (`tools/mkinstall.py`, with
   the layout in `build/retail.py`). They check every file they write
   against its SHA-256, so the result is the private archive's directory,
   byte for byte. The one to give to other people.
 
 `LICENSE_NOTES.md` says what each holds and under whose terms.
 
-Nothing is installed or run from the discs or the update. Contract
-J.A.C.K.'s setup stores its files compressed in InstallShield 6 cabinets
-that span both discs (`data1.hdr`, `data1.cab` and `data2.cab` on disc 1,
-`data3.cab` on disc 2), and the update packs its own InstallShield setup
-into a Microsoft cabinet (MSZIP) inside a self-extractor.
-`tools/mkinstall.py` works out, against the images in `rez/isos/` and the
-update rez/ carries, where every byte the game needs is, one way per
-release (the cabinets lie at other offsets on the USA discs), and the
-update's cabinet's offset; it reads every way back and checks it against
-the retail file before it writes the list. A script then needs no
-InstallShield or ISO 9660 code, only an inflater: it recognises each image
-by its size and SHA-256, unpacks the update's cabinet in memory, and writes
+Nothing is installed or run from the discs. Contract J.A.C.K.'s setup
+stores its files compressed in InstallShield 6 cabinets that span both
+discs (`data1.hdr`, `data1.cab` and `data2.cab` on disc 1, `data3.cab` on
+disc 2). `tools/mkinstall.py` works out, against the images in
+`rez/isos/`, where every byte the game needs is, one way per release (the
+cabinets lie at other offsets on the USA discs); it reads every way back
+and checks it against the retail file before it writes the list. A script
+then needs no InstallShield or ISO 9660 code, only an inflater: it
+recognises each image by its size and SHA-256, and writes
 each of our files from its retail file, with the retail game DLLs inside
 the archives as zeros. On Linux `python3`'s zlib inflates (bash and
 coreutils do the rest); on Windows, PowerShell 5.1's .NET
@@ -146,7 +148,7 @@ than a zip around it. The private archives are never made there. Its steps
 are the make targets above, so a run can be reproduced locally:
 
 ```sh
-git submodule update --init                 # toolchains/, rez/, tools/
+git submodule update --init                 # toolchains/, rez/, tools/, lithtools/
 make image && make retail                   # (CI: the image from its layer cache, IMAGE_BUILD=0)
 export CJACK_ARCHIVES=public
 make && make progress && make debug && make modern && make modern-debug

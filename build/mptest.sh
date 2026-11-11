@@ -16,7 +16,7 @@
 # of its own (out/play/<name>/wine). The registry gets what the game's setup
 # and 1.1 update write (HKLM\SOFTWARE\Monolith Productions\Contract Jack\1.0:
 # InstallDir, NetRegionCode EN, UpdateNum 1, UpdateCommandLine0
-# "-rez Update_v1x1.rez", and the CDKey the multiplayer screen stores:
+# "-rez cjacksrc.rez", where the 1.1 update put its archive, and the CDKey the multiplayer screen stores:
 # $MPTEST_CDKEY, default a key of the right form; MPTEST_CDKEY=none writes
 # none, for the modern build, which checks no key: MODERN.md APPS-6). The
 # modern build reads the user's key, not this one (APPS-7), and needs none
@@ -128,7 +128,7 @@ xvfb-run -a -s '-screen 0 640x480x24' bash -c '
     fi
     [ "$MPTEST_CDKEY" = none ] || wine reg add "$K" /v CDKey /t REG_SZ /d "$MPTEST_CDKEY" /f >/dev/null 2>&1
     wine reg add "$K" /v UpdateNum /t REG_DWORD /d 1 /f >/dev/null 2>&1
-    wine reg add "$K" /v UpdateCommandLine0 /t REG_SZ /d "-rez Update_v1x1.rez" /f >/dev/null 2>&1
+    wine reg add "$K" /v UpdateCommandLine0 /t REG_SZ /d "-rez cjacksrc.rez" /f >/dev/null 2>&1
     # The client writes the multiplayer missions file (MPMissions.txt,
     # from the worlds in the rez files) when it starts; the server reads it.
     wine Lithtech.exe -cmdfile cjackcmds-menu.txt > wine-menu.log 2>&1 &

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # linux-install.sh -- install the game data from your Contract J.A.C.K. discs.
 #
-#   ./linux-install.sh <disc image> <disc image> <update>
+#   ./linux-install.sh <disc image> <disc image>
 #   ./linux-install.sh                 (finds them in this directory or the
 #                                       one above it)
 #
@@ -12,21 +12,20 @@
 #   .bin   redump's raw image (2352-byte sectors), or its .cue
 #   .zip   redump's download as archive.org serves it (the .cue and .bin)
 #
-# and <update> is the English 1.1 update, contractjack_update_en_10_11.exe,
-# as it was published. A .bin, .cue or .zip is first converted to a temporary .iso
+# (The data of the free English 1.1 update comes with the release:
+# cjacksrc.rez, assets/README.md.) A .bin, .cue or .zip is first converted to a temporary .iso
 # in this directory (about 0.6 GB a disc, removed at the end). The script
 # checks each file's SHA-256, then copies the game's data out of them into
 # this directory -- the .rez archives (with the retail game DLLs inside them
 # zeroed: the game DLLs here are built from source), the movies, the shipped
 # settings, and Bink and the Microsoft runtime where this build uses them --
 # and checks every file it writes. Nothing is installed or run from the
-# discs or the update, and nothing else is changed. It can be run again: a
+# discs, and nothing else is changed. It can be run again: a
 # file already in place is checked and kept. Then play with ./linux-run.sh
 # once the game is complete (docs/PLAN.md).
 #
 # Contract J.A.C.K.'s setup stores its files compressed, in InstallShield cabinets that
-# span both discs, and the update packs its own into a Microsoft cabinet:
-# python3 (its zlib) unpacks them, with bash, sha256sum, stat and sed
+# span both discs: python3 (its zlib) unpacks them, with bash, sha256sum, stat and sed
 # (GNU coreutils; a Steam Deck has them all). The list of files, at the end
 # of this script, says for each one which bytes of which image it is made
 # of (tools/mkinstall.py).
