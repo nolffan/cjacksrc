@@ -1,0 +1,3 @@
+# Problems tools/vtabcheck.py reports that are known not to be ours:
+# <target><TAB><table or function><TAB><reason>
+ContractJack.exe	??_7CMoveDialog@@6B@	not short: all 88 slots match; retail lays the message map right after the table, so its GetThisMessageMap pointer (0x408a40) reads as an 89th slot
