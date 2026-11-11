@@ -99,6 +99,19 @@ SHIPPED_ENV = None
 
 DRIVER_OBJS = set()
 
+
+def _pins(name):
+    """{symbol: shipped address} from a pin list in progress/: lines
+    `0x<address>,<symbol>`, `#` comments."""
+    import os
+    out = {}
+    for line in open(os.path.join(os.path.dirname(os.path.abspath(__file__)), name)):
+        if line.startswith("#") or not line.strip():
+            continue
+        a, sym = line.rstrip("\n").split(",", 1)
+        out[sym] = int(a, 16)
+    return out
+
 TARGETS = [
     # ---- the engine ------------------------------------------------------
     dict(label="Lithtech.exe", what="the engine", kind="image",
@@ -183,7 +196,18 @@ TARGETS = [
          app=[(0x10001000, 0x10064024), (0x10064900, 0x10069f9b)],
          # .text$x: the exception funclets (`mov eax, <FuncInfo>; jmp
          # ___CxxFrameHandler`), after the import thunks
-         compiler_output=[(0x100646f0, 0x10064900)]),
+         compiler_output=[(0x100646f0, 0x10064900)],
+         own_symbols={
+             # a one-argument forwarder like CLTServer's string functions:
+             # retail's 0x1000d940 calls sm_FindObject (0x10036940)
+             "?FindObjectServer@CFindObj@@UAEPAVLTObject@@G@Z": 0x1000d940,
+             # and the other one-call forwarders alike up to their call, each
+             # where its call lands as ours does, so none takes another's
+             "?GetStringData@CLTServer@@UAEPBDPAUHSTRING_t@@@Z": 0x10039e30,
+             "?CreateString@CLTServer@@UAEPAUHSTRING_t@@PBD@Z": 0x10039dd0,
+             "?CopyString@CLTServer@@UAEPAUHSTRING_t@@PAU2@@Z": 0x10039dc0,
+             "?Allocate@CLTMessage_Read_Server@@MBEPAVILTMessage_Read@@ABVCPacket_Read@@@Z": 0x10011d60,
+         }),
     dict(label="SndDrv.dll", what="the sound driver", kind="image",
          shipped=REFERENCE + "/SndDrv.dll", stem="SndDrv",
          built="src/Engine/built/Final/snddrv/SndDrv.dll", optional=True,
@@ -293,6 +317,15 @@ TARGETS = [
          # (each named here is the shipped function at that address, read
          # from the retail code):
          own_symbols={
+             # CLayoutMgr's attribute getters, alike up to their tag and
+             # attribute strings: each at the shipped copy passing the same
+             # strings (progress/CShell-layout-pins.csv)
+             **_pins("CShell-layout-pins.csv"),
+             # and its two forwarders to CButeMgr::GetInt, the same bytes,
+             # in source order: HasValue (0x10071e10), GetBool, GetFloat
+             # (0x10071e40), GetInt, GetString (0x10071e70)
+             "?GetBool@CLayoutMgr@@QAEIPAD0I@Z": 0x10071e30,
+             "?GetInt@CLayoutMgr@@QAEHPAD0H@Z": 0x10071e60,
              # ScreenJoin's six server-list sorts: each comparator's
              # _Unguarded_partition (CServerSortName .. CServerSortType), at its
              # shipped copy, in size order; placement by reference pairs them
@@ -387,6 +420,10 @@ TARGETS = [
          # neighbour of a similar size (each named here is the shipped
          # function at that address, read from the retail code):
          own_symbols={
+             # list<LTObjRef>'s copy constructor (0x10167ca0) catches,
+             # _Tidy()s and rethrows: Weapons.obj's catch block, alike up to
+             # its _Tidy with other containers' (the scorer had a vector's)
+             "$L76523": 0x10167d29,
              # retail inlines the set iterator's ++ (136 bytes), ours calls
              # _Inc (88): by size ours took UpdateSpecialFX's 0x10107930
              "?SaveOverlays@CPlayerObj@@QAEXPAVILTMessage_Write@@@Z":

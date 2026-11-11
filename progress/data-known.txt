@@ -1933,21 +1933,10 @@ CShell.dll	retail	Adjust player-view weapon muzzle position: ON
 CShell.dll	retail	Adjust player-view weapon position: OFF
 CShell.dll	retail	Adjust player-view weapon position: ON
 CShell.dll	retail	Ah shucks, that takes all the fun out of it...
-CShell.dll	retail	AmmoPickupColor
-CShell.dll	retail	AmmoTint
 CShell.dll	retail	An assert has occurred:\n\n%s\nRetry will step into the debugger. You should\nonly select this option if you are currently\nrunning the game under a debugger.\n
-CShell.dll	retail	ArmorTint
-CShell.dll	retail	ArrowNextPos
-CShell.dll	retail	ArrowNextTex
-CShell.dll	retail	ArrowNextTexH
 CShell.dll	retail	Assert
-CShell.dll	retail	BossRect
 CShell.dll	retail	CameraPoint
 CShell.dll	retail	Cheaters never prosper...
-CShell.dll	retail	CrosshairBarMax
-CShell.dll	retail	CrosshairBarMin
-CShell.dll	retail	CrosshairGapMax
-CShell.dll	retail	CrosshairGapMin
 CShell.dll	retail	Death
 CShell.dll	retail	DebrisType
 CShell.dll	retail	DebugCameraName
@@ -1958,9 +1947,6 @@ CShell.dll	retail	ERROR Saving vehicle %s
 CShell.dll	retail	ERROR: CPVFXMgr::Init() %s is an Invalid socket!
 CShell.dll	retail	Error in CommandName()!
 CShell.dll	retail	Game\\%s%02d.txt
-CShell.dll	retail	HealthTint
-CShell.dll	retail	HideIconAlpha
-CShell.dll	retail	HideIconBlinkSpeed
 CShell.dll	retail	Interface\\Menu\\Art\\EndSplash.pcx
 CShell.dll	retail	IpCount
 CShell.dll	retail	LINEAR
@@ -1971,7 +1957,6 @@ CShell.dll	retail	LaserBeamNumSegments
 CShell.dll	retail	LaserBeamROffset
 CShell.dll	retail	LaserBeamThickness
 CShell.dll	retail	LaserBeamUOffset
-CShell.dll	retail	LayoutName
 CShell.dll	retail	LeashLen
 CShell.dll	retail	Left_arml
 CShell.dll	retail	Left_armu
@@ -1982,16 +1967,13 @@ CShell.dll	retail	Left_legu
 CShell.dll	retail	Left_pelvis
 CShell.dll	retail	Left_shoulder
 CShell.dll	retail	LithTech
-CShell.dll	retail	ModeTextPos
 CShell.dll	retail	Modifier
 CShell.dll	retail	MusicVolume
 CShell.dll	retail	MuzzleLight
 CShell.dll	retail	ObjAddSound
 CShell.dll	retail	ObjCompleteSound
 CShell.dll	retail	ObjRemoveSound
-CShell.dll	retail	ObjectiveRect
 CShell.dll	retail	Playing Ani( %s )
-CShell.dll	retail	PopupTextRect
 CShell.dll	retail	Properties
 CShell.dll	retail	QuickSave
 CShell.dll	retail	Right_arml
@@ -2010,12 +1992,10 @@ CShell.dll	retail	Show Camera Pos/Rot disabled.
 CShell.dll	retail	Show Camera Pos/Rot enabled.
 CShell.dll	retail	Spectator mode disabled
 CShell.dll	retail	Spectator mode enabled
-CShell.dll	retail	SubtitleTint
 CShell.dll	retail	That's better sport!
 CShell.dll	retail	Title
 CShell.dll	retail	Translation
 CShell.dll	retail	VEHICLE VERBOSE INFO:
-CShell.dll	retail	WeaponPickupColor
 CShell.dll	retail	Working
 CShell.dll	retail	assert
 CShell.dll	retail	c:\\shodebug.txt

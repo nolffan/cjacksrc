@@ -2883,11 +2883,14 @@ CShell.dll	sub_10071d70
 CShell.dll	sub_10071dd0
 CShell.dll	sub_10071df0
 CShell.dll	sub_10071e10
+CShell.dll	sub_10071e30
 CShell.dll	sub_10071e40
 CShell.dll	sub_10071e60
 CShell.dll	sub_10071e70
 CShell.dll	sub_10071ea0
 CShell.dll	sub_10071ec0
+CShell.dll	sub_10071ee0
+CShell.dll	sub_10071f00
 CShell.dll	sub_10071f20
 CShell.dll	sub_10071f40
 CShell.dll	sub_10071f70
@@ -2970,6 +2973,7 @@ CShell.dll	sub_10073ef0
 CShell.dll	sub_10073f50
 CShell.dll	sub_10073f80
 CShell.dll	sub_10073fa0
+CShell.dll	sub_10073fc0
 CShell.dll	sub_10073fe0
 CShell.dll	sub_10074000
 CShell.dll	sub_10074020
@@ -11296,7 +11300,7 @@ Lithtech.exe	sub_46c780
 Lithtech.exe	sub_46c7c0
 Lithtech.exe	sub_46c800
 Lithtech.exe	sub_46c860
-Lithtech.exe	sub_46c8c9
+Lithtech.exe	sub_46c8c0
 Lithtech.exe	sub_46c8e0
 Lithtech.exe	sub_46c900
 Lithtech.exe	sub_46c960
@@ -24607,6 +24611,7 @@ Object.lto	sub_10167be0
 Object.lto	sub_10167c48
 Object.lto	sub_10167c80
 Object.lto	sub_10167ca0
+Object.lto	sub_10167d29
 Object.lto	sub_10167d40
 Object.lto	sub_10167d60
 Object.lto	sub_10167d90
@@ -25862,6 +25867,7 @@ server.dll	sub_1000d890
 server.dll	sub_1000d8c0
 server.dll	sub_1000d910
 server.dll	sub_1000d920
+server.dll	sub_1000d940
 server.dll	sub_1000d960
 server.dll	sub_1000d980
 server.dll	sub_1000d9b0
@@ -27227,7 +27233,7 @@ server.dll	sub_1003de20
 server.dll	sub_1003de60
 server.dll	sub_1003dea0
 server.dll	sub_1003df00
-server.dll	sub_1003df69
+server.dll	sub_1003df60
 server.dll	sub_1003df80
 server.dll	sub_1003dfa0
 server.dll	sub_1003dff0

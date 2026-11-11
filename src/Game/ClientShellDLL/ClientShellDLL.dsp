@@ -520,6 +520,8 @@ SOURCE=.\LaserTriggerFX.cpp
 # Begin Source File
 
 SOURCE=.\LayoutMgr.cpp
+# ADD CPP /Og /Oi /Ot /Oy /Ob2 /Gs /GF
+# SUBTRACT CPP /O2
 # End Source File
 # Begin Source File
 
