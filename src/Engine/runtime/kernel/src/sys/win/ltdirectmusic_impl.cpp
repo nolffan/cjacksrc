@@ -751,7 +751,7 @@ LTRESULT CLTDirectMusicMgr::Term()
 		LTDMConOutWarning("WARNING! LTDirectMusicMgr thread did not exit on time!\n");
 	}
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// Release our handle (MODERN.md EN-4)
 	CloseHandle( m_hThread );
 
@@ -790,7 +790,7 @@ LTRESULT CLTDirectMusicMgr::Term()
 LTRESULT CLTDirectMusicMgr::InitLevel(const char* sWorkingDirectory, const char* sControlFileName, const char* sDefine1,
 		  						     const char* sDefine2, const char* sDefine3)
 {
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md M-E9: "sDeine3" in retail's trace
 	LTDMConOutMsg(3, "CLTDirectMusicMgr::InitLevel sWorkingDirectory=%s sControlFileName=%s sDefine1=%s sDefine2=%s sDefine3=%s\n",
 #else
@@ -1480,7 +1480,7 @@ LTRESULT CLTDirectMusicMgr::ChangeIntensity(const int nNewIntensity, const LTDME
 		// play segment
 		m_pPerformance->PlaySegment(pTransition->GetDMSegment(), nFlags, 0, &pDMSegmentState );
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 		// [kml] Check that pointer! (MODERN.md EN-5)
 		if(pDMSegmentState)
 #else
@@ -1690,7 +1690,7 @@ LTRESULT CLTDirectMusicMgr::StopSecondary(const char* sSecondarySegment, const L
 	// enter critical section for messing with the command queue
 	CWinSync_CSAuto cProtection(m_CommandQueueCriticalSection);
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md M-E7: one walk over the list, for a name or for all.
 	// Retail looked a name up again until nothing was found, but a node
 	// it did not clean up (one to play to its end, LTDMEnactNextSegment,
@@ -1875,7 +1875,7 @@ LTRESULT CLTDirectMusicMgr::StopMotif(const char* sMotifName, const LTDMEnactTyp
 
 	CWinSync_CSAuto cProtection(m_CommandQueueCriticalSection);
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md M-E7: one walk, as in StopSecondary
 	pStopSegmentState = m_lstMotifsPlaying.GetFirst();
 	while (pStopSegmentState != LTNULL)
@@ -3231,7 +3231,7 @@ CLTDirectMusicMgr::CTransition* CLTDirectMusicMgr::GetTransition(int nFrom, int 
 {
 	int Index = nFrom+1+(nTo*(m_nNumIntensities+1));
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md EN-60: the table index itself is checked too
 	if ((nFrom > m_nNumTransitions) || (nFrom <= 0) || 
 		(nTo > m_nNumTransitions) || (nTo <= 0) || 

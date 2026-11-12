@@ -1537,7 +1537,7 @@ void CClientWeapon::UpdateMovementPerturb()
 	
 	m_fLastPitch = vPlayerRot.x;
 	m_fLastYaw = vPlayerRot.y;
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md CL-45: the turn since the last frame, as the turn of a
 	// 60th of a second (what it was tuned at), so a faster frame rate does
 	// not aim steadier while turning

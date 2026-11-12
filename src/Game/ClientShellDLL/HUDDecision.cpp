@@ -31,7 +31,7 @@ CHUDDecision::CHUDDecision()
 	}
 	m_hObject = LTNULL;
 	m_fRadius = 0.0f;
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	m_nPadChoice = -1;
 #endif
 }
@@ -135,7 +135,7 @@ void CHUDDecision::Show(ILTMessage_Read *pMsg)
 			Hide();
 		}
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 		// CL-22: no controller highlight on a new window yet
 		m_nPadChoice = -1;
 		for (int nPad=0; nPad < MAX_DECISION_CHOICES; nPad++)
@@ -274,7 +274,7 @@ void CHUDDecision::UpdateLayout()
 			m_Dlg.AddControl(m_pText[i],offset);
 		}
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 		// CL-22: the choice the controller has highlighted, in red
 		m_pText[i]->SetColors(SET_ARGB(0xFF,0xC0,0x10,0x10),color,color);
 #else
@@ -303,7 +303,7 @@ void CHUDDecision::OnObjectRemove(HLOCALOBJ hObj)
 	m_bVisible = LTFALSE;
 
 }
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 
 // MODERN.md CL-22: the controller's highlight, over the choices shown
 // (Show() hides the empty ones).

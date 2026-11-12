@@ -216,7 +216,7 @@ protected:
 	// The Internet answers.
 	bool	m_bInternetOk;
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md GAME-3: the browsers' thread hands its servers to the
 	// screen's render through this queue, under its own lock, instead of
 	// taking the screen's lock while it holds the browser's.

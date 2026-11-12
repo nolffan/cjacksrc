@@ -35,7 +35,7 @@ protected:
 
 	uint8	m_nAxis[kMaxDeviceAxis];
 	uint8	m_nPOV[kMaxDevicePOV];
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md CL-23: the controller's settings (the console variables
 	// Pad*, in percent)
 public:

@@ -77,7 +77,7 @@ CLauncherApp::CLauncherApp()
 
 CLauncherApp theApp;
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 // MODERN.md APPS-5: the game directory the launcher was started from, with
 // its "\" -- the directory ContractJack.exe is in, when the engine,
 // Lithtech.exe, is there too -- or "" when it is not (a launcher copied
@@ -112,7 +112,7 @@ static CString ModernLauncherGameDir()
 
 BOOL CLauncherApp::InitInstance()
 {
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// Both modern executables share the settings and command builder.
 	// The original game filename starts directly; the Launcher filename
 	// opens the interactive launcher.
@@ -157,7 +157,7 @@ BOOL CLauncherApp::InitInstance()
 	GetCurrentDirectory(125, sDir);
 	if(strlen(sDir) > 3) strcat(sDir, "\\");
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md APPS-1: a directory of up to 124 characters and the "\"
 	// fit sDir, but not with "LITHTECH.EXE" after them in sExe[128]
 	_snprintf(sExe, sizeof(sExe) - 1, "%sLITHTECH.EXE", sDir);
@@ -178,7 +178,7 @@ BOOL CLauncherApp::InitInstance()
 	// Load the registry settings
 	m_bInstalled = FALSE;
 	m_RegMgr.Init();
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md APPS-5: the game plays without the registry values the
 	// retail installer (from the disc) leaves. RETAIL: with no key, the
 	// launcher skipped all of this -- no rez files found, no command line
@@ -201,7 +201,7 @@ BOOL CLauncherApp::InitInstance()
 			m_csInstallDir = p;
 		}
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 		// MODERN.md APPS-5: the launcher plays the game it sits in, whatever
 		// InstallDir names (nothing; another copy of the game); InstallDir
 		// counts only for a launcher with no Lithtech.exe beside it.
@@ -289,7 +289,7 @@ BOOL CLauncherApp::InitInstance()
 	m_Font.CreateFontIndirect(&lf);
 
 	CLauncherDlg dlg;
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	if(m_bDirectLaunch)
 	{
 		// No launcher window or first-run prompts. Use the same launch path
@@ -301,7 +301,7 @@ BOOL CLauncherApp::InitInstance()
 #endif
 	m_pMainWnd = &dlg;
 	int nResponse = dlg.DoModal();
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	}
 #endif
 
@@ -336,7 +336,7 @@ BOOL CLauncherApp::InitInstance()
 	return FALSE;
 }
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 int CLauncherApp::ExitInstance()
 {
 	int nResult = CWinApp::ExitInstance();
@@ -585,7 +585,7 @@ char CLauncherApp::CD_GetDriveLetter()
 
 char CLauncherApp::CD_GetDriveLetterWithGame(BOOL & bDisc2)
 {
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md APPS-4: no disc. The game reads every archive from its own
 	// directory; a disc in a drive was only a fallback place for GAME.REZ
 	// (FindRezFiles), and looking for one -- the "CdRom Drive" value, then
@@ -806,7 +806,7 @@ CString CLauncherApp::GetAdvancedOptionsCommandLineString()
 
 BOOL CLauncherApp::OpenRegistryKey()
 {
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md APPS-5, APPS-7: the key, made here when there is none so
 	// the launcher's settings are kept, is the user's: the same path under
 	// HKEY_CURRENT_USER, where the game (CVersionMgr) keeps its values too,

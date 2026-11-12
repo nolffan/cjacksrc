@@ -128,7 +128,7 @@ jobs:
             target: modern-debug
     name: ${{ matrix.name }}
     env:
-      CJACK_ARCHIVES: public
+      CJACKSRC_ARCHIVES: public
       IMAGE_BUILD: 0           # the step "Build image" loads it, cached
     steps:
       # The runner's preinstalled SDKs we never use: about 30 GB, where a

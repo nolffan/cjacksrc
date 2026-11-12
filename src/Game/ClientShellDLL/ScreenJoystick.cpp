@@ -14,7 +14,7 @@
 #include "ScreenCommands.h"
 #include "GameSettings.h"
 #include "InterfaceMgr.h"
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 // MODERN.md CL-23: the controller's default buttons
 #include "xinput/clientpad.h"
 #endif
@@ -23,7 +23,7 @@ namespace
 {
 	int kGap = 200;
 	int kWidth = 200;
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	void PadRestoreCallBack(LTBOOL bReturn, void *pData)
 	{
 		CScreenJoystick *pThisScreen = (CScreenJoystick *)pData;
@@ -47,7 +47,7 @@ CScreenJoystick::CScreenJoystick()
 {
 	memset(m_nAxis,0,sizeof(m_nAxis));
 	memset(m_nPOV,0,sizeof(m_nPOV));
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	m_nPadLookSpeed = 100;
 	m_bPadInvert = LTFALSE;
 	m_nPadLookDeadZone = 15;
@@ -64,7 +64,7 @@ CScreenJoystick::~CScreenJoystick()
 // Build the screen
 LTBOOL CScreenJoystick::Build()
 {
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md CL-23: the controller's screen. Its axes are not bound
 	// (the client reads the sticks, CL-20), so instead of the retail axis
 	// assignments: the right stick's speed and direction, both sticks'
@@ -174,7 +174,7 @@ uint32 CScreenJoystick::OnCommand(uint32 dwCommand, uint32 dwParam1, uint32 dwPa
 		
 			break;
 		}
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	case CMD_RESET_DEFAULTS:
 		{
 			// CL-23: the controller's default buttons back
@@ -195,7 +195,7 @@ uint32 CScreenJoystick::OnCommand(uint32 dwCommand, uint32 dwParam1, uint32 dwPa
 
 
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 // CL-23: the controller's column of the bindings back to its defaults; the
 // keyboard's and the mouse's are left as they are
 void CScreenJoystick::ConfirmPadRestore(LTBOOL bConfirm)
@@ -214,7 +214,7 @@ void CScreenJoystick::ConfirmPadRestore(LTBOOL bConfirm)
 void CScreenJoystick::OnFocus(LTBOOL bFocus)
 {
 	CUserProfile *pProfile = g_pProfileMgr->GetCurrentProfile();
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// CL-23: the controller's console variables (clientpad.cpp)
 	if (bFocus)
 	{

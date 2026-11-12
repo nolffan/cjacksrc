@@ -97,7 +97,7 @@ void CSubMenu::UpdateFrame()
 
 	float fw = (float)m_nWidth * m_fScale * 0.75f;
 	float fh = (float)m_nHeight * m_fScale;
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md CL-30: a frame that starts at the page's left edge (the
 	// menu bar, sliding in from it) reaches on to the screen's
 	if (m_basePos.x <= 0)

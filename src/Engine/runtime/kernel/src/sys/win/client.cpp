@@ -169,7 +169,7 @@ static bool StartClient(ClientGlob *pGlob)
     return LTTRUE;
 }
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 // MODERN.md EN-2: is the game in a window (the renderer's "windowed"),
 // and should it play on when the window loses the focus
 // (RunInBackground, a console variable; 0 unless set)?
@@ -341,7 +341,7 @@ static LRESULT WINAPI MainWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM
 
             case WM_ACTIVATEAPP: 
 			{
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
                 // MODERN.md EN-2: in a window the game keeps its renderer
                 // when it loses the focus: retail shut the renderer down
                 // and brought it back (a reload of every texture, and a

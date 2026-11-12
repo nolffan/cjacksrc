@@ -71,7 +71,7 @@ public:
 	void				ConvertScreenPos(int &x, int &y);
     LTFLOAT             GetXRatio()                         {return m_fXRatio;}
     LTFLOAT             GetYRatio()                         {return m_fYRatio;}
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md CL-30: the 640x480 page's left edge on the screen (its side
 	// margin, 0 at 4:3 and narrower); the ratios above are then both the
 	// height's

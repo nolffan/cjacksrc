@@ -1236,7 +1236,7 @@ void CGameServerShell::ProcessHandshake(HCLIENT hClient, ILTMessage_Read *pMsg)
 			cResponse.Writebool((!bIsHost && m_ServerGameOptions.m_bUsePassword));
 
 			// A server published with GameSpy challenges the client's CD key.
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 			// MODERN.md APPS-6: no CD-key challenge. GameSpy's key servers
 			// are gone; the message keeps its "no challenge" flag, so the
 			// client answers without a key.
@@ -1339,7 +1339,7 @@ void CGameServerShell::ProcessHandshake(HCLIENT hClient, ILTMessage_Read *pMsg)
 				return;
 			}
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 			// MODERN.md APPS-6: no CD key to check (no challenge was sent):
 			// let them in, so no client waits in eClientDataState_CDKeyCheck
 			// and UpdateClientCDKeyChecks never sends

@@ -62,13 +62,13 @@ LTBOOL CLTGUICtrl::IsOnMe(int x, int y)
 }
 
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 int CLTGUICtrl::s_nPageOffsetX = 0;
 
 #endif
 void CLTGUICtrl::SetScale(float fScale)
 {
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// CL-30: the page's side margin
 	m_pos.x = (int)(fScale * (float)m_basePos.x) + s_nPageOffsetX;
 #else

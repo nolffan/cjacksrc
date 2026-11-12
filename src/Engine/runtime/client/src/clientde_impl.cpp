@@ -926,7 +926,7 @@ LTRESULT CLTClient::GetCanvasRadius(HOBJECT hCanvas, float &radius)
 
 LTRESULT CLTClient::SetCanvasRadius(HOBJECT hCanvas, float radius)
 {
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md M-E11: the check names its own function
 	FN_NAME(CLTClient::SetCanvasRadius);
 #else
@@ -951,7 +951,7 @@ LTRESULT CLTClient::GetMaxRadiusInPoly(const HPOLY hPoly, const LTVector& vPos, 
 	{
 		// Give them a decent default
 		fMaxRadius = 0.0f;
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 		// MODERN.md M-E11: the check names its own function
 		RETURN_ERROR(5, CLTClient::GetMaxRadiusInPoly, LT_NOTFOUND);
 #else
@@ -1097,7 +1097,7 @@ void CLTClient::CPrint(const char *pMsg, ...)
 
 	static const uint32 knBufferSize = 512;
 	char str[knBufferSize];
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md M-E10: a message that filled the buffer had its newline
 	// and terminator written one past the end; an empty one read the
 	// byte before it. Keep room for the newline.
@@ -1108,7 +1108,7 @@ void CLTClient::CPrint(const char *pMsg, ...)
 	va_end(marker);
 
 	uint32 len = strlen(str);
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	if (len == 0 || str[len-1] != '\n')
 #else
 	if (str[len-1] != '\n')
@@ -1960,7 +1960,7 @@ LTRESULT ci_GetSoundTimer(HLTSOUND hSound, LTFLOAT *fTimer)
 		return LT_OK;
 
 	if (!hSound || !fTimer)
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 		// MODERN.md M-E11: the check names its own function
 		RETURN_ERROR(1, GetSoundTimer, LT_INVALIDPARAMS);
 #else
@@ -2759,7 +2759,7 @@ LTRESULT ci_SortParticles(HLOCALOBJ hSystem, const LTVector& vDir, uint32 nNumIt
 	LTParticleSystem *pSystem = (LTParticleSystem*)hSystem;
 	if (!pSystem || pSystem->m_ObjectType != OT_PARTICLESYSTEM)
 	{
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 		// MODERN.md M-E11: the check names its own function
 		RETURN_ERROR(1, CLTClient::SortParticles, LT_INVALIDPARAMS);
 #else
@@ -2929,7 +2929,7 @@ void ci_SetLightColor(HLOCALOBJ hObject, float r, float g, float b)
 float ci_GetLightRadius(HLOCALOBJ hObj)
 {
 	DynamicLight *pObject = (DynamicLight*)hObj;
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md M-E8: every other accessor checks the handle
 	if (!pObject)
 		return 1.0f;
@@ -2947,7 +2947,7 @@ float ci_GetLightRadius(HLOCALOBJ hObj)
 void ci_SetLightRadius(HLOCALOBJ hObj, float radius)
 {
 	DynamicLight *pObject = (DynamicLight*)hObj;
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md M-E8: every other accessor checks the handle
 	if (!pObject)
 		return;
@@ -3047,7 +3047,7 @@ LTRESULT ci_GetServiceList(NetService* &pListHead)
 
 LTRESULT ci_FreeServiceList(NetService *pListHead)
 {
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md M-E11: the check names its own function
 	CHECK_PARAMS(pListHead, CLTClient::FreeServiceList);
 #else
@@ -3345,7 +3345,7 @@ void CLTClient::InitFunctionPointers()
 	IsLobbyLaunched = ci_IsLobbyLaunched;
 	GetTcpIpAddress = ci_GetTcpIpAddress;
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md EN-3: the two are set, so ShowVersionInfo works
 	GetVersionInfoExt = in_GetVersionInfoExt;
 	GetPerformanceInfo = in_GetPerformanceInfo;

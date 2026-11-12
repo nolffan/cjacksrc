@@ -60,7 +60,7 @@ CCheatMgr::CheatInfo CCheatMgr::s_CheatInfo[] = {
     { "CMLR",			LTFALSE },  // boot				- boot a player
     { "CSVJA",			LTFALSE },	// build			- build info
 	{ "FWJI@A^H",		LTFALSE },	// gimmegun <gun>	- give specific weapon
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md CL-52: each name in its own slot
 	{ "FWJI@WHN",		LTFALSE },	// gimmemod <mod>	- give specific mod
 	{ "FWJI@ANI[",		LTFALSE },	// gimmegear <gear> - give specific gear
@@ -329,7 +329,7 @@ bool CCheatMgr::Process( CheatCode nCheatCode, CParsedMsg &cMsg )
 			ToggleEndgameFlag();
 		break;
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 #ifdef _FINAL
 		// MODERN.md CL-53: retail handles budonkadonk only in multiplayer
 		// (above); its single-player case is a development build's only

@@ -8,11 +8,11 @@
  *
  *   #include "cjacksrc_crash.h"
  *   ...
- *   CJACK_INSTALL_CRASH_HANDLER();
+ *   CJACKSRC_INSTALL_CRASH_HANDLER();
  *
  * lithtech.exe does this in WinMain (src/engine/lithtech/clientwin.cpp); the
  * handler covers the whole process, so server code, d3d.ren and the game
- * DLLs too. Release builds get nothing: without CJACK_DEBUG the macro is
+ * DLLs too. Release builds get nothing: without CJACKSRC_DEBUG the macro is
  * empty and this header includes nothing.
  *
  * The names and lines come from the .pdb files build/variant.sh puts beside
@@ -21,16 +21,16 @@
  * crash backtrace (winedbg) shows the same, but only when it can open its
  * dialog or a console; this works under the playtest too.
  */
-#ifndef CJACK_CRASH_H
-#define CJACK_CRASH_H
+#ifndef CJACKSRC_CRASH_H
+#define CJACKSRC_CRASH_H
 
-#ifdef CJACK_DEBUG
+#ifdef CJACKSRC_DEBUG
 
 #include <imagehlp.h>
 #include "cjacksrc_debug.h"
 
 /* crash lines are tagged "crash", not with this header's position */
-#define CJACK_CRASH_LOG(args) (CjacksrcLogAt("crash", 0), CjacksrcLogf args)
+#define CJACKSRC_CRASH_LOG(args) (CjacksrcLogAt("crash", 0), CjacksrcLogf args)
 
 typedef DWORD (WINAPI *CjacksrcSymSetOptions_t)(DWORD);
 typedef BOOL (WINAPI *CjacksrcSymInitialize_t)(HANDLE, LPSTR, BOOL);
@@ -55,7 +55,7 @@ static LONG WINAPI CjacksrcCrashFilter(EXCEPTION_POINTERS *ep)
     STACKFRAME frame;
     int i;
 
-    CJACK_CRASH_LOG(("CRASH: exception 0x%08lx at 0x%08lx",
+    CJACKSRC_CRASH_LOG(("CRASH: exception 0x%08lx at 0x%08lx",
                  ep->ExceptionRecord->ExceptionCode,
                  (unsigned long)ep->ExceptionRecord->ExceptionAddress));
 
@@ -63,7 +63,7 @@ static LONG WINAPI CjacksrcCrashFilter(EXCEPTION_POINTERS *ep)
     if (!dbghelp)
         dbghelp = LoadLibraryA("imagehlp.dll");
     if (!dbghelp) {
-        CJACK_CRASH_LOG(("CRASH: no dbghelp.dll, no backtrace"));
+        CJACKSRC_CRASH_LOG(("CRASH: no dbghelp.dll, no backtrace"));
         return EXCEPTION_CONTINUE_SEARCH;
     }
     pSymSetOptions = (CjacksrcSymSetOptions_t)GetProcAddress(dbghelp, "SymSetOptions");
@@ -74,7 +74,7 @@ static LONG WINAPI CjacksrcCrashFilter(EXCEPTION_POINTERS *ep)
     pSymFromAddr = (CjacksrcSymGetSymFromAddr_t)GetProcAddress(dbghelp, "SymGetSymFromAddr");
     pLineFromAddr = (CjacksrcSymGetLineFromAddr_t)GetProcAddress(dbghelp, "SymGetLineFromAddr");
     if (!pSymInitialize || !pStackWalk || !pTableAccess || !pModuleBase || !pSymFromAddr) {
-        CJACK_CRASH_LOG(("CRASH: dbghelp.dll lacks the stack-walk functions, no backtrace"));
+        CJACKSRC_CRASH_LOG(("CRASH: dbghelp.dll lacks the stack-walk functions, no backtrace"));
         return EXCEPTION_CONTINUE_SEARCH;
     }
     if (pSymSetOptions)
@@ -123,10 +123,10 @@ static LONG WINAPI CjacksrcCrashFilter(EXCEPTION_POINTERS *ep)
                    prefixes with the current directory: keep the name */
                 const char *file = strrchr(line.FileName, '\\');
                 file = file ? file + 1 : line.FileName;
-                CJACK_CRASH_LOG(("  #%-2d 0x%08lx %s!%s+0x%lx  [%s:%lu]", i, addr, modname,
+                CJACKSRC_CRASH_LOG(("  #%-2d 0x%08lx %s!%s+0x%lx  [%s:%lu]", i, addr, modname,
                                    sym->Name, disp, file, line.LineNumber));
             } else
-                CJACK_CRASH_LOG(("  #%-2d 0x%08lx %s!%s+0x%lx", i, addr, modname, sym->Name, disp));
+                CJACKSRC_CRASH_LOG(("  #%-2d 0x%08lx %s!%s+0x%lx", i, addr, modname, sym->Name, disp));
         } else if (base) {
             /* no symbols (the CRT, or a d3d.ren file built with /Qip, for
                which icl 4.0 emits no debug information): give the address
@@ -134,22 +134,22 @@ static LONG WINAPI CjacksrcCrashFilter(EXCEPTION_POINTERS *ep)
                file (beside it in out/nolf2-legacy-debug/) lists */
             IMAGE_DOS_HEADER *dos = (IMAGE_DOS_HEADER *)base;
             IMAGE_NT_HEADERS *nt = (IMAGE_NT_HEADERS *)(base + dos->e_lfanew);
-            CJACK_CRASH_LOG(("  #%-2d 0x%08lx %s+0x%lx  (0x%08lx in its .map)", i, addr, modname,
+            CJACKSRC_CRASH_LOG(("  #%-2d 0x%08lx %s+0x%lx  (0x%08lx in its .map)", i, addr, modname,
                                addr - base, nt->OptionalHeader.ImageBase + (addr - base)));
         } else {
-            CJACK_CRASH_LOG(("  #%-2d 0x%08lx ?", i, addr));
+            CJACKSRC_CRASH_LOG(("  #%-2d 0x%08lx ?", i, addr));
         }
     }
     return EXCEPTION_CONTINUE_SEARCH;   /* the crash goes on as before */
 }
 
-#define CJACK_INSTALL_CRASH_HANDLER() \
+#define CJACKSRC_INSTALL_CRASH_HANDLER() \
     ((void)SetUnhandledExceptionFilter(CjacksrcCrashFilter))
 
 #else /* release: nothing */
 
-#define CJACK_INSTALL_CRASH_HANDLER() ((void)0)
+#define CJACKSRC_INSTALL_CRASH_HANDLER() ((void)0)
 
-#endif /* CJACK_DEBUG */
+#endif /* CJACKSRC_DEBUG */
 
-#endif /* CJACK_CRASH_H */
+#endif /* CJACKSRC_CRASH_H */

@@ -7,8 +7,8 @@ below, whether or not it is fixed yet.
 
 The legacy build reproduces every one of them, on purpose: compiling to the
 retail machine code means compiling its mistakes too. They are fixed in the
-**modern build** (`make modern`, the `CJACK_MODERN` define; `MODERN.md`):
-each fix goes behind `#ifdef CJACK_MODERN`, with the retail code kept in the
+**modern build** (`make modern`, the `CJACKSRC_MODERN` define; `MODERN.md`):
+each fix goes behind `#ifdef CJACKSRC_MODERN`, with the retail code kept in the
 `#else`, so the legacy build is unchanged and still matches
 (`make progress`).
 

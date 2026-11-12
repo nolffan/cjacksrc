@@ -53,7 +53,7 @@ bool ScmdConsoleDriver_ServerApp::WriteMessage( char const* pszMessage )
 		return false;
 	}
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md APPS-3: the message (player names in it) is not a format
 	g_pDialog->WriteConsoleString( "%s", pszMessage );
 #else

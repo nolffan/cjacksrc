@@ -31,7 +31,7 @@ CHUDDisplayMeter*	g_pDisplayMeter = LTNULL;
 CHUDScores*			g_pScores = LTNULL;
 CHUDBombTarget*		g_pHUDBombTarget = LTNULL;
 CHUDCarrying*		g_pHUDCarrying = LTNULL;
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 
 // MODERN.md CL-46: the frame rate, at the top of the screen, averaged over
 // the last 30 frames, while ShowFramerate is set (the engine's console
@@ -199,7 +199,7 @@ void CHUDMgr::Term()
 	}
 
 	m_itemArray.clear();
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	ModernTermFramerate();	// MODERN.md CL-46
 #endif
 
@@ -247,7 +247,7 @@ void CHUDMgr::Render()
 			(*iter)->Render();
 		iter++;
 	}
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	ModernRenderFramerate();	// MODERN.md CL-46
 #endif
 	
@@ -262,7 +262,7 @@ void CHUDMgr::QueueUpdate(uint32 nUpdateFlag)
 void CHUDMgr::ScreenDimsChanged()
 {
 	m_UpdateFlags = kHUDAll;
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md CL-30: the items read their places again, for the new
 	// screen's margins (CInterfaceResMgr::GetHUDBaseShift)
 	UpdateLayout();

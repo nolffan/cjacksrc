@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "BaseFx.h"
 #include "ClientFX.h"
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 #include "spritefx.h"
 #endif
 
@@ -411,7 +411,7 @@ bool CBaseFX::Update(float tmFrameTime)
 		{
 			LTVector vScale;
 			vScale.Init(m_scale, m_scale, m_scale);
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 			// MODERN.md CL-47: player-view sprites are screen overlays (the
 			// taking-health/armor flash). Widen them with the viewport, from
 			// the authored scale each frame, so they keep covering the screen.

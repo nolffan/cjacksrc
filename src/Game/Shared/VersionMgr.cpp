@@ -154,7 +154,7 @@ CVersionMgr::CVersionMgr()
 {
 	m_bLowViolence	= false;
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md APPS-7: the game's values (the CD key, the profile last
 	// used, the cheats' and the missions' flags) under HKEY_CURRENT_USER,
 	// where the modern launcher keeps its own. RETAIL: HKEY_LOCAL_MACHINE,

@@ -151,7 +151,7 @@ BOOL ExistRezFile(const char* sFile)
     hFile = _findfirst(sFile, &c_file);
 	if (hFile == -1L) return(FALSE);
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md APPS-2: the find handle is closed
 	_findclose(hFile);
 #endif
@@ -191,7 +191,7 @@ BOOL ExistRezDir(const char* sDir)
     hFile = _findfirst(sDir, &c_file);
 	if (hFile == -1L) return(FALSE);
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md APPS-2: the find handle is closed
 	_findclose(hFile);
 #endif

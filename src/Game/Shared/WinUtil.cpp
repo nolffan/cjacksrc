@@ -28,7 +28,7 @@ BOOL CWinUtil::GetMoviesPath (char* strPath)
 		}
 	}
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md APPS-8: the movies are in the game directory, never on a
 	// disc: no CD-ROM drive is looked at.
 #else

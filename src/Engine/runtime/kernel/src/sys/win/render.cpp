@@ -451,7 +451,7 @@ void r_InitRenderStruct(bool bFullClear)
     g_Render.m_GlobalLightDir.Norm();
 }
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 // MODERN.md EN-32: the window mode. Windowed 0 is full screen; with
 // Windowed 1, WindowMode 2 is a borderless window over the whole desktop,
 // 1 a framed window, and 0 (unset: a config from before the setting) a
@@ -528,7 +528,7 @@ LTRESULT r_InitRender(RMode *pMode)
 	// Set up the RenderStruct.
 	rdll_RenderDLLSetup(&g_Render);
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md EN-32: a borderless window (Windowed 1, WindowMode 2) covers
 	// the desktop at the desktop's own resolution, whatever mode was asked
 	// for (the Display screen's, a command line's ++screenwidth); g_RMode

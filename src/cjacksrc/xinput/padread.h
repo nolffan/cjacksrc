@@ -20,18 +20,18 @@
  * unloaded (and holds a reference to the DLL meanwhile, so it cannot run in
  * an unloaded one); Lithtech.exe's ends with the process.
  *
- * The test pad: with CJACK_PADTEST naming a file, XInput is not used and
+ * The test pad: with CJACKSRC_PADTEST naming a file, XInput is not used and
  * the pad in slot 0 is that file's one line,
  * "<buttons> <lx> <ly> <rx> <ry> <lt> <rt>" in XInput's units
  * (XINPUT_GAMEPAD's wButtons; the sticks -32768..32767, y up positive; the
  * triggers 0..255), read again every 15 ms; no file, or one that does not
- * parse, is no pad. Slots 1..3 are always empty. CJACK_PADTEST_STALL=<ms>
+ * parse, is no pad. Slots 1..3 are always empty. CJACKSRC_PADTEST_STALL=<ms>
  * makes asking about an empty slot take that long, as on Windows.
  *
- * Modern build only (CJACK_MODERN): nothing of the legacy build includes it.
+ * Modern build only (CJACKSRC_MODERN): nothing of the legacy build includes it.
  */
-#ifndef CJACK_PADREAD_H
-#define CJACK_PADREAD_H
+#ifndef CJACKSRC_PADREAD_H
+#define CJACKSRC_PADREAD_H
 
 #include <windows.h>
 #include <stdio.h>
@@ -89,8 +89,8 @@ namespace
 	DWORD				s_dwPadLastScan;		// without the thread: the frame scans
 	bool				s_bPadScanned;
 
-	const char*			s_pPadTestFile;			// CJACK_PADTEST
-	DWORD				s_dwPadTestStall;		// CJACK_PADTEST_STALL
+	const char*			s_pPadTestFile;			// CJACKSRC_PADTEST
+	DWORD				s_dwPadTestStall;		// CJACKSRC_PADTEST_STALL
 	CRITICAL_SECTION	s_PadTestLock;
 	bool				s_bPadTestRead;
 	DWORD				s_dwPadTestRead;
@@ -228,14 +228,14 @@ namespace
 		if (s_nPadAvailable >= 0)
 			return s_nPadAvailable != 0;
 
-		s_pPadTestFile = getenv("CJACK_PADTEST");
+		s_pPadTestFile = getenv("CJACKSRC_PADTEST");
 
 		if (s_pPadTestFile && !*s_pPadTestFile)
 			s_pPadTestFile = NULL;
 
 		if (s_pPadTestFile)
 		{
-			pStall = getenv("CJACK_PADTEST_STALL");
+			pStall = getenv("CJACKSRC_PADTEST_STALL");
 			s_dwPadTestStall = pStall ? (DWORD)atoi(pStall) : 0;
 			InitializeCriticalSection(&s_PadTestLock);
 			s_pPadGetState = PadRead_TestGetState;
@@ -322,4 +322,4 @@ namespace
 	}
 }
 
-#endif // CJACK_PADREAD_H
+#endif // CJACKSRC_PADREAD_H

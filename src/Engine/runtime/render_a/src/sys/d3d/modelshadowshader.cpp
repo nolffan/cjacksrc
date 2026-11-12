@@ -182,7 +182,7 @@ bool CModelShadowShader::RenderSection(	D3DPRIMITIVETYPE nPrimType,		//primitive
 		return true;
 	}
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md EN-61: retail locks the temporary index buffer with DISCARD
 	// for every section it is given, whether or not a triangle survives the
 	// cull, and never moves on from its start (m_nTempIBIndex stays 0, so

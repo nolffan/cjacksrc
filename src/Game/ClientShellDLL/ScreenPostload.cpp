@@ -337,7 +337,7 @@ void CScreenPostload::OnFocus(LTBOOL bFocus)
 		m_pMissionNameStr->SetText(m_missionname.c_str());
 		m_pMissionNameStr->SetCharScreenHeight(nFontSize);
 		float x = (float)TitlePos.x * g_pInterfaceResMgr->GetXRatio();
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 		x += (float)g_pInterfaceResMgr->GetXOffset();	// MODERN.md CL-30
 #endif
 		float y = (float)TitlePos.y * g_pInterfaceResMgr->GetYRatio();
@@ -354,7 +354,7 @@ void CScreenPostload::OnFocus(LTBOOL bFocus)
 		m_pLevelNameStr->SetText(m_levelname.c_str());
 		m_pLevelNameStr->SetCharScreenHeight(nFontSize);
 		x = (float)LevelPos.x * g_pInterfaceResMgr->GetXRatio();
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 		x += (float)g_pInterfaceResMgr->GetXOffset();	// MODERN.md CL-30
 #endif
 		y = (float)LevelPos.y * g_pInterfaceResMgr->GetYRatio();
@@ -408,7 +408,7 @@ void CScreenPostload::OnFocus(LTBOOL bFocus)
 		m_pBriefingStr->SetColor(BriefingColor);
 		m_pBriefingStr->SetCharScreenHeight(nFontSize);
 		x = (float)BriefingPos.x * g_pInterfaceResMgr->GetXRatio();
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 		x += (float)g_pInterfaceResMgr->GetXOffset();	// MODERN.md CL-30
 #endif
 		y = (float)BriefingPos.y * g_pInterfaceResMgr->GetYRatio();
@@ -468,7 +468,7 @@ void CScreenPostload::OnFocus(LTBOOL bFocus)
 			m_pHelpStr->SetColor(HelpColor);
 			m_pHelpStr->SetCharScreenHeight(nFontSize);
 			x = (float)HelpPos.x * g_pInterfaceResMgr->GetXRatio();
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 			x += (float)g_pInterfaceResMgr->GetXOffset();	// MODERN.md CL-30
 #endif
 			y = (float)HelpPos.y * g_pInterfaceResMgr->GetYRatio();
@@ -547,7 +547,7 @@ void CScreenPostload::OnFocus(LTBOOL bFocus)
 		m_pContinueStr->SetColor(m_nContinueColor);
 		m_pContinueStr->SetCharScreenHeight(nFontSize);
 		x = (float)ContinuePos.x * g_pInterfaceResMgr->GetXRatio();
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 		x += (float)g_pInterfaceResMgr->GetXOffset();	// MODERN.md CL-30
 #endif
 		y = (float)ContinuePos.y * g_pInterfaceResMgr->GetYRatio();

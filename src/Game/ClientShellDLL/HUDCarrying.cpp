@@ -155,7 +155,7 @@ void CHUDCarrying::UpdateLayout()
 		m_BasePos		= LTIntPt(40,360);
 		m_nSize			= 64;
 	}
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	m_BasePos.x += g_pInterfaceResMgr->GetHUDBaseShift(m_BasePos.x);	// MODERN.md CL-30
 #endif
 

@@ -251,7 +251,7 @@ LTBOOL CLineSystemFX::Update()
 
 	int nToAdd = (int) floor(m_cs.fLinesPerSecond * fTimeDelta);
     nToAdd = LTMIN(nToAdd, (int)(MAX_LINES_PER_SECOND * fTimeDelta));
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md CL-44: as CParticleSystemFX::Update: an update that owes
 	// less than one line keeps its time until one is owed, or at a frame
 	// rate where a frame owes less than one, none is ever added

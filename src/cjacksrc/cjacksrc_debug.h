@@ -2,7 +2,7 @@
  * cjacksrc_debug.h -- diagnostics for the debug build, and nothing in release.
  *
  * The release build has to compile to the retail bytes, so nothing here may
- * reach it: without CJACK_DEBUG (which only the debug build defines, see
+ * reach it: without CJACKSRC_DEBUG (which only the debug build defines, see
  * build/variant.sh) every macro below expands to nothing and this header
  * includes nothing. Arguments are not evaluated in release either, so never
  * put a side effect in them.
@@ -12,29 +12,29 @@
  *
  *   #include "cjacksrc_debug.h"
  *
- *   CJACK_LOG(("loading world %s, %d objects", pName, nObjects));
- *   CJACK_ASSERT(pObj != NULL);
+ *   CJACKSRC_LOG(("loading world %s, %d objects", pName, nObjects));
+ *   CJACKSRC_ASSERT(pObj != NULL);
  *
- *   #ifdef CJACK_DEBUG
+ *   #ifdef CJACKSRC_DEBUG
  *       ... any other debug-only code ...
  *   #endif
  *
- * CJACK_LOG takes printf arguments in a second pair of parentheses (neither
+ * CJACKSRC_LOG takes printf arguments in a second pair of parentheses (neither
  * VC .NET 2003 nor VC6 has variadic macros). Each line is written, with the
  * time in milliseconds and the source file and line, to cjacksrc.log in the
  * current directory (the game directory; $CJACKSRC_LOG names another file)
  * and to
- * OutputDebugString (shown by Wine with WINEDEBUG=+debugstr). CJACK_ASSERT
+ * OutputDebugString (shown by Wine with WINEDEBUG=+debugstr). CJACKSRC_ASSERT
  * logs a failed condition and carries on.
  *
  * Plain C and C++, MFC or not: it declares the two Win32 functions it calls
  * rather than including <windows.h>, which MFC files must not see before
  * their own headers.
  */
-#ifndef CJACK_DEBUG_H
-#define CJACK_DEBUG_H
+#ifndef CJACKSRC_DEBUG_H
+#define CJACKSRC_DEBUG_H
 
-#ifdef CJACK_DEBUG
+#ifdef CJACKSRC_DEBUG
 
 #include <stdarg.h>
 #include <stdio.h>
@@ -50,7 +50,7 @@ __declspec(dllimport) unsigned long __stdcall GetTickCount(void);
 }
 #endif
 
-/* where the next CjacksrcLogf line comes from (set by CJACK_LOG) */
+/* where the next CjacksrcLogf line comes from (set by CJACKSRC_LOG) */
 static const char *g_CjacksrcLogFile;
 static int g_CjacksrcLogLine;
 
@@ -94,16 +94,16 @@ static void __cdecl CjacksrcLogf(const char *fmt, ...)
     }
 }
 
-#define CJACK_LOG(args) (CjacksrcLogAt(__FILE__, __LINE__), CjacksrcLogf args)
-#define CJACK_ASSERT(expr) \
+#define CJACKSRC_LOG(args) (CjacksrcLogAt(__FILE__, __LINE__), CjacksrcLogf args)
+#define CJACKSRC_ASSERT(expr) \
     ((expr) ? (void)0 : (CjacksrcLogAt(__FILE__, __LINE__), \
                          CjacksrcLogf("assertion failed: %s", #expr)))
 
 #else /* release: nothing */
 
-#define CJACK_LOG(args) ((void)0)
-#define CJACK_ASSERT(expr) ((void)0)
+#define CJACKSRC_LOG(args) ((void)0)
+#define CJACKSRC_ASSERT(expr) ((void)0)
 
-#endif /* CJACK_DEBUG */
+#endif /* CJACKSRC_DEBUG */
 
-#endif /* CJACK_DEBUG_H */
+#endif /* CJACKSRC_DEBUG_H */

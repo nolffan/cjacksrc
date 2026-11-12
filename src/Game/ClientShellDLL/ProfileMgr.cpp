@@ -26,7 +26,7 @@
 #include "CMoveMgr.h"
 #include "MsgIds.h"
 #include "VersionMgr.h"
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 // MODERN.md CL-21: the controller's default layout
 #include "xinput/clientpad.h"
 #endif
@@ -141,7 +141,7 @@ void SaveDisplaySettings()
 									"GammaR",
 									"GammaG",
 									"GammaB"	
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 									// MODERN.md CL-32: the window mode, which
 									// the launcher's Display dialog reads too
 									, "Windowed",
@@ -172,7 +172,7 @@ char* GetCommandName(int nCommand)
 		if (g_CommandArray[i].nCommandID == nCommand)
 		{
 			SAFE_STRCPY(buffer, g_CommandArray[i].szAction);
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 			return buffer;
 #endif
 		}
@@ -472,7 +472,7 @@ void CUserProfile::LoadControls()
 		
 	}
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md CL-21: the controller's default layout, once per profile:
 	// a new one, one from before the modern build, or the defaults
 	// restored (default.prf has no controller bindings)
@@ -1198,7 +1198,7 @@ void CUserProfile::ApplyJoystick()
 
     g_pLTClient->FreeDeviceBindings (pBindings);
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md CL-23: the controller's sticks are read by the client
 	// (CL-20), so none of its axes is bound, whatever the profile says
 	WriteConsoleInt("UseJoystick",0);

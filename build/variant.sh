@@ -11,19 +11,19 @@
 # `make shell` run it directly). The result is a game directory like
 # out/cjack-legacy-release/.
 #
-#   debug    CJACK_DEBUG and symbols, for finding out why something goes
-#            wrong. Compile + /Z7 /Oy- /D CJACK_DEBUG (debug information,
+#   debug    CJACKSRC_DEBUG and symbols, for finding out why something goes
+#            wrong. Compile + /Z7 /Oy- /D CJACKSRC_DEBUG (debug information,
 #            frame pointers kept so a backtrace can walk the stack; every
 #            other flag, the optimisation included, is the release one);
-#            resource scripts + /d CJACK_DEBUG;
+#            resource scripts + /d CJACKSRC_DEBUG;
 #            link + /DEBUG /OPT:REF /INCREMENTAL:NO (a .pdb per binary, the
 #            same unreferenced-code removal as release). The .pdb and .map of
 #            every binary go beside it. src/cjacksrc/cjacksrc_debug.h's
-#            CJACK_LOG lines go to cjacksrc.log in the game's directory.
-#   modern   CJACK_MODERN: the modern build's fixes and features
-#            (MODERN.md). Compile + /D CJACK_MODERN, resource scripts
-#            + /d CJACK_MODERN. And open-source middleware in place of
-#            RAD's (CJACK_MIDDLEWARE=open, build/ext.sh): our Bink player
+#            CJACKSRC_LOG lines go to cjacksrc.log in the game's directory.
+#   modern   CJACKSRC_MODERN: the modern build's fixes and features
+#            (MODERN.md). Compile + /D CJACKSRC_MODERN, resource scripts
+#            + /d CJACKSRC_MODERN. And open-source middleware in place of
+#            RAD's (CJACKSRC_MIDDLEWARE=open, build/ext.sh): our Bink player
 #            on FFmpeg, built from src/modern/binkw32/ and the ext/ffmpeg
 #            submodule, as nolf2src's (MODERN.md X-1).
 #   modern-debug   both.
@@ -49,15 +49,15 @@ cd "$REPO"
 
 VARIANT="${1:-}"
 case "$VARIANT" in
-    debug)        CFLAGS="/Z7 /Oy- /D CJACK_DEBUG"
+    debug)        CFLAGS="/Z7 /Oy- /D CJACKSRC_DEBUG"
                   LDFLAGS="/DEBUG /OPT:REF /INCREMENTAL:NO"
-                  RCFLAGS="/d CJACK_DEBUG" ;;
-    modern)       CFLAGS="/D CJACK_MODERN"
+                  RCFLAGS="/d CJACKSRC_DEBUG" ;;
+    modern)       CFLAGS="/D CJACKSRC_MODERN"
                   LDFLAGS=""
-                  RCFLAGS="/d CJACK_MODERN" ;;
-    modern-debug) CFLAGS="/Z7 /Oy- /D CJACK_DEBUG /D CJACK_MODERN"
+                  RCFLAGS="/d CJACKSRC_MODERN" ;;
+    modern-debug) CFLAGS="/Z7 /Oy- /D CJACKSRC_DEBUG /D CJACKSRC_MODERN"
                   LDFLAGS="/DEBUG /OPT:REF /INCREMENTAL:NO"
-                  RCFLAGS="/d CJACK_DEBUG /d CJACK_MODERN" ;;
+                  RCFLAGS="/d CJACKSRC_DEBUG /d CJACKSRC_MODERN" ;;
     *) echo "usage: build/variant.sh debug|modern|modern-debug" >&2; exit 2 ;;
 esac
 # the game directory it builds: out/cjack-<legacy|modern>-<release|debug>/
@@ -91,9 +91,9 @@ tar -C "$REPO" -cf - --exclude='__pycache__' --exclude=.git build | tar -C "$TRE
 export CJACKSRC_CFLAGS="$CFLAGS"
 export CJACKSRC_LDFLAGS="$LDFLAGS"
 export CJACKSRC_RCFLAGS="$RCFLAGS"
-export CJACK_GAME_OUT="$REPO/out/$NAME"
-export CJACK_PACKAGE=0
-case "$VARIANT" in modern*) export CJACK_MIDDLEWARE=open CJACK_EXT_OUT="$REPO/out/ext" ;; esac
+export CJACKSRC_GAME_OUT="$REPO/out/$NAME"
+export CJACKSRC_PACKAGE=0
+case "$VARIANT" in modern*) export CJACKSRC_MIDDLEWARE=open CJACKSRC_EXT_OUT="$REPO/out/ext" ;; esac
 bash "$TREE/build/all.sh"
 
 case "$VARIANT" in *debug)
@@ -102,19 +102,19 @@ case "$VARIANT" in *debug)
     # MANIFEST.txt has `built <source>\t<installed path>` for every binary we
     # built; its .pdb is the link output's name with .pdb, and the debugger
     # looks for it by that name in the binary's own directory.
-    grep '^built ' "$CJACK_GAME_OUT/MANIFEST.txt" | sort -u |
+    grep '^built ' "$CJACKSRC_GAME_OUT/MANIFEST.txt" | sort -u |
     while IFS=$'\t' read -r src dest; do
         src="${src#built }"
         pdb="$TREE/${src%.*}.pdb"
         if [ -f "$pdb" ]; then
-            cp "$pdb" "$CJACK_GAME_OUT/$(dirname "$dest")/"
+            cp "$pdb" "$CJACKSRC_GAME_OUT/$(dirname "$dest")/"
             echo "   $(dirname "$dest")/$(basename "$pdb")"
         else
             echo "   (no .pdb for $dest)"
         fi
         # the linker's map, for addresses no .pdb names (see cjacksrc_crash.h)
         map="$TREE/${src%.*}.map"
-        [ -f "$map" ] && cp "$map" "$CJACK_GAME_OUT/$(dirname "$dest")/"
+        [ -f "$map" ] && cp "$map" "$CJACKSRC_GAME_OUT/$(dirname "$dest")/"
     done ;;
 esac
 echo

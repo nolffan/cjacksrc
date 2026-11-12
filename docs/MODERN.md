@@ -1,12 +1,12 @@
 # The modern build
 
-`CJACK_MODERN` is the project's define for everything that departs from the
+`CJACKSRC_MODERN` is the project's define for everything that departs from the
 retail game: bug fixes (`RETAIL_BUGS.md`), new features, and open-source
 middleware in place of RAD's. It is set only in the modern build (`make
 modern`, `make modern-debug`; `build/variant.sh`), never in the legacy
 build, which stays the retail game as far as it can be rebuilt and is the
 only build `make progress` scores. Every change goes behind
-`#ifdef CJACK_MODERN` with the retail code kept, unchanged, in the `#else`.
+`#ifdef CJACKSRC_MODERN` with the retail code kept, unchanged, in the `#else`.
 
 This file is the inventory: what the modern build changes, what it could
 change next, and what was looked at and left alone, and why. It follows
@@ -265,7 +265,7 @@ launcher's are in its own `resource.h`.
   can take milliseconds on Windows: nolf2src's M-E59). `PadHoldButtons`
   lets the client keep buttons from the bindings while it reads them itself
   (a decision, CL-22): a button pressed then stays released for the engine
-  until it is let go. With `CJACK_PADTEST` naming a file, the pad is that
+  until it is let go. With `CJACKSRC_PADTEST` naming a file, the pad is that
   file's one line of state (`padread.h`), for a scripted test. No force
   feedback (Planned). As nolf2src's M-E20 and M-E59, nolfsrc's M-P7-01
   (src/cjacksrc/xinput/gamepad_device.h, padread.h;
@@ -371,7 +371,7 @@ launcher's are in its own `resource.h`.
 
 Not tested: EN-20 .. EN-22 and CL-20 .. CL-24 are built (`make modern`),
 but no controller was at hand and the game was not run with them: neither
-a pad (nor the test pad, `CJACK_PADTEST`), nor the keyboard and mouse
+a pad (nor the test pad, `CJACKSRC_PADTEST`), nor the keyboard and mouse
 found by GUID (EN-22), nor the Controller screen's layout in Contract
 J.A.C.K.'s menus. nolf2src tested the same design under Wine with its
 test pad.
@@ -569,7 +569,7 @@ test pad.
   (`Movies/*.bik`, Bink 1). `build/ext.sh` builds FFmpeg (only the Bink
   decoders, the Bink demuxer and the file protocol; no GPL or non-free
   part) and the DLL with Zig's C compiler into `out/ext/`; build/all.sh's
-  step 2 installs it in place of RAD's when `CJACK_MIDDLEWARE=open`, which
+  step 2 installs it in place of RAD's when `CJACKSRC_MIDDLEWARE=open`, which
   build/variant.sh sets for the modern builds (MANIFEST.txt origin `EXT`).
   The legacy build keeps the retail DLL. nolf2src's M-X1, ported: its
   player, `build/ext.sh` and the submodule at the same commit (FFmpeg

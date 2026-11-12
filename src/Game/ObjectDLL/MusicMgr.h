@@ -67,7 +67,7 @@ class CMusicMgr
 		// Moods
 
 		void DoMood(Mood eMood);
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 		// MODERN.md GAME-40: a mood kept up for fTime seconds
 		void DoMoodFor(Mood eMood, LTFLOAT fTime);
 #endif

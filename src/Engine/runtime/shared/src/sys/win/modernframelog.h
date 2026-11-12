@@ -1,7 +1,7 @@
 #ifndef __MODERNFRAMELOG_H__
 #define __MODERNFRAMELOG_H__
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 
 // MODERN.md EN-42: FrameTimeLog, the frame's time by what it was spent on.
 // A section adds the time from its constructor to its destructor to its

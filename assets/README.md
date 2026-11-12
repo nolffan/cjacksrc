@@ -7,7 +7,7 @@ was published for download; its readme is dated October 30, 2003) adds to
 the game, other than code. It ships with this project's releases, so
 installing needs only the player's two discs.
 
-- `ext/rez/`: the contents of the update's `Update_v1x1.rez` (SHA-256
+- `assets/rez/`: the contents of the update's `Update_v1x1.rez` (SHA-256
   `d8fb90293de3d21b2a03fa373b70b4a79129c6198429fadbb2cdac6bf7bc4280`), as
   its archive has them, less the three game binaries (`CSHELL.DLL`,
   `OBJECT.LTO`, `CRES.DLL`), which this project builds from source: 4

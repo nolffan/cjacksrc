@@ -747,7 +747,7 @@
 #define IDS_NOMUSICCHANGE               1224
 #define IDS_ENDCURRENTGAME              1225
 #define IDS_REINITIALIZING_RENDERER     1226
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 // MODERN.md CL-32, CL-35, CL-40: the Display screen's modern strings
 // (31000 and up, as nolf2src's)
 #define IDS_MODERN_WINDOWMODE           31000
@@ -1029,7 +1029,7 @@
 #define IDS_PROFILE_ALREADY_EXISTS      2201
 #define IDS_CONFIRM_DELETE_PROFILE      2202
 #define IDS_APP_UNABLE_TO_CREATE_HW_TNL_DEVICE 2203
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 // MODERN.md CL-23: the controller's strings (31100 and up)
 #define IDS_MODERN_PAD_CONTROLLER       31100
 #define IDS_HELP_MODERN_PAD_CONTROLLER  31101

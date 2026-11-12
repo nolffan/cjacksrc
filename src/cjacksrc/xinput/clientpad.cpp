@@ -1,12 +1,12 @@
 /*
  * clientpad.cpp -- the modern build's controller, the client's half. See
- * clientpad.h. #included once, by GameClientShell.cpp, in a CJACK_MODERN
+ * clientpad.h. #included once, by GameClientShell.cpp, in a CJACKSRC_MODERN
  * block (CShell.dll's project file is the retail one, so a modern source
  * of its own would have no place in it).
  *
  * The pad is read once a frame (Pad_Update), while the game's window is the
  * foreground one, through padread.h -- the reader the engine's ##gamepad
- * device uses, so the test pad (CJACK_PADTEST) drives both.
+ * device uses, so the test pad (CJACKSRC_PADTEST) drives both.
  *
  * Look (CL-20): the right stick past a radial dead zone (PadLookDeadZone),
  * the rest of its travel rescaled to 0..1 and raised to PadLookCurve (fine
@@ -39,7 +39,7 @@
  * (Escape); the engine's bindings do not see those buttons meanwhile
  * (PadHoldButtons, EN-20).
  *
- * Modern build only (CJACK_MODERN).
+ * Modern build only (CJACKSRC_MODERN).
  */
 
 #include "GameClientShell.h"

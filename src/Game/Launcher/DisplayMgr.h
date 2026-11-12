@@ -175,7 +175,7 @@ public:
 	BOOL					FillListBoxes(HWND hRenList, HWND hDisList, HWND hResList);
 	BOOL					SelectCurrentListRenderer(HWND hList);
 	BOOL					UpdateListSelections(HWND hRenList, HWND hDisList, HWND hResList);
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md APPS-31: the window mode -- 0 full screen, 1 a window, 2 a
 	// borderless window (the engine's Windowed and WindowMode)
 	int						GetModernWindowMode() { return(m_nModernWindowMode); }
@@ -189,7 +189,7 @@ public:
 private:
 	int						EnumerateRenderers(const char* sDir);
 	BOOL					ReadConfigFile(const char* sFile);
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	static void				ModernReadWindowMode(const char* sFile, int* pWindowed, int* pWindowMode, int* pWidth, int* pHeight);
 #endif
 
@@ -201,7 +201,7 @@ private:
 	CPtrList				m_collRenderers;
 	CRenderer*				m_pCurRenderer;
 	POSITION				m_pos;
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	int						m_nModernWindowMode;	// APPS-31
 #endif
 };
@@ -235,7 +235,7 @@ inline void CDisplay::Clear()
 inline void CDisplayMgr::Clear()
 {
 	m_pCurRenderer = NULL;
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	m_nModernWindowMode = 0;
 #endif
 }

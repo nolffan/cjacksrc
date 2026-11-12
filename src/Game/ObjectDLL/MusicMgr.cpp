@@ -270,7 +270,7 @@ void CMusicMgr::DoMood(Mood eMood)
 {
 	m_afMoods[eMood] = Min<LTFLOAT>(m_afMoods[eMood] + g_pLTServer->GetFrameTime(), s_fMax);
 }
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 
 // MODERN.md GAME-40: music moods at high frame rates. Update() takes one
 // server frame's time off every mood each server frame; DoMood() puts one

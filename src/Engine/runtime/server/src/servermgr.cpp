@@ -1076,7 +1076,7 @@ bool CServerMgr::Update(int32 updateFlags, uint32 nCurTimeMS)
 
 	float curTime = nOffsetTimeMS / 1000.0f;
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md EN-41: in single player (and for a host) the client runs
 	// this every frame, and objects that ask to be updated every 10 ms
 	// (every AI: c_fUpdateDelta) are updated every few frames above 100
@@ -1162,7 +1162,7 @@ bool CServerMgr::Update(int32 updateFlags, uint32 nCurTimeMS)
 
 #endif // if DE_SERVER_COMPILE
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	if (m_State == SERV_RUNNINGWORLD && bModernTick)	// EN-41: see above
 #else
 	if (m_State == SERV_RUNNINGWORLD)

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # The modern build's open-source middleware, built from ext/ into out/ext/
-# (build/all.sh step 2 runs it when CJACK_MIDDLEWARE=open, which
+# (build/all.sh step 2 runs it when CJACKSRC_MIDDLEWARE=open, which
 # build/variant.sh sets for modern and modern-debug):
 #
 #   out/ext/binkw32.dll   our Bink player (src/modern/binkw32/) on FFmpeg's
@@ -25,7 +25,7 @@
 set -e
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO"
-OUT="${CJACK_EXT_OUT:-$REPO/out/ext}"
+OUT="${CJACKSRC_EXT_OUT:-$REPO/out/ext}"
 TARGET=x86-windows-gnu
 export ZIG_GLOBAL_CACHE_DIR="$OUT/zig-cache" ZIG_LOCAL_CACHE_DIR="$OUT/zig-cache"
 

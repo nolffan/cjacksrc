@@ -15,7 +15,7 @@
 #                 are there: the public archive's install scripts are made
 #                 against both releases' (ext/tools/mkinstall.py)
 # retail_verify   checks every installed file against ext/rez/games.sha256 (the
-#                 Makefile runs it before every build; CJACK_SKIP_RETAIL_CHECK=1
+#                 Makefile runs it before every build; CJACKSRC_SKIP_RETAIL_CHECK=1
 #                 skips it)
 RETAIL_RELEASE=contract-jack-eu-1.1
 
@@ -68,7 +68,7 @@ retail_verify() {
     local rez d
     rez="$(retail_rez)" || return 1
     d="$(retail_dir)" || return 1
-    [ "${CJACK_SKIP_RETAIL_CHECK:-0}" = 1 ] && return 0
+    [ "${CJACKSRC_SKIP_RETAIL_CHECK:-0}" = 1 ] && return 0
     # a stamp skips re-hashing 1.6 GB on every build while the files are unchanged
     local stamp key
     stamp="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/out/.retail-verified"
