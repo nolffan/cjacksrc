@@ -424,6 +424,10 @@ TARGETS = [
              # _Tidy()s and rethrows: Weapons.obj's catch block, alike up to
              # its _Tidy with other containers' (the scorer had a vector's)
              "$L76523": 0x10167d29,
+             # CServerButeMgr's SecurityCamera getters, alike but for the
+             # CButeMgr call: GetInt's at 0x1013e100, GetDouble's at 0x1013e120
+             "?GetSecurityCameraInt@CServerButeMgr@@QAEHPAD@Z": 0x1013e100,
+             "?GetSecurityCameraFloat@CServerButeMgr@@QAEMPAD@Z": 0x1013e120,
              # retail inlines the set iterator's ++ (136 bytes), ours calls
              # _Inc (88): by size ours took UpdateSpecialFX's 0x10107930
              "?SaveOverlays@CPlayerObj@@QAEXPAVILTMessage_Write@@@Z":
