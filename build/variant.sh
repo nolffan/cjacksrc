@@ -74,20 +74,19 @@ if ! command -v wine >/dev/null 2>&1; then
 fi
 
 TREE="$REPO/out/build-$VARIANT"
-echo "== $VARIANT tree: src/ build/ tools/ -> out/build-$VARIANT/ (sources only; its outputs kept)"
+echo "== $VARIANT tree: src/ build/ -> out/build-$VARIANT/ (sources only; its outputs kept)"
 mkdir -p "$TREE"
-python3 tools/releasesrc.py mirror "$REPO/src" "$TREE/src"
-rm -rf "$TREE/build" "$TREE/tools"
-tar -C "$REPO" -cf - --exclude='__pycache__' --exclude=.git build tools | tar -C "$TREE" -xf -
-# the compilers, and the retail game where build/retail.sh looks for it
-[ -L "$TREE/toolchains" ] || ln -s ../../toolchains "$TREE/toolchains"
-[ -L "$TREE/rez" ] || ln -s ../../rez "$TREE/rez"
-# the modern build's open-source middleware (build/ext.sh), built once into
-# out/ext/ for every variant
+python3 ext/tools/releasesrc.py mirror "$REPO/src" "$TREE/src"
+rm -rf "$TREE/build" "$TREE/tools" "$TREE/toolchains" "$TREE/rez" "$TREE/lithtools"
+tar -C "$REPO" -cf - --exclude='__pycache__' --exclude=.git build | tar -C "$TREE" -xf -
+# the submodules: the tools (which take the tree they are run from as the
+# project, ext/tools/layout.py), the compilers, the retail game where
+# build/retail.sh looks for it, lithtools' lithrez and the modern build's
+# open-source middleware (build/ext.sh, built once into out/ext/ for every
+# variant)
 [ -L "$TREE/ext" ] || ln -s ../../ext "$TREE/ext"
-# the 1.1 update's data, and lithrez's source, which packs it (step 1b)
+# the 1.1 update's data, which lithrez packs (step 1b)
 [ -L "$TREE/assets" ] || ln -s ../../assets "$TREE/assets"
-[ -L "$TREE/lithtools" ] || ln -s ../../lithtools "$TREE/lithtools"
 
 export CJACKSRC_CFLAGS="$CFLAGS"
 export CJACKSRC_LDFLAGS="$LDFLAGS"

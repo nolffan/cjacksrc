@@ -7,10 +7,10 @@
 #                            container)
 #   build/all.sh            (inside the build container, e.g. `make shell`)
 #
-# Needs: the toolchain (toolchains/, see toolchains/README.md), Wine (the
+# Needs: the toolchain (ext/toolchains/, see ext/toolchains/README.md), Wine (the
 # build container has it), and the retail game, Contract J.A.C.K. (Europe)
-# with the English 1.1 update, as the rez/ submodule installs it
-# (rez/games/contract-jack-eu-1.1/, build/retail.sh). It only reads that
+# with the English 1.1 update, as the ext/rez/ submodule installs it
+# (ext/rez/games/contract-jack-eu-1.1/, build/retail.sh). It only reads that
 # directory.
 #
 # The steps, in order:
@@ -89,7 +89,7 @@ case "${CJACKSRC_CFLAGS:-}" in
 esac
 
 step "1. resources: game data from $RETAIL -> $OUT"
-python3 tools/retailextract.py resources "$RETAIL" "$OUT"
+python3 ext/tools/retailextract.py resources "$RETAIL" "$OUT"
 # autoexec.cfg and the default profile start as the shipped ones (the game
 # rewrites them); a rebuild keeps the player's.
 [ -f "$OUT/autoexec.cfg" ] || cp "$OUT/autoexec.cfg.retail" "$OUT/autoexec.cfg"
@@ -126,11 +126,11 @@ echo "   cjacksrc.rez  <-  assets/rez/ ($(find assets/rez -type f | wc -l) files
 if [ "${CJACK_MIDDLEWARE:-retail}" = open ]; then
     step "2. open runtime: our Bink player on FFmpeg (build/ext.sh); the Microsoft runtime from $RETAIL"
     bash build/ext.sh
-    python3 tools/retailextract.py thirdparty "$RETAIL" "$OUT" open
-    python3 tools/retailextract.py openruntime "${CJACK_EXT_OUT:-out/ext}" "$OUT"
+    python3 ext/tools/retailextract.py thirdparty "$RETAIL" "$OUT" open
+    python3 ext/tools/retailextract.py openruntime "${CJACK_EXT_OUT:-out/ext}" "$OUT"
 else
     step "2. THIRD-PARTY RUNTIME: Bink and the Microsoft runtime from $RETAIL"
-    python3 tools/retailextract.py thirdparty "$RETAIL" "$OUT"
+    python3 ext/tools/retailextract.py thirdparty "$RETAIL" "$OUT"
 fi
 
 step "3. compile: the workspaces (build/compile.sh: build/build.mk, ${CJACKSRC_JOBS:-$(nproc)} jobs)"
@@ -165,7 +165,7 @@ with open(p, "w") as f:
 PY
 
 step "5. audit: every PE file in $OUT"
-python3 tools/retailextract.py audit "$OUT"
+python3 ext/tools/retailextract.py audit "$OUT"
 
 # (CJACK_PACKAGE=0 skips it: build/variant.sh packages its game directory
 # itself)

@@ -7,10 +7,10 @@
 #   make help     everything else
 #
 # Needs only docker on the host and the three submodules (`git submodule
-# update --init`): the compilers, toolchains/ (toolchains/README.md); rez/,
+# update --init`): the compilers, ext/toolchains/ (ext/toolchains/README.md); ext/rez/,
 # which fetches the redump images of the European discs from archive.org
-# and installs the game from them with the English 1.1 update (rez/README.md;
-# `make retail`, which every build runs first, does it once); and tools/, the
+# and installs the game from them with the English 1.1 update (ext/rez/README.md;
+# `make retail`, which every build runs first, does it once); and ext/tools/, the
 # reconstruction tools. `make modern` also needs the ext/ffmpeg submodule
 # (FFmpeg, pinned to a release), which its Bink player is built on
 # (build/ext.sh). Every step runs in a throwaway container of the image
@@ -22,7 +22,7 @@ CONTAINER ?= cjacksrc-build
 JOBS ?=
 # The game directory `make test` plays: the release build's, or a variant's
 # (make test TEST_GAME=out/cjack-modern-release; build/variant.sh), and the
-# input script (tools/playtest-*.txt; empty: no input, the main menu)
+# input script (ext/tools/playtest-*.txt; empty: no input, the main menu)
 TEST_GAME ?= out/cjack-legacy-release
 TEST_SCRIPT ?=
 TEST_WORLD ?= -
@@ -33,7 +33,7 @@ DOCKER_RUN = docker run --rm --init --name $(CONTAINER) \
 	$(if $(CJACK_ARCHIVES),-e CJACK_ARCHIVES="$(CJACK_ARCHIVES)") \
 	-v $(CURDIR):/repo -w /repo $(IMAGE)
 
-TOOLCHAIN_FILES = toolchains/msvc-7.10-3077/bin/cl.exe toolchains/dxsdk-8.1/include/d3d8.h
+TOOLCHAIN_FILES = ext/toolchains/msvc-7.10-3077/bin/cl.exe ext/toolchains/dxsdk-8.1/include/d3d8.h
 
 .PHONY: all game debug modern modern-debug image retail check-rez check-tools check-lithtools check-ext check-toolchain \
 	test mptest campaign control reference progress progress-update shell clean distclean help
@@ -60,8 +60,8 @@ help:
 	@echo "make reference  extract the retail binaries and their function tables into out/reference/"
 	@echo "make retail     fetch the two disc images and install the retail game and its"
 	@echo "                1.1 update from them, and fetch the USA release's two too, for"
-	@echo "                the public archive (rez/, once; every build runs it); check it"
-	@echo "make shell      a shell in the build container (build/*.sh, tools/ work there)"
+	@echo "                the public archive (ext/rez/, once; every build runs it); check it"
+	@echo "make shell      a shell in the build container (build/*.sh, ext/tools/ work there)"
 	@echo "make image      (re)build the docker image $(IMAGE)"
 	@echo "make clean      remove out/ and every build output in the source tree"
 	@echo "make distclean  clean, and remove the docker image too"
@@ -96,7 +96,7 @@ endif
 	@echo "== docker image $(IMAGE) ready"
 
 # The retail game the build takes its data from (build/retail.sh): installed
-# by rez/ the first time, checked against rez/games.sha256 every time; and
+# by ext/rez/ the first time, checked against ext/rez/games.sha256 every time; and
 # the USA release's disc images, which the public archive's install scripts
 # read too.
 retail: check-rez check-tools image
@@ -106,20 +106,20 @@ reference: retail
 	$(DOCKER_RUN) bash build/reference.sh
 
 check-rez:
-	@[ -f rez/install-games.sh ] || { echo "error: rez/ is empty -- the disc images and their installer are the rez/ submodule: run git submodule update --init (see rez/README.md)" >&2; exit 1; }
+	@[ -f ext/rez/install-games.sh ] || { echo "error: ext/rez/ is empty -- the disc images and their installer are the ext/rez/ submodule: run git submodule update --init (see ext/rez/README.md)" >&2; exit 1; }
 
 check-tools:
-	@[ -f tools/progress.py ] || { echo "error: tools/ is empty -- the reconstruction tools are the tools/ submodule: run git submodule update --init" >&2; exit 1; }
+	@[ -f ext/tools/progress.py ] || { echo "error: ext/tools/ is empty -- the reconstruction tools are the ext/tools/ submodule: run git submodule update --init" >&2; exit 1; }
 
 check-lithtools:
-	@[ -f lithtools/tools/lithrez/CMakeLists.txt ] || { echo "error: lithtools/ is empty -- lithrez, which packs assets/ into cjacksrc.rez, is the lithtools submodule's: run git submodule update --init lithtools" >&2; exit 1; }
+	@[ -f ext/lithtools/tools/lithrez/CMakeLists.txt ] || { echo "error: ext/lithtools/ is empty -- lithrez, which packs assets/ into cjacksrc.rez, is the lithtools submodule's: run git submodule update --init ext/lithtools" >&2; exit 1; }
 
 check-ext:
 	@[ -f ext/ffmpeg/LICENSE.md ] || { echo "error: ext/ffmpeg is empty -- the modern build's Bink player is built on the ext/ffmpeg submodule: run git submodule update --init ext/ffmpeg" >&2; exit 1; }
 
 check-toolchain:
 	@for f in $(TOOLCHAIN_FILES); do \
-	  [ -f "$$f" ] || { echo "error: $$f is missing -- the compilers are the toolchains/ submodule: run git submodule update --init (see toolchains/README.md)" >&2; exit 1; }; \
+	  [ -f "$$f" ] || { echo "error: $$f is missing -- the compilers are the ext/toolchains/ submodule: run git submodule update --init (see ext/toolchains/README.md)" >&2; exit 1; }; \
 	done
 
 test: image
@@ -142,7 +142,7 @@ campaign: image
 control:
 	@bash build/control.sh
 
-# what tools/evidence.py cannot ask git for in the container (the build
+# what ext/tools/evidence.py cannot ask git for in the container (the build
 # image has no git)
 EVIDENCE_ENV = EVIDENCE_REVISION=$(shell git rev-parse HEAD 2>/dev/null) \
 	EVIDENCE_MODIFIED=$(shell git status --porcelain --untracked-files=no 2>/dev/null | wc -l) \

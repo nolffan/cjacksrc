@@ -24,8 +24,8 @@ the legacy build keeps matching the retail one.
 
 ## Where it stands
 
-Started. The retail game is installed from its discs and update (`rez/`),
-the compiler is in `toolchains/` (`msvc-7.10-3077`), and the scoreboard
+Started. The retail game is installed from its discs and update (`ext/rez/`),
+the compiler is in `ext/toolchains/` (`msvc-7.10-3077`), and the scoreboard
 scores every retail binary against our build. `ltmsg.dll` is built (the
 retail file but for its link time stamp) and `SndDrv.dll` builds; the rest
 is to come. `docs/PLAN.md` is the plan, package by package.
@@ -71,9 +71,9 @@ the evidence, is `progress/COMPILERS.md`.
 ## Building
 
 Needs docker and the submodules (`git submodule update --init`):
-`toolchains/` (the compilers), `rez/` (which fetches the European discs from
-archive.org and installs the game with its 1.1 update), `tools/` (the
-reconstruction tools) and `lithtools/` (whose `lithrez` packs the 1.1
+`ext/toolchains/` (the compilers), `ext/rez/` (which fetches the European discs from
+archive.org and installs the game with its 1.1 update), `ext/tools/` (the
+reconstruction tools) and `ext/lithtools/` (whose `lithrez` packs the 1.1
 update's data, `assets/`, into `cjacksrc.rez`); and, for `make modern`, `ext/ffmpeg` (FFmpeg n8.1.3,
 which the modern build's Bink player is built on, by `build/ext.sh`).
 
@@ -90,7 +90,7 @@ the discs' data, to give to other people (it carries only the free 1.1
 update's, as `cjacksrc.rez`: `assets/README.md`). The public one
 carries scripts that copy the rest out of the player's own images of both
 discs (European or USA; a plain `.iso`, redump's `.bin`/`.cue` or its
-`.zip`), checking every file they write (`tools/mkinstall.py`):
+`.zip`), checking every file they write (`ext/tools/mkinstall.py`):
 
 ```sh
 cjack-modern-release/linux-install.sh disc1.zip disc2.zip    # Linux

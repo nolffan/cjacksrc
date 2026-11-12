@@ -1,6 +1,6 @@
-# The retail game's layout, for tools/retailextract.py (it reads this file
+# The retail game's layout, for ext/tools/retailextract.py (it reads this file
 # from build/; see its header): Contract J.A.C.K. (Europe) with the English
-# 1.1 update, as rez/ installs it (rez/games/contract-jack-eu-1.1,
+# 1.1 update, as ext/rez/ installs it (ext/rez/games/contract-jack-eu-1.1,
 # build/retail.sh).
 
 # The archives of the retail install the game directory takes, under their
@@ -39,7 +39,7 @@ OPEN_RUNTIME = [
     ("binkw32.dll", "src/modern/binkw32 + ext/ffmpeg: our Bink player"),
 ]
 
-# --- the public archive's install scripts (tools/mkinstall.py) ------------
+# --- the public archive's install scripts (ext/tools/mkinstall.py) ------------
 # The game's data is copied out of the player's own disc images -- the
 # European or the USA release's two discs (their InstallShield 6 cabinets
 # span both: data1.cab, data2.cab on disc 1, data3.cab on disc 2) -- by

@@ -14,5 +14,5 @@ src/Game/ObjectDLL/AnimationLexSymbols.h
 __pycache__/
 *.log
 !src/**/*.log
-# agents' worktrees (tools/agentwt.sh)
+# agents' worktrees (ext/tools/agentwt.sh)
 /.worktrees/

@@ -2,13 +2,13 @@
 #
 # The workspaces (VC6-style .dsw/.dsp, written for this project: Monolith's
 # own Visual Studio .NET 2003 solutions are lost) as Developer Studio would
-# build them: tools/dsp2mk.py reads each workspace and its project files and
+# build them: ext/tools/dsp2mk.py reads each workspace and its project files and
 # writes the rules (.build/*.mk) -- every compile with the flags its
 # project's configuration gives it ("Final"; a library's "Release" where it
 # has no "Final"), one source per compile, every library and link, the
 # custom build steps. `make -j` then runs the compiles of every binary at
 # once, and a rebuild redoes only what changed: an object is rebuilt when its
-# source, a header it includes (tools/mkdeps.py finds them), or its command
+# source, a header it includes (ext/tools/mkdeps.py finds them), or its command
 # line changes (the line is kept in <object>.cmd), a binary when any of its
 # inputs does.
 #
@@ -21,7 +21,7 @@
 # Targets: all (the default: every workspace's wanted projects, below); a
 # project by its workspace name; any single output.
 #
-# The compilers see the tree's src/ as drive S: and toolchains/ as T:, so
+# The compilers see the tree's src/ as drive S: and ext/toolchains/ as T:, so
 # they see the same paths wherever the tree is. (Monolith's own build ran
 # in C:\proj\to2\source\, as the retail images' strings show.)
 #
@@ -91,7 +91,7 @@ PFX := $(ROOT)/.wine/drives
 # (progress/COMPILERS.md): msvc-7.10-3077 is that compiler, with its CRT,
 # ATL/MFC 7.1 and Platform SDK. The DirectX 8.1 SDK comes before VC's own
 # directories, where its setup puts it.
-TC      := $(ROOT)/toolchains
+TC      := $(ROOT)/ext/toolchains
 VC71    := $(TC)/msvc-7.10-3077
 DXSDK   := $(TC)/dxsdk-8.1
 CL      := $(VC71)/bin/cl.exe
@@ -100,7 +100,7 @@ LIBEXE  := $(VC71)/bin/lib.exe
 RC      := $(VC71)/bin/rc.exe
 CL_eaxguid := $(TC)/msvc-6.00-8168/BIN/cl.exe
 
-# Windows paths: src/ is S:, toolchains/ T:, the rest Z:
+# Windows paths: src/ is S:, ext/toolchains/ T:, the rest Z:
 wz = z:$(subst /,\,$(1))
 ws = $(if $(filter $(ROOT)/src $(ROOT)/src/%,$(1)),s:$(subst /,\,$(patsubst $(ROOT)/src%,%,$(1))),$(if $(filter $(TC) $(TC)/%,$(1)),t:$(subst /,\,$(patsubst $(TC)%,%,$(1))),$(call wz,$(1))))
 
@@ -155,7 +155,7 @@ endef
 # $(call rcfile,<res>,<project dir>,<rc as spelled>,<rc in the tree>,<flags>)
 # What the script can include -- the files in its directory and in each /i
 # directory, what it #includes and rcincludes, the bitmaps, icons and other
-# files its resources name, recursively -- tools/mkdeps.py finds, as it
+# files its resources name, recursively -- ext/tools/mkdeps.py finds, as it
 # finds a compile's headers.
 define rcfile
 DEPSPEC += $(subst $(space),|,$(1)$(tab)$(2)$(tab)$(3)$(tab)$(strip $(CJACKSRC_RCFLAGS) $(5)))
@@ -206,20 +206,20 @@ $(1) &: $(2) | wine-drives
 endef
 
 # ---------------------------------------------------------------------------
-# The projects (tools/dsp2mk.py)
+# The projects (ext/tools/dsp2mk.py)
 
 DEPDIR := $(ROOT)/.build
 $(shell mkdir -p $(DEPDIR))
 PROJECTS :=
 WANTED :=
 # $(call workspace,<dsw>,<projects, comma-separated>): its rules, from
-# tools/dsp2mk.py, which gets the projects earlier workspaces already build
+# ext/tools/dsp2mk.py, which gets the projects earlier workspaces already build
 # (--have), so that a library two workspaces share is built once.
 define workspace
 ifneq ($(wildcard $(ROOT)/$(1)),)
-DSP_OK := $$(shell python3 tools/dsp2mk.py --have "$$(PROJECTS)" $(1) Final $(DEPDIR)/$(basename $(notdir $(1))).mk $(subst $(comma), ,$(2)) 2>$(DEPDIR)/dsp2mk-$(basename $(notdir $(1))).log && echo ok)
+DSP_OK := $$(shell python3 ext/tools/dsp2mk.py --have "$$(PROJECTS)" $(1) Final $(DEPDIR)/$(basename $(notdir $(1))).mk $(subst $(comma), ,$(2)) 2>$(DEPDIR)/dsp2mk-$(basename $(notdir $(1))).log && echo ok)
 ifneq ($$(DSP_OK),ok)
-$$(error tools/dsp2mk.py failed on $(1): $$(file <$(DEPDIR)/dsp2mk-$(basename $(notdir $(1))).log))
+$$(error ext/tools/dsp2mk.py failed on $(1): $$(file <$(DEPDIR)/dsp2mk-$(basename $(notdir $(1))).log))
 endif
 include $(DEPDIR)/$(basename $(notdir $(1))).mk
 # (a wanted project the workspace does not have yet is skipped, as
@@ -275,10 +275,10 @@ $(TOOLS):
 
 FORCE:
 
-# Header dependencies (tools/mkdeps.py), brought up to date on every run
+# Header dependencies (ext/tools/mkdeps.py), brought up to date on every run
 $(file >$(DEPDIR)/deps.spec,$(subst |, ,$(subst $(space),$(nl),$(DEPSPEC))))
-DEPS_OK := $(shell python3 tools/mkdeps.py $(DEPDIR)/deps.spec $(DEPDIR)/deps.mk && echo ok)
+DEPS_OK := $(shell python3 ext/tools/mkdeps.py $(DEPDIR)/deps.spec $(DEPDIR)/deps.mk && echo ok)
 ifneq ($(DEPS_OK),ok)
-$(error tools/mkdeps.py failed)
+$(error ext/tools/mkdeps.py failed)
 endif
 include $(DEPDIR)/deps.mk

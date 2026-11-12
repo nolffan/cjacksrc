@@ -1,7 +1,7 @@
 ## The functions an audit of the scoring (2026-11-02) took out of
 ## progress/identical.txt, one per line: <target><TAB><function><TAB><why>.
 ## They were not lost by the source: the scorer had credited them wrongly
-## (tools/ at adfdafa: "Scoring: no byte counted twice, regions first").
+## (ext/tools/ at adfdafa: "Scoring: no byte counted twice, regions first").
 ## Kept as the record of what the baseline gave up and why.
 ##
 ## Not identical rows: Lithtech.exe 0x46c8c0 and server.dll 0x1003df60,

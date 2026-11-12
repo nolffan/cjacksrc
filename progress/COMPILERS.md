@@ -1,9 +1,9 @@
 # Which compiler built what
 
 Every retail PE carries a Rich header, the linker's inventory of the tool
-builds that produced its objects (`python3 tools/richhdr.py <image>`). For
+builds that produced its objects (`python3 ext/tools/richhdr.py <image>`). For
 Contract J.A.C.K. 1.1 it is the same story in every binary: **Visual C++
-.NET 2003, 13.10.3077** (`toolchains/msvc-7.10-3077`). Where a revision or
+.NET 2003, 13.10.3077** (`ext/toolchains/msvc-7.10-3077`). Where a revision or
 flag set has been *proven* by byte-matching, this file says so; until then
 the attribution is the header's own testimony.
 
@@ -24,7 +24,7 @@ the attribution is the header's own testimony.
 The rows at builds 2067 and 2179 (tools 0x5d and 0x69) in every binary come
 with Visual C++ .NET 2003's own libraries: a test program built with
 `msvc-7.10-3077` against `msvcrt.lib` has the 0x5d ones too
-(`toolchains/COMPILERS.md`). The 1.1 update rebuilt only the engine
+(`ext/toolchains/COMPILERS.md`). The 1.1 update rebuilt only the engine
 (`Lithtech.exe`, `server.dll`), the launcher, the dedicated server,
 `GameSpy.dll`, `CShell.dll`, `Object.lto` and `CRes.dll`; `SndDrv.dll`,
 `ltmsg.dll`, `ClientFx.fxd` and `SRes.dll` are 1.0's.
@@ -70,7 +70,7 @@ with Visual C++ .NET 2003's own libraries: a test program built with
 ## The engine's flags
 
 Measured by compiling single files of the engine with each candidate set
-(`build/engine.sh`'s loop; the objects matched with `tools/exematch.py`
+(`build/engine.sh`'s loop; the objects matched with `ext/tools/exematch.py`
 against retail `server.dll` and the single-player demo's plaintext of
 `Lithtech.exe`), and from the images themselves:
 

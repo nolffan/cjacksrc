@@ -18,7 +18,7 @@ tree it waits for.
 
 Every binary here is a reconstruction (`docs/PLAN.md`), so an entry is
 listed only where our function is byte-identical to the retail one at the
-address it names (`tools/exematch.py`; for a string, the string is in the
+address it names (`ext/tools/exematch.py`; for a string, the string is in the
 retail image too): it describes what the retail code does, not a guess.
 Addresses are as in the retail images (`build/reference.sh` extracts them
 into `out/reference/`).

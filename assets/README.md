@@ -7,7 +7,7 @@ was published for download; its readme is dated October 30, 2003) adds to
 the game, other than code. It ships with this project's releases, so
 installing needs only the player's two discs.
 
-- `rez/`: the contents of the update's `Update_v1x1.rez` (SHA-256
+- `ext/rez/`: the contents of the update's `Update_v1x1.rez` (SHA-256
   `d8fb90293de3d21b2a03fa373b70b4a79129c6198429fadbb2cdac6bf7bc4280`), as
   its archive has them, less the three game binaries (`CSHELL.DLL`,
   `OBJECT.LTO`, `CRES.DLL`), which this project builds from source: 4
@@ -22,8 +22,8 @@ installing needs only the player's two discs.
 The rest of the update -- its engine, launcher, dedicated server and
 GameSpy library, and its two readmes -- is either built from source here
 or not needed; the settings and default profile the game starts from come
-from the discs, which the update does not change. Taken out of rez/'s copy
+from the discs, which the update does not change. Taken out of ext/rez/'s copy
 of the update (`Update_v1x1.rez` of the `contract-jack-eu-1.1` install,
-`rez/README.md`); the files are unchanged (`.gitattributes` keeps git from
+`ext/rez/README.md`); the files are unchanged (`.gitattributes` keeps git from
 converting their line endings). They are Monolith's and the publisher's,
 as the rest of the game's data is (`docs/LICENSE_NOTES.md`).

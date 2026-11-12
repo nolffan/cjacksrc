@@ -16,7 +16,7 @@ CFG=Object - Win32 Final
 # sources are in this directory and listed here in that order, compiled with
 # the TO2 project's flags (and /GR) through one precompiled header
 # (stdafx.h, both projects' includes). Monolith's VS.NET 2003 project is lost;
-# this is it in the VC6 format tools/dsp2mk.py reads, with its Final
+# this is it in the VC6 format ext/tools/dsp2mk.py reads, with its Final
 # configuration only.
 
 # Begin Project

@@ -9,7 +9,7 @@
 #
 # gamedir: the build whose engine is used (default out/cjack-legacy-release);
 # out: the control directory (default out/cjack-control), symlinks into
-# rez/games/contract-jack-eu-1.1 (relative, so they resolve in the build
+# ext/rez/games/contract-jack-eu-1.1 (relative, so they resolve in the build
 # container too) but for the engine (copied), the command file (no custom/)
 # and the shipped autoexec.cfg and Default.prf that build/playtest.sh and
 # build/mptest.sh start from.
@@ -17,7 +17,7 @@ set -eu
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 GAME="$REPO/${1:-out/cjack-legacy-release}"
 OUT="$REPO/${2:-out/cjack-control}"
-RETAIL="$REPO/rez/games/contract-jack-eu-1.1"
+RETAIL="$REPO/ext/rez/games/contract-jack-eu-1.1"
 for f in Lithtech.exe server.dll autoexec.cfg.retail Default.prf.retail; do
     [ -f "$GAME/$f" ] || { echo "control.sh: $GAME/$f missing -- build it first"; exit 2; }
 done

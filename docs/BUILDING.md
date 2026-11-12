@@ -8,19 +8,19 @@ parts of it by hand, and how the game is packaged.
 * **Linux with Docker.** The compilers are Win32 programs and run under Wine
   in a container; the host needs nothing else (no Wine, no Python).
 * **The submodules**: `git submodule update --init`.
-  * `toolchains/`, the compilers: Visual C++ .NET 2003 (13.10.3077, the
+  * `ext/toolchains/`, the compilers: Visual C++ .NET 2003 (13.10.3077, the
     compiler every retail binary names), the DirectX 8.1 SDK, and VC6's
-    for the one object of `SndDrv.dll` it built. See `toolchains/README.md`.
-  * `rez/`, the retail game the build takes its data from. It fetches the
+    for the one object of `SndDrv.dll` it built. See `ext/toolchains/README.md`.
+  * `ext/rez/`, the retail game the build takes its data from. It fetches the
     redump images of the two European discs of *Contract J.A.C.K.* from
     archive.org, checks them, and installs the game from them as its own
     setup would, then the English 1.1 update, into
-    `rez/games/contract-jack-eu-1.1/`, checked file by file against
-    `rez/games.sha256`; and the USA release's two discs, which the public
+    `ext/rez/games/contract-jack-eu-1.1/`, checked file by file against
+    `ext/rez/games.sha256`; and the USA release's two discs, which the public
     archive's install scripts are made against too (below). `make` does it
-    the first time (`make retail`); see `rez/README.md`.
-  * `tools/`, the reconstruction tools, shared with nolfsrc and nolf2src.
-  * `lithtools/` (fetched shallow), for its `lithrez`: `build/lithrez.sh`
+    the first time (`make retail`); see `ext/rez/README.md`.
+  * `ext/tools/`, the reconstruction tools, shared with nolfsrc and nolf2src.
+  * `ext/lithtools/` (fetched shallow), for its `lithrez`: `build/lithrez.sh`
     builds it (CMake and Ninja in the build image, without its Qt GUI)
     into `out/lithrez/`, and step 1b packs `assets/rez/` into
     `cjacksrc.rez` with it.
@@ -28,22 +28,22 @@ parts of it by hand, and how the game is packaged.
     depth 1), which `build/ext.sh` builds, with Zig's C compiler in the
     build image, into the modern build's Bink player, `binkw32.dll`
     (`out/ext/`, about 15 MB of libraries and 100 MB of Zig's cache).
-* About 10 GB of disk: 3.4 GB for the docker image, 3.5 GB in `rez/` (the
+* About 10 GB of disk: 3.4 GB for the docker image, 3.5 GB in `ext/rez/` (the
   disc images of both releases, zipped and unzipped, and the installed
   game), and a game directory in `out/` for each build (the retail files
-  the build does not change are hard links to `rez/games/`), with its build
+  the build does not change are hard links to `ext/rez/games/`), with its build
   tree, Wine prefix and archives.
 
 ## What `make` does
 
-1. Checks the compilers are in `toolchains/` and that `rez/` and `tools/`
+1. Checks the compilers are in `ext/toolchains/` and that `ext/rez/` and `ext/tools/`
    are there.
 2. Builds the docker image `cjacksrc-build` from `docker/Dockerfile` if
    needed (a few minutes, once).
 3. `make retail`, in a container: the first time, fetch the disc images and
    install them (`build/retail.sh`); every time, check the installed files.
 4. Runs `build/all.sh` in a throwaway container (`--rm --init`, named
-   `cjacksrc-build`), as your user, with the checkout (and so `rez/`)
+   `cjacksrc-build`), as your user, with the checkout (and so `ext/rez/`)
    mounted at `/repo`.
 
 `build/all.sh` then:
@@ -77,7 +77,7 @@ first time. `progress/README.md` describes the scoring.
 
 For the one-object loop of reconstruction, `build/env.sh` gives `run_cl`,
 `run_link`, `run_lib` and `run_rc` (the build's own tools and environment;
-`tools/guides/`).
+`ext/tools/guides/`).
 
 ## Variant builds: debug and modern
 
@@ -91,7 +91,7 @@ is copied into `out/build-<variant>/` and built there by the same
 `build/all.sh`, so the release build's outputs are never touched; its
 header has the details. The modern builds also build and install our Bink
 player (`build/ext.sh`, once, into `out/ext/`). The release build compiles the source with its
-`CJACK_MODERN`/`CJACK_DEBUG` blocks resolved away (`tools/releasesrc.py`).
+`CJACK_MODERN`/`CJACK_DEBUG` blocks resolved away (`ext/tools/releasesrc.py`).
 
 ## Archives: private and public
 
@@ -105,7 +105,7 @@ Every game directory is packaged twice by `build/package.sh`:
   `THIRD-PARTY`; it keeps `cjacksrc.rez`, the free 1.1 update's data
   (origin `asset`) -- and with two scripts that install those files from
   the player's own disc images of *Contract J.A.C.K.* (the European or the
-  USA release): `linux-install.sh` and `windows-install.bat` (`tools/mkinstall.py`, with
+  USA release): `linux-install.sh` and `windows-install.bat` (`ext/tools/mkinstall.py`, with
   the layout in `build/retail.py`). They check every file they write
   against its SHA-256, so the result is the private archive's directory,
   byte for byte. The one to give to other people.
@@ -115,8 +115,8 @@ Every game directory is packaged twice by `build/package.sh`:
 Nothing is installed or run from the discs. Contract J.A.C.K.'s setup
 stores its files compressed in InstallShield 6 cabinets that span both
 discs (`data1.hdr`, `data1.cab` and `data2.cab` on disc 1, `data3.cab` on
-disc 2). `tools/mkinstall.py` works out, against the images in
-`rez/isos/`, where every byte the game needs is, one way per release (the
+disc 2). `ext/tools/mkinstall.py` works out, against the images in
+`ext/rez/isos/`, where every byte the game needs is, one way per release (the
 cabinets lie at other offsets on the USA discs); it reads every way back
 and checks it against the retail file before it writes the list. A script
 then needs no InstallShield or ISO 9660 code, only an inflater: it
@@ -127,7 +127,7 @@ coreutils do the rest); on Windows, PowerShell 5.1's .NET
 `DeflateStream`. An image is a plain `.iso`, redump's `.bin` (or its
 `.cue`) or redump's `.zip`, converted to a temporary `.iso` first.
 
-The public archive is made only if `rez/isos/` has the `.iso` of both
+The public archive is made only if `ext/rez/isos/` has the `.iso` of both
 discs of both releases: `make retail` fetches the USA ones too
 (`build/retail.sh`'s `retail_discs`). `CJACK_ARCHIVES` says which archives
 to write (default `private public`): `make CJACK_ARCHIVES=public` (or any
@@ -148,7 +148,7 @@ than a zip around it. The private archives are never made there. Its steps
 are the make targets above, so a run can be reproduced locally:
 
 ```sh
-git submodule update --init                 # toolchains/, rez/, tools/, lithtools/
+git submodule update --init                 # ext/toolchains/, ext/rez/, ext/tools/, ext/lithtools/
 make image && make retail                   # (CI: the image from its layer cache, IMAGE_BUILD=0)
 export CJACK_ARCHIVES=public
 make && make progress && make debug && make modern && make modern-debug
@@ -157,7 +157,7 @@ ls out/*-public.tar.gz
 
 A first job, "prepare", fetches the redump zips of the European and the
 USA discs (2.2 GB from archive.org) only if the cache (keyed on
-`rez/isos/SHA256SUMS`, against which `rez/fetch-isos.sh` checks them either
+`ext/rez/isos/SHA256SUMS`, against which `ext/rez/fetch-isos.sh` checks them either
 way) does not have them, so the builds never all download them at once,
 and it writes the docker image's layer cache, which the builds only read.
 The submodules are fetched over HTTPS at depth 1.

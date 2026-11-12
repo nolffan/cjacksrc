@@ -1,7 +1,7 @@
 """What the scoreboard scores: Contract J.A.C.K.'s binaries, and where each one's
 own code, and ours, is.
 
-tools/progress.py and tools/ratchet.py read this file and nothing else
+ext/tools/progress.py and ext/tools/ratchet.py read this file and nothing else
 about the project, so they know no binary by name: a binary is added here,
 not in the tools. Plain data, with the evidence for every address beside
 it (the CSVs in this directory are the rest of the evidence).
@@ -51,13 +51,13 @@ TARGETS, one dict per shipped binary, in the README's order:
   cited_src  the source trees whose comments cite it (default CITED_SRC):
              per target, because the DLLs share the 0x10000000 range
   unreadable a regex on our `module:symbol` names: functions of ours whose shipped
-             counterparts lie in `encrypted` (tools/progress.py): listed
+             counterparts lie in `encrypted` (ext/tools/progress.py): listed
              as `encrypted`, neither placed nor unplaced
   purecall   the shipped address of the CRT's `_purecall` (every abstract
-             vtable's filler), where tools/vtabcheck.py cannot find its
+             vtable's filler), where ext/tools/vtabcheck.py cannot find its
              `jmp [IAT]` thunk itself
 
-The reconstruction tools (tools/tgt.py) read the same entries: a tool is
+The reconstruction tools (ext/tools/tgt.py) read the same entries: a tool is
 given a target by label or stem (`Lithtech`, `server`), and its image,
 build, link inputs and regions come from here.
 
@@ -65,9 +65,9 @@ Optional per target, for what NOLF's scoreboard needs and this one does
 not yet: icl (Intel C/C++ padding and /Qip names), linked_oracle (compare
 relocation-free functions against our linked image too), lib_range,
 lib_block, own_names / own_symbols (names that say a function's shipped
-address) -- see tools/progress.py.
+address) -- see ext/tools/progress.py.
 
-How the ranges were found: `tools/libscan.py <image> <lib>...` puts each
+How the ranges were found: `ext/tools/libscan.py <image> <lib>...` puts each
 library's functions in the image (here msvc-7.10-3077's msvcrt.lib,
 msvcprt.lib, mfcs71.lib, libcmt.lib and libcpmt.lib, and the DirectX 8.1
 SDK's d3dx8.lib). The image's own code ends where the runtime's first
@@ -137,7 +137,7 @@ TARGETS = [
          # entry of the __xc_a table at .data 0x568190), to 0x54987e:
          # engine code again, the second range. The single-player demo's
          # unprotected engine (2003-10-10, the same Rich header) stands in
-         # for the encrypted pages (tools/demoimports.py).
+         # for the encrypted pages (ext/tools/demoimports.py).
          app=[(0x00401000, 0x0051de34), (0x00539a80, 0x0054987e)],
          encrypted=[(0x00536000, 0x0053b000)],
          # SecuROM's rewritten import calls, put back for scoring
@@ -148,7 +148,7 @@ TARGETS = [
          # Ours whose shipped counterparts are in the encrypted pages,
          # listed `encrypted`, neither placed nor unplaced: nothing there
          # can be compared. Read in the single-player demo's plaintext,
-         # placed at retail's addresses (tools/demoimports.py plain):
+         # placed at retail's addresses (ext/tools/demoimports.py plain):
          # - the .text$x exception funclets (`mov eax, <FuncInfo>; jmp
          #   __CxxFrameHandler`), 0x538c00..0x539a80 after the import
          #   thunks, 198 of them, as ours follow our import thunks

@@ -10,7 +10,7 @@ CFG=ButeMgrMfcDll - Win32 Final
 # dedicated server. NOLF2's ButeMgrMfcDll.dsp was an external target that
 # built ButeMgr.dsp's "Final MFC DLL" configuration; this is that
 # configuration as a project of its own, with VC .NET 2003's flags, in the
-# VC6 format tools/dsp2mk.py reads.
+# VC6 format ext/tools/dsp2mk.py reads.
 
 # Begin Project
 # PROP AllowPerConfigDependencies 0

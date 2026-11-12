@@ -465,7 +465,7 @@ test pad.
   HUDDamage, HUDDistance, HUDDoomsday, HUDHealth, HUDHiding, HUDMessage,
   HUDMeter, HUDObjectives, HUDRadar, HUDRespawn, HUDWeaponHeat;
   src/Game/Libs/LTGUIMgr/ltguictrl.cpp/.h, ltguibutton.cpp,
-  ltguilistctrl.cpp). `tools/playtest.sh` maps menu clicks for this layout
+  ltguilistctrl.cpp). `ext/tools/playtest.sh` maps menu clicks for this layout
   in a modern game directory (`PLAYTEST_MAP=modern`).
 * **CL-31: widescreen resolutions.** The Display screen listed only exact
   4:3 modes; it now lists every mode at least as wide as 4:3 (5:4 stays

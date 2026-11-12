@@ -14,9 +14,9 @@
 #                               linux-install.sh / windows-install.bat /
 #                               mac-install.command copy
 #                               out of the player's own disc images and 1.1
-#                               update (tools/mkinstall.py): the one to give
+#                               update (ext/tools/mkinstall.py): the one to give
 #                               to other people. It needs the images of both
-#                               releases' discs in rez/isos/ (rez/fetch-isos.sh
+#                               releases' discs in ext/rez/isos/ (ext/rez/fetch-isos.sh
 #                               contract-jack-eu contract-jack-us); without
 #                               them it is skipped.
 #
@@ -77,7 +77,7 @@ fi
 # left out.
 PUB="$PARENT/$NAME-public.tar.gz"
 rc=0
-python3 "$HERE/../tools/mkinstall.py" "$OUT" "$PARENT/$STAGE" || rc=$?
+python3 "$HERE/../ext/tools/mkinstall.py" "$OUT" "$PARENT/$STAGE" || rc=$?
 if [ $rc = 3 ] && [ -n "${CJACK_ARCHIVES:-}" ]; then
     echo "   $PUB: no disc images, but CJACK_ARCHIVES asks for it" >&2
     exit 1

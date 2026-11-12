@@ -15,7 +15,7 @@ What there is, and what it is good for:
 | nolf2src's reconstructions (`../nolf2src/src/Engine`) | NOLF2's engine (Jupiter, back-ported from the 2006 tree to 2002, D3D8), SndDrv.dll, ltmsg.dll | the engine's 2002 baseline; the D3D8 renderer; SndDrv.dll, which Contract J.A.C.K.'s differs from mostly by compiler |
 | The LithTech Jupiter tree (`../fear/Dev/Source/runtime`, `libs`, `sdk`) | Jupiter as Touchdown distributed it in 2006 ("Build 69"), D3D9, built with VS.NET 2003 (`runtime/winbuild/lithtech/Lithtech.map`) | the engine: Contract J.A.C.K.'s (October 2003) lies between NOLF2's and this one, and shares this one's compiler |
 | Build 69's game code (archive.org `Lithtech-Jupiter-System-Enterprise-Edition-Build-69`, GitHub `jsj2008/lithtech`: `NOLF2/{ClientShellDLL,ObjectDLL,Shared,ClientRes,ServerRes}/{TO2,TRON}`) | the TO2 and Tron 2.0 game code as merged into the 2006 tree | what the shared game code became after NOLF2: Tron 2.0 (August 2003) is Contract J.A.C.K.'s nearest sibling. Not a release of either game's shipped code (its interfaces are later). Our `../fear` copy lacks these directories |
-| The demos (`rez/demos/contractjack_demo_{sp,mp}.exe`, 2003-10-21) | the single-player and multiplayer demos: unprotected engines (`Lithtech.exe` of 2003-10-10 and -11), `server.dll`, `SndDrv.dll`, `GameSpy.dll`, the demo game DLLs inside their `Game.rez` | the code in retail `Lithtech.exe`'s SecuROM pages, and the real import behind each redirected call (nolf2src's `tools/demoimports.py` did this with NOLF2's MP demo) |
+| The demos (`ext/rez/demos/contractjack_demo_{sp,mp}.exe`, 2003-10-21) | the single-player and multiplayer demos: unprotected engines (`Lithtech.exe` of 2003-10-10 and -11), `server.dll`, `SndDrv.dll`, `GameSpy.dll`, the demo game DLLs inside their `Game.rez` | the code in retail `Lithtech.exe`'s SecuROM pages, and the real import behind each redirected call (nolf2src's `ext/tools/demoimports.py` did this with NOLF2's MP demo) |
 | `tron-devbuild` (archive.org) | a Tron 2.0 developer build of 2003-08-05 with its console | strings and asserts from the same months; no symbols |
 | GameSpy SDK (GitHub `nitrocaster/GameSpy`, 2007-12) | the oldest full copy of the SDK's C source found; its per-module `changelog.txt` goes back through 2003 | `GameSpy.dll`'s SDK part (serverbrowsing 2.00.2x-3x, July-November 2003): rolled back by the changelogs |
 
@@ -24,7 +24,7 @@ could be found (2026-10).
 
 ## The retail game
 
-`rez/games/contract-jack-eu-1.1` (`build/retail.sh`): the European discs
+`ext/rez/games/contract-jack-eu-1.1` (`build/retail.sh`): the European discs
 with the English 1.1 update (`rez`'s `contract-jack-eu-1.1`). The European
 and USA releases' binaries are identical; only the web links differ. 1.1
 replaced the engine, the launcher, the dedicated server, `GameSpy.dll` and
@@ -61,7 +61,7 @@ Every one is Visual C++ .NET 2003 (13.10.3077): `progress/COMPILERS.md`.
   Prove the flags per binary (`/O1` vs `/O2`, `/GX`/`/EHsc`, `/GS`: retail
   calls `__security_init_cookie`, so at least some binaries are `/GS`).
 - **Project files.** Our workspace is VC6-style `.dsw`/`.dsp` (the format
-  `tools/dsp2mk.py` reads), with Visual C++ .NET 2003's flags; Monolith's
+  `ext/tools/dsp2mk.py` reads), with Visual C++ .NET 2003's flags; Monolith's
   own were VS.NET 2003 solutions, which are lost.
 - **Legacy vs modern.** `CJACK_MODERN` gates every fix and feature; the
   legacy build must keep compiling to the retail bytes.
@@ -73,15 +73,15 @@ Every one is Visual C++ .NET 2003 (13.10.3077): `progress/COMPILERS.md`.
 |---|---|---|---|
 | 1 | `scaffold`: submodules (`rez`, `toolchains`, `tools`), the 1.1 install in rez, VC .NET 2003 in toolchains, the build image, `make retail`/`reference`/`progress`, `targets.py` | -- | done (below) |
 | 2 | `build`: `build/env.sh`, `build/build.mk` and `build/compile.sh` for VC .NET 2003 under Wine, the workspace `src/Game/TO2.dsw`, `build/all.sh` assembling a game directory, `build/variant.sh` (debug, modern) | 1 | partly: everything but the game workspace and the variants (below) |
-| 3 | `small`: `ltmsg.dll`, `CRes.dll`, `SRes.dll` (resource scripts from the retail resources; `tools/rsrcdiff.py`), `SndDrv.dll` (nolf2src's reconstruction, compiled with VC .NET 2003) | 2 | `ltmsg.dll` done (retail's but for its time stamp); `SndDrv.dll` every scored function identical (225, the other 30 too small to score), the file retail's but for its template tail's order (below); CRes/SRes to do |
+| 3 | `small`: `ltmsg.dll`, `CRes.dll`, `SRes.dll` (resource scripts from the retail resources; `ext/tools/rsrcdiff.py`), `SndDrv.dll` (nolf2src's reconstruction, compiled with VC .NET 2003) | 2 | `ltmsg.dll` done (retail's but for its time stamp); `SndDrv.dll` every scored function identical (225, the other 30 too small to score), the file retail's but for its template tail's order (below); CRes/SRes to do |
 | 4 | `game`: `CShell.dll`, `Object.lto`, `ClientFx.fxd` from NOLF2's source release toward Contract J.A.C.K. -- first the shared code (with Build 69's TO2/TRON as the later reference), then Contract J.A.C.K.'s own (its weapons, its missions' objects, its HUD and menus), placed by the scoreboard | 2 | |
 | 5 | `gamespy`: `GameSpy.dll`: Monolith's wrapper from the image, GameSpy's SDK rolled back to 2003 | 2 | builds, retail's exports and behaviour (`build/gamespytest.sh`); 163/181 of Monolith's functions identical (below) |
 | 6 | `engine`: `Lithtech.exe` and `server.dll` from the Jupiter tree, trimmed to 2003, D3D8; the demos' engine for the SecuROM pages and the imports (a `demoimports.py` for these demos) | 2 | in progress: both build; `Lithtech.exe` 83.3%, `server.dll` 93.1% identical; converging (below) |
 | 7 | `apps`: the launcher `ContractJack.exe` and the dedicated server `ContractJackServer.exe` from NOLF2's Launcher and ServerApp | 2 | both build with retail's resources; `ContractJack.exe` 284/344 identical (98.9%), `ContractJackServer.exe` 550/644 (98.0%): what is left is ButeMgr's register allocation and EH funclets (below) |
-| 8 | `boot`: the built binaries in the game under Wine, to the menu, a level, saving and loading (`make test`, tools/playtest.sh) | 3-7 | single player boots to the menu, plays M01S01, quicksaves and quickloads; the dedicated server hosts a deathmatch world; our client and retail's join it as far as the loading screen (below) |
+| 8 | `boot`: the built binaries in the game under Wine, to the menu, a level, saving and loading (`make test`, ext/tools/playtest.sh) | 3-7 | single player boots to the menu, plays M01S01, quicksaves and quickloads; the dedicated server hosts a deathmatch world; our client and retail's join it as far as the loading screen (below) |
 | 9 | `match`: byte-matching, module by module, ratcheted by `make progress` | 3-7 | |
 | 10 | `modern`: the modern build (`CJACK_MODERN`): fixes (`RETAIL_BUGS.md`), widescreen, our Bink player on FFmpeg, as nolf2src's | 8 | |
-| 11 | `release`: `-private`/`-public` archives, install scripts from the player's own discs and 1.1 update (`tools/mkinstall.py`), and the GitHub Actions workflow building the four public archives with `make progress` on the legacy release | 8, 10 | the machinery and the run scripts are done (below) |
+| 11 | `release`: `-private`/`-public` archives, install scripts from the player's own discs and 1.1 update (`ext/tools/mkinstall.py`), and the GitHub Actions workflow building the four public archives with `make progress` on the legacy release | 8, 10 | the machinery and the run scripts are done (below) |
 
 ## Notes per package
 
@@ -89,15 +89,15 @@ Every one is Visual C++ .NET 2003 (13.10.3077): `progress/COMPILERS.md`.
 
 Done.
 
-- `rez/` installs `contract-jack-eu-1.1` (`rez/tools/install.py`: the EU
+- `ext/rez/` installs `contract-jack-eu-1.1` (`ext/rez/tools/install.py`: the EU
   release, then the update's `Program Files` file group; `UpdateNum` 1 and
   `UpdateCommandLine0` `-rez Update_v1x1.rez`, as its setup script writes
-  them), recorded in `rez/games.sha256`.
-- `toolchains/msvc-7.10-3077`: the two VS.NET 2003 Professional discs from
+  them), recorded in `ext/rez/games.sha256`.
+- `ext/toolchains/msvc-7.10-3077`: the two VS.NET 2003 Professional discs from
   archive.org; the Platform SDK from `vs_setup.msi`'s merge modules. Its
   `bin/` carries the native `msvcr71.dll`/`msvcp71.dll`: under Wine with
   the builtin `msvcp71`, `c1xx` spins forever.
-- `tools/` now carries nolf2src's target-driven tools (they read
+- `ext/tools/` now carries nolf2src's target-driven tools (they read
   `progress/targets.py`); `retailextract.py` reads the retail layout from
   `build/retail.py`.
 - `make reference` extracts the 12 retail binaries and enumerates them;
@@ -118,7 +118,7 @@ Done.
 - The tools environment (`build/env.sh`): `run_cl`, `run_link`, `run_lib`,
   `run_rc` with `msvc-7.10-3077`; `CJACKSRC_CFLAGS` and friends for the
   variants, `CJACK_MODERN`/`CJACK_DEBUG` resolved out of the release tree
-  (`tools/releasesrc.py`, `RELEASESRC_VARIANTS`).
+  (`ext/tools/releasesrc.py`, `RELEASESRC_VARIANTS`).
 - To do: `src/Game/TO2.dsw` (package 4), `build/variant.sh`,
   `build/package.sh`, the game's run scripts.
 
@@ -689,7 +689,7 @@ Class layouts and save/load against retail, in both game DLLs (branch
   1 ...). Object.lto's ClassDefs give every object class's size and
   property list (static PropDefs); after this round all 207 sizes and
   property lists are retail's. RTTI complete object locators give the
-  secondary-base offsets: all agree. tools/layoutscan.py's uniform shifts
+  secondary-base offsets: all agree. ext/tools/layoutscan.py's uniform shifts
   pointed at the rest.
 - **Save streams fixed** (the likely cause of retail crashing on our
   saves): CAI no longer saves the sight grid ranges (4 floats);
@@ -745,7 +745,7 @@ Class layouts and save/load against retail, in both game DLLs (branch
     size. The SFX create structs' Write/Read are identical in both DLLs.
   - Save check (static): every Save/Load either is byte-identical or has
     retail's ILTMessage call sequence (slot and bit width, by function);
-    tools/callcheck.py finds no wrong callee in any Save/Load; the vtables'
+    ext/tools/callcheck.py finds no wrong callee in any Save/Load; the vtables'
     Save/Load slots are retail's (AIVolumeJunction's two only pair
     crosswise, being byte-identical twins).
   - String tables (pointer runs of four or more strings, both DLLs): the
@@ -973,9 +973,9 @@ and `/nodefaultlib:libci.lib` (d3dx8.lib asks for VC6's iostreams).
 `build/engine.sh` is nolf2src's one-object loop (`Lithtech-one x.cpp`,
 `server-one x.cpp`, `<project> verify`).
 
-**SecuROM.** `tools/demoimports.py` (now per game; `cjack` is picked by
+**SecuROM.** `ext/tools/demoimports.py` (now per game; `cjack` is picked by
 the retail engine's sha256) uses the single-player demo's engine
-(`rez/demos/contractjack_demo_sp.exe`, 2003-10-10, unprotected; Rich
+(`ext/rez/demos/contractjack_demo_sp.exe`, 2003-10-10, unprotected; Rich
 header, `.rdata` and `.data` sizes and addresses identical to retail's):
 `progress/engine/Lithtech-iat-calls.csv` names the import of each of
 retail's 1,088 redirected calls (35 SecuROM slots in `.obfzv`; 1,039
@@ -1043,9 +1043,9 @@ when `destBytes` is 0, but only under DIRECTENGINE_COMPILE or __D3DREND
 replaced round 2's `__forceinline`, which retail's out-of-line copy at
 0x419760 disproved).
 
-**Round 3** (on master's 239fb1d): `tools/demoimports.py` maps SecuROM's
+**Round 3** (on master's 239fb1d): `ext/tools/demoimports.py` maps SecuROM's
 91 import calls rewritten as a direct call into a `.rjes` dispatcher plus
-a junk byte, and `tools/progress.py` scores against every mapped site put
+a junk byte, and `ext/tools/progress.py` scores against every mapped site put
 back as `ff 15 <slot>` (the Lithtech.exe target's `iat_calls`), so
 RunClientApp and the like can match (tools commits on the tools clone's
 master: demoimports, then progress). Then CJ's forms of
@@ -1132,7 +1132,7 @@ CAIGoalMgr::HandleCommand (its stdafx.h includes the header), which the
 helper restores. Also: ltmem without /GX (LTMemHeapInit inlines the
 group Init; CLilFixedHeapGroup::Term matches; SndDrv.dll unchanged),
 CWorldParticleBlockerData::GetBlockersInAABB, si_SetObjectPos (moves only
-on a change of position), and `tools/fndiff.py` reads `--end` as decimal
+on a change of position), and `ext/tools/fndiff.py` reads `--end` as decimal
 or `+size` as well as hex (tools clone commit 0f87cb5).
 
 **Round 6** (on master's 0b58af7). **The unplaced functions** (1,312 in
@@ -1197,7 +1197,7 @@ SBCallback keeping its bool on the stack); tried, not found.
 
 **Where it stands / next** (stopped here: score recorded at
 `Lithtech.exe` 6,878 identical, 96.2%; `server.dll` 2,741, 96.3%;
-SndDrv.dll 225) (breadth first, per module, with `tools/fndiff.py`,
+SndDrv.dll 225) (breadth first, per module, with `ext/tools/fndiff.py`,
 `o2gap.py`, `vtabcheck.py`, `uncovered.py`; `progress.py --nears=<target>`
 pairs some rows wrongly where a function's CSV extent is split, so check
 each with fndiff against the retail address first; fndiff on
@@ -1384,7 +1384,7 @@ NOLF2's file order. Recorded: the launcher 284 of 344 functions identical (98.9%
   server links server.dll's import library. Rich header's 9 objects of
   0x27/8491: AliasObj 7.0, from `mfc71.lib`.
 - **Resources**: retail's, 101 of the launcher's and 18 of the server's,
-  byte for byte (`tools/rsrcdiff.py`). The scripts restate Contract
+  byte for byte (`ext/tools/rsrcdiff.py`). The scripts restate Contract
   J.A.C.K.'s dialogs, strings and version resources (VS.NET 2003's
   `VALUE` form, no explicit `\0`); the art (76 bitmaps, 8 waves, icons,
   cursor, splash) is written out of the retail images at build time by
@@ -1449,7 +1449,7 @@ NOLF2's file order. Recorded: the launcher 284 of 344 functions identical (98.9%
 
 ### 8. boot
 
-- `make test` (build/playtest.sh: tools/playtest.sh with Contract
+- `make test` (build/playtest.sh: ext/tools/playtest.sh with Contract
   J.A.C.K.'s names; TEST_GAME, TEST_WORLD, TEST_SCRIPT, TEST_NAME) and
   `make mptest` (build/mptest.sh: a dedicated server and a client joining
   it, under one Xvfb; MPTEST_WINEDEBUG, MPTEST_BT=1 for winedbg backtraces).
@@ -1534,8 +1534,8 @@ NOLF2's file order. Recorded: the launcher 284 of 344 functions identical (98.9%
   the level with its HUD and weapon): ours against ours, retail's client
   DLLs on our engine against our server, ours against retail's server.
 - The control for multiplayer is Contract J.A.C.K.'s multiplayer demo
-  (rez/demos/contractjack_demo_mp.exe: `rez/tools/sfxcab.py`, then
-  `rez/tools/unshield/unshield x` on its data1.cab; Program_Files and
+  (ext/rez/demos/contractjack_demo_mp.exe: `ext/rez/tools/sfxcab.py`, then
+  `ext/rez/tools/unshield/unshield x` on its data1.cab; Program_Files and
   System_Files as the game directory, `-rez Game.rez`, MPTEST_MISSION=0):
   its own engine, server and game DLLs host DE_Italy and the client joins
   and plays it, in the same mptest run -- the harness and Wine are not
@@ -1754,7 +1754,7 @@ Round 1 (branch `cshell`), the items 8b leaves open:
   unplaced functions.
 
 - Round 5, the nears (branch `cshell`), rotation first. Method: every
-  near's call sequence against retail's (`tools/callseq.py`; 56 differed),
+  near's call sequence against retail's (`ext/tools/callseq.py`; 56 differed),
   then a register-masked diff of each rotation-related near. Logic fixed:
   CMoveMgr::Update/UpdatePlayerAnimation were cross-paired by size; retail
   Update sets the wanted dims from the crouch or stand dims (not the
@@ -1926,7 +1926,7 @@ another pairing) or not, then the exclusion file for the compiler's own.
 
 - `build/package.sh` makes `<dir>-private.tar.gz` and `-public.tar.gz` for
   every variant (`build/variant.sh`: debug, modern, modern-debug, with
-  `CJACK_DEBUG`/`CJACK_MODERN`). `tools/mkinstall.py` reads CJ's discs and
+  `CJACK_DEBUG`/`CJACK_MODERN`). `ext/tools/mkinstall.py` reads CJ's discs and
   update from `build/retail.py` (`INSTALL_*`): the public archive's
   `linux-install.sh` was checked to rebuild the private directory byte for
   byte from the European discs (`.iso`) and from the USA discs (disc 1 as
@@ -1942,7 +1942,7 @@ another pairing) or not, then the exclusion file for the compiler's own.
   (`cjacksrc-nightly-<commit>.tar.gz`); text from `.github/release_notes.md`
   and `nightly_notes.md`. The release step was dry-run with a stand-in `gh`
   (new and existing tag, nightly new, moved and stale).
-- `mac-install.command` (Perl, `build/game-scripts/`; `tools/mkinstall.py`
+- `mac-install.command` (Perl, `build/game-scripts/`; `ext/tools/mkinstall.py`
   appends the same list as linux-install.sh's): checked on Linux to write
   the same 18 files as linux-install.sh, matching the private directory,
   from the European `.iso`s, from the USA `.zip`s found beside the folder,

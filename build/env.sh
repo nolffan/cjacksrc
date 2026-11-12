@@ -1,13 +1,13 @@
 # Source this to get the Visual C++ .NET 2003-under-Wine build environment. It runs inside the
 # build container (docker/Dockerfile; `make shell` gives you one), where Wine
-# is on PATH and the toolchain is toolchains/ in this checkout
-# (toolchains/README.md). The compile and link command lines themselves are
+# is on PATH and the toolchain is ext/toolchains/ in this checkout
+# (ext/toolchains/README.md). The compile and link command lines themselves are
 # build/build.mk's.
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 for f in msvc-7.10-3077/bin/cl.exe dxsdk-8.1/include/d3d8.h; do
-    if [ ! -f "$REPO/toolchains/$f" ]; then
-        echo "error: toolchains/$f not found -- the toolchain is missing (toolchains/README.md)" >&2
+    if [ ! -f "$REPO/ext/toolchains/$f" ]; then
+        echo "error: ext/toolchains/$f not found -- the toolchain is missing (ext/toolchains/README.md)" >&2
         return 1 2>/dev/null || exit 1
     fi
 done
@@ -17,8 +17,8 @@ if ! command -v wine >/dev/null 2>&1; then
 fi
 export WINEDEBUG=-all
 export WINEDLLOVERRIDES="mscoree,mshtml="
-# the variant macros tools/releasesrc.py resolves, and the project's own
-# header directory tools/mkdeps.py follows
+# the variant macros ext/tools/releasesrc.py resolves, and the project's own
+# header directory ext/tools/mkdeps.py follows
 export RELEASESRC_VARIANTS="CJACK_MODERN CJACK_DEBUG"
 export MKDEPS_PROJECT_INCLUDE=src/cjacksrc
 
@@ -44,11 +44,11 @@ fi
 # CJACK_DEBUG blocks, not merely with them switched off: a block the
 # compiler skips still moves everything below it, and VC6 lets the file's
 # layout decide where some out-of-line inline functions go, so enough
-# skipped blocks can change the release binary (tools/releasesrc.py; a
+# skipped blocks can change the release binary (ext/tools/releasesrc.py; a
 # lesson of VC6's, kept until VC .NET 2003 is shown not to need it).
 # build/compile.sh calls this first, with its own arguments: in a checkout it
 # brings out/release-tree/ up to date -- src/ with those blocks resolved as
-# the release build sees them, the same build/ and tools/, this checkout's
+# the release build sees them, the same build/ and ext/tools/, this checkout's
 # build outputs -- runs the script there, copies the build outputs back into
 # this checkout's src/ (where `make progress` and the checks read them) and
 # exits with the script's status. In a build/variant.sh tree (out/build-*/,
@@ -59,14 +59,15 @@ cjacksrc_release_tree() {
     local tree="$REPO/out/release-tree" script rc=0
     script="$(basename "${BASH_SOURCE[1]}")"
     mkdir -p "$tree"
-    python3 "$REPO/tools/releasesrc.py" sync "$REPO/src" "$tree/src" || exit 1
-    python3 "$REPO/tools/releasesrc.py" outputs "$REPO/src" "$tree/src" || exit 1
-    rm -rf "$tree/build" "$tree/tools"
-    tar -C "$REPO" -cf - --exclude='__pycache__' --exclude=.git build tools | tar -C "$tree" -xf -
-    [ -L "$tree/toolchains" ] || ln -s ../../toolchains "$tree/toolchains"
-    [ -L "$tree/rez" ] || ln -s ../../rez "$tree/rez"
+    python3 "$REPO/ext/tools/releasesrc.py" sync "$REPO/src" "$tree/src" || exit 1
+    python3 "$REPO/ext/tools/releasesrc.py" outputs "$REPO/src" "$tree/src" || exit 1
+    rm -rf "$tree/build" "$tree/tools" "$tree/toolchains" "$tree/rez"
+    tar -C "$REPO" -cf - --exclude='__pycache__' --exclude=.git build | tar -C "$tree" -xf -
+    # the submodules (the tools, the compilers, the retail game): the tools
+    # take the tree they are run from as the project (ext/tools/layout.py)
+    [ -L "$tree/ext" ] || ln -s ../../ext "$tree/ext"
     ( cd "$tree" && CJACKSRC_IN_RELEASE_TREE=1 bash "build/$script" "$@" ) || rc=$?
-    python3 "$REPO/tools/releasesrc.py" outputs "$tree/src" "$REPO/src" || exit 1
+    python3 "$REPO/ext/tools/releasesrc.py" outputs "$tree/src" "$REPO/src" || exit 1
     exit $rc
 }
 
@@ -80,9 +81,9 @@ cjacksrc_make() {
 
 # ---------------------------------------------------------------------------
 # The tools by hand, for the one-object loop and experiments
-# (build/engine.sh, tools/guides/02, 10): the compiler, linker, librarian
+# (build/engine.sh, ext/tools/guides/02, 10): the compiler, linker, librarian
 # and resource compiler build/build.mk uses, in the same environment --
-# src/ as drive S:, toolchains/ as T:, the DirectX 8.1 SDK first on the
+# src/ as drive S:, ext/toolchains/ as T:, the DirectX 8.1 SDK first on the
 # INCLUDE and LIB paths, src/cjacksrc last -- so a command line copied out of
 # an object's <object>.cmd gives the same object. (A compile's .cmd also
 # starts with `cd <dir> &&`: run it from that directory.) They use their own
@@ -91,7 +92,7 @@ cjacksrc_make() {
 #   run_cl /nologo /O2 /c foo.cpp       cl 13.10.3077 (VC .NET 2003)
 #   run_link, run_lib, run_rc           link/lib 7.10.3077, rc 5.2
 #   cjacksrc_wpath <path>               the Windows path the tools see
-TC="$REPO/toolchains"
+TC="$REPO/ext/toolchains"
 VC71="$TC/msvc-7.10-3077"
 DXSDK="$TC/dxsdk-8.1"
 cjacksrc_wpath() {

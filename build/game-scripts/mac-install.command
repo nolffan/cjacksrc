@@ -31,7 +31,7 @@
 # cabinet. This needs only the Perl every Mac has (/usr/bin/perl, with its
 # own modules: Compress::Raw::Zlib inflates). The list of files, after this
 # script's __END__, says for each one which bytes of which image it is made
-# of (tools/mkinstall.py).
+# of (ext/tools/mkinstall.py).
 use strict;
 use warnings;
 use Cwd qw(abs_path);

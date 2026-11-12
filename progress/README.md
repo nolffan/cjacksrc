@@ -15,7 +15,7 @@ make progress-update       # record the score here and in README.md
 ## What is scored
 
 `targets.py` lists every shipped binary, with where its own code is and
-where our build of it is. `tools/progress.py` and `tools/ratchet.py` know
+where our build of it is. `ext/tools/progress.py` and `ext/tools/ratchet.py` know
 no binary by name; a new one (an engine binary, once its source exists) is
 added there, with the evidence for its ranges.
 
@@ -53,7 +53,7 @@ them is counted in the denominator:
 | Status | Meaning |
 |---|---|
 | `unplaced` | written, and our own link puts it in our image, but no shipped function is placed for it |
-| `unreferenced` | as `unplaced`, but an `/OPT:REF` walk over our own objects (`tools/progress.py`) reaches it from nothing the retail link would have kept, so that link would have discarded it: a template member, inline or compiler-generated helper only dead code or an instantiation of ours emits. An ordinary out-of-line function is never this. A target can turn the walk off with `no_reach` in `targets.py` |
+| `unreferenced` | as `unplaced`, but an `/OPT:REF` walk over our own objects (`ext/tools/progress.py`) reaches it from nothing the retail link would have kept, so that link would have discarded it: a template member, inline or compiler-generated helper only dead code or an instantiation of ours emits. An ordinary out-of-line function is never this. A target can turn the walk off with `no_reach` in `targets.py` |
 | `unlinked` | compiled, but our own link leaves it out too: a library member this binary does not pull |
 | `driver` | emitted only by a scoring driver that ships nowhere (none here) |
 
@@ -66,7 +66,7 @@ is the whole game's code, the engine's included.
   links it as `MSVCR71.dll`, so what is linked in is small: `msvcrt.lib`'s
   startup and helper objects, `msvcprt.lib`'s `operator new` and the import
   thunks, after the binary's own code. `targets.py` gives each binary's
-  boundary and how it was found (`tools/libscan.py` places a library's
+  boundary and how it was found (`ext/tools/libscan.py` places a library's
   functions in a retail image; once a binary links here, our `.map` names
   the library of each of our functions). Code of the binary's own that the
   linker put after the runtime is a second `app` range.
@@ -129,13 +129,13 @@ where one of our functions matches inside another row, and the row ends
 there.
 
 `make progress` fails if either count goes up; `make progress COVERED=1`
-fails unless both are zero everywhere. `tools/progress.py --unplaced=<target>`
+fails unless both are zero everywhere. `ext/tools/progress.py --unplaced=<target>`
 and `--todo=<target>` (and `--attempted`, `--near`, `--small`) list them,
 and `--nears` lists the near matches closest first.
 
 This is the per-function measure. A whole binary is byte-perfect only once
 every function is identical *and* it links in the same order, with the same
-data and headers; `tools/bindiff.py` makes that whole-file comparison.
+data and headers; `ext/tools/bindiff.py` makes that whole-file comparison.
 
 ## The test
 
@@ -150,25 +150,25 @@ built elsewhere (`build/variant.sh`), and the scoring never reads them.
 * a target's identical byte count went down,
 * its unwritten or unplaced count went up,
 * `README.md`'s table is not the one `summary.json` renders,
-* the data check (`tools/datacheck.py`: the text in our images' data --
+* the data check (`ext/tools/datacheck.py`: the text in our images' data --
   strings, import and export names -- against the retail images') finds a
   difference `data-known.txt` does not list with its reason,
-* `tools/fpconst.py` finds a float or double that one of our placed
+* `ext/tools/fpconst.py` finds a float or double that one of our placed
   functions loads (through an address the byte match masks) differing
   from the one retail loads there: a masked match is identical only up to
   the constants it reads, or
-* `tools/vtabcheck.py --targets` finds a contradiction
+* `ext/tools/vtabcheck.py --targets` finds a contradiction
   `progress/vtab-known.txt` does not list: a vtable slot of ours, or a call
   or global one of our functions reaches, that is another one than retail's
   -- judged only where the evidence is unambiguous (the function's body fits
   exactly one retail address; same code under another name agrees), and
   everything else counted as unverified, not passed.
 
-Each run also writes `out/progress/evidence.json` (`tools/evidence.py`):
+Each run also writes `out/progress/evidence.json` (`ext/tools/evidence.py`):
 the source and submodule revisions, every retail image's hash, the
 configuration and exclusion files, our images, maps and link commands, and
 the toolchain trees the build used with their digests checked against
-`toolchains/fetch.sh`'s pins (a mismatch fails the run).
+`ext/toolchains/fetch.sh`'s pins (a mismatch fails the run).
 `make progress-update` keeps a copy as `progress/evidence.json`.
 
 Before anything is scored, the retail images cached in `out/reference/`
@@ -190,7 +190,7 @@ change rightly gives one up -- say, a function was matched by coincidence).
 `make progress COMPLETE=1` also fails unless every function of every target
 is identical, and nothing is unwritten or unplaced (`COVERED=1` alone): the
 finish line for the code. It is not whole-image identity, which
-`tools/buildcmp.py` against the retail image is. A target whose whole
+`ext/tools/buildcmp.py` against the retail image is. A target whose whole
 image already is retail's (but for the link's time stamps) scores every
 function identical, however little of it the masked match could prove.
 
@@ -207,10 +207,10 @@ Python 3 only, so inside `make shell` (or on a host with Python)
 | `identical.txt` | every function verified identical (`target<TAB>function`): the baseline the test holds the build to. Written by `make progress-update` |
 | `summary.json` | per-target counts and bytes of the recorded run; the README table is rendered from it |
 | `reference.sha256` | the retail images `out/reference/` must hold to be scored |
-| `vtab-known.txt` | the vtable and wiring differences `tools/vtabcheck.py` finds that are known, each with its reason |
-| `evidence.json` | what the recorded run rested on (`tools/evidence.py`) |
+| `vtab-known.txt` | the vtable and wiring differences `ext/tools/vtabcheck.py` finds that are known, each with its reason |
+| `evidence.json` | what the recorded run rested on (`ext/tools/evidence.py`) |
 | `corrections.txt` | the functions taken out of `identical.txt` when the scoring was corrected (2026-11-02), each with why: matches inside another identical function (the same bytes counted twice), and matches outside the image's own code |
-| `data-known.txt` | the text differences from the retail images that are known, each under its reason (`tools/datacheck.py`) |
+| `data-known.txt` | the text differences from the retail images that are known, each under its reason (`ext/tools/datacheck.py`) |
 | `COMPILERS.md` | which compiler and flags built each retail binary, and the evidence |
 | `<stem>-screen-exclude.csv` | (none yet) per image, enumerated addresses examined by hand. A reason that starts `NOT A FUNCTION` or `NOT GAME CODE` removes the row from the count; any other reason marks the address `attempted` in an image whose addresses `src/` cites |
 | `extent-splits.csv` | (none yet) function starts the enumeration misses, with the evidence |

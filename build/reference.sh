@@ -14,21 +14,21 @@
 set -e
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 source build/retail.sh
-python3 tools/retailextract.py reference "$(retail_dir)" out/reference
+python3 ext/tools/retailextract.py reference "$(retail_dir)" out/reference
 
-# The function table of each image (tools/enumfuncs.py --csv): addr, size,
+# The function table of each image (ext/tools/enumfuncs.py --csv): addr, size,
 # how the start was found, and the name an error-tag literal or export gives
 # it. The reconstruction tools read these (fndiff.py's sizes, tagmap.py,
 # uncovered.py, ...); like the images, they are derived, never committed.
 for pair in server:server.dll Lithtech:Lithtech.exe SndDrv:SndDrv.dll GameSpy:GameSpy.dll \
             ContractJack:ContractJack.exe ContractJackServer:ContractJackServer.exe \
             CShell:CShell.dll Object:Object.lto ClientFx:ClientFx.fxd; do
-    python3 tools/enumfuncs.py "out/reference/${pair#*:}" \
+    python3 ext/tools/enumfuncs.py "out/reference/${pair#*:}" \
         --csv "out/reference/${pair%%:*}-functions.csv" | tail -1
 done
-# ... and its vtables, one row per slot (tools/vtabaudit.py), which
-# tools/vtabcheck.py compares our linked images against.
+# ... and its vtables, one row per slot (ext/tools/vtabaudit.py), which
+# ext/tools/vtabcheck.py compares our linked images against.
 for pair in server:server.dll Lithtech:Lithtech.exe; do
-    python3 tools/vtabaudit.py "out/reference/${pair#*:}" \
+    python3 ext/tools/vtabaudit.py "out/reference/${pair#*:}" \
         --csv="out/reference/${pair%%:*}-vtables.csv" | tail -1
 done

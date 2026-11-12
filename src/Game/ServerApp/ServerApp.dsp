@@ -10,7 +10,7 @@ CFG=ServerApp - Win32 Final
 # project (MFC 7.1 in a DLL, server.dll's import library, ButeMgr and
 # CryptMgr built against MFC) with Contract J.A.C.K.'s files and VC .NET
 # 2003's flags. Monolith's VS.NET 2003 project is lost; this is it in the
-# VC6 format tools/dsp2mk.py reads, with its Final configuration only.
+# VC6 format ext/tools/dsp2mk.py reads, with its Final configuration only.
 
 # Begin Project
 # PROP AllowPerConfigDependencies 0

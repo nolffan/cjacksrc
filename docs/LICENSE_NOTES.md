@@ -19,10 +19,10 @@ code in substance either way.
 | `src/modern/binkw32/` | written for this project: the modern build's Bink player (nolf2src's, itself adapted from nolfsrc's) | no licence is declared |
 | `src/cjacksrc/mp3/minimp3/` | **minimp3** (github.com/lieff/minimp3, commit `ea99364f61c1`), the modern build's MP3 decoder, compiled into its `SndDrv.dll`. One change: the `<stdint.h>` types defined for Visual C++ .NET 2003, which has no `<stdint.h>` (marked in the file) | CC0 1.0 (public domain dedication), `minimp3/LICENSE` |
 | `ext/ffmpeg` (submodule) | **FFmpeg**, upstream at github.com/FFmpeg/FFmpeg, pinned to n8.1.3 | LGPL-2.1-or-later as the modern build configures it (no GPL or non-free parts enabled); see its `LICENSE.md` |
-| `rez/` (submodule) | the disc images' installer; the images themselves are fetched from archive.org | see `rez/README.md` |
-| `toolchains/` (submodule) | the compilers, assembled from public copies of the original media | see `toolchains/README.md` |
-| `tools/` (submodule) | the reconstruction tools, written for these projects | see `tools/README.md` |
-| `lithtools/` (submodule) | the LithTech development tools rebuilt for these projects; only its `lithrez` is built here, to pack `assets/rez/` | see `lithtools/README.md` |
+| `ext/rez/` (submodule) | the disc images' installer; the images themselves are fetched from archive.org | see `ext/rez/README.md` |
+| `ext/toolchains/` (submodule) | the compilers, assembled from public copies of the original media | see `ext/toolchains/README.md` |
+| `ext/tools/` (submodule) | the reconstruction tools, written for these projects | see `ext/tools/README.md` |
+| `ext/lithtools/` (submodule) | the LithTech development tools rebuilt for these projects; only its `lithrez` is built here, to pack `assets/rez/` | see `ext/lithtools/README.md` |
 | `assets/` | **Monolith Productions / Vivendi Universal Games**: the data of the free English 1.1 update (`contractjack_update_en_10_11.exe`), unchanged (`assets/README.md`) | the publishers'; included because the update was distributed freely for anyone to download |
 
 The game code (`src/Game/`, from NOLF2's source release) and the engine
@@ -31,7 +31,7 @@ brought in by the packages of `docs/PLAN.md`; each adds its row here when
 it lands.
 
 What a build puts in a game directory, by origin (`MANIFEST.txt` in the
-directory lists every file; `tools/retailextract.py audit` every binary):
+directory lists every file; `ext/tools/retailextract.py audit` every binary):
 
 | | Whose | From |
 |---|---|---|

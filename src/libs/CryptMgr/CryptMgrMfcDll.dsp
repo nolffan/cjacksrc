@@ -10,7 +10,7 @@ CFG=CryptMgrMfcDll - Win32 Final
 # NOLF2's CryptMgrMfcDll.dsp was an external target that built
 # cryptmgr.dsp's "Final MFC DLL" configuration; this is that configuration
 # as a project of its own, with VC .NET 2003's flags, in the VC6 format
-# tools/dsp2mk.py reads.
+# ext/tools/dsp2mk.py reads.
 
 # Begin Project
 # PROP AllowPerConfigDependencies 0
