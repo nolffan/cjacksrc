@@ -24,11 +24,29 @@ the legacy build keeps matching the retail one.
 
 ## Where it stands
 
-Started. The retail game is installed from its discs and update (`ext/rez/`),
-the compiler is in `ext/toolchains/` (`msvc-7.10-3077`), and the scoreboard
-scores every retail binary against our build. `ltmsg.dll` is built (the
-retail file but for its link time stamp) and `SndDrv.dll` builds; the rest
-is to come. `docs/PLAN.md` is the plan, package by package.
+Every binary of the game is built from source: the engine (`Lithtech.exe`,
+`server.dll`, `SndDrv.dll`, `ltmsg.dll`), the GameSpy services
+(`GameSpy.dll`), the launcher and the dedicated server (`ContractJack.exe`,
+`ContractJackServer.exe`), and the game itself (`CShell.dll`,
+`Object.lto`, `ClientFx.fxd`, `CRes.dll`, `SRes.dll`). The game plays, in
+single player and with a client joining the dedicated server.
+
+Every function of the retail binaries is written, and most compile to the
+retail bytes exactly (the table below). What is left is mostly the
+compiler's choices rather than the game's logic:
+
+- **near** functions do what the retail ones do, but differ in register
+  allocation, instruction order or layout;
+- **unplaced** functions (all in the engine) are ours with no retail
+  counterpart to pair with: duplicate copies, start-up code and fragments;
+- `Lithtech.exe`'s icons and cursors don't yet match the retail resources.
+
+The modern build's changes -- widescreen, window and borderless modes,
+frame rates up to unlimited, controllers through XInput, Bink on FFmpeg,
+the speech's MP3 decoded in `SndDrv.dll`, and fixes for the retail bugs
+in `docs/RETAIL_BUGS.md` -- are listed in `docs/MODERN.md`. The release
+needs only the player's two discs: the free 1.1 update's data ships with
+it (`assets/`). `docs/PLAN.md` has the history, package by package.
 
 ## Progress
 
