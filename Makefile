@@ -56,7 +56,7 @@ help:
 	@echo "                under Xvfb and Wine (build/mptest.sh; out/play/*-mp/)"
 	@echo "make progress   score the build against the retail binaries; fails if a"
 	@echo "                function recorded in progress/identical.txt stops matching"
-	@echo "make progress-update  record the score in progress/ and README.md"
+	@echo "make progress-update  record the score in progress/ and its README.md"
 	@echo "make reference  extract the retail binaries and their function tables into out/reference/"
 	@echo "make retail     fetch the two disc images and install the retail game and its"
 	@echo "                1.1 update from them, and fetch the USA release's two too, for"

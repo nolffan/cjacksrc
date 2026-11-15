@@ -84,6 +84,7 @@ libcmt.lib statically.
 REFERENCE = "out/reference"     # build/reference.sh writes it
 OUT = "out/progress"            # each run's functions.csv and summary.json
 DATA = "progress"               # the recorded baseline and the evidence
+README = "progress/README.md"   # the progress table (ext/tools/ratchet.py)
 
 # Every hex address cited in these source trees marks the address
 # `attempted` in a target with `cites` (an address a reconstruction has

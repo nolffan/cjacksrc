@@ -64,7 +64,7 @@ parts of it by hand, and how the game is packaged.
 make progress     # score the build against the retail binaries, function by
                   #   function; fails if a function recorded as byte-identical
                   #   in progress/identical.txt no longer is
-make progress-update   # record the score in progress/ and README.md
+make progress-update   # record the score in progress/ and its README.md
 make reference    # the retail binaries and their function tables, in out/reference/
 make shell        # a shell in the build container, at /repo
 make clean        # remove out/ and every build output in the source tree
