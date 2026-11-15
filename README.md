@@ -22,6 +22,19 @@ Compiling back to the retail bytes means compiling the retail game's bugs as
 well; their fixes go behind `CJACKSRC_MODERN`, into the modern build only, so
 the legacy build keeps matching the retail one.
 
+<p align="center">
+  <img src="screenshots/00-main-menu.jpg" alt="The main menu" width="49%">
+  <img src="screenshots/01-scene-one.jpg" alt="Two gangsters in suits in a room: &quot;Shut your hole before I shovel dirt in it, Marvin.&quot;" width="49%">
+  <img src="screenshots/02-shooting.jpg" alt="A gunfight in an apartment, seen over a submachine gun" width="49%">
+  <img src="screenshots/03-car.jpg" alt="A blue car in a garage, seen over a submachine gun" width="49%">
+  <img src="screenshots/04-malta.jpg" alt="Malta: ruins with broken columns, seen over a pistol" width="49%">
+  <img src="screenshots/05-dimitri.jpg" alt="A cut-scene: Dimitri, with an eye patch: &quot;Bravo. You've passed the test.&quot;" width="49%">
+  <img src="screenshots/06-damage.jpg" alt="Soldiers in a snowy yard at night; the screen edges are red because the player is hit" width="49%">
+  <img src="screenshots/07-machine-gun.jpg" alt="A snowy dock at night with a crane, seen over a submachine gun" width="49%">
+</p>
+
+<p align="center"><sub>The modern build at 3840x2160.</sub></p>
+
 ## Where it stands
 
 Every binary of the game is built from source: the engine (`Lithtech.exe`,
@@ -47,6 +60,17 @@ the speech's MP3 decoded in `SndDrv.dll`, and fixes for the retail bugs
 in `docs/RETAIL_BUGS.md` -- are listed in `docs/MODERN.md`. The release
 needs only the player's two discs: the free 1.1 update's data ships with
 it (`assets/`). `docs/PLAN.md` has the history, package by package.
+
+## Documentation
+
+- [`docs/MODERN.md`](docs/MODERN.md): the changes in the modern build.
+- [`docs/RETAIL_BUGS.md`](docs/RETAIL_BUGS.md): the bugs in the retail
+  game, and their fixes in the modern build.
+- [`docs/BUILDING.md`](docs/BUILDING.md): the build, step by step.
+- [`docs/PLAN.md`](docs/PLAN.md): the history of the work, package by
+  package.
+- [`docs/LICENSE_NOTES.md`](docs/LICENSE_NOTES.md): the sources of the
+  code, and their owners.
 
 ## Progress
 
@@ -112,3 +136,24 @@ of their first samples. `linux-run.sh` installs it into the legacy build's
 prefix the first time (`winetricks l3codecx`); with another Wine prefix or
 a CrossOver bottle, run `WINEPREFIX=<its folder> winetricks l3codecx` once.
 Windows has it already.
+
+## Credits
+
+This project uses the work of others:
+
+- **Monolith Productions**, for *Contract J.A.C.K.* and for the source
+  code of *No One Lives Forever 2* (version 1.3), from which `src/Game/`
+  starts; and, with LithTech, Inc. (later Touchdown Entertainment), for the
+  LithTech Jupiter engine, from which `src/Engine/` starts
+  ([`docs/LICENSE_NOTES.md`](docs/LICENSE_NOTES.md)).
+- **[nolfsrc](https://github.com/nolffan/nolfsrc)** and
+  **[nolf2src](https://github.com/nolffan/nolf2src)**, the same project
+  for the two *No One Lives Forever* games: the method, the tools, the
+  Bink player, and many of the modern build's designs.
+- **GameSpy Industries / IGN Entertainment**, for the GameSpy SDK, which
+  IGN released in 2011 under a BSD licence. `GameSpy.dll` is built on it.
+- **FFmpeg** (<https://ffmpeg.org>), on which the modern build's Bink
+  player is built.
+- **Wine**, which runs the game on Linux.
+- **redump.org**, for the verified disc images that the install scripts
+  check, and **archive.org**, which keeps them.
