@@ -112,14 +112,3 @@ of their first samples. `linux-run.sh` installs it into the legacy build's
 prefix the first time (`winetricks l3codecx`); with another Wine prefix or
 a CrossOver bottle, run `WINEPREFIX=<its folder> winetricks l3codecx` once.
 Windows has it already.
-
-## Releases
-
-GitHub Actions (`.github/workflows/public-archives.yml`) builds the four
-public archives on every push and pull request. Pushing a tag `v*` makes a
-GitHub release of it with the modern build's two public archives
-(`cjacksrc-<tag>.tar.gz` and `cjacksrc-debug-<tag>.tar.gz`; a tag with a
-hyphen is a pre-release), and every push to `master` whose builds pass
-replaces the pre-release `nightly` with that commit's
-(`cjacksrc-nightly-<commit>.tar.gz`). The release text is
-`.github/release_notes.md`.
