@@ -5222,7 +5222,7 @@ void CInterfaceMgr::UpdateLetterBox()
 	rcDest.Init(0, dwHeight - nBorderSize, dwWidth, dwHeight);
  	g_pLTClient->ScaleSurfaceToSurfaceTransparent(hScreen, m_hLetterBoxSurface,
 	   &rcDest, &rcSrc, hTransColor);
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md CL-35: with Cinematics43 set, a wide screen shows the
 	// cutscenes as they were framed, in the centred 4:3 area (EN-30 widened
 	// the view): cover the sides too.

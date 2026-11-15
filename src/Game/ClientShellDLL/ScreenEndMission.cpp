@@ -144,7 +144,7 @@ void CScreenEndMission::OnFocus(LTBOOL bFocus)
 			m_pTimesHit->SetString(FormatTempString(IDS_M_STAT_TIMES_HIT,pStats->dwNumTimesHit));
 
 			// RETAIL: CShell 0x100c0afc: only for a mission with secrets.
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 			// MODERN.md CL-50: not without a mission record.
 			if( pMission && pMission->nNumSecrets )
 #else

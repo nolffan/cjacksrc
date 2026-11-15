@@ -4,7 +4,7 @@ Contract J.A.C.K. from source, split into packages that can each be picked
 up again after an interruption. The first aim is **a game that runs** with
 every binary built here; the second is **byte-identity** with retail 1.1
 (the legacy build), ratcheted by `make progress`. The modern build
-(`CJACK_MODERN`) comes after.
+(`CJACKSRC_MODERN`) comes after.
 
 Unlike NOLF and NOLF2, no source of Contract J.A.C.K. was ever released.
 What there is, and what it is good for:
@@ -63,7 +63,7 @@ Every one is Visual C++ .NET 2003 (13.10.3077): `progress/COMPILERS.md`.
 - **Project files.** Our workspace is VC6-style `.dsw`/`.dsp` (the format
   `ext/tools/dsp2mk.py` reads), with Visual C++ .NET 2003's flags; Monolith's
   own were VS.NET 2003 solutions, which are lost.
-- **Legacy vs modern.** `CJACK_MODERN` gates every fix and feature; the
+- **Legacy vs modern.** `CJACKSRC_MODERN` gates every fix and feature; the
   legacy build must keep compiling to the retail bytes.
 - **Commits.** Small commits, each leaving the tree building.
 
@@ -80,7 +80,7 @@ Every one is Visual C++ .NET 2003 (13.10.3077): `progress/COMPILERS.md`.
 | 7 | `apps`: the launcher `ContractJack.exe` and the dedicated server `ContractJackServer.exe` from NOLF2's Launcher and ServerApp | 2 | both build with retail's resources; `ContractJack.exe` 284/344 identical (98.9%), `ContractJackServer.exe` 550/644 (98.0%): what is left is ButeMgr's register allocation and EH funclets (below) |
 | 8 | `boot`: the built binaries in the game under Wine, to the menu, a level, saving and loading (`make test`, ext/tools/playtest.sh) | 3-7 | single player boots to the menu, plays M01S01, quicksaves and quickloads; the dedicated server hosts a deathmatch world; our client and retail's join it as far as the loading screen (below) |
 | 9 | `match`: byte-matching, module by module, ratcheted by `make progress` | 3-7 | |
-| 10 | `modern`: the modern build (`CJACK_MODERN`): fixes (`RETAIL_BUGS.md`), widescreen, our Bink player on FFmpeg, as nolf2src's | 8 | |
+| 10 | `modern`: the modern build (`CJACKSRC_MODERN`): fixes (`RETAIL_BUGS.md`), widescreen, our Bink player on FFmpeg, as nolf2src's | 8 | |
 | 11 | `release`: `-private`/`-public` archives, install scripts from the player's own discs and 1.1 update (`ext/tools/mkinstall.py`), and the GitHub Actions workflow building the four public archives with `make progress` on the legacy release | 8, 10 | the machinery and the run scripts are done (below) |
 
 ## Notes per package
@@ -117,7 +117,7 @@ Done.
   what is missing.
 - The tools environment (`build/env.sh`): `run_cl`, `run_link`, `run_lib`,
   `run_rc` with `msvc-7.10-3077`; `CJACKSRC_CFLAGS` and friends for the
-  variants, `CJACK_MODERN`/`CJACK_DEBUG` resolved out of the release tree
+  variants, `CJACKSRC_MODERN`/`CJACKSRC_DEBUG` resolved out of the release tree
   (`ext/tools/releasesrc.py`, `RELEASESRC_VARIANTS`).
 - To do: `src/Game/TO2.dsw` (package 4), `build/variant.sh`,
   `build/package.sh`, the game's run scripts.
@@ -1027,7 +1027,7 @@ early-out-visible subtree path), the twelve shader Flush instances and
 the shaders' template members (Lock, AddSection, InitRenderBlocks,
 SortSections and the inlined sort helpers: CJ compares the worlds of two
 sections after the base sections' less-than, without an inequality test,
-RETAIL_BUGS.md, fixed under CJACK_MODERN as MODERN.md EN-1); batch breaks
+RETAIL_BUGS.md, fixed under CJACKSRC_MODERN as MODERN.md EN-1); batch breaks
 after lit render blocks; the player mover's blocker collision through
 WorldPolys; the engine's ltmem (ltmemstats/ltmemtrack/ltmemheap of the
 2006 tree, library /Ox /GF, SndDrv.dll unchanged at 225); StdLith and Lith
@@ -1054,9 +1054,9 @@ BlitRequest), the D3D format tables (W11V11U10), RunClientApp's window
 icons, ps_UpdateParticleBoundingBox, FillPacketFromInfo's new-object
 rotation and prediction cap, cis_MaskedDraw (16-bit only), the music
 manager (no COM set-up in its thread). Retail bugs listed and fixed under
-CJACK_MODERN: ShowVersionInfo calls a NULL GetVersionInfoExt (EN-3), the
+CJACKSRC_MODERN: ShowVersionInfo calls a NULL GetVersionInfoExt (EN-3), the
 music thread's handle leaks (EN-4), a failed transition segment crashes
-(EN-5); client.cpp's NOLF2SRC_MODERN blocks are CJACK_MODERN (EN-2).
+(EN-5); client.cpp's NOLF2SRC_MODERN blocks are CJACKSRC_MODERN (EN-2).
 **The game against the engine** (master's game DLLs built with this
 engine): every interface holder the game's DLLs define is implemented by
 the engine or a game DLL (ILTModelClient through `implements_also`), with
@@ -1161,7 +1161,7 @@ past MaxExtrapolateDist, the shaders' fullbright draw-range reset,
 AllocShader through the main world, DEBUG_PRINT for several console
 messages, resize(0) where CJ empties vectors (only where retail shows it:
 a blanket change lost 38 functions), and smaller ones. Retail bugs kept
-and fixed under CJACK_MODERN: batched POLYGT4 quads lose their vertex
+and fixed under CJACKSRC_MODERN: batched POLYGT4 quads lose their vertex
 colours (EN-6), SoundSys calls Term through a null driver (EN-7),
 DrawPrim's viewport of undefined size (EN-8); EN-9 keeps the screen's
 aspect for the player-view model.
@@ -1420,7 +1420,7 @@ NOLF2's file order. Recorded: the launcher 284 of 344 functions identical (98.9%
   hash is `5 * hash + tolower(c)`, and its string holder is a
   `stdext::hash_set<std::string>` (case sensitive, the standard library's
   hash and less) whose strings the items point to.
-- **Retail bugs** (`RETAIL_BUGS.md`, fixed under `CJACK_MODERN`, MODERN.md
+- **Retail bugs** (`RETAIL_BUGS.md`, fixed under `CJACKSRC_MODERN`, MODERN.md
   APPS-1..3): the launcher's path overrun, its find handles, the server
   console's formats.
 - **Where it stops**: the launcher's code is all placed (the 60 `small`
@@ -1926,7 +1926,7 @@ another pairing) or not, then the exclusion file for the compiler's own.
 
 - `build/package.sh` makes `<dir>-private.tar.gz` and `-public.tar.gz` for
   every variant (`build/variant.sh`: debug, modern, modern-debug, with
-  `CJACK_DEBUG`/`CJACK_MODERN`). `ext/tools/mkinstall.py` reads CJ's discs and
+  `CJACKSRC_DEBUG`/`CJACKSRC_MODERN`). `ext/tools/mkinstall.py` reads CJ's discs and
   update from `build/retail.py` (`INSTALL_*`): the public archive's
   `linux-install.sh` was checked to rebuild the private directory byte for
   byte from the European discs (`.iso`) and from the USA discs (disc 1 as

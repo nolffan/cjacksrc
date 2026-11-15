@@ -196,7 +196,7 @@ void CHUDAmmo::UpdateLayout()
 	int nCurrentLayout = GetConsoleInt("HUDLayout",0);
 
 	m_BasePos		= g_pLayoutMgr->GetAmmoBasePos(nCurrentLayout);
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	m_BasePos.x += g_pInterfaceResMgr->GetHUDBaseShift(m_BasePos.x);	// MODERN.md CL-30
 #endif
 

@@ -116,7 +116,7 @@ ILTSoundSys* SoundSys(bool bTerminate)
 				// grab the default snddrv.dll NOTE: does't call Init on it. 
 				g_pSoundSys = ILTSoundFactory::GetSoundFactory()->MakeSoundSystem(LTNULL);
 
-#ifndef CJACK_MODERN
+#ifndef CJACKSRC_MODERN
 				// RETAIL: when there is no default driver either, Term is
 				// called through the null pointer (Lithtech.exe 0x49bd0b;
 				// RETAIL_BUGS.md, MODERN.md EN-7)
@@ -2998,7 +2998,7 @@ LTRESULT CSoundMgr::SetSoundFilter(const char *pFilter)
 	{
 		m_FilterData.bUseFilter = false;
 		m_FilterData.uiFilterType = NULL_FILTER;
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 		// MODERN.md M-E11: the check names its own function
         RETURN_ERROR(1, CSoundMgr::SetSoundFilter, LT_NOTFOUND);
 #else

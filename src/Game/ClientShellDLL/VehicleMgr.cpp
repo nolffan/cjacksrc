@@ -30,7 +30,7 @@
 #include "PlayerViewAttachmentMgr.h"
 #include "VehicleButeMgr.h"
 #include "HUDMgr.h"
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 // MODERN.md CL-20: the controller's left stick on the snowmobile
 #include "xinput/clientpad.h"
 #endif
@@ -541,7 +541,7 @@ void CVehicleMgr::UpdateSnowmobileControlFlags()
 		m_dwControlFlags |= BC_CFLG_ALT_FIRING;
 	}
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md CL-20: the controller's left stick: throttle, brake and
 	// steering
 	Pad_VehicleFlags(&m_dwControlFlags);
@@ -964,7 +964,7 @@ void CVehicleMgr::UpdateVehicleMotion()
 
 	// Limit velocity...
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md CL-43: as the player's walk (CL-41, CMoveMgr::
 	// UpdateNormalMotion): the cap is applied at the start of a frame and
 	// the acceleration takes the speed past it during the frame, so the

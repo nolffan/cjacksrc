@@ -89,7 +89,7 @@ class CWinSync_PulseEvent : public CWinSync_Event
 {
 public:
 	CWinSync_PulseEvent() {
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 		// CWinSync_Event's constructor made a manual-reset event already:
 		// close it rather than leak it (RETAIL_BUGS.md).
 		CloseHandle(GetEvent());

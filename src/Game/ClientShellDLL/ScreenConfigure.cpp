@@ -16,7 +16,7 @@
 #include "dinput.h"
 #include "InterfaceMgr.h"
 #include "GameClientShell.h"
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 // MODERN.md CL-22: the controller's menu keys wait while a control is bound
 #include "xinput/clientpad.h"
 #endif
@@ -99,7 +99,7 @@ void CScreenConfigure::Escape()
 LTBOOL   CScreenConfigure::Init(int nScreenID)
 {
 	LoadString(IDS_DEVICE_MOUSE,strDeviceNiceName[1],sizeof(strDeviceNiceName[1]));
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md CL-23: the third column is the controller ("Controller A
 	// Button")
 	LoadString(IDS_MODERN_PAD_DEVICE,strDeviceNiceName[2],sizeof(strDeviceNiceName[2]));
@@ -465,7 +465,7 @@ void CScreenConfigure::Bind(int nCommand, uint32 nDeviceObjectId, uint16 nContro
 	{
 		pData->nDeviceObjectId[dev] = nDeviceObjectId;
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 		// MODERN.md CL-24: a key is bound by its scan code ("##57"), a
 		// joystick's or a gamepad's control by its name. Retail's test let a
 		// gamepad's button be bound by its instance number, which the
@@ -584,7 +584,7 @@ uint32 CScreenConfigure::OnCommand(uint32 dwCommand, uint32 dwParam1, uint32 dwP
 			else
 			{
                 m_bWaitingForKey = LTTRUE;
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 				// MODERN.md CL-22: the controller's buttons are to be bound
 				// now, not taken as menu keys
 				Pad_SetCapture(true);
@@ -633,7 +633,7 @@ LTBOOL CScreenConfigure::Render(HSURFACE hDestSurf)
                         m_bWaitingForKey = LTFALSE;
                         g_pLTClient->EndDeviceTrack();
 						m_fInputPauseTimeLeft = 0.2f;
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 						Pad_SetCapture(false);
 #endif
 					}

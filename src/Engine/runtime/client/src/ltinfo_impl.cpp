@@ -72,7 +72,7 @@ LTRESULT in_GetPerformanceInfo(LTPERFORMANCEINFO* pPerformanceInfo)
 
 	// Make sure structure size is what we're expecting
 	if (sizeof(LTPERFORMANCEINFO) != pPerformanceInfo->m_dwSize)
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 		// MODERN.md M-E11: the check names its own function
 		RETURN_ERROR(1, ClientDE::GetPerformanceInfo, LT_INVALIDPARAMS);
 #else

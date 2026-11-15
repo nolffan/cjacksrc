@@ -77,7 +77,7 @@ LTBOOL CScreenControls::Build()
 	// keyboard
 	AddTextItem(IDS_KEYBOARD, CMD_KEYBOARD, IDS_HELP_KEYBOARD);
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md CL-23: no "Use joystick" and "Configure joystick": the
 	// controller (EN-20) is the only joystick (EN-21), always on, and its
 	// sticks are the client's; its own screen is the joystick screen,
@@ -179,7 +179,7 @@ void CScreenControls::OnFocus(LTBOOL bFocus)
 
 		m_bUseJoystick = pProfile->m_bUseJoystick;
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 		// CL-23: the controller's screen is always there
 		m_pJoystickCtrl->Enable(LTTRUE);
 #else

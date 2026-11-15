@@ -11,13 +11,15 @@
 # with Contract J.A.C.K.'s names in place of NOLF2's: the command file
 # cjackcmds.txt (build/cjackcmds.sh), the game directory
 # out/cjack-legacy-release, the first single-player world
-# Worlds\RetailSinglePlayer\M01S01. The adapted copy is written to
+# Worlds\RetailSinglePlayer\M01S01, the test pad's variable CJACKSRC_PADTEST
+# (src/cjacksrc/xinput/padread.h). The adapted copy is written to
 # out/play/playtest-cjack.sh each run; ext/tools/ is not changed.
 set -u
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 mkdir -p "$REPO/out/play"
 OUT="$REPO/out/play/playtest-cjack.sh"
 sed -e 's/nolf2cmds\.txt/cjackcmds.txt/g' \
+    -e 's/NOLF2SRC_PADTEST/CJACKSRC_PADTEST/g' \
     -e 's#out/nolf2-legacy-release#out/cjack-legacy-release#g' \
     -e 's#Worlds\\\\RetailSinglePlayer\\\\C01S01#Worlds\\\\RetailSinglePlayer\\\\M01S01#' \
     -e 's#^REPO=.*#REPO="'"$REPO"'"#' \

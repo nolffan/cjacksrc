@@ -55,7 +55,7 @@ END
 
 IDC_POINTER             CURSOR  DISCARDABLE     "..\\..\\arrow.cur"
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 /////////////////////////////////////////////////////////////////////////////
 //
 // MODERN.md CL-32, CL-35, CL-40: the Display screen's modern strings
@@ -958,7 +958,7 @@ BEGIN
     IDS_DD_HVY_SCORE        "Heavy piece score"
     IDS_DD_HVY_SCORE_HELP   "Points recevived for placing a heavy piece of the device."
 END
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 // MODERN.md CL-23: the controller's strings
 STRINGTABLE DISCARDABLE
 BEGIN

@@ -273,7 +273,7 @@ protected:
 	LTIntPt			m_nextPos;
 
 	LTFLOAT			m_fLastScale;
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	int				m_nLastXOffset;		// MODERN.md CL-30: the page's margin at the last layout
 #endif
     LTBOOL			m_bSelectFXCenter;

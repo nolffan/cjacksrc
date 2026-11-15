@@ -6,13 +6,13 @@
  * the sticks (analog look and movement, the snowmobile), the keys the menus
  * and screens take, A in a cut-scene and on the death screen, and the
  * choices of a dialogue decision. The retail files call into these from
- * CJACK_MODERN blocks; clientpad.cpp, the implementation, is compiled as
+ * CJACKSRC_MODERN blocks; clientpad.cpp, the implementation, is compiled as
  * part of GameClientShell.cpp.
  *
- * Modern build only (CJACK_MODERN).
+ * Modern build only (CJACKSRC_MODERN).
  */
-#ifndef CJACK_CLIENTPAD_H
-#define CJACK_CLIENTPAD_H
+#ifndef CJACKSRC_CLIENTPAD_H
+#define CJACKSRC_CLIENTPAD_H
 
 class CUserProfile;
 
@@ -53,4 +53,4 @@ void	Pad_SetCapture(bool bCapture);
 // defaults)
 void	Pad_DefaultBindings(CUserProfile* pProfile, bool bReplace);
 
-#endif // CJACK_CLIENTPAD_H
+#endif // CJACKSRC_CLIENTPAD_H

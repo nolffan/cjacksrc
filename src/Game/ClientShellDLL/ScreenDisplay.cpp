@@ -88,7 +88,7 @@ namespace
 		return slider;
 	}
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md CL-32: the window mode -- the engine's Windowed (0 full
 	// screen) and, for a window, WindowMode (1 framed, 2 borderless at the
 	// desktop's resolution; 0, unset, borderless only when as large as the
@@ -210,7 +210,7 @@ CScreenDisplay::CScreenDisplay()
 
     m_pResolutionCtrl   = LTNULL;
 	m_pHardwareCursor	= LTNULL;
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md CL-32, CL-35
 	m_pModernWindowMode		= LTNULL;
 	m_nModernWindowMode		= kModernFullScreen;
@@ -258,7 +258,7 @@ LTBOOL CScreenDisplay::Build()
 	// Setup the resolution control based on the current renderer
 	SetupResolutionCtrl();
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md CL-32: the window mode -- full screen, a window, or a
 	// borderless window, which is at the desktop's resolution (so the
 	// resolution is greyed out for it)
@@ -273,7 +273,7 @@ LTBOOL CScreenDisplay::Build()
 
 	AddToggle(IDS_VSYNC,IDS_HELP_VSYNC,kGap,&m_bVSync);
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md CL-40: the frame rate limit (MaxFPS: EN-40)
 	CLTGUICycleCtrl *pModernLimit = AddCycle(IDS_MODERN_FRAMELIMIT,IDS_HELP_MODERN_FRAMELIMIT,kGap,&m_nModernFrameLimit);
 	for (int nLimit = 0; nLimit < kNumModernFrameLimits; nLimit++)
@@ -307,7 +307,7 @@ LTBOOL CScreenDisplay::Build()
 	pBar->SetScale(g_pInterfaceResMgr->GetXRatio());
 	AddControl(pBar);
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md CL-35: cutscenes in 4:3 on a wide screen
 	CLTGUIToggle *pModernCine = AddToggle(IDS_MODERN_CINEMATICS43,IDS_HELP_MODERN_CINEMATICS43,kGap,&m_bModernCinematics43);
 
@@ -338,7 +338,7 @@ void CScreenDisplay::Escape()
 
 uint32 CScreenDisplay::OnCommand(uint32 dwCommand, uint32 dwParam1, uint32 dwParam2)
 {
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md CL-32: a borderless window is at the desktop's resolution
 	if (dwCommand == CMD_UPDATE)
 	{
@@ -434,7 +434,7 @@ void CScreenDisplay::GetRendererData()
 		{
 			// disallow non-standard aspect ratios
 			uint32 testWidth = (pCurrentMode->m_Height * 4 / 3);
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 			// MODERN.md CL-31: widescreen resolutions. Every mode at least as
 			// wide as 4:3 (the engine widens the view to match, EN-30); only
 			// the narrower ones (5:4) are still left out.
@@ -571,7 +571,7 @@ void CScreenDisplay::OnFocus(LTBOOL bFocus)
 		
 
 		m_pHardwareCursor->Enable(GetConsoleInt("DisableHardwareCursor",0) == 0);
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 		ModernReadOptions();	// MODERN.md CL-32, CL-35, CL-40
 #endif
 
@@ -611,7 +611,7 @@ void CScreenDisplay::OnFocus(LTBOOL bFocus)
 			pProfile->m_bVSync = m_bVSync;
 			pProfile->m_fGamma = ConvertToGamma(m_nGamma);
 			// Set the render mode if we are losing focus
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 			// MODERN.md CL-31: and only if one is listed: with none (a
 			// display whose only modes are narrower than 4:3) retail read the
 			// empty list at index -1
@@ -629,12 +629,12 @@ void CScreenDisplay::OnFocus(LTBOOL bFocus)
 				pProfile->m_nScreenDepth = newMode.m_BitDepth;
 			}
 	
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 			// MODERN.md CL-32: a new window mode sets the mode itself
 			bool bModernNewWindow = ModernPrepareWindowMode(pProfile);
 #endif
 			pProfile->ApplyDisplay();
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 			ModernApplyOptions(bModernNewWindow);	// MODERN.md CL-32, CL-35, CL-40
 #endif
 					
@@ -838,7 +838,7 @@ void CScreenDisplay::ConfirmHardwareCursor(LTBOOL bReturn)
 	UpdateData(LTFALSE);
 }
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 // MODERN.md CL-32, CL-35, CL-40: the modern options' current values
 void CScreenDisplay::ModernReadOptions()
 {

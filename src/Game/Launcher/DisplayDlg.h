@@ -59,7 +59,7 @@ protected:
 	afx_msg void OnSelchangeRendererList();
 	afx_msg void OnSelchangeResolutionList();
 	//}}AFX_MSG
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md APPS-31: the window mode
 	afx_msg void OnSelchangeModernWindowModeList();
 	void ModernEnableResolutions();

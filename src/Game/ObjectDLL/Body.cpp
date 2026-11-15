@@ -252,7 +252,7 @@ void Body::RemovePowerupObjects()
 				g_pLTServer->RemoveAttachment(hAttachment);
 			}
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 			// MODERN.md GAME-4: the spear's own touch notify.
 			g_pCommonLT->SetObjectFlags(m_ahSpears[iSpear], OFT_Flags, 0, FLAG_TOUCH_NOTIFY);
 #else

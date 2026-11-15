@@ -639,7 +639,7 @@ CGameSpyBrowser::~CGameSpyBrowser( )
 // RETAIL: 0x100021b0
 CGameSpyBrowser::CGameSpyBrowser( StartupInfo const& startupInfo )
 {
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// Set before anything can fail, for the destructor (RETAIL_BUGS.md).
 	m_hThread = NULL;
 	m_hServerBrowser = NULL;

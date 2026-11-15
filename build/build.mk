@@ -27,7 +27,7 @@
 #
 # From the environment (build/variant.sh sets them; empty for the release
 # build, whose command lines are then exactly the project files' ones):
-#   CJACKSRC_CFLAGS   appended to every compile (/D CJACK_MODERN, /Z7 ...)
+#   CJACKSRC_CFLAGS   appended to every compile (/D CJACKSRC_MODERN, /Z7 ...)
 #   CJACKSRC_LDFLAGS  put first on every link
 #   CJACKSRC_RCFLAGS  put first on every resource compile
 
@@ -186,7 +186,7 @@ endef
 
 # Modern builds link both names from the same launcher objects. At startup
 # the original game filename selects direct launch; *Launcher.exe selects UI.
-MODERN_LAUNCHER := $(findstring CJACK_MODERN,$(CJACKSRC_CFLAGS))
+MODERN_LAUNCHER := $(findstring CJACKSRC_MODERN,$(CJACKSRC_CFLAGS))
 define binary
 $(call link_binary,$(1),$(2),$(3),$(4),$(5),$(6))
 $(if $(and $(MODERN_LAUNCHER),$(filter %/ContractJack.exe,$(1))),$(call link_binary,$(patsubst %.exe,%Launcher.exe,$(1)),$(2),$(subst ContractJack.exe,ContractJackLauncher.exe,$(3)),$(4),$(5),$(6)))

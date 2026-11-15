@@ -284,7 +284,7 @@ void CHUDRadar::UpdateLayout()
 	// Use the compass values to determine where the radar should go...
 
 	m_BasePos		= g_pLayoutMgr->GetCompassPos( nCurrentLayout );
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	m_BasePos.x += g_pInterfaceResMgr->GetHUDBaseShift(m_BasePos.x);	// MODERN.md CL-30
 #endif
 	m_nBaseSize		= g_pLayoutMgr->GetCompassSize( nCurrentLayout );

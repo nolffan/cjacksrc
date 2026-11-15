@@ -36,7 +36,7 @@ static char THIS_FILE[] = __FILE__;
 #define DD_RESOLUTION_LIST_X		16
 #define DD_RESOLUTION_LIST_Y		73
 #define DD_RESOLUTION_LIST_WIDTH	133
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 // MODERN.md APPS-31: the window mode's list under the resolutions, in the
 // bottom of their box
 #define DD_RESOLUTION_LIST_HEIGHT	188
@@ -91,7 +91,7 @@ BEGIN_MESSAGE_MAP(CDisplayDlg, CMoveDialog)
 	ON_BN_CLICKED(IDC_DD_CANCEL, OnCancel)
 	ON_BN_CLICKED(IDC_DD_CLOSE, OnClose)
 	//}}AFX_MSG_MAP
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	ON_LBN_SELCHANGE(IDC_MODERN_WINDOWMODE_LIST, OnSelchangeModernWindowModeList)
 #endif
 END_MESSAGE_MAP()
@@ -161,7 +161,7 @@ BOOL CDisplayDlg::OnInitDialog()
 	g_pDisplayMgr->FillListBoxes(GetDlgItem(IDC_RENDERER_LIST)->GetSafeHwnd(), GetDlgItem(IDC_DISPLAY_LIST)->GetSafeHwnd(), GetDlgItem(IDC_RESOLUTION_LIST)->GetSafeHwnd());
 	g_pDisplayMgr->UpdateListSelections(GetDlgItem(IDC_RENDERER_LIST)->GetSafeHwnd(), GetDlgItem(IDC_DISPLAY_LIST)->GetSafeHwnd(), GetDlgItem(IDC_RESOLUTION_LIST)->GetSafeHwnd());
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md APPS-31: the window mode -- full screen, a window, or a
 	// borderless window, which is at the desktop's resolution (so the
 	// resolutions are greyed out for it)
@@ -193,7 +193,7 @@ HBRUSH CDisplayDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 		{
 			// Set color to green on black and return the background brush.
 			pDC->SetTextColor(crNormalText);
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 			// MODERN.md APPS-31: the resolutions, greyed out for a borderless
 			// window
 			if (pWnd && !pWnd->IsWindowEnabled())
@@ -221,7 +221,7 @@ void CDisplayDlg::OnOK()
 	if (g_pDisplayMgr)
 	{
 		g_pDisplayMgr->UpdateListSelections(GetDlgItem(IDC_RENDERER_LIST)->GetSafeHwnd(), GetDlgItem(IDC_DISPLAY_LIST)->GetSafeHwnd(), GetDlgItem(IDC_RESOLUTION_LIST)->GetSafeHwnd());
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 		// MODERN.md APPS-31: the window mode, kept only with OK
 		CListBox* pModes = (CListBox*)GetDlgItem(IDC_MODERN_WINDOWMODE_LIST);
 		if (pModes && pModes->GetCurSel() != LB_ERR)
@@ -253,7 +253,7 @@ void CDisplayDlg::OnSelchangeResolutionList()
 {
 	g_pDisplayMgr->UpdateListSelections(GetDlgItem(IDC_RENDERER_LIST)->GetSafeHwnd(), GetDlgItem(IDC_DISPLAY_LIST)->GetSafeHwnd(), GetDlgItem(IDC_RESOLUTION_LIST)->GetSafeHwnd());
 }
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 // MODERN.md APPS-31: the window mode's list
 void CDisplayDlg::OnSelchangeModernWindowModeList()
 {

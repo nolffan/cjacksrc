@@ -23,8 +23,7 @@ the attribution is the header's own testimony.
 
 The rows at builds 2067 and 2179 (tools 0x5d and 0x69) in every binary come
 with Visual C++ .NET 2003's own libraries: a test program built with
-`msvc-7.10-3077` against `msvcrt.lib` has the 0x5d ones too
-(`ext/toolchains/COMPILERS.md`). The 1.1 update rebuilt only the engine
+`msvc-7.10-3077` against `msvcrt.lib` has the 0x5d ones too. The 1.1 update rebuilt only the engine
 (`Lithtech.exe`, `server.dll`), the launcher, the dedicated server,
 `GameSpy.dll`, `CShell.dll`, `Object.lto` and `CRes.dll`; `SndDrv.dll`,
 `ltmsg.dll`, `ClientFx.fxd` and `SRes.dll` are 1.0's.

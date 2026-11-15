@@ -46,7 +46,7 @@
 #include "PlayerViewAttachmentMgr.h"
 #include "LTEulerAngles.h"
 #include "TO2HUDMgr.h"
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 // MODERN.md CL-20: the controller's right stick
 #include "xinput/clientpad.h"
 #endif
@@ -2842,7 +2842,7 @@ void CPlayerMgr::UpdateCameraZoom()
 
 	if (fOldFovX != fovX)
 	{
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 		// MODERN.md CL-34: the zoomed view keeps the normal view's shape.
 		// Retail scaled the vertical angle with the horizontal one (fovY =
 		// fovX * FovY / FovX), but a view's shape is the ratio of the
@@ -3796,7 +3796,7 @@ void CPlayerMgr::CalculateCameraRotation()
 		// Clear yaw and pitch offsets if we're using mouse strafing...
 		offsets[0] = offsets[1] = 0.0f;
 	}
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md CL-20: the controller's right stick turns with the mouse
 	// (and slows with the zoom as it does); its look up and down is added
 	// below, apart from the mouse's look and invert settings
@@ -3890,7 +3890,7 @@ void CPlayerMgr::CalculateCameraRotation()
 			fPitch += Min(fAutoDelta, fNegPitch);
 		}
 	}
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// CL-20: the stick's look up and down (first person only, as the
 	// third person's view is held near level above)
 	if (m_pPlayerCamera->IsFirstPerson())

@@ -33,7 +33,7 @@
 #include "TargetMgr.h"
 #include "GadgetDisabler.h"
 #include "VolumeBrushFX.h"
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 // MODERN.md CL-20: the controller's left stick
 #include "xinput/clientpad.h"
 
@@ -275,7 +275,7 @@ void CMoveMgr::InitWorldData()
     m_bSwimmingOnSurface    = LTFALSE;
     m_bSwimmingJump         = LTFALSE;
     m_bCanSwimJump          = LTFALSE;
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	s_fModernSurfaced		= 0.0f;	// MODERN.md CL-42
 #endif
 	m_hStandingOnPoly		= INVALID_HPOLY;
@@ -540,7 +540,7 @@ void CMoveMgr::UpdateNormalControlFlags()
 		m_dwControlFlags |= BC_CFLG_STRAFE_LEFT;
 	}
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md CL-20: the controller's left stick: its direction, and
 	// walking or running by how far it is pushed (not while ducking or
 	// leaning, as above)
@@ -723,7 +723,7 @@ void CMoveMgr::UpdateInLiquid(CContainerInfo *pInfo)
 
 		if (bMoving)  // Turn off y acceleration and velocity
 		{
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 			// MODERN.md CL-42: the rise stopped here the frame after the
 			// head (the camera, a frame late) broke the surface, so the
 			// faster the frame rate the lower the player floated, and a
@@ -1152,7 +1152,7 @@ void CMoveMgr::UpdateMotion()
 
 		// Dampen velocity...
 		g_pPhysicsLT->GetVelocity(m_hObject, &vVec);
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 		// MODERN.md CL-41: halved a 60th of a second, whatever the frame
 		// rate (retail: every frame)
 		float fModernDamp = (float)pow(0.5, (double)ModernFrame60ths());
@@ -1266,7 +1266,7 @@ void CMoveMgr::UpdateNormalMotion()
 
 	// Limit velocity...
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md CL-41: the cap is applied at the start of a frame and the
 	// acceleration takes the speed past it during the frame, so the faster
 	// the frame rate the slower the walk. The cap is applied once a 60th
@@ -1357,7 +1357,7 @@ void CMoveMgr::UpdateNormalMotion()
 	if ((IsLiquid(m_eLastContainerCode) && !bHeadInLiquid) && !m_bOnGround && !m_bBodyOnLadder )
 	{
         m_bSwimmingOnSurface = LTTRUE;
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 		s_fModernSurfaced = 0.0f;	// MODERN.md CL-42: see UpdateInLiquid
 #endif
 	}
@@ -1451,7 +1451,7 @@ void CMoveMgr::UpdateNormalMotion()
 
 	if (!g_pPlayerMgr->IsPlayerDead())
 	{
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 		// MODERN.md CL-20: the controller's left stick accelerates the way
 		// it points, at the full rate (its deflection is the speed:
 		// GetMaxVelMag), instead of by the flags' octant; up and down in
@@ -1515,7 +1515,7 @@ void CMoveMgr::UpdateNormalMotion()
 		}
 
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 		if (!bPadMove && (m_dwControlFlags & BC_CFLG_STRAFE_LEFT))
 		{
 			vAccel -= (vRight * fMoveAccel);
@@ -1567,7 +1567,7 @@ void CMoveMgr::UpdateNormalMotion()
 		if (bOkayToJump)
 		{
 			vel.y = fJumpVel;
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 			// MODERN.md CL-41: the engine's physics takes each frame's
 			// gravity off the speed before it moves the player by it, so a
 			// jump peaks about half a frame's fall lower than v*v/2g: 69
@@ -1605,7 +1605,7 @@ void CMoveMgr::UpdateNormalMotion()
 
 	if (g_pPlayerMgr->IsSpectatorMode())
 	{
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 		// MODERN.md CL-41: 0.9 a 60th of a second, whatever the frame rate
 		vel *= (float)pow(0.9, (double)ModernFrame60ths());
 #else
@@ -1903,7 +1903,7 @@ void CMoveMgr::UpdatePushers()
 						}
 
 						pushVec = myPos - pPusher->m_Pos;
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 						// MODERN.md CL-41: a push is added every frame
 						// for as long as the pusher lasts (a vehicle's
 						// impact, an explosion's); the retail amount a
@@ -2131,7 +2131,7 @@ void CMoveMgr::MoveLocalSolidObject()
 	info.m_dt = g_pGameClientShell->GetFrameTime();
 	pPhysics->UpdateMovement(&info);
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md CL-41: a frame's move under 0.1 is dropped: under 6 units
 	// a second at 60 frames a second, under 30 at 300 (a crouching walk at
 	// 1000 is under it). The threshold is the 60 fps one's share of this
@@ -2166,7 +2166,7 @@ void CMoveMgr::MoveLocalSolidObject()
 		// you should be sliding on, but you're blocked, so gravity keeps
 		// getting applied to the velocity.  Only do this if the UpdateMovement
 		// affected our y direction.
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 		if ( fabsf( info.m_Offset.y ) > 0.01f * ModernFrame60ths() && fabsf(vDesiredPos.y - newPos.y) > vDims.y)
 #else
 		if ( fabsf( info.m_Offset.y ) > 0.01f && fabsf(vDesiredPos.y - newPos.y) > vDims.y)
@@ -2873,7 +2873,7 @@ LTFLOAT CMoveMgr::GetMaxVelMag() const
 			{
 				fMaxVel = m_fWalkVel;
 			}
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 			// MODERN.md CL-20: the controller's left stick, part way,
 			// walks slower
 			if (fMaxVel == m_fWalkVel)

@@ -20,7 +20,7 @@
 #                               contract-jack-eu contract-jack-us); without
 #                               them it is skipped.
 #
-# CJACK_ARCHIVES (default "private public") says which to write; with
+# CJACKSRC_ARCHIVES (default "private public") says which to write; with
 # "public" alone (the CI build, .github/workflows/public-archives.yml) the
 # private one is not made, and no disc images is an error, not a skip.
 #
@@ -45,7 +45,7 @@ NAME="$(basename "$OUT")"
 PARENT="$(dirname "$OUT")"
 PKG="$PARENT/$NAME-private.tar.gz"
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ARCHIVES=" ${CJACK_ARCHIVES:-private public} "
+ARCHIVES=" ${CJACKSRC_ARCHIVES:-private public} "
 
 # The fresh files, staged beside the directory and renamed into it.
 STAGE=".pkg-$NAME"
@@ -78,8 +78,8 @@ fi
 PUB="$PARENT/$NAME-public.tar.gz"
 rc=0
 python3 "$HERE/../ext/tools/mkinstall.py" "$OUT" "$PARENT/$STAGE" || rc=$?
-if [ $rc = 3 ] && [ -n "${CJACK_ARCHIVES:-}" ]; then
-    echo "   $PUB: no disc images, but CJACK_ARCHIVES asks for it" >&2
+if [ $rc = 3 ] && [ -n "${CJACKSRC_ARCHIVES:-}" ]; then
+    echo "   $PUB: no disc images, but CJACKSRC_ARCHIVES asks for it" >&2
     exit 1
 elif [ $rc = 3 ]; then
     echo "   $PUB: skipped (no disc images)"

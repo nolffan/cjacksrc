@@ -12,7 +12,7 @@
 #include "3d_ops.h"
 #include "d3d_texture.h"
 #include "d3dmeshrendobj_rigid.h"
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 #include "modernframelog.h"
 #endif
 #include "d3dmeshrendobj_skel.h"
@@ -96,7 +96,7 @@ void CD3D_Device::TryFallingBack_OnFailedDevCreate(D3DPRESENT_PARAMETERS* pPrese
 	uint32 iBitCount, iAlphaMask, iRedMask, iGreenMask, iBlueMask;
 	d3d_GetColorMasks(pPresentationParam->BackBufferFormat,iBitCount,iAlphaMask,iRedMask,iGreenMask,iBlueMask);
 	pPresentationParam->AutoDepthStencilFormat = GetDefaultDepthStencilFormat(iBitCount,g_CV_StencilBitDepth);
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// M-E13: and without antialiasing, with retail's swap effect and flags.
 	if (pPresentationParam->MultiSampleType != D3DMULTISAMPLE_NONE)
 	{
@@ -264,7 +264,7 @@ void CD3D_Device::SetPresentationParams(D3DPRESENT_PARAMETERS& PresentationParam
 	D3DSWAPEFFECT	SwapEffect		= D3DSWAPEFFECT_DISCARD;
 	uint32			BackBufferCount	= g_CV_BackBufferCount;
 	if (g_bRunWindowed || g_CV_ForceSwapEffectBlt) { SwapEffect = D3DSWAPEFFECT_COPY; BackBufferCount = 1; }
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md M-E13: antialiasing in a window too. Direct3D 8 multisamples
 	// only with the discard swap effect, and retail gave a window the copy
 	// effect whatever AntiAliasFSOverSample asked for; with antialiasing on
@@ -291,7 +291,7 @@ void CD3D_Device::SetPresentationParams(D3DPRESENT_PARAMETERS& PresentationParam
 	PresentationParam.Flags								= g_CV_LockableBackBuffer.m_Val ? D3DPRESENTFLAG_LOCKABLE_BACKBUFFER : 0;
 	PresentationParam.FullScreen_RefreshRateInHz		= D3DPRESENT_RATE_DEFAULT; //D3DPRESENT_RATE_UNLIMITED
 	PresentationParam.FullScreen_PresentationInterval	= (g_bRunWindowed || g_CV_VSyncOnFlip.m_Val) ? D3DPRESENT_INTERVAL_DEFAULT : D3DPRESENT_INTERVAL_IMMEDIATE;
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md EN-43: Wine uses this interval for windowed presents too.
 	// DEFAULT can wait for the monitor even with VSyncOnFlip off (including
 	// a borderless window). Ask explicitly for no wait there. Native D3D8
@@ -501,7 +501,7 @@ void CD3D_Device::SetDefaultRenderStates()
 		{
 			D3D_CALL(PD3DDEVICE->SetTextureStageState(nCurrStage, D3DTSS_MINFILTER, D3DTEXF_ANISOTROPIC));
 			D3D_CALL(PD3DDEVICE->SetTextureStageState(nCurrStage, D3DTSS_MAGFILTER, D3DTEXF_ANISOTROPIC));
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 			// MODERN.md M-G45: held to what the card can do
 			uint32 nModernAniso = (uint32)g_CV_Anisotropic.m_Val;
 			if (m_DeviceCaps.MaxAnisotropy && nModernAniso > m_DeviceCaps.MaxAnisotropy)

@@ -211,7 +211,7 @@ CScreenJoin::CScreenJoin() :
 {
 	InitializeCriticalSection( &m_csServers );
 	m_bInternetOk = true;
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	InitializeCriticalSection( &m_csPendingServers );
 #endif
 }
@@ -223,7 +223,7 @@ CScreenJoin::~CScreenJoin()
 		Term( );
 
 	DeleteCriticalSection( &m_csServers );
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	DeleteCriticalSection( &m_csPendingServers );
 #endif
 }
@@ -234,7 +234,7 @@ void CScreenJoin::ClearServers()
 	if( m_bInit && m_pServerListCtrl )
 		m_pServerListCtrl->RemoveAll( );
 	m_cServers.clear( );
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	EnterCriticalSection( &m_csPendingServers );
 	m_cPendingServers.clear( );
 	LeaveCriticalSection( &m_csPendingServers );
@@ -940,7 +940,7 @@ void CScreenJoin::OnServerInfo( IGameSpyBrowser& gameSpyBrowser, void* hGameServ
 	if( pScreen->m_sSelectedServer.length( ))
 		sKey = pScreen->m_sSelectedServer;
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// RETAIL_BUGS.md: retail takes the screen's lock here, on the browser's
 	// thread and holding the browser's locks, while the screen's render
 	// holds the screen's lock and asks the browsers for their status.
@@ -974,7 +974,7 @@ void CScreenJoin::OnServerInfo( IGameSpyBrowser& gameSpyBrowser, void* hGameServ
 	}
 }
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 // MODERN.md GAME-3: OnServerInfo's work on the screen's thread.
 void CScreenJoin::AddServer( std::string const& sKey, CServerEntry& cServer )
 {
@@ -1230,7 +1230,7 @@ void CScreenJoin::SetDetailErrorMessage(const char *szError)
 LTBOOL CScreenJoin::Render(HSURFACE hDestSurf)
 {
 	EnterCriticalSection( &m_csServers );
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	AddPendingServers();
 #endif
 	Update();
@@ -1459,7 +1459,7 @@ bool CScreenJoin::PreState_UpdateDir()
 
 	m_pServerListCtrl->RemoveAll();
 	m_cServers.clear();
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	EnterCriticalSection( &m_csPendingServers );
 	m_cPendingServers.clear( );
 	LeaveCriticalSection( &m_csPendingServers );

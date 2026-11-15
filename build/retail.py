@@ -73,15 +73,15 @@ rem It checks each file's SHA-256, copies the game's data out of them into
 rem this folder and checks every file it writes. Nothing is installed or run
 rem from them, and nothing else is changed.
 setlocal
-set "CJACK_SELF=%~f0"
-set "CJACK_PS1=%TEMP%\cjack-install-%RANDOM%%RANDOM%.ps1"
-powershell -NoProfile -ExecutionPolicy Bypass -Command "$t=[IO.File]::ReadAllText($env:CJACK_SELF); $m='#'+'__CJACK_PS__'; $a=$t.IndexOf($m); $b=$t.IndexOf($m,$a+1); [IO.File]::WriteAllText($env:CJACK_PS1,$t.Substring($a,$b-$a))"
+set "CJACKSRC_SELF=%~f0"
+set "CJACKSRC_PS1=%TEMP%\cjack-install-%RANDOM%%RANDOM%.ps1"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$t=[IO.File]::ReadAllText($env:CJACKSRC_SELF); $m='#'+'__CJACK_PS__'; $a=$t.IndexOf($m); $b=$t.IndexOf($m,$a+1); [IO.File]::WriteAllText($env:CJACKSRC_PS1,$t.Substring($a,$b-$a))"
 if errorlevel 1 goto failed
-powershell -NoProfile -ExecutionPolicy Bypass -File "%CJACK_PS1%" "%~f0" %*
-set "CJACK_RC=%errorlevel%"
-del "%CJACK_PS1%" 2>nul
+powershell -NoProfile -ExecutionPolicy Bypass -File "%CJACKSRC_PS1%" "%~f0" %*
+set "CJACKSRC_RC=%errorlevel%"
+del "%CJACKSRC_PS1%" 2>nul
 pause
-exit /b %CJACK_RC%
+exit /b %CJACKSRC_RC%
 :failed
 echo Could not start PowerShell.
 pause

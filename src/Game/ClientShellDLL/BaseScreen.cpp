@@ -135,7 +135,7 @@ CBaseScreen::CBaseScreen()
 	m_nNumAttachments = 0;
 
 	m_fLastScale = 1.0f;
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	m_nLastXOffset = 0;
 #endif
 	m_bSelectFXCenter = LTTRUE;
@@ -238,7 +238,7 @@ LTBOOL CBaseScreen::Init(int nScreenID)
 		
 		uint16 nWidth = (uint16)( (LTFLOAT)s_HelpWidth * g_pInterfaceResMgr->GetXRatio());
 		float helpX = (float)s_HelpRect.left * g_pInterfaceResMgr->GetXRatio();
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 		helpX += (float)g_pInterfaceResMgr->GetXOffset();	// MODERN.md CL-30
 #endif
 		float helpY = (float)s_HelpRect.top * g_pInterfaceResMgr->GetYRatio();
@@ -1561,7 +1561,7 @@ void CBaseScreen::OnFocus(LTBOOL bFocus)
 
 	if (bFocus)
 	{
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 		// CL-30: a wider screen of the same height moves the page
 		if (m_fLastScale != g_pInterfaceResMgr->GetXRatio() ||
 			m_nLastXOffset != g_pInterfaceResMgr->GetXOffset())
@@ -2080,7 +2080,7 @@ void CBaseScreen::UpdateHelpText()
 				s_pHelpStr->SetText(szHelpText);
 				uint16 nWidth = (uint16)( (LTFLOAT)s_HelpWidth * g_pInterfaceResMgr->GetXRatio());
 				float helpX = (float)s_HelpRect.left * g_pInterfaceResMgr->GetXRatio();
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 		helpX += (float)g_pInterfaceResMgr->GetXOffset();	// MODERN.md CL-30
 #endif
 				float helpY = (float)s_HelpRect.top * g_pInterfaceResMgr->GetYRatio();
@@ -2099,7 +2099,7 @@ void CBaseScreen::UpdateHelpText()
 void CBaseScreen::ScreenDimsChanged()
 {
 	m_fLastScale = g_pInterfaceResMgr->GetXRatio();
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	m_nLastXOffset = g_pInterfaceResMgr->GetXOffset();
 #endif
 	unsigned int i;
@@ -2121,7 +2121,7 @@ void CBaseScreen::ScreenDimsChanged()
 	{
 		uint16 nWidth = (uint16)( (LTFLOAT)s_HelpWidth * g_pInterfaceResMgr->GetXRatio());
 		float helpX = (float)s_HelpRect.left * g_pInterfaceResMgr->GetXRatio();
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 		helpX += (float)g_pInterfaceResMgr->GetXOffset();	// MODERN.md CL-30
 #endif
 		float helpY = (float)s_HelpRect.top * g_pInterfaceResMgr->GetYRatio();
@@ -2229,7 +2229,7 @@ void CBaseScreen::ScalePoly(LTPoly_GT4* pPoly, LTIntPt pos, HTEXTURE hTex)
 	float y = (float)pos.y * g_pInterfaceResMgr->GetXRatio();
 	float fw = (float)w * g_pInterfaceResMgr->GetXRatio();
 	float fh = (float)h * g_pInterfaceResMgr->GetXRatio();
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	x += (float)g_pInterfaceResMgr->GetXOffset();	// MODERN.md CL-30
 #endif
 

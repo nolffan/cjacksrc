@@ -8,7 +8,7 @@
  * system has; under Wine that is winemp3.acm, which plays the streamed
  * lines as a drone of their first samples. The modern build decodes MP3
  * itself, with minimp3 (minimp3/, CC0), so no codec is needed. s_dx8.cpp
- * calls these from CJACK_MODERN blocks, in place of its acmStream* calls
+ * calls these from CJACKSRC_MODERN blocks, in place of its acmStream* calls
  * for 0x55; IMA ADPCM still goes through ACM, as in retail.
  *
  * The output is what retail asked ACM for: 16-bit PCM at the file's rate,
@@ -20,10 +20,10 @@
  * of its own would have no place in it; and minimp3's macros stay out of
  * the retail code above it).
  *
- * Modern build only (CJACK_MODERN).
+ * Modern build only (CJACKSRC_MODERN).
  */
-#ifndef CJACK_MP3DECODE_H
-#define CJACK_MP3DECODE_H
+#ifndef CJACKSRC_MP3DECODE_H
+#define CJACKSRC_MP3DECODE_H
 
 // A sound loaded whole: the MP3 data of a WAV file (its format and its
 // data chunk) decoded at once. On success *ppPCM is the PCM, allocated with

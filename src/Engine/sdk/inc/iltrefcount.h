@@ -31,7 +31,7 @@ public:
 		if (m_pPtr)
 			m_pPtr->IncRef();
 	}
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// A copied reference owns its own count, just like a reference made
 	// from a raw pointer (MODERN.md EN-51).
 	CLTReference(const CLTReference &other) : m_pPtr(other.m_pPtr) {

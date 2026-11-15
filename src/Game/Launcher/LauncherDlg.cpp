@@ -249,7 +249,7 @@ BOOL CLauncherDlg::OnInitDialog()
 		GetDlgItem(IDC_UNINSTALL)->EnableWindow(FALSE);
 	}
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md APPS-5: Uninstall started the retail installer's setup.exe
 	// from InstallDir; a game that was never installed from the disc has
 	// none, and nothing to remove but its folder.
@@ -395,7 +395,7 @@ void CLauncherDlg::OnPlay()
 #define SELFINSTALL
 #endif // _FINAL
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 		// MODERN.md APPS-5: "Install" is offered only to a launcher with no
 		// Lithtech.exe beside it and no InstallDir in the registry. RETAIL:
 		// it started the disc's setup program, and without the disc said
@@ -821,7 +821,7 @@ void CLauncherDlg::OnDestroy()
 //
 // ----------------------------------------------------------------------- //
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 BOOL CLauncherDlg::LaunchDirect()
 {
 	// Honor the launcher's existing automatic multiplayer/server switches.
@@ -853,7 +853,7 @@ BOOL CLauncherDlg::LaunchGame(DWORD dwAction)
 	}
 
 	// See if we need to bring up the detail settings dialog box
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// Direct starts keep the profile/default performance settings.
 	if(!theApp.m_bDirectLaunch && ((!theApp.m_bHasProfile) || theApp.m_bRestoreDefaults))
 #else
@@ -889,7 +889,7 @@ BOOL CLauncherDlg::LaunchGame(DWORD dwAction)
 	// Get the install path from the registry...
 
 	CRegMgr32* pReg = &theApp.m_RegMgr;
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md APPS-5: the game directory is the one InitInstance chose
 	// (the launcher's own, or InstallDir); a missing key or InstallDir is
 	// no error. The key, if there is one, still names the updates' and the
@@ -990,7 +990,7 @@ BOOL CLauncherDlg::LaunchGame(DWORD dwAction)
 	sNewCmdLine += theApp.m_csRezBase;
 	sNewCmdLine += "l.rez";
 
-#ifndef CJACK_MODERN
+#ifndef CJACKSRC_MODERN
 	// (MODERN.md APPS-5: in the modern build custom comes after the updates)
 	sNewCmdLine += " -rez custom";
 #endif
@@ -1049,7 +1049,7 @@ BOOL CLauncherDlg::LaunchGame(DWORD dwAction)
 			}
 		}
 	}
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	else if(GetFileAttributes("cjacksrc.rez") != INVALID_FILE_ATTRIBUTES)
 	{
 		// MODERN.md APPS-5: no updates in the registry (the 1.1 update's
@@ -1164,7 +1164,7 @@ BOOL CLauncherDlg::LaunchGame(DWORD dwAction)
 
 	// Add display settings to the command-line if requested...
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md APPS-32: a fresh install starts at the launcher's default
 	// display (a framed window that fits the desktop; on a Steam Deck the
 	// panel's mode, full screen), with or without the Display dialog (whose
@@ -1286,7 +1286,7 @@ BOOL CLauncherDlg::LaunchGame(DWORD dwAction)
 
 	// In debug builds, check if we should display the command line string...
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	if (!theApp.m_bDirectLaunch && (GetAsyncKeyState(VK_SHIFT) & 0x80000000))
 #else
 	if (GetAsyncKeyState(VK_SHIFT) & 0x80000000)
@@ -1312,7 +1312,7 @@ BOOL CLauncherDlg::LaunchGame(DWORD dwAction)
 		return FALSE;
 	}
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	int nWritten = fprintf(fp, "%s", (LPCTSTR)sNewCmdLine);
 	int nClosed = fclose(fp);
 	if(nWritten < 0 || nClosed != 0)
@@ -1325,7 +1325,7 @@ BOOL CLauncherDlg::LaunchGame(DWORD dwAction)
 	fclose(fp);
 #endif
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// Use a clean startup structure and the engine in this install.
 	memset(&si, 0, sizeof(si));
 	si.cb = sizeof(si);
@@ -1345,7 +1345,7 @@ BOOL CLauncherDlg::LaunchGame(DWORD dwAction)
 		return(FALSE);
 	}
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	CloseHandle(pi.hThread);
 	if(theApp.m_bDirectLaunch)
 	{

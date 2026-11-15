@@ -28,7 +28,7 @@
 extern uint32 g_ScreenWidth;
 extern uint32 g_ScreenHeight;
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 // MODERN.md M-E13, the Modernizer's known issue K1: screen-space primitives
 // are placed at whole pixel coordinates, which in Direct3D are pixel
 // centres, so a quad's edge cuts its edge pixels in half. Without
@@ -122,7 +122,7 @@ LTRESULT CD3DDrawPrim::BeginDrawPrim()
 		return LT_OK;
 
 	PushRenderStates(r_GetRenderStruct()->GetD3DDevice());
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	ModernCheckHalfPixel(r_GetRenderStruct()->GetD3DDevice());
 #endif
 
@@ -329,7 +329,7 @@ void CD3DDrawPrim::SetCamera(LPDIRECT3DDEVICE8 pDevice)
 			// (Lithtech.exe 0x41c296; RETAIL_BUGS.md, MODERN.md EN-8)
 			m_PrevViewport.Width  = pCamera->m_Right - pCamera->m_Left;
 			m_PrevViewport.Height = pCamera->m_Bottom - pCamera->m_Top;
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 			vp.Width  = m_PrevViewport.Width;
 			vp.Height = m_PrevViewport.Height;
 #endif
@@ -353,7 +353,7 @@ void CD3DDrawPrim::SetCamera(LPDIRECT3DDEVICE8 pDevice)
 			// As above: retail writes the size into the saved viewport only.
 			m_PrevViewport.Width  = g_ScreenWidth;
 			m_PrevViewport.Height = g_ScreenHeight;
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 			vp.Width  = g_ScreenWidth;
 			vp.Height = g_ScreenHeight;
 #endif
@@ -408,7 +408,7 @@ void CD3DDrawPrim::SetTransformMode(LPDIRECT3DDEVICE8 pDevice)
 			fFOV = r_GetParameterValueFloat(hVar);
 		if ((hVar = r_GetParameter("PVModelAspect")) != NULL)
 			fAspect = r_GetParameterValueFloat(hVar);
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 		// MODERN.md EN-34: the player-view effects' aspect (PVModelAspect,
 		// which the game never sets) is the one they were made with at
 		// 4:3; on a wider screen they would stretch with it. Widen it by
@@ -982,7 +982,7 @@ LTRESULT CD3DDrawPrim::DrawPrim(LT_POLYF3 *pPrim, uint32 nCount) {
 // RETAIL: the batched screen-space POLYGT4 path colours all six vertices
 // with the first vertex's colour (Lithtech.exe 0x41d8ef; RETAIL_BUGS.md);
 // the modern build uses each vertex's own.
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 #define GT4_BATCH_RGBA(pSrc, i)	RGBA_MAKE((pSrc)->verts[i].rgba.r,(pSrc)->verts[i].rgba.g,(pSrc)->verts[i].rgba.b,(pSrc)->verts[i].rgba.a)
 #else
 #define GT4_BATCH_RGBA(pSrc, i)	RGBA_MAKE((pSrc)->verts[0].rgba.r,(pSrc)->verts[0].rgba.g,(pSrc)->verts[0].rgba.b,(pSrc)->verts[0].rgba.a)

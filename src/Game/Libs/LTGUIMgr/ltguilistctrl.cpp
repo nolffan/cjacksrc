@@ -850,7 +850,7 @@ void CLTGUIListCtrl::SetBasePos ( LTIntPt pos )
 
 void CLTGUIListCtrl::SetScale(float fScale)
 {
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	m_pos.x = (int)(fScale * (float)m_basePos.x) + s_nPageOffsetX;	// MODERN.md CL-30
 #else
 	m_pos.x = (int)(fScale * (float)m_basePos.x);

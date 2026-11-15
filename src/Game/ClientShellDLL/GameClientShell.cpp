@@ -130,7 +130,7 @@ HWND				g_hMainWnd = NULL;
 RECT*				g_prcClip = NULL;
 
 CGameClientShell*   g_pGameClientShell = NULL;
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 // MODERN.md CL-20: the controller, the client's half (compiled here: the
 // project files are the retail ones)
 #include "xinput/clientpad.cpp"
@@ -1350,7 +1350,7 @@ uint32 CGameClientShell::OnEngineInitialized(RMode *pMode, LTGUID *pAppGuid)
 void CGameClientShell::OnEngineTerm()
 {
     UnhookWindow();
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md CL-20: the controller's scan thread ends before the DLL goes
 	Pad_Term();
 #endif
@@ -1471,7 +1471,7 @@ void CGameClientShell::OnEvent(uint32 dwEventID, uint32 dwParam)
 				GetWindowRect(g_hMainWnd, g_prcClip);
 				ClipCursor(g_prcClip);
 			}
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 			// MODERN.md CL-32: a window after full screen is not held to the
 			// full-screen mode's rectangle of the desktop
 			else
@@ -1669,7 +1669,7 @@ void CGameClientShell::Update()
 	}
 #endif
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md CL-20, CL-22: the controller's sticks, and its keys in
 	// the menus (whose interface update below takes the frame)
 	Pad_Update(m_fFrameTime);
@@ -4698,7 +4698,7 @@ BOOL SetWindowSize(uint32 nWidth, uint32 nHeight)
 	}
 	else
 	{
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 		// MODERN.md EN-32: the engine has placed the window for the mode
 		// (a framed window whose inside is the mode's size, or a borderless
 		// one over the desktop); retail resized it whole to the mode here,

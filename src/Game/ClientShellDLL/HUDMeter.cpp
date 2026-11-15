@@ -116,7 +116,7 @@ void CHUDMeter::Update()
 
 	float x = (float)(m_MeterBasePos.x + m_MeterOffset.x) * g_pInterfaceResMgr->GetXRatio();
 	float y = (float)(m_MeterBasePos.y + m_MeterOffset.y) * g_pInterfaceResMgr->GetYRatio();
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	x += (float)g_pInterfaceResMgr->GetHUDXOffset(m_MeterBasePos.x);	// MODERN.md CL-30
 #endif
 

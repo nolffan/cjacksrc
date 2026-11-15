@@ -58,7 +58,7 @@ class CLauncherApp : public CWinApp
 {
 public:
 	CLauncherApp();
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	BOOL m_bDirectLaunch;
 	DWORD m_dwGameExitCode;
 	virtual int ExitInstance();

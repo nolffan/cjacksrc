@@ -423,7 +423,7 @@ void CUIFormattedPolyString_Impl::Parse()
 		// need to also handle the case where there's a really long word that
 		// is wider than m_WrapWidth
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 		// MODERN.md EN-33: a letter wider than the wrap width, at the start
 		// of its word, stays on its line. Retail broke the word before it,
 		// which ends the word before it starts (at the string's first

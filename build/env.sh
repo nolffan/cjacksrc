@@ -19,7 +19,7 @@ export WINEDEBUG=-all
 export WINEDLLOVERRIDES="mscoree,mshtml="
 # the variant macros ext/tools/releasesrc.py resolves, and the project's own
 # header directory ext/tools/mkdeps.py follows
-export RELEASESRC_VARIANTS="CJACK_MODERN CJACK_DEBUG"
+export RELEASESRC_VARIANTS="CJACKSRC_MODERN CJACKSRC_DEBUG"
 export MKDEPS_PROJECT_INCLUDE=src/cjacksrc
 
 # Extra flags for every compile and every link, for the debug and modern
@@ -29,7 +29,7 @@ export CJACKSRC_CFLAGS="${CJACKSRC_CFLAGS:-}"
 export CJACKSRC_LDFLAGS="${CJACKSRC_LDFLAGS:-}"
 export CJACKSRC_RCFLAGS="${CJACKSRC_RCFLAGS:-}"    # resource scripts: /d NAME
 # They are only allowed in the trees build/variant.sh makes (out/build-*/):
-# anywhere else they would put CJACK_DEBUG or CJACK_MODERN code into the
+# anywhere else they would put CJACKSRC_DEBUG or CJACKSRC_MODERN code into the
 # objects `make progress` scores, which must only ever be the release build.
 if [ -n "$CJACKSRC_CFLAGS$CJACKSRC_LDFLAGS$CJACKSRC_RCFLAGS" ]; then
     case "$REPO" in
@@ -40,8 +40,8 @@ if [ -n "$CJACKSRC_CFLAGS$CJACKSRC_LDFLAGS$CJACKSRC_RCFLAGS" ]; then
     esac
 fi
 
-# The release build compiles src/ WITHOUT its CJACK_MODERN /
-# CJACK_DEBUG blocks, not merely with them switched off: a block the
+# The release build compiles src/ WITHOUT its CJACKSRC_MODERN /
+# CJACKSRC_DEBUG blocks, not merely with them switched off: a block the
 # compiler skips still moves everything below it, and VC6 lets the file's
 # layout decide where some out-of-line inline functions go, so enough
 # skipped blocks can change the release binary (ext/tools/releasesrc.py; a

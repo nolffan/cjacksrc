@@ -82,8 +82,8 @@ For the one-object loop of reconstruction, `build/env.sh` gives `run_cl`,
 ## Variant builds: debug and modern
 
 `make` builds the legacy release game, the only build `make progress` ever
-scores. `make debug` (`CJACK_DEBUG`: symbols, logging), `make modern`
-(`CJACK_MODERN`: the fixes and features of the modern build) and `make
+scores. `make debug` (`CJACKSRC_DEBUG`: symbols, logging), `make modern`
+(`CJACKSRC_MODERN`: the fixes and features of the modern build) and `make
 modern-debug` (both) build the same source with those defines into
 `out/cjack-legacy-debug/`, `out/cjack-modern-release/` and
 `out/cjack-modern-debug/`. Each is `build/variant.sh <variant>`: the source
@@ -91,7 +91,7 @@ is copied into `out/build-<variant>/` and built there by the same
 `build/all.sh`, so the release build's outputs are never touched; its
 header has the details. The modern builds also build and install our Bink
 player (`build/ext.sh`, once, into `out/ext/`). The release build compiles the source with its
-`CJACK_MODERN`/`CJACK_DEBUG` blocks resolved away (`ext/tools/releasesrc.py`).
+`CJACKSRC_MODERN`/`CJACKSRC_DEBUG` blocks resolved away (`ext/tools/releasesrc.py`).
 
 ## Archives: private and public
 
@@ -129,8 +129,8 @@ coreutils do the rest); on Windows, PowerShell 5.1's .NET
 
 The public archive is made only if `ext/rez/isos/` has the `.iso` of both
 discs of both releases: `make retail` fetches the USA ones too
-(`build/retail.sh`'s `retail_discs`). `CJACK_ARCHIVES` says which archives
-to write (default `private public`): `make CJACK_ARCHIVES=public` (or any
+(`build/retail.sh`'s `retail_discs`). `CJACKSRC_ARCHIVES` says which archives
+to write (default `private public`): `make CJACKSRC_ARCHIVES=public` (or any
 variant target) writes only the public one, and fails rather than skip it
 without the disc images. `IMAGE_BUILD=0` makes the targets use the docker
 image as it is instead of building it.
@@ -138,7 +138,7 @@ image as it is instead of building it.
 ### GitHub Actions
 
 `.github/workflows/public-archives.yml` builds the legacy release game and
-all three variants with `CJACK_ARCHIVES=public` on every push to `master`,
+all three variants with `CJACKSRC_ARCHIVES=public` on every push to `master`,
 every pull request and on demand, each in a job of its own and all four at
 the same time (one failing still lets the others finish), runs `make
 progress` on the legacy release build (a function recorded as
@@ -150,7 +150,7 @@ are the make targets above, so a run can be reproduced locally:
 ```sh
 git submodule update --init                 # ext/toolchains/, ext/rez/, ext/tools/, ext/lithtools/
 make image && make retail                   # (CI: the image from its layer cache, IMAGE_BUILD=0)
-export CJACK_ARCHIVES=public
+export CJACKSRC_ARCHIVES=public
 make && make progress && make debug && make modern && make modern-debug
 ls out/*-public.tar.gz
 ```

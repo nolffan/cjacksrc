@@ -1,7 +1,7 @@
 /*
  * mp3decode.cpp -- the modern build's MP3 decoder in SndDrv.dll (MODERN.md
  * EN-50); see mp3decode.h. #included once, at the end of s_dx8.cpp, in a
- * CJACK_MODERN block.
+ * CJACKSRC_MODERN block.
  *
  * minimp3 (github.com/lieff/minimp3, CC0: minimp3/LICENSE) is compiled in
  * here, without its SSE code (Visual C++ .NET 2003 has no <intrin.h>; the
@@ -16,7 +16,7 @@
  * held until it is read. ACM's MP3 codec did the same buffering inside
  * acmStreamConvert.
  *
- * Modern build only (CJACK_MODERN).
+ * Modern build only (CJACKSRC_MODERN).
  */
 #define MINIMP3_IMPLEMENTATION
 #define MINIMP3_NO_SIMD

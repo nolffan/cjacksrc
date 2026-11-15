@@ -1,4 +1,4 @@
-// g++ -std=c++98 -Wall -Wextra -pedantic -DCJACK_MODERN
+// g++ -std=c++98 -Wall -Wextra -pedantic -DCJACKSRC_MODERN
 //     -Isrc/Engine/sdk/inc build/tests/ltreference.cpp -o /tmp/ltreference
 #include <cassert>
 typedef unsigned int uint32;

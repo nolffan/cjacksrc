@@ -26,7 +26,7 @@ class CLauncherDlg : public CMoveDialog
 {
 // Construction
 public:
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	BOOL LaunchDirect();
 #endif
 	CLauncherDlg(CWnd* pParent = NULL);	// standard constructor

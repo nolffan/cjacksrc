@@ -69,7 +69,7 @@
 # run in a prefix, this script installs Fraunhofer's MP3 codec, the one
 # Windows ships, with winetricks (`winetricks -q l3codecx`; it downloads
 # it). Without winetricks it says so and starts the game anyway;
-# CJACK_WINETRICKS=0 skips the step.
+# CJACKSRC_WINETRICKS=0 skips the step.
 #
 # Sound: the engine's SndDrv.dll plays through DirectSound, so it needs
 # Wine's audio working on this machine (winecfg > Audio); +DisableSound 1
@@ -100,7 +100,7 @@ mkdir -p Save
 
 # The speech's MP3 codec, once per prefix (winetricks logs what it
 # installed); the legacy build's only: the modern build decodes MP3 itself
-if [ -z "$MODERN" ] && [ "${CJACK_WINETRICKS:-1}" != 0 ] && ! grep -qx l3codecx "$WINEPREFIX/winetricks.log" 2>/dev/null; then
+if [ -z "$MODERN" ] && [ "${CJACKSRC_WINETRICKS:-1}" != 0 ] && ! grep -qx l3codecx "$WINEPREFIX/winetricks.log" 2>/dev/null; then
     if command -v winetricks >/dev/null 2>&1; then
         echo "linux-run.sh: installing the MP3 codec the speech needs (winetricks l3codecx), once" >&2
         winetricks -q l3codecx >/dev/null 2>&1 ||

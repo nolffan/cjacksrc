@@ -1144,7 +1144,7 @@ protected:
  				return true;
 			}
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 			// MODERN.md EN-1: the world only among equal base sections, so
 			// that std::sort is given a strict weak ordering
  			if(CShaderSection::operator!=(static_cast<const CShaderSection&>(cOther)))

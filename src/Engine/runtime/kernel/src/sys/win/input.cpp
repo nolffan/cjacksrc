@@ -381,7 +381,7 @@ class DeviceDef
 
 	// Useful for remembering current device when enumerating device objects
 	static DeviceDef		*g_pCurrentEnumDevice=LTNULL;
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 // MODERN.md EN-20: ##gamepad, the XInput controller as a DirectInput gamepad
 // (src/cjacksrc/xinput/)
 #include "xinput/gamepad_device.h"
@@ -899,7 +899,7 @@ static bool input_SetupDeviceFormats( DeviceDef *pDevice )
 	prop.diph.dwObj = 0;
 	prop.diph.dwHow = DIPH_DEVICE;
 	prop.dwData = INPUT_BUFFER_SIZE;
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md M-E3: a mouse of today reports up to 1000 times a second,
 	// two events each (x and y), and the buffer is read once a frame: 64
 	// events overflowed ("Input buffer overflow") and lost motion at low
@@ -990,7 +990,7 @@ static BOOL CALLBACK DeviceEnumCallback( LPCDIDEVICEINSTANCE pDevice, LPVOID pvR
 {
 	DeviceDef *pDef;
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md EN-21: the controller is ##gamepad, read through XInput;
 	// DirectInput's game controllers (joysticks, gamepads, wheels, flight
 	// sticks) are left out -- under Wine one of them is the same pad
@@ -1212,7 +1212,7 @@ bool input_Init(InputMgr *pMgr, ConsoleState *pState)
 		return false;
 	}
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md EN-20: ##gamepad, whenever XInput loads (a pad can be
 	// plugged in later); recorded first, so the keyboard and the mouse go
 	// in front of it in the list
@@ -1389,7 +1389,7 @@ bool input_EnableDevice( InputMgr *pMgr, const char *pDeviceName )
 			theGuid = GUID_SysKeyboard;
 		}
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 		// MODERN.md EN-20: ##gamepad is ours, not DirectInput's
 		hResult = PadDevice_CreateDevice( g_pDirectInput, theGuid, &pDevice->m_pDevice );
 #else
@@ -1453,7 +1453,7 @@ bool input_EnableDevice( InputMgr *pMgr, const char *pDeviceName )
 	return true;
 }
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 // MODERN.md M-E3: the mouse's look axes (x and y), whose motion
 // input_ReadInput adds up over a frame. Not the wheel (z), whose bindings
 // are ranges one notch at a time.
@@ -1491,7 +1491,7 @@ void input_ReadInput( InputMgr *pMgr, BYTE *pActionsOn, float axisOffsets[3] )
 
 	// clear the axis array
 	axisOffsets[0] = axisOffsets[1] = axisOffsets[2] = 0.0f;
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md EN-20: the controller's buttons the game reads itself for
 	// now (PadHoldButtons, XInput's bits; set by the client) are held back
 	// from the bindings
@@ -1531,7 +1531,7 @@ void input_ReadInput( InputMgr *pMgr, BYTE *pActionsOn, float axisOffsets[3] )
 
 			memset (data, 0, sizeof(data));
 			
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 			// MODERN.md M-E3: the mouse's buffer is read whole, like any
 			// other device's (see below)
 			nEvents = INPUT_BUFFER_SIZE;
@@ -1612,7 +1612,7 @@ void input_ReadInput( InputMgr *pMgr, BYTE *pActionsOn, float axisOffsets[3] )
 					continue;
 				}
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 				// MODERN.md M-E3: mouse look. Retail took the mouse's events
 				// one at a time, ran every trigger after each, and smoothed
 				// each axis over its last three samples, so an axis with no
@@ -1654,7 +1654,7 @@ void input_ReadInput( InputMgr *pMgr, BYTE *pActionsOn, float axisOffsets[3] )
 				{
 					float fCurTriggerState = pTrigger->m_State;
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 					// M-E3: a mouse axis: this frame's motion, as it is
 					if( input_IsMouseLookAxis( pDevice, pTrigger ) )
 					{
@@ -1807,7 +1807,7 @@ void input_ReadInput( InputMgr *pMgr, BYTE *pActionsOn, float axisOffsets[3] )
 				
 				// Clear this..
 				pTrigger->m_bJustWentDown = false;
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 				// M-E3: a mouse axis's motion is used once
 				if( input_IsMouseLookAxis( pDevice, pTrigger ) )
 				{

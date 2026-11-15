@@ -437,7 +437,7 @@ BOOL CRenderer::Init(const char* sFile)
 
 			// Only allow 4x3 aspect ratio video modes
 			uint32 nTestWidth = (d3dDisplayMode.Height * 4 / 3);
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 			// MODERN.md APPS-30: widescreen resolutions here too (any mode at
 			// least as wide as 4:3), as the game's Display screen lists them.
 			if (d3dDisplayMode.Width < nTestWidth)
@@ -800,7 +800,7 @@ BOOL CRenderer::FillListBox(HWND hList)
 	return(TRUE);
 }
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 // MODERN.md APPS-31: Windowed, WindowMode, ScreenWidth and ScreenHeight from a
 // config file (lines of "Name" "value"); those it does not set are left
 void CDisplayMgr::ModernReadWindowMode(const char* sFile, int* pWindowed, int* pWindowMode, int* pWidth, int* pHeight)
@@ -992,7 +992,7 @@ BOOL CDisplayMgr::Init(const char* sDir, const char* sConfigFile)
 
 	ReadConfigFile(sConfigFile);
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md APPS-31: the window mode the game was left in, as the engine
 	// reads it: autoexec.cfg, then the display config over it. A window
 	// with no WindowMode (a config from before the setting) is borderless
@@ -1311,7 +1311,7 @@ int CDisplayMgr::EnumerateRenderers(const char* sDir)
 
 		if (_findnext(handle, &fd) == -1) bContinue = FALSE;
 	}
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md APPS-2: the find handle is closed
 	if (handle != -1) _findclose(handle);
 #endif
@@ -1635,7 +1635,7 @@ CString CDisplayMgr::GetDisplaySettingsString()
 		sCmdLine += sRes;
 	}
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md APPS-31: the window mode (a borderless window takes the
 	// desktop's resolution whatever the list says)
 	CString sWindow;

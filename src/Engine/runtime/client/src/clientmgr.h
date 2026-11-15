@@ -571,7 +571,7 @@ extern CClientMgr *g_pClientMgr;
 // ------------------------------------------------------------------ //
 
 void cm_Init();
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 // MODERN.md EN-42: FrameTimeLog's sections
 #include "modernframelog.h"
 #endif

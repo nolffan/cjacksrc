@@ -1,7 +1,7 @@
 # Contract J.A.C.K., built from source.
 #
 #   make          build the game into out/cjack-legacy-release/ (and its -private / -public .tar.gz)
-#   make modern   the game with CJACK_MODERN, in out/cjack-modern-release/
+#   make modern   the game with CJACKSRC_MODERN, in out/cjack-modern-release/
 #   make progress how much of the build is byte-identical to the retail game;
 #                 fails if a function recorded as identical stops matching
 #   make help     everything else
@@ -30,7 +30,7 @@ TEST_NAME = $(if $(filter out/cjack-legacy-release,$(TEST_GAME:%/=%)),test,test-
 
 DOCKER_RUN = docker run --rm --init --name $(CONTAINER) \
 	-u $(shell id -u):$(shell id -g) -e HOME=/tmp/home $(if $(JOBS),-e CJACKSRC_JOBS=$(JOBS)) \
-	$(if $(CJACK_ARCHIVES),-e CJACK_ARCHIVES="$(CJACK_ARCHIVES)") \
+	$(if $(CJACKSRC_ARCHIVES),-e CJACKSRC_ARCHIVES="$(CJACKSRC_ARCHIVES)") \
 	-v $(CURDIR):/repo -w /repo $(IMAGE)
 
 TOOLCHAIN_FILES = ext/toolchains/msvc-7.10-3077/bin/cl.exe ext/toolchains/dxsdk-8.1/include/d3d8.h
@@ -42,8 +42,8 @@ all: game
 
 help:
 	@echo "make            build everything into out/cjack-legacy-release/ and its .tar.gz archives"
-	@echo "make debug      the game with symbols and CJACK_DEBUG logging, in out/cjack-legacy-debug/"
-	@echo "make modern     the game with CJACK_MODERN, in out/cjack-modern-release/"
+	@echo "make debug      the game with symbols and CJACKSRC_DEBUG logging, in out/cjack-legacy-debug/"
+	@echo "make modern     the game with CJACKSRC_MODERN, in out/cjack-modern-release/"
 	@echo "make modern-debug  both, in out/cjack-modern-debug/"
 	@echo "                (none of these is ever scored)"
 	@echo "make test       run out/cjack-legacy-release/ under Xvfb and Wine to its main menu"
@@ -67,7 +67,7 @@ help:
 	@echo "make distclean  clean, and remove the docker image too"
 	@echo
 	@echo "Variables: JOBS=<n> (parallel compiles; default one per CPU)"
-	@echo "           CJACK_ARCHIVES=\"private public\" (the archives build/package.sh writes)"
+	@echo "           CJACKSRC_ARCHIVES=\"private public\" (the archives build/package.sh writes)"
 	@echo "           IMAGE_BUILD=0 (use the docker image as it is, as CI does)"
 	@echo "           COMPLETE=1, COVERED=1, ACCEPT_LOSSES=1 (progress/README.md)"
 

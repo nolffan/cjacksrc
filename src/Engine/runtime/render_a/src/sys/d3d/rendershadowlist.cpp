@@ -8,7 +8,7 @@
 #include "d3dmeshrendobj_vertanim.h"
 #include "modelshadowshader.h"
 #include "rendererframestats.h"
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 #include "modernframelog.h"
 #endif
 #include "..\shadows\d3dshadowtexture.h"
@@ -808,7 +808,7 @@ float CRenderShadowList::CalcScore(const ViewParams& Params, const SQueuedShadow
 //this will render all shadows in the queue to the world and flush it
 void CRenderShadowList::RenderQueuedShadows(const ViewParams& Params)
 {
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md EN-61: FrameTimeLog's "shadows", the projected shadows'
 	// textures and their passes over the world
 	CModernFrameSection cModernFrameSection(MFL_SHADOWS);

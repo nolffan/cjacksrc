@@ -394,7 +394,7 @@ ILTStream* streamsim_Open(const char *pFilename, const char *pAccess)
 	LT_MEM_TRACK_ALLOC(pFile = new SSFile,LT_MEM_TYPE_FILE);
 	if(pFile)
 		pFile->m_pFile = fp;
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md M-E12: the file was left open when the stream could not
 	// be allocated
 	else

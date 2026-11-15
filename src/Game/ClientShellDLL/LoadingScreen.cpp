@@ -420,7 +420,7 @@ LTBOOL CLoadingScreen::Init()
 	m_pMissionNameStr->SetText(m_missionname.c_str());
 	m_pMissionNameStr->SetCharScreenHeight(nFontSize);
 	float x = (float)TitlePos.x * g_pInterfaceResMgr->GetXRatio();
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	x += (float)g_pInterfaceResMgr->GetXOffset();	// MODERN.md CL-30
 #endif
 	float y = (float)TitlePos.y * g_pInterfaceResMgr->GetYRatio();
@@ -437,7 +437,7 @@ LTBOOL CLoadingScreen::Init()
 	m_pLevelNameStr->SetText(m_levelname.c_str());
 	m_pLevelNameStr->SetCharScreenHeight(nFontSize);
 	x = (float)LevelPos.x * g_pInterfaceResMgr->GetXRatio();
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	x += (float)g_pInterfaceResMgr->GetXOffset();	// MODERN.md CL-30
 #endif
 	y = (float)LevelPos.y * g_pInterfaceResMgr->GetYRatio();
@@ -496,7 +496,7 @@ LTBOOL CLoadingScreen::Init()
 	m_pBriefingStr->SetColor(BriefingColor);
 	m_pBriefingStr->SetCharScreenHeight(nFontSize);
 	x = (float)BriefingPos.x * g_pInterfaceResMgr->GetXRatio();
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	x += (float)g_pInterfaceResMgr->GetXOffset();	// MODERN.md CL-30
 #endif
 	y = (float)BriefingPos.y * g_pInterfaceResMgr->GetYRatio();
@@ -550,7 +550,7 @@ LTBOOL CLoadingScreen::Init()
 		m_pHelpStr->SetColor(HelpColor);
 		m_pHelpStr->SetCharScreenHeight(nFontSize);
 		x = (float)HelpPos.x * g_pInterfaceResMgr->GetXRatio();
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 		x += (float)g_pInterfaceResMgr->GetXOffset();	// MODERN.md CL-30
 #endif
 		y = (float)HelpPos.y * g_pInterfaceResMgr->GetYRatio();
@@ -573,7 +573,7 @@ LTBOOL CLoadingScreen::Init()
 
 			float fScale = g_pInterfaceResMgr->GetXRatio();
 			float fx = (float)m_DefaultPhotoRect.left * fScale;
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 			fx += (float)g_pInterfaceResMgr->GetXOffset();	// MODERN.md CL-30
 #endif
 			float fy = (float)m_DefaultPhotoRect.top * fScale;
@@ -1054,7 +1054,7 @@ void CLoadingScreen::UpdateMissionInfo()
 
 			float fScale = g_pInterfaceResMgr->GetXRatio();
 			float fx = (float)m_DefaultPhotoRect.left * fScale;
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 			fx += (float)g_pInterfaceResMgr->GetXOffset();	// MODERN.md CL-30
 #endif
 			float fy = (float)m_DefaultPhotoRect.top * fScale;

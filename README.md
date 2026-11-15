@@ -16,10 +16,10 @@ the retail binaries are, function by function. As for
   so that it compiles back to the retail binaries byte for byte, as far as
   that can be done -- with the compiler Monolith used, Visual C++ .NET 2003
   (13.10.3077), under Wine;
-- **modern**: the same source with fixes and new features (`CJACK_MODERN`).
+- **modern**: the same source with fixes and new features (`CJACKSRC_MODERN`).
 
 Compiling back to the retail bytes means compiling the retail game's bugs as
-well; their fixes go behind `CJACK_MODERN`, into the modern build only, so
+well; their fixes go behind `CJACKSRC_MODERN`, into the modern build only, so
 the legacy build keeps matching the retail one.
 
 ## Where it stands

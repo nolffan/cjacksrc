@@ -38,7 +38,7 @@ LTBOOL CHUDBombTarget::Init()
 	m_Timers[2].m_hIcon = g_pInterfaceResMgr->GetTexture( "interface\\hud\\radar_bomb3.dtx" );
 
 	float x = (float)m_BasePos.x * g_pInterfaceResMgr->GetXRatio( );
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md CL-30: the icons keep to the screen's edge, as their
 	// timers' text does (CInterfaceTimer::Draw)
 	x += (float)g_pInterfaceResMgr->GetHUDXOffset( m_BasePos.x );
@@ -118,7 +118,7 @@ void CHUDBombTarget::Update()
 	}
 
 	float x = (float)m_BasePos.x * m_fScale;
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	x += (float)g_pInterfaceResMgr->GetHUDXOffset( m_BasePos.x );	// MODERN.md CL-30
 #endif
 	float y = (float)m_BasePos.y * m_fScale;
@@ -141,7 +141,7 @@ void CHUDBombTarget::UpdateLayout()
 		m_BasePos = LTIntPt( 500, 10 );
 		m_nBaseSize = 32;
 	}
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md CL-30: placed again for each screen (CHUDMgr::
 	// ScreenDimsChanged): one of another width but the same height keeps
 	// the scale

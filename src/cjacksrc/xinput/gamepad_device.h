@@ -1,7 +1,7 @@
 /*
  * gamepad_device.h -- the modern build's controller, the engine's half
  * (MODERN.md EN-20): the ##gamepad input device. Included once, by
- * src/Engine/runtime/kernel/src/sys/win/input.cpp, in its CJACK_MODERN
+ * src/Engine/runtime/kernel/src/sys/win/input.cpp, in its CJACKSRC_MODERN
  * blocks; nothing of the legacy build sees it.
  *
  * An XInput pad (an Xbox-style controller; what Steam Input presents to
@@ -38,8 +38,8 @@
  * No force feedback: rumble would be XInput's XInputSetState (MODERN.md,
  * Planned).
  */
-#ifndef CJACK_GAMEPAD_DEVICE_H
-#define CJACK_GAMEPAD_DEVICE_H
+#ifndef CJACKSRC_GAMEPAD_DEVICE_H
+#define CJACKSRC_GAMEPAD_DEVICE_H
 
 #include "padread.h"
 
@@ -764,7 +764,7 @@ namespace
 	// What input.cpp calls.
 
 	// Whether the device exists: XInput could be loaded (or the test pad,
-	// CJACK_PADTEST, is on).  Decided once.
+	// CJACKSRC_PADTEST, is on).  Decided once.
 	BOOL PadDevice_Available()
 	{
 		return PadRead_Available() ? TRUE : FALSE;
@@ -796,4 +796,4 @@ namespace
 	}
 }
 
-#endif // CJACK_GAMEPAD_DEVICE_H
+#endif // CJACKSRC_GAMEPAD_DEVICE_H

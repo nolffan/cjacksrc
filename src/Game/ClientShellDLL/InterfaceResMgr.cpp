@@ -40,7 +40,7 @@ CInterfaceResMgr::CInterfaceResMgr()
 
 	m_fXRatio = 1.0f;
 	m_fYRatio = 1.0f;
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	m_nXOffset = 0;
 #endif
 
@@ -344,7 +344,7 @@ void CInterfaceResMgr::ScreenDimsChanged()
 	m_dwScreenWidth = currentMode.m_Width;
 	m_dwScreenHeight = currentMode.m_Height;
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md CL-30: menus and HUD at wide resolutions. The interface is
 	// laid out on a 640x480 page; retail stretched it to the screen
 	// (width/640 across, height/480 down), and most controls scale both
@@ -495,7 +495,7 @@ void CInterfaceResMgr::ConvertScreenPos(int &x, int &y)
 
 	x = (int)( (LTFLOAT)x * m_fXRatio );
 	y = (int)( (LTFLOAT)y * m_fYRatio );
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	x += m_nXOffset;	// CL-30
 #endif
 };
@@ -509,7 +509,7 @@ void CInterfaceResMgr::ConvertScreenRect(LTRect &rect)
 	rect.right = (int)( (LTFLOAT)rect.right * m_fXRatio );
 	rect.top = (int)( (LTFLOAT)rect.top * m_fYRatio );
 	rect.bottom = (int)( (LTFLOAT)rect.bottom * m_fYRatio );
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	rect.left += m_nXOffset;	// CL-30
 	rect.right += m_nXOffset;
 #endif

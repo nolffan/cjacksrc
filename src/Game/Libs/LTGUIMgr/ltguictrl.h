@@ -55,7 +55,7 @@ public:
 
 	virtual void	SetScale(float fScale);
 	virtual float	GetScale()					{return m_fScale;}
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md CL-30: where the 640x480 page starts on the screen. On a
 	// screen wider than 4:3 the page is scaled by the height and centred,
 	// and every control's position moves right by the side margin.

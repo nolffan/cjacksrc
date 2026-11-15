@@ -24,7 +24,7 @@
 #   2. third-party runtime  Bink (binkw32.dll) and the Microsoft C++ and MFC
 #                         7.1 runtime DLLs, from the retail game: licensed
 #                         binaries with no source. The modern build
-#                         (CJACK_MIDDLEWARE=open, set by build/variant.sh)
+#                         (CJACKSRC_MIDDLEWARE=open, set by build/variant.sh)
 #                         takes only the Microsoft runtime from the retail
 #                         game, and our own binkw32.dll -- a Bink player on
 #                         FFmpeg, built from src/modern/binkw32/ and the
@@ -63,7 +63,7 @@ export WINEDEBUG=-all
 
 cd "$REPO"
 source build/retail.sh
-OUT="${CJACK_GAME_OUT:-out/cjack-legacy-release}"
+OUT="${CJACKSRC_GAME_OUT:-out/cjack-legacy-release}"
 RETAIL="$(retail_dir)"
 retail_verify
 T0=$(date +%s)
@@ -85,7 +85,7 @@ BUILT=(
     "$E/ltmsg/ltmsg.dll"                ltmsg.dll
 )
 case "${CJACKSRC_CFLAGS:-}" in
-    *CJACK_MODERN*) BUILT+=("$B/Launcher/ContractJackLauncher.exe" ContractJackLauncher.exe) ;;
+    *CJACKSRC_MODERN*) BUILT+=("$B/Launcher/ContractJackLauncher.exe" ContractJackLauncher.exe) ;;
 esac
 
 step "1. resources: game data from $RETAIL -> $OUT"
@@ -104,7 +104,7 @@ bash build/cjackcmds.sh > "$OUT/cjackcmds.txt"
 # values, which the Linux scripts write; the modern build's need none
 # (MODERN.md APPS-5, APPS-7), so its copies are marked modern.
 MODERN=
-case " ${CJACKSRC_CFLAGS:-} " in *" CJACK_MODERN "*|*"/D CJACK_MODERN"*) MODERN=1 ;; esac
+case " ${CJACKSRC_CFLAGS:-} " in *" CJACKSRC_MODERN "*|*"/D CJACKSRC_MODERN"*) MODERN=1 ;; esac
 for s in linux-run.sh linux-server.sh; do
     sed "s/^MODERN=\$/MODERN=$MODERN/" "build/game-scripts/$s" > "$OUT/$s"
     chmod +x "$OUT/$s"
@@ -123,11 +123,11 @@ mv "$OUT/cjacksrc.rez.part" "$OUT/cjacksrc.rez"
 printf 'asset assets/rez (lithrez)\tcjacksrc.rez\n' >> "$OUT/MANIFEST.txt"
 echo "   cjacksrc.rez  <-  assets/rez/ ($(find assets/rez -type f | wc -l) files)"
 
-if [ "${CJACK_MIDDLEWARE:-retail}" = open ]; then
+if [ "${CJACKSRC_MIDDLEWARE:-retail}" = open ]; then
     step "2. open runtime: our Bink player on FFmpeg (build/ext.sh); the Microsoft runtime from $RETAIL"
     bash build/ext.sh
     python3 ext/tools/retailextract.py thirdparty "$RETAIL" "$OUT" open
-    python3 ext/tools/retailextract.py openruntime "${CJACK_EXT_OUT:-out/ext}" "$OUT"
+    python3 ext/tools/retailextract.py openruntime "${CJACKSRC_EXT_OUT:-out/ext}" "$OUT"
 else
     step "2. THIRD-PARTY RUNTIME: Bink and the Microsoft runtime from $RETAIL"
     python3 ext/tools/retailextract.py thirdparty "$RETAIL" "$OUT"
@@ -167,9 +167,9 @@ PY
 step "5. audit: every PE file in $OUT"
 python3 ext/tools/retailextract.py audit "$OUT"
 
-# (CJACK_PACKAGE=0 skips it: build/variant.sh packages its game directory
+# (CJACKSRC_PACKAGE=0 skips it: build/variant.sh packages its game directory
 # itself)
-if [ "${CJACK_PACKAGE:-1}" = 1 ]; then
+if [ "${CJACKSRC_PACKAGE:-1}" = 1 ]; then
     step "6. package: $OUT -> $OUT-private.tar.gz, -public.tar.gz"
     bash "$REPO/build/package.sh" "$OUT"
 fi

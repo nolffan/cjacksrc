@@ -82,7 +82,7 @@ protected:
 	// next highest resolution is selected.
 	void	SetCurrentCtrlResolution(ScreenDisplayResolution resolution);
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md CL-32, CL-35, CL-40: the window mode, the 4:3 cinematics and
 	// the frame rate limit
 	void	ModernReadOptions();
@@ -104,7 +104,7 @@ private:
 	CLTGUISlider					*m_pGamma;
 	CLTGUICycleCtrl					*m_pHardwareCursor;
 
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	CLTGUICycleCtrl					*m_pModernWindowMode;	// MODERN.md CL-32
 	uint8							m_nModernWindowMode;
 	LTBOOL							m_bModernCinematics43;	// CL-35

@@ -580,7 +580,7 @@ void Chassis::CreateSFXMessage( )
 
 	cMsg.Reset( );
 	cMsg.Writeuint8( MID_SFX_MESSAGE );
-#ifdef CJACK_MODERN
+#ifdef CJACKSRC_MODERN
 	// MODERN.md GAME-2: say which special fx the update is for.
 	cMsg.Writeuint8( SFX_CHASSIS_ID );
 	cMsg.WriteObject( m_hObject );
