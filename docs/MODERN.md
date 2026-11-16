@@ -607,6 +607,16 @@ test pad.
   on the speech) for the legacy build only: the modern build plays the
   movies with its own Bink (X-1) and decodes the speech itself (EN-50)
   (build/game-scripts/linux-run.sh).
+* **APPS-51: the launcher waits for the game.** Retail's launcher window
+  starts `Lithtech.exe` and then closes. Steam watches the program that it
+  started: when that program stops, Steam ends the game, and the overlay
+  and Remote Play stop. The modern launcher hides its window after Launch
+  (and after a start from its command line: host, join, find, play,
+  server) and waits until the engine stops. It then closes as before. The
+  wait dispatches the window's messages
+  (`MsgWaitForMultipleObjects`), because the thread owns a window. The
+  direct start (`ContractJack.exe` without the launcher window) waited
+  already. avp2src's M-22 (src/Game/Launcher/LauncherDlg.cpp).
 
 * **EN-51: copying reference-counted messages.** `CLTReference` now
   increments the reference count when copied or assigned from another

@@ -1352,6 +1352,35 @@ BOOL CLauncherDlg::LaunchGame(DWORD dwAction)
 		if(WaitForSingleObject(pi.hProcess, INFINITE) == WAIT_OBJECT_0)
 			GetExitCodeProcess(pi.hProcess, &theApp.m_dwGameExitCode);
 	}
+	else
+	{
+		// APPS-51: stay until the engine exits, so that a program which
+		// started the launcher (Steam) does not see the game end. This
+		// thread owns a window, so it dispatches its messages as it waits.
+		if(GetSafeHwnd())
+			ShowWindow(SW_HIDE);
+		for(;;)
+		{
+			DWORD dwWait = MsgWaitForMultipleObjects(1, &pi.hProcess, FALSE, INFINITE, QS_ALLINPUT);
+			if(dwWait != WAIT_OBJECT_0 + 1)
+				break;
+			MSG msg;
+			BOOL bQuit = FALSE;
+			while(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+			{
+				if(msg.message == WM_QUIT)
+				{
+					PostQuitMessage((int)msg.wParam);
+					bQuit = TRUE;
+					break;
+				}
+				TranslateMessage(&msg);
+				DispatchMessage(&msg);
+			}
+			if(bQuit)
+				break;
+		}
+	}
 	CloseHandle(pi.hProcess);
 
 #endif
